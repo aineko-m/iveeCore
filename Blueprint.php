@@ -274,9 +274,17 @@ class Blueprint extends Sellable {
                 continue;
             }
 
-            //quantity needed for 1 batch (= portionSize). Apply waste factor only to base materials. Also apply damage 
-            //factor to all.
-            $matQuantity = (round($mat['bas'] * $materialFactor) + $mat['qua'] - $mat['bas']) * $mat['dam'];
+            //only apply extra material waste factor if that material is also a base material
+            if($mat['qua'] > $mat['bas'] AND $mat['bas'] > 0){
+                $extraMaterialFactor = 1 + (0.25 - 0.05 * $utilClass::getSkillLevel(3388));
+            } else {
+                $extraMaterialFactor = 1;
+            }
+            
+            //Quantity needed for 1 batch (= portionSize). Apply regular waste factor to base materials. 
+            //Apple extra material waste to extra materials. Also apply damage factor to all.
+            $matQuantity = (round($mat['bas'] * $materialFactor) 
+                + round(($mat['qua'] - $mat['bas']) * $extraMaterialFactor)) * $mat['dam'];
 
             //handle recursive component building
             if ($recursive) {
@@ -470,7 +478,7 @@ class Blueprint extends Sellable {
         } else {
             $meMod = 1 / (1 + $ME);
         }
-        return 1 + ($this->wasteFactor / 100) * (1.25 - 0.05 * $productionEfficiencySkill) * $meMod;
+        return 1 + ($this->wasteFactor / 100) * $meMod + (0.25 - 0.05 * $productionEfficiencySkill);
     }
 
     /**
