@@ -224,9 +224,9 @@ class InventionData extends ProcessData {
         echo "Total average Success Materials:" . PHP_EOL;
         print_r($this->getTotalSuccessMaterials());
         
-        echo "Total average success Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialCost(iveeCoreConfig::getMaxPriceDataAge())) . "ISK" . PHP_EOL;
+        echo "Total average success Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialCost()) . "ISK" . PHP_EOL;
         echo "Total average success Slot Cost: "     . $utilClass::quantitiesToReadable($this->getTotalSuccessSlotCost()) . "ISK" . PHP_EOL;
-        echo "Total average success Cost: "          . $utilClass::quantitiesToReadable($this->getTotalSuccessCost(iveeCoreConfig::getMaxPriceDataAge())) . "ISK" . PHP_EOL;
+        echo "Total average success Cost: "          . $utilClass::quantitiesToReadable($this->getTotalSuccessCost()) . "ISK" . PHP_EOL;
         echo "Total Profit: "                        . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
     }
 }

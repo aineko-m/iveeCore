@@ -96,12 +96,12 @@ class ManufactureData extends ProcessData {
         foreach ($this->getTotalMaterials() as $typeID => $amount){
             echo $amount .'x '.SDE::instance()->getType($typeID)->getName().PHP_EOL;
         }
-        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialCost(iveeCoreConfig::getMaxPriceDataAge())) . "ISK" . PHP_EOL;
+        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialCost()) . "ISK" . PHP_EOL;
         echo "Total Slot Cost: "     . $utilClass::quantitiesToReadable($this->getTotalSlotCost()) . "ISK" . PHP_EOL;
-        echo "Total Cost: "          . $utilClass::quantitiesToReadable($this->getTotalCost(iveeCoreConfig::getMaxPriceDataAge())) . "ISK" . PHP_EOL;
+        echo "Total Cost: "          . $utilClass::quantitiesToReadable($this->getTotalCost()) . "ISK" . PHP_EOL;
         echo "Total Profit: ";
         try{
-            echo $utilClass::quantitiesToReadable($this->getTotalProfit(iveeCoreConfig::getMaxPriceDataAge())) . "ISK" . PHP_EOL;
+            echo $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
         } catch (Exception $e){
             echo $e->getMessage() . PHP_EOL;
         }
