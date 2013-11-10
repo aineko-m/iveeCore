@@ -80,8 +80,13 @@ class Blueprint extends Sellable {
      * @throws Exception if typeID is not found
      */
     protected function __construct($typeID) {
-        //call parent constructor
-        parent::__construct($typeID);
+        $this->typeID = (int) $typeID;
+
+        //get data from SQL
+        $row = $this->queryAttributes();
+        
+        //set data to object attributes
+        $this->setAttributes($row);
         
         $sde = SDE::instance();
         
@@ -90,11 +95,12 @@ class Blueprint extends Sellable {
 
         while ($row = $res->fetch_assoc()) {
             $this->requirements[(int) $row['activityID']][] = array(
-                'cat' => (int) $row['categoryID'],
-                'typ' => (int) $row['requiredTypeID'],
-                'qua' => (int) $row['quantity'],
+                'cat' => (int)   $row['categoryID'],
+                'typ' => (int)   $row['requiredTypeID'],
+                'qua' => (int)   $row['quantity'],
                 'dam' => (float) $row['damagePerJob'],
-                'bas' => (int) $row['baseMaterial']
+                'bas' => (int)   $row['baseMaterial'],
+                'rec' => (bool)  $row['recycle']
             );
         }
         $res->free();
@@ -106,7 +112,7 @@ class Blueprint extends Sellable {
     /**
      * Gets all necessary data from SQL
      * @return array
-     * @throws Exception when a typeID is not found
+     * @throws TypeIdNotFoundException when a typeID is not found
      */
     protected function queryAttributes() {
         $row = SDE::instance()->query(
@@ -114,6 +120,7 @@ class Blueprint extends Sellable {
             it.groupID,
             ig.categoryID, 
             it.typeName, 
+            it.volume,
             it.portionSize,
             it.basePrice,
             it.marketGroupID, 
@@ -161,7 +168,7 @@ class Blueprint extends Sellable {
         )->fetch_assoc();
         
         if (empty($row))
-            throw new Exception("typeID not found");
+            throw new TypeIdNotFoundException("typeID " . (int) $this->typeID ." not found");
         return $row;
     }
 
@@ -200,15 +207,15 @@ class Blueprint extends Sellable {
      * @param int $maxPriceDataAge the maximum price data age in seconds
      * @return float the buy price for default region as calculated in emdr.php, or basePrice if the BP cannot be sold 
      * on the market
-     * @throws Exception if maxPriceDataAge is set and the price data is too old
+     * @throws NoPriceDataAvailableException if no buy price available
+     * @throws PriceDataTooOldException if a maxPriceDataAge has been specified and the data is too old
      */
     public function getBuyPrice($maxPriceDataAge = null) {
         //some BPs cannot be sold on the market
-        if(empty($this->marketGroupID)){
+        if(empty($this->marketGroupID))
             return $this->basePrice;
-        } else {
+        else
             return parent::getBuyPrice($maxPriceDataAge);
-        }
     }
 
     /**
@@ -216,15 +223,15 @@ class Blueprint extends Sellable {
      * @param int $maxPriceDataAge the maximum price data age in seconds
      * @return float the sell price for default region as calculated in emdr.php, or basePrice if the BP cannot be sold 
      * on the market
-     * @throws Exception if maxPriceDataAge is set and the price data is too old
+     * @throws NoPriceDataAvailableException if no buy price available
+     * @throws PriceDataTooOldException if a maxPriceDataAge has been specified and the data is too old
      */
     public function getSellPrice($maxPriceDataAge = null) {
         //some BPs cannot be sold on the market
-        if(empty($this->marketGroupID)){
+        if(empty($this->marketGroupID))
             return $this->basePrice;
-        } else {
+        else
             return parent::getSellPrice($maxPriceDataAge);
-        }
     }
 
     /**
@@ -234,11 +241,11 @@ class Blueprint extends Sellable {
      * @param int $PE level of the BP; if left null, it is looked up in SDEUtil::getBpPeLevel()
      * @param boolean $recursive defines if components should be manufactured recursively
      * @return ManufactureData describing the manufacturing process
-     * @throws Exception if there is no manufacturing requirements data for this BP
+     * @throws NoManufacturingRequirementsException if there is no manufacturing requirements data for this BP
      */
     public function manufacture($units = 1, $ME = null, $PE = null, $recursive = true) {
         if (!isset($this->requirements[ProcessData::ACTIVITY_MANUFACTURING]))
-            throw new Exception('No manufacturing requirements data for this blueprint available');
+            throw new NoManufacturingRequirementsException('No manufacturing requirements data for this blueprint available');
         
         //Lookup default ME and PE levels for this BP if not set
         $utilClass = iveeCoreConfig::getIveeClassName('util');
@@ -275,11 +282,10 @@ class Blueprint extends Sellable {
             }
 
             //only apply extra material waste factor if that material is also a base material
-            if($mat['qua'] > $mat['bas'] AND $mat['bas'] > 0){
+            if($mat['qua'] > $mat['bas'] AND $mat['bas'] > 0)
                 $extraMaterialFactor = 1 + (0.25 - 0.05 * $utilClass::getSkillLevel(3388));
-            } else {
+            else
                 $extraMaterialFactor = 1;
-            }
             
             //Quantity needed for 1 batch (= portionSize). Apply regular waste factor to base materials. 
             //Apple extra material waste to extra materials. Also apply damage factor to all.
@@ -366,7 +372,7 @@ class Blueprint extends Sellable {
      * Returns raw requirements
      * @param int $activityID optional parameter that specifies for which activity the requirements should be returned.
      * @return array with the requirements
-     * @throws Exception if the given activityID is not found in the requirements array
+     * @throws ActivityIdNotFoundException if the given activityID is not found in the requirements array
      */
     public function getRequirements($activityID = null){
         if(is_null($activityID)){
@@ -375,7 +381,7 @@ class Blueprint extends Sellable {
             if(isset($this->requirements[$activityID])){
                 return $this->requirements[$activityID];
             } else {
-                throw new Exception("ActivityID not found.");
+                throw new ActivityIdNotFoundException("ActivityID " . (int) $activityID . " not found.");
             }
         }
     }
@@ -383,7 +389,6 @@ class Blueprint extends Sellable {
     /**
      * Returns an object representing the item produced by this Blueprint.
      * @return Manufacturable 
-     * @throws Exception if the productTypeID can't be found. This should never happen.
      */
     public function getProduct() {
         return SDE::instance()->getType($this->productTypeID);
@@ -471,13 +476,16 @@ class Blueprint extends Sellable {
     public function calcMaterialFactor($ME = null, $productionEfficiencySkill = null) {
         $utilClass = iveeCoreConfig::getIveeClassName('util');
         if(is_null($ME)) $ME = $utilClass::getBpMeLevel($this->typeID);
-        if(is_null($productionEfficiencySkill)) $productionEfficiencySkill = $utilClass::getSkillLevel(3388);
+        if(is_null($productionEfficiencySkill))
+            $productionEfficiencySkill = $utilClass::getSkillLevel(3388);
+        else
+            $utilClass::sanityCheckSkillLevel($productionEfficiencySkill);
         
-        if ($ME < 0) {
+        if ($ME < 0)
             $meMod = 1 - $ME;
-        } else {
+        else
             $meMod = 1 / (1 + $ME);
-        }
+
         return 1 + ($this->wasteFactor / 100) * $meMod + (0.25 - 0.05 * $productionEfficiencySkill);
     }
 
@@ -490,19 +498,26 @@ class Blueprint extends Sellable {
      * SDEUtil
      * @param float $implantMod defines implant dependant time modifiers. Optional.
      * @return int the time in seconds
+     * @throws InvalidParameterValueException if invalid parameters given
      */
     public function calcProductionTime($PE = null, $industrySkill = null, $slotMod = null, $implantMod = 1) {
         $utilClass = iveeCoreConfig::getIveeClassName('util');
         if(is_null($PE)) $PE = $utilClass::getBpPeLevel($this->typeID);
-        if(is_null($industrySkill)) $industrySkill = $utilClass::getSkillLevel(3380);        
+        if(is_null($industrySkill))
+            $industrySkill = $utilClass::getSkillLevel(3380);        
+        else
+            $utilClass::sanityCheckSkillLevel($industrySkill);
+
         if(is_null($slotMod))
             $slotMod = iveeCoreConfig::getUsePosManufacturing() ? iveeCoreConfig::getPosManufactureSlotTimeFactor() : 1;
+        if($implantMod > 1 OR $implantMod < 0.95) 
+            throw new InvalidParameterValueException("Implant factor needs to be between 0.95 and 1.0");
         
-        if ($PE < 0) {
+        if ($PE < 0)
             $peMod = $PE - 1;
-        } else {
+        else
             $peMod = $PE / (1 + $PE);
-        }
+
         return (int) round((1 - (0.04) * $industrySkill) * $implantMod * $slotMod * $this->productionTime 
                 * (1 - ($this->productivityModifier / $this->productionTime) * $peMod));
     }
@@ -515,15 +530,20 @@ class Blueprint extends Sellable {
      * SDEUtil 
      * @param float $implantMod defines implant dependant time modifiers. Optional.
      * @return int the time in seconds
+     * @throws InvalidParameterValueException if invalid parameters given
      */
     public function calcCopyTime($scienceSkill = null, $slotMod = null, $implantMod = 1) {
-        if(is_null($scienceSkill)){
-            $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        if(is_null($scienceSkill))
             $scienceSkill = $utilClass::getSkillLevel(3402);
-        }
-        if(is_null($slotMod)){
+        else
+            $utilClass::sanityCheckSkillLevel($scienceSkill);
+
+        if(is_null($slotMod))
             $slotMod = iveeCoreConfig::getUsePosCopying() ? iveeCoreConfig::getPosCopySlotTimeFactor() : 1;
-        }
+        if($implantMod > 1 OR $implantMod < 0.95) 
+            throw new InvalidParameterValueException("Implant factor needs to be between 0.95 and 1.0");
+        
         return (int) round(2 * ($this->researchCopyTime / $this->maxProductionLimit) * (1 - (0.05 * $scienceSkill)) 
                 * $slotMod * $implantMod);
     }
@@ -536,15 +556,20 @@ class Blueprint extends Sellable {
      * SDEUtil 
      * @param float $implantMod defines implant dependant time modifiers. Optional.
      * @return int the time in seconds
+     * @throws InvalidParameterValueException if invalid parameters given
      */
     public function calcPEResearchTime($researchSkill = null, $slotMod = null, $implantMod = 1){
-        if(is_null($researchSkill)){
-            $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        if(is_null($researchSkill))  
             $researchSkill = $utilClass::getSkillLevel(3403);
-        }
-        if(is_null($slotMod)){
+        else
+            $utilClass::sanityCheckSkillLevel($researchSkill);
+
+        if(is_null($slotMod))
             $slotMod = iveeCoreConfig::getUsePosPeResearch() ? iveeCoreConfig::getPosPeResearchSlotTimeFactor() : 1;
-        }
+        if($implantMod > 1 OR $implantMod < 0.95) 
+            throw new InvalidParameterValueException("Implant factor needs to be between 0.95 and 1.0");
+
         return (int)round($this->researchProductivityTime * (1 - 0.05 * $researchSkill) * $slotMod * $implantMod);
     }
     
@@ -556,16 +581,81 @@ class Blueprint extends Sellable {
      * SDEUtil 
      * @param float $implantMod defines implant dependant time modifiers. Optional.
      * @return int the time in seconds
+     * @throws InvalidParameterValueException if invalid parameters given
      */
     public function calcMEResearchTime($metallurgySkill = null, $slotMod = null, $implantMod = 1){
-        if(is_null($metallurgySkill)){
-            $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        if(is_null($metallurgySkill))
             $metallurgySkill = $utilClass::getSkillLevel(3409);
-        }
-        if(is_null($slotMod)){
+        else
+            $utilClass::sanityCheckSkillLevel($metallurgySkill);
+
+        if(is_null($slotMod))
             $slotMod = iveeCoreConfig::getUsePosMeResearch() ? iveeCoreConfig::getPosMeResearchSlotTimeFactor() : 1;
-        }
+        if($implantMod > 1 OR $implantMod < 0.95) 
+            throw new InvalidParameterValueException("Implant factor needs to be between 0.95 and 1.0");
+        
         return (int)round($this->researchMaterialTime * (1 - 0.05 * $metallurgySkill) * $slotMod * $implantMod);
+    }
+    
+    /**
+     * @return bool if the item is reprocessable. Blueprints never are.
+     */    
+    public function isReprocessable(){
+        return false;
+    }
+    
+    /**
+     * This method overwrites the inherited one from Type, as Blueprints are never reprocessable
+     * @param int $batchSize number of items being reprocessed
+     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
+     * @throws NotReprocessableException always
+     */
+    public function getReprocessingMaterialSet($batchSize, $effectiveYield){
+        throw new NotReprocessableException($this->typeName . ' is not reprocessable');
+    }
+    
+    /**
+     * Returns a MaterialSet object representing the reprocessing materials of the product
+     * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
+     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
+     * @return MaterialSet
+     * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not sane
+     */
+    public function getProductReprocessingMaterialSet($batchSize, $effectiveYield){
+        $portionSize = $this->getProduct()->getPortionSize();
+        if($batchSize < $portionSize OR $batchSize % $portionSize != 0) 
+            throw new InvalidParameterValueException('Recycling batch size needs to be multiple of ' . $portionSize);
+        if($effectiveYield > 1)
+            throw new InvalidParameterValueException('Effective reprocessing yield can never be > 1.0');
+        
+        $materialsClass = iveeCoreConfig::getIveeClassName('materials');
+        $rmat = new $materialsClass;
+        
+        //get the number of portions being reprocessed
+        $numPortions = $batchSize / $portionSize;
+        
+        //iterate over requirements
+        foreach ($this->getRequirements(ProcessData::ACTIVITY_MANUFACTURING) as $mat){
+            //skip skill requirements
+            if($mat['cat'] == 16) continue;
+            
+            //if recycle flag set, this ingredient is also automatically recycled when reprocessing
+            if($mat['rec']){
+                $rmat->addMaterialSet(
+                    SDE::instance()->getType($mat['typ'])
+                    ->getReprocessingMaterialSet($mat['qua'] * $numPortions, $effectiveYield)
+                );
+                continue;
+            }
+            
+            //skip if no baseMaterial
+            if($mat['bas'] < 1) continue;
+            
+            //add base material to reprocessing materials, account for portionSize
+            $rmat->addMaterial($mat['typ'], round($mat['bas'] * $effectiveYield) * $numPortions);
+        }
+        return $rmat;
     }
 }
 

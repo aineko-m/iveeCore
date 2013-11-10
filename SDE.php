@@ -72,10 +72,10 @@ class SDE {
                 iveeCoreConfig::getDbName(), 
                 iveeCoreConfig::getDbPort()
             );
-            if($db->connect_error){
+            if($db->connect_error)
                 exit('Fatal Error: ' . $db->connect_error . PHP_EOL);
-            }
-        }   
+        } elseif(!($db instanceof mysqli)) 
+            exit('Fatal Error: parameter given is not a mysqli object' . PHP_EOL);
         $this->db = $db;
         
         //ivee uses transactions so turn off autocommit
@@ -97,9 +97,8 @@ class SDE {
      * @return SDE
      */
     public static function instance($db = null) {
-        if (!isset(self::$instance)) {
+        if (!isset(self::$instance))
             self::$instance = new SDE($db);
-        }
         return self::$instance;
     }
     
@@ -163,34 +162,32 @@ class SDE {
      * @param object $object to be stored
      * @param string|int $key under which the object will be stored
      * @return boolean true on success
-     * @throws Exception if memcached has been disabled
+     * @throws MemcachedDisabledException if memcached has been disabled
      */
     public function storeInCache($object, $key){
-        if(iveeCoreConfig::getUseMemcached()){
+        if(iveeCoreConfig::getUseMemcached())
             return $this->memcached->set(iveeCoreConfig::getMemcachedPrefix() . $key, $object);
-        } else {
-            throw new Exception('Use of Memcached has been disabled in the configuration');
-        }
+        else
+            throw new MemcachedDisabledException('Use of Memcached has been disabled in the configuration');
     }
     
     /**
      * Gets object from Memcached.
      * @param string|int $key under which the object is stored
      * @return Object
-     * @throws Exception if memcached has been disabled or if key is not found
+     * @throws KeyNotFoundInMemcachedException if key is not found
+     * @throws MemcachedDisabledException if memcached has been disabled
      */
     public function getFromCache($key){
         if(iveeCoreConfig::getUseMemcached()){
             $obj = $this->memcached->get(iveeCoreConfig::getMemcachedPrefix() . $key);
-            if($this->memcached->getResultCode() == Memcached::RES_NOTFOUND){
-                throw new Exception("Key not found in memcached.");
-            }
+            if($this->memcached->getResultCode() == Memcached::RES_NOTFOUND)
+                throw new KeyNotFoundInMemcachedException("Key not found in memcached.");
             //count memcached hit
             $this->memcachedHit++;
             return $obj;
-        } else {
-            throw new Exception('Use of Memcached has been disabled in the configuration');
-        }
+        } else
+            throw new MemcachedDisabledException('Use of Memcached has been disabled in the configuration');
     }
     
     /**
@@ -199,11 +196,10 @@ class SDE {
      * @return boolean true on success or if memcached has been disabled
      */
     public function invalidateCache($key){
-        if(iveeCoreConfig::getUseMemcached()){
+        if(iveeCoreConfig::getUseMemcached())
             return $this->memcached->delete(iveeCoreConfig::getMemcachedPrefix() . $key);
-        } else {
+        else
             return true;
-        }
     }
 
     /**
@@ -211,7 +207,7 @@ class SDE {
      * Tries caches and instantiates new objects if necessary.
      * @param int $typeID of requested Type
      * @return Type the requested Type or subclass object
-     * @throws Exception if the typeID is not found
+     * @throws TypeIdNotFoundException if the typeID is not found
      */
     public function getType($typeID) {
         //try php Type array first
@@ -227,7 +223,7 @@ class SDE {
             if(iveeCoreConfig::getUseMemcached()){
                 try{
                     $type = $this->getFromCache('type_' . $typeID);
-                } catch(Exception $e){
+                } catch(KeyNotFoundInMemcachedException $e){
                     //go to DB
                     $type = $typeClass::factory($typeID);
                     //store type object in memcached
@@ -246,43 +242,53 @@ class SDE {
     
     /**
      * Returns Type object.
-     * Loads all type Names from DB or memached to PHP when first used. 
+     * Loads all type names from DB or memached to PHP when first used. 
      * The names use a few MB of RAM, so avoid if you have little available.
      * @param string $typeName of requested Type
      * @return Type the requested Type or subclass object
-     * @throws Exception if type name is not found
+     * @throws TypeNameNotFoundException if type name is not found
      */
     public function getTypeByName($typeName){
         //check if names have been loaded yet
         if(empty($this->typeNames)){
-            //try memcached first
-            try{
-                $this->typeNames = $this->getFromCache('typeNames');
-            } 
-            //go to DB
-            catch(Exception $e){
-                $startTime = microtime(true);
-                $res = $this->db->query(
-                    "SELECT typeID, typeName 
-                    FROM invTypes
-                    WHERE published = 1;"
-                );
-                $this->addQueryTime(microtime(true) - $startTime);
-                while ($row = $res->fetch_assoc()) {
-                    $this->typeNames[$row['typeName']] = (int) $row['typeID'];
+            //try memcached
+            if(iveeCoreConfig::getUseMemcached()){
+                try{
+                    $this->typeNames = $this->getFromCache('typeNames');
+                } catch(KeyNotFoundInMemcachedException $e){
+                    //load names from DB
+                    $this->loadTypeNames();
+                    //store in memcached
+                    $this->storeInCache($this->typeNames, 'typeNames');
                 }
-                $res->free();
-                //store in memcached
-                $this->storeInCache($this->typeNames, 'typeNames');
+            } else {
+                //load names from DB
+                $this->loadTypeNames();
             }
         }
         
         //return proper Type object
-        if(isset($this->typeNames[$typeName])){
+        if(isset($this->typeNames[$typeName]))
             return $this->getType($this->typeNames[$typeName]);
-        } else {
-            throw new Exception("typeID not found");
+        else
+            throw new TypeNameNotFoundException("type name not found");
+    }
+    
+    /**
+     * Loads all type names from DB to PHP 
+     */
+    protected function loadTypeNames(){
+        $startTime = microtime(true);
+        $res = $this->db->query(
+            "SELECT typeID, typeName 
+            FROM invTypes
+            WHERE published = 1;"
+        );
+        $this->addQueryTime(microtime(true) - $startTime);
+        while ($row = $res->fetch_assoc()) {
+            $this->typeNames[$row['typeName']] = (int) $row['typeID'];
         }
+        $res->free();
     }
 
     /**

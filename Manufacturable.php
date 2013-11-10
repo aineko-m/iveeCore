@@ -18,7 +18,7 @@ class Manufacturable extends Sellable {
     /**
      * Gets all necessary data from SQL
      * @return array
-     * @throws Exception when a typeID is not found
+     * @throws TypeIdNotFoundException when a typeID is not found
      */
     protected function queryAttributes() {
         $row = SDE::instance()->query(
@@ -26,6 +26,7 @@ class Manufacturable extends Sellable {
             it.groupID, 
             ig.categoryID,
             it.typeName, 
+            it.volume,
             it.portionSize,
             it.basePrice,
             it.marketGroupID, 
@@ -73,7 +74,7 @@ class Manufacturable extends Sellable {
         )->fetch_assoc();
         
         if (empty($row))
-            throw new Exception("typeID not found");
+            throw new TypeIdNotFoundException("typeID ". (int) $this->typeID . " not found");
         return $row;
     }
 
@@ -93,6 +94,17 @@ class Manufacturable extends Sellable {
      */
     public function getBlueprint() {
         return SDE::instance()->getType($this->producedFromBlueprintID);
+    }
+    
+    /**
+     * Returns a MaterialSet object representing the reprocessing materials of this item
+     * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
+     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
+     * @return MaterialSet
+     * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not sane
+     */
+    public function getReprocessingMaterialSet($batchSize, $effectiveYield){
+        return $this->getBlueprint()->getProductReprocessingMaterialSet($batchSize, $effectiveYield);
     }
 }
 

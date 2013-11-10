@@ -32,6 +32,11 @@ class Type {
     protected $typeName;
     
     /**
+     * @var float $volume the space the item occupies
+     */
+    protected $volume;
+    
+    /**
      * @var int $portionSize the portion size of this Type; defines the minimum size of production batches.
      */
     protected $portionSize;
@@ -40,6 +45,11 @@ class Type {
      * @var int $basePrice the base price of this Type.
      */
     protected $basePrice;
+    
+    /**
+     * @var array $requirements holds reprocessing materials
+     */
+    protected $requirements;
 
     /**
      * Constructor.
@@ -55,19 +65,39 @@ class Type {
         $row = $this->queryAttributes();
         //set data to object attributes
         $this->setAttributes($row);
+        
+        //get reprocessing materials, if any
+        $res = SDE::instance()->query(
+            'SELECT 
+            materialTypeID, 
+            quantity 
+            FROM invTypeMaterials 
+            WHERE typeID = ' . (int) $this->typeID . ';'
+        );
+        if($res->num_rows > 0){
+            $this->requirements = array();
+            //add materials to the requirements array, following the schema of Blueprint
+            while ($row = $res->fetch_assoc()){
+                $this->requirements[ProcessData::ACTIVITY_MANUFACTURING][] = array(
+                    'typ' => (int) $row['materialTypeID'],
+                    'qua' => (int) $row['quantity']
+                );
+            }
+        }
     }
 
     /**
      * Gets all necessary data from SQL
      * @return array
-     * @throws Exception when a typeID is not found
+     * @throws TypeIdNotFoundException when a typeID is not found
      */
     protected function queryAttributes() {
         $row = SDE::instance()->query(
             "SELECT 
             it.groupID, 
             categoryID, 
-            typeName, 
+            typeName,
+            volume,
             portionSize, 
             basePrice 
 	    FROM invTypes as it
@@ -77,7 +107,7 @@ class Type {
         )->fetch_assoc();
 
         if (empty($row))
-            throw new Exception("typeID not found");
+            throw new TypeIdNotFoundException("typeID " . (int) $this->typeID ." not found");
         return $row;
     }
 
@@ -89,6 +119,7 @@ class Type {
         $this->groupID     = (int) $row['groupID'];
         $this->categoryID  = (int) $row['categoryID'];
         $this->typeName    = $row['typeName'];
+        $this->volume      = (float) $row['volume'];
         $this->portionSize = (int) $row['portionSize'];
         $this->basePrice   = (int) $row['basePrice'];
     }
@@ -99,13 +130,13 @@ class Type {
      * @param int $typeID of the Type object
      * @param array $subtypeInfo optional parameter with the DB data used to decide Type subclass
      * @return Type the requested Type or subclass object
-     * @throws Exception when a typeID is not found
+     * @throws TypeIdNotFoundException when a typeID is not found
      */
     public static function factory($typeID, $subtypeInfo = NULL) {
         //get type decision data if not given
-        if(is_null($subtypeInfo)){
+        if(is_null($subtypeInfo))
             $subtypeInfo = self::getSubtypeInfo((int)$typeID);
-        }
+
         //decide type
         $subtype = self::decideType($subtypeInfo);
         
@@ -118,7 +149,7 @@ class Type {
      * to instantiate a certain type ID.
      * @param int $typeID of the Type object
      * @return array with the type decision data from the SDE DB
-     * @throws Exception when a typeID is not found
+     * @throws TypeIdNotFoundException when a typeID is not found
      */
     protected static function getSubtypeInfo($typeID) {
         $res = SDE::instance()->query(
@@ -141,7 +172,7 @@ class Type {
         $row = $res->fetch_assoc();
         $res->free();
         if (empty($row))
-            throw new Exception("typeID " . (int) $typeID . " not found");
+            throw new TypeIdNotFoundException("typeID " . (int) $typeID . " not found");
         return $row;
     }
 
@@ -201,6 +232,13 @@ class Type {
     }
     
     /**
+     * @return float volume occupied by item
+     */
+    public function getVolume() {
+        return $this->volume;
+    }
+    
+    /**
      * @return int portion size
      */
     public function getPortionSize() {
@@ -212,6 +250,42 @@ class Type {
      */    
     public function getBasePrice(){
         return $this->basePrice;
+    }
+    
+    /**
+     * @return bool if the item is reprocessable
+     */    
+    public function isReprocessable(){
+        if(empty($this->requirements))
+            return false;
+        else
+            return true;
+    }
+    
+    /**
+     * Returns a MaterialSet object representing the reprocessing materials of the item
+     * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
+     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
+     * @return MaterialSet
+     * @throws NotReprocessableException if item is not reprocessable
+     * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not sane
+     */
+    public function getReprocessingMaterialSet($batchSize, $effectiveYield){
+        if(empty($this->requirements))
+            throw new NotReprocessableException($this->typeName . ' is not reprocessable');
+        if($batchSize < $this->portionSize OR $batchSize % $this->portionSize != 0) 
+            throw new InvalidParameterValueException('Recycling batch size needs to be multiple of ' . $this->portionSize);
+        if($effectiveYield > 1)
+            throw new InvalidParameterValueException('Effective reprocessing yield can never be > 1.0');
+        
+        $materialsClass = iveeCoreConfig::getIveeClassName('materials');
+        $rmat = new $materialsClass;
+        
+        $numPortions = $batchSize / $this->portionSize;
+        foreach ($this->requirements[ProcessData::ACTIVITY_MANUFACTURING] as $mat) {
+            $rmat->addMaterial($mat['typ'], $mat['qua'] * $numPortions);
+        }
+        return $rmat;
     }
 }
 

@@ -1,0 +1,15 @@
+This file lists major changes in iveeCore versions.
+
+Version 1.1 - November 10, 2013
+-------------------------------
+- Added reprocessing calculations for Type objects
+- Added volume attribute to Type classes and total volume calculation to process classes
+- Moved material requirements from process class to its own MaterialSet class
+- Moved skill requirements from process class to its own SkillSet class
+- Added custom Exceptions
+- More parameter sanity checks
+- Note that the file iveeCoreConfig_template.php and the store procedure iveeGetRequirements() were changed
+
+Version 1.0 - November 2, 2013
+------------------------------
+- Initial release.

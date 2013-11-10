@@ -19,7 +19,7 @@ class InventableBlueprint extends Blueprint {
     /**
      * Gets all necessary data from SQL
      * @return array
-     * @throws Exception when a typeID is not found
+     * @throws TypeIdNotFoundException when a typeID is not found
      */
     protected function queryAttributes() {
         $row = SDE::instance()->query(
@@ -27,6 +27,7 @@ class InventableBlueprint extends Blueprint {
             it.groupID, 
             ig.categoryID,
             it.typeName, 
+            it.volume,
             it.portionSize,
             it.basePrice,
             it.marketGroupID, 
@@ -87,7 +88,7 @@ class InventableBlueprint extends Blueprint {
         )->fetch_assoc();
         
         if (empty($row))
-            throw new Exception("typeID not found");
+            throw new TypeIdNotFoundException("typeID ". (int) $this->typeID . " not found");
         return $row;
     }
 
@@ -111,18 +112,18 @@ class InventableBlueprint extends Blueprint {
     
     /**
      * Invetanble blueprints can't be sold on the market
-     * @throws Exeption 
+     * @throws NotOnMarketException 
      */
     public function getBuyPrice() {
-        throw new Exception($this->typeName." can't be bought on the market.");
+        throw new NotOnMarketException($this->typeName." can't be bought on the market.");
     }
     
     /**
      * Invetanble blueprints can't be sold on the market
-     * @throws Exeption 
+     * @throws NotOnMarketException 
      */
     public function getSellPrice() {
-        throw new Exception($this->typeName." can't be sold on the market.");
+        throw new NotOnMarketException($this->typeName." can't be sold on the market.");
     }
 
     /**

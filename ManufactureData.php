@@ -93,18 +93,13 @@ class ManufactureData extends ProcessData {
         echo "Total Materials for " . $this->producesQuantity . "x " . SDE::instance()->getType($this->producesTypeID)->getName() . ":" . PHP_EOL;
 
         //iterate over materials
-        foreach ($this->getTotalMaterials() as $typeID => $amount){
-            echo $amount .'x '.SDE::instance()->getType($typeID)->getName().PHP_EOL;
+        foreach ($this->getTotalMaterialSet()->getMaterials() as $typeID => $amount){
+            echo $amount . 'x ' . SDE::instance()->getType($typeID)->getName() . PHP_EOL;
         }
-        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialCost()) . "ISK" . PHP_EOL;
+        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost()) . "ISK" . PHP_EOL;
         echo "Total Slot Cost: "     . $utilClass::quantitiesToReadable($this->getTotalSlotCost()) . "ISK" . PHP_EOL;
         echo "Total Cost: "          . $utilClass::quantitiesToReadable($this->getTotalCost()) . "ISK" . PHP_EOL;
-        echo "Total Profit: ";
-        try{
-            echo $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
-        } catch (Exception $e){
-            echo $e->getMessage() . PHP_EOL;
-        }
+        echo "Total Profit: "        . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
     }
 }
 

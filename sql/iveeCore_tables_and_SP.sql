@@ -125,7 +125,8 @@ SELECT
 	ig.categoryID,
 	(rtr.quantity + IFNULL(itm.quantity, 0)) quantity,
 	rtr.damagePerJob,
-	itm.quantity as baseMaterial
+	itm.quantity as baseMaterial,
+	rtr.recycle
 FROM invBlueprintTypes AS b
 INNER JOIN ramTypeRequirements AS rtr
 	ON rtr.typeID = b.blueprintTypeID
@@ -146,8 +147,9 @@ SELECT
 	itm.materialTypeID requiredTypeID, 
 	ig.categoryID,
 	(itm.quantity - IFNULL(sub.quantity * sub.recycledQuantity, 0)) quantity,                  
-	1 damagePerJob,                  
-	(itm.quantity - IFNULL(sub.quantity * sub.recycledQuantity, 0)) as baseMaterial                   
+	1 damagePerJob,
+	(itm.quantity - IFNULL(sub.quantity * sub.recycledQuantity, 0)) as baseMaterial,
+	0 recycle
 FROM invBlueprintTypes AS b
 INNER JOIN invTypeMaterials AS itm
 	ON itm.typeID = b.productTypeID
@@ -188,7 +190,8 @@ SELECT DISTINCT
    ig.categoryID,
 	sl.level quantity, 
 	0 damagePerJob, 
-	NULL baseMaterial
+	NULL baseMaterial,
+	0 recycle
 FROM ramTypeRequirements r, invBlueprintTypes bt, dgmTypeAttributes dta
 LEFT JOIN (
 	select r.requiredTypeID, COALESCE(dta.valueInt, dta.valueFloat) level, bt.blueprintTypeID

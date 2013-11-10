@@ -68,9 +68,9 @@ class EmdrConsumer {
      * @return EmdrConsumer
      */
     public static function instance() {
-        if (!isset(self::$instance)) {
+        if (!isset(self::$instance))
             self::$instance = new EmdrConsumer;
-        }
+
         return self::$instance;
     }
     
@@ -105,7 +105,7 @@ class EmdrConsumer {
             AND t.published = 1;"
         );
         
-        for(;$tmp = $res->fetch_array(MYSQL_NUM);){
+        while($tmp = $res->fetch_array(MYSQL_NUM)){
             $this->historyUpdateTimestamps[(int) $tmp[0]] = (int) (($tmp[1] > 0) ? $tmp[1] : 0);
             $this->priceUpdateTimestamps[(int) $tmp[0]]   = (int) (($tmp[2] > 0) ? $tmp[2] : 0);
             $this->latestHistDates[(int) $tmp[0]]         = (int) (($tmp[3] > 0) ? $tmp[3] : 0);
@@ -161,72 +161,95 @@ class EmdrConsumer {
  
                 //skip data with impossible generation date. Make sure your systems clock is correct.
                 if($generatedAt > time()){
-                    if(VERBOSE > 2) echo '- skipping data for typeID=' . $typeID . ', generated in the future: ' . $rowset->generatedAt . PHP_EOL;
+                    if(VERBOSE > 2) 
+                        echo '- skipping data for typeID=' . $typeID . ', generated in the future: ' . $rowset->generatedAt . PHP_EOL;
                     continue;
                 }
                 
                 //order data
-                if($market_data->resultType == 'orders'){
-                    //skip if data is older than newest generatedAt/priceUpdateTimestamp
-                    if($generatedAt < $this->priceUpdateTimestamps[$typeID]){
-                        if(VERBOSE > 2) echo '- skipping old price data for typeID=' . $typeID . ', generated at ' . $rowset->generatedAt . PHP_EOL;
-                        continue;
-                    }
-
-                    //process price data
-                    $epu = new EmdrPriceUpdate(
-                        $typeID, 
-                        $regionID, 
-                        $generatedAt,
-                        $rowset->rows
-                    );
-                    //save data to DB, get latest data date
-                    $dataDate = $epu->insertIntoDB();
-                    
-                    //update array with data generation timestamp
-                    $this->priceUpdateTimestamps[$typeID] = $generatedAt;
-                    
-                    //update array with latest data date
-                    $this->latestPriceDates[$typeID] = $dataDate;
-                } 
+                if($market_data->resultType == 'orders')
+                    $this->handleOrderData($typeID, $regionID, $generatedAt, $rowset);
                 //history data
-                elseif($market_data->resultType == 'history') {
-                    //skip if data is older than newest generatedAt/historyUpdateTimestamp
-                    if($generatedAt < $this->historyUpdateTimestamps[$typeID]){
-                        if(VERBOSE > 2) echo '- skipping old history data for typeID=' . $typeID . ', generated at ' . $rowset->generatedAt . PHP_EOL;
-                        continue;
-                    }
-                    
-                    //process history data
-                    try{
-                        $ehu = new EmdrHistoryUpdate(
-                            $typeID, 
-                            $regionID, 
-                            $generatedAt, 
-                            $this->latestHistDates[$typeID], 
-                            $rowset->rows
-                        );
-                    } catch(Exception $e){
-                        continue;
-                    }
-                    $dataDate = $ehu->insertIntoDB();
-                    
-                    //update array with data generation timestamp
-                    $this->historyUpdateTimestamps[$typeID] = $generatedAt;
-                    
-                    //update array with latest data date
-                    $this->latestHistDates[$typeID] = $dataDate;
-                } else {
+                elseif($market_data->resultType == 'history')
+                    $this->handleHistoryData($typeID, $regionID, $generatedAt, $rowset);
+                //we received something else
+                else
                     if(VERBOSE > 2) echo '- skipping unknown data type ' . $market_data->resultType . PHP_EOL;
-                    continue;   
-                }
             }
         }
+    }
+    
+    /**
+     * Handles the processing and DB insertion of order data
+     * @param $typeID of the item the data refers to
+     * @param $regionID of the region the data refers to
+     * @param $generatedAt the unix timestamp of the moment the data set was generated at an uploader client
+     * @param $rowset the raw market data
+     */
+    protected function handleOrderData($typeID, $regionID, $generatedAt, $rowset){
+        //skip if data is older than newest generatedAt/priceUpdateTimestamp
+        if($generatedAt < $this->priceUpdateTimestamps[$typeID]){
+            if(VERBOSE > 2) 
+                echo '- skipping old price data for typeID=' . $typeID . ', generated at ' . $rowset->generatedAt . PHP_EOL;
+            return;
+        }
+
+        //process price data
+        $epu = new EmdrPriceUpdate(
+            $typeID, 
+            $regionID, 
+            $generatedAt,
+            $rowset->rows
+        );
+        //save data to DB, get latest data date
+        $dataDate = $epu->insertIntoDB();
+
+        //update array with data generation timestamp
+        $this->priceUpdateTimestamps[$typeID] = $generatedAt;
+
+        //update array with latest data date
+        $this->latestPriceDates[$typeID] = $dataDate;
+    }
+    
+    /**
+     * Handles the processing and DB insertion of history data
+     * @param $typeID of the item the data refers to
+     * @param $regionID of the region the data refers to
+     * @param $generatedAt the unix timestamp of the moment the data set was generated at an uploader client
+     * @param $rowset the raw market data
+     */
+    protected function handleHistoryData($typeID, $regionID, $generatedAt, $rowset){
+        //skip if data is older than newest generatedAt/historyUpdateTimestamp
+        if($generatedAt < $this->historyUpdateTimestamps[$typeID]){
+            if(VERBOSE > 2) 
+                echo '- skipping old history data for typeID=' . $typeID . ', generated at ' . $rowset->generatedAt . PHP_EOL;
+            return;
+        }
+
+        //process history data
+        try{
+            $ehu = new EmdrHistoryUpdate(
+                $typeID, 
+                $regionID, 
+                $generatedAt, 
+                $this->latestHistDates[$typeID], 
+                $rowset->rows
+            );
+        } catch(NoRelevantDataException $e){
+            return;
+        }
+        $dataDate = $ehu->insertIntoDB();
+
+        //update array with data generation timestamp
+        $this->historyUpdateTimestamps[$typeID] = $generatedAt;
+
+        //update array with latest data date
+        $this->latestHistDates[$typeID] = $dataDate;
     }
 }
 
 /**
- * EmdrHistoryUpdate handles history data
+ * EmdrHistoryUpdate handles history data updates
  */
 class EmdrHistoryUpdate {
     
@@ -276,9 +299,8 @@ class EmdrHistoryUpdate {
             }
         }
         $this->rows = $rows;
-        if(count($this->rows) < 1){
-            throw new Exception("0 relevant history rows to process");
-        }
+        if(count($this->rows) < 1)
+            throw new NoRelevantDataException("0 relevant history rows to process");
     }
     
     /**
@@ -335,7 +357,7 @@ class EmdrHistoryUpdate {
 }
 
 /**
- * EmdrPriceUpdate handles price data
+ * EmdrPriceUpdate handles price/order data updates
  */
 class EmdrPriceUpdate {
     
@@ -406,11 +428,10 @@ class EmdrPriceUpdate {
         $sdata = array();
         $bdata = array();
         foreach($orders as $order){
-            if($order[6] == 1){
+            if($order[6] == 1)
                 $bdata[] = $order;
-            } else{
+            else
                 $sdata[] = $order;
-            }
         }
         
         //sort orders: sell ASC, buy DESC
@@ -435,12 +456,11 @@ class EmdrPriceUpdate {
             $this->averages['avgTx']  = (float)$tmp[1];
         }
         //if vol or tx are below 1 unit, set to 1 unit for the purpose of calculations
-        if(!isset($this->averages['avgVol']) OR $this->averages['avgVol'] < 1){
+        if(!isset($this->averages['avgVol']) OR $this->averages['avgVol'] < 1)
             $this->averages['avgVol'] = 1;
-        }
-        if(!isset($this->averages['avgTx']) OR $this->averages['avgTx'] < 1){
+
+        if(!isset($this->averages['avgTx']) OR $this->averages['avgTx'] < 1)
             $this->averages['avgTx'] = 1;
-        }
         
         //estimate realistic prices
         $sellStats = self::getPriceStats($sdata, $this->averages, $this->generatedAt);

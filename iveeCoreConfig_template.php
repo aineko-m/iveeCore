@@ -13,6 +13,7 @@
 
 //include all required classes. If you extended iveeCore classes, you'll want to add them here.
 $iveeCoreClassPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'iveeCore'.DIRECTORY_SEPARATOR;
+require_once($iveeCoreClassPath . 'iveeCoreExceptions.php');
 require_once($iveeCoreClassPath . 'SDE.php');
 require_once($iveeCoreClassPath . 'Type.php');
 require_once($iveeCoreClassPath . 'Sellable.php');
@@ -26,6 +27,8 @@ require_once($iveeCoreClassPath . 'ManufactureData.php');
 require_once($iveeCoreClassPath . 'CopyData.php');
 require_once($iveeCoreClassPath . 'InventionData.php');
 require_once($iveeCoreClassPath . 'SDEUtil.php');
+require_once($iveeCoreClassPath . 'MaterialSet.php');
+require_once($iveeCoreClassPath . 'SkillSet.php');
 
 //eve runs on UTC time
 date_default_timezone_set('UTC');
@@ -103,6 +106,7 @@ class iveeCoreConfig{
     protected static $MAX_PRICE_DATA_AGE = 86400; //1 day
 
     //add all itemID => quantity consumed hourly by POS(es) etc.
+    //this is used to calculate an approximate cost for using POS slots 
     protected static $hourlyMaterials = array(
         4051 => 40, //caldari fuel block
         24593 => 1  //caldari empire starbase charter
@@ -121,7 +125,9 @@ class iveeCoreConfig{
         'manufacturedata' => 'ManufactureData',
         'copydata'        => 'CopyData',
         'inventiondata'   => 'InventionData',
-        'util'            => 'SDEUtil'
+        'util'            => 'SDEUtil',
+        'materials'       => 'MaterialSet',
+        'skills'          => 'SkillSet'
     );
     
     ////////////////////////////

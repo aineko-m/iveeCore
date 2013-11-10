@@ -41,7 +41,7 @@ class Decryptor extends Sellable {
      * Use SDE->getType() to instantiate Decryptor objects.
      * @param int typeID of the Decryptor object
      * @return Decryptor
-     * @throws Exception when a typeID is not found or when loading Decryptor data fails
+     * @throws UnexpectedDataException when loading Decryptor data fails
      */
     protected function __construct($typeID) {
         //call parent constructor
@@ -73,7 +73,7 @@ class Decryptor extends Sellable {
                     $this->runModifier = (int) $row['valueFloat'];
                     break;
                 default:
-                    throw new Exception("Error loading Decryptor data.");
+                    throw new UnexpectedDataException("Error loading Decryptor data.");
             }
         }
     }
@@ -109,7 +109,7 @@ class Decryptor extends Sellable {
     /**
      * @param int groupID specifies the decryptor group to return
      * @return array with the decryptor IDs
-     * @throws Exception if decryptor group is not found
+     * @throws InvalidDecryptorGroupException if decryptor group is not found
      */
     public static function getIDsFromGroup($groupID) {
         //lazy load data from DB
@@ -126,8 +126,25 @@ class Decryptor extends Sellable {
         }
         
         if (!isset(self::$decryptorGroups[$groupID]))
-            throw new Exception("Decryptor group " . $groupID . " not found");
+            throw new InvalidDecryptorGroupException("Decryptor group " . (int)$groupID . " not found");
         return self::$decryptorGroups[$groupID];
+    }
+    
+    /**
+     * @return bool if the item is reprocessable. Decryptors never are.
+     */    
+    public function isReprocessable(){
+        return false;
+    }
+    
+    /**
+     * This method overwrites the inherited one from Type, as decryptors are never reprocessable
+     * @param int $batchSize number of items being reprocessed
+     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
+     * @throws NotReprocessableException always
+     */
+    public function getReprocessingMaterialSet($batchSize, $effectiveYield){
+        throw new NotReprocessableException($this->typeName . ' is not reprocessable');
     }
 }
 

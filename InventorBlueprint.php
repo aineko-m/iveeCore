@@ -31,7 +31,7 @@ class InventorBlueprint extends Blueprint {
      * Use SDE->getType() to instantiate InventorBlueprint objects.
      * @param int $typeID of the Type object
      * @return InventorBlueprint
-     * @throws Exception if typeID is not found
+     * @throws TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($typeID) {
         parent::__construct($typeID);
@@ -94,6 +94,10 @@ class InventorBlueprint extends Blueprint {
      * @param int|string $inputBPCRuns the number of input runs on the BPC, 'max' for maximum runs.
      * @param boolean $recursive defines if manufacturables should be build recursively
      * @return InventionData 
+     * @throws NotInventableException if the specified blueprint can't be invented from this
+     * @throws InvalidParameterValueException if inputBPCRuns exceeds limit
+     * @throws WrongTypeException if decryptorID isn't a decryptor
+     * @throws InvalidDecryptorGroupException if a non-matching decryptor is specified
      */
     public function invent($inventedBpTypeID = null, $decryptorId = null, $inputBPCRuns = 1, $recursive = true) {
         //if no result BP ID is given, set to first available
@@ -102,7 +106,7 @@ class InventorBlueprint extends Blueprint {
         
         //check if the given BP can be invented from this
         elseif(!in_array ($inventedBpTypeID, $this->inventsBlueprintID))
-            throw new Exception("Specified blueprint can't be invented from this blueprint.");
+            throw new NotInventableException("Specified blueprint can't be invented from this blueprint.");
         
         //convert 'max' into maximum number of runs
         if ($inputBPCRuns == 'max')
@@ -110,7 +114,7 @@ class InventorBlueprint extends Blueprint {
         
         //check the number of runs on BPC
         elseif ($inputBPCRuns > $this->maxProductionLimit OR $inputBPCRuns < 1)
-            throw new Exception('Input BPC runs exceeds limit');
+            throw new InvalidParameterValueException('Input BPC runs exceeds limit');
 
         $sde = SDE::instance();
         
@@ -123,11 +127,11 @@ class InventorBlueprint extends Blueprint {
             
             //check if decryptorID is actually a decryptor
             if (!($decryptor instanceof Decryptor))
-                throw new Exception('typeID ' . $decryptorId . ' is not a Decryptor');
+                throw new WrongTypeException('typeID ' . $decryptorId . ' is not a Decryptor');
             
             //check if decryptor group matches blueprint
             if ($decryptor->getGroupID() != $this->decryptorGroupID)
-                throw new Exception('Given decryptor does not match blueprint race');
+                throw new InvalidDecryptorGroupException('Given decryptor does not match blueprint race');
             
             //instantiate invention data class with all required parameters
             $id = new $inventionDataClass(
