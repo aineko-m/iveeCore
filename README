@@ -125,12 +125,13 @@ print_r($manuData);
 //print materials, cost and profits for this process
 $manuData->printData();
 
-//get the data for making a max run Damage Control I BPC copy, inventing from it with a decryptor and building from the
-//resulting T2 BPC, recursively building the necessary components
+//get the data for making a max run Damage Control I BPC copy, inventing from it with a 
+//decryptor and building from the resulting T2 BPC, recursively building the necessary 
+//components
 $processData = $sde->getTypeByName('Damage Control II Blueprint')->copyInventManufacture(21583, 'max', true);
 
-//get the raw profit for running an Unrefined Hyperflurite Reaction for 30 days, taking into account the refining and 
-//material feedback steps
+//get the raw profit for running an Unrefined Hyperflurite Reaction for 30 days, taking
+//into account the refining and material feedback steps
 $reactionProcessData = $sde->getTypeByName('Unrefined Hyperflurite Reaction')->react(24 * 30, true, true);
 print_r($reactionProcessData->getProfit());
 
