@@ -236,9 +236,10 @@ class Sellable extends Type {
 
     /**
      * Returns the complete history for given region and time range.
-     * @param int $regionID optional parameter, specifies the regionID for which data should be returned. If left null, 
-     * the default regionID is used. 
-     * @param string $fromDate in format YYYY-mm-dd, optional parameter. If left null, a date 90 days ago will be used.
+     * @param int $regionID optional parameter, specifies the regionID for which data should be returned. 
+     * If left null, the default regionID is used. 
+     * @param string $fromDate in format YYYY-mm-dd, optional parameter. 
+     * If left null, a date 90 days ago will be used.
      * @param string $toDate in format YYYY-mm-dd, optional parameter. If left null, the current date will be used.
      * @return array
      * @throws NotOnMarketException if the item is not actually sellable (child classes)
@@ -349,7 +350,8 @@ class Sellable extends Type {
     }
     
     /**
-     * @return int average time passed since update for buy orders within 5% of the buyPrice. A measure of competition.
+     * @return int average time passed since update for buy orders within 5% of the buyPrice. 
+     * A measure of market competition.
      * @throws NotOnMarketException if the item is not actually sellable (child classes)
      */
     public function getAvgBuy5OrderAge(){
@@ -359,7 +361,8 @@ class Sellable extends Type {
     }
 
     /**
-     * @return int average time passed since update for sell orders within 5% of the sellPrice. A measure of competition.
+     * @return int average time passed since update for sell orders within 5% of the sellPrice. 
+     * A measure of market competition.
      * @throws NotOnMarketException if the item is not actually sellable (child classes)
      */
     public function getAvgSell5OrderAge(){

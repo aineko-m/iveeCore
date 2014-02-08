@@ -4,9 +4,9 @@
  * ProcessData is the base class for holding information about an industrial process. This class has not been made 
  * abstract so it can be used to aggregate multiple ProcessData objects ("shopping cart" functionality).
  * 
- * Note that some methods have special-casing for InventionData objects. This is due to the design decision of making
- * "invention attempt" cases override the normal inherited methods while the "invention success" cases are defined
- * explicitly as new methods, which is less error prone.
+ * Note that some methods have special-casing for InventionProcessData objects. This is due to the design decision of 
+ * making "invention attempt" cases override the normal inherited methods while the "invention success" cases are 
+ * defined explicitly as new methods, which is less error prone.
  *
  * @author aineko-m <Aineko Macx @ EVE Online>
  * @license https://github.com/aineko-m/iveeCore/blob/master/LICENSE
@@ -26,7 +26,7 @@ class ProcessData {
     /**
      * @var int $activityID of this process.
      */
-    protected $activity = 0;
+    protected $activityID = 0;
     
     /**
      * @var int $producesTypeID the resulting item of this process.
@@ -44,12 +44,12 @@ class ProcessData {
     protected $processTime = 0;
     
     /**
-     * @var SkillSet $skills an object defining the minimum required skills to perform this activity.
+     * @var SkillMap $skills an object defining the minimum required skills to perform this activity.
      */
     protected $skills;
     
     /**
-     * @var MaterialSet $materials object
+     * @var MaterialMap $materials object holding required materials and amounts
      */
     protected $materials;
     
@@ -78,10 +78,10 @@ class ProcessData {
      */
     public function addMaterial($typeID, $amount) {
         if(!isset($this->materials)){
-            $materialClass = iveeCoreConfig::getIveeClassName('materials');
+            $materialClass = iveeCoreConfig::getIveeClassName('MaterialMap');
             $this->materials = new $materialClass;
         }
-        $this->getMaterialSet()->addMaterial($typeID, $amount);
+        $this->getMaterialMap()->addMaterial($typeID, $amount);
     }
     
     /**
@@ -92,10 +92,10 @@ class ProcessData {
      */
     public function addSkill($skillID, $level) {
         if(!isset($this->skills)){
-            $skillClass = iveeCoreConfig::getIveeClassName('skills');
+            $skillClass = iveeCoreConfig::getIveeClassName('SkillMap');
             $this->skills = new $skillClass;
         }
-        $this->getSkillSet()->addSkill($skillID, $level);
+        $this->getSkillMap()->addSkill($skillID, $level);
     }
     
     /**
@@ -113,8 +113,8 @@ class ProcessData {
      * Returns the activityID of the process
      * @return int
      */
-    public function getActivity(){
-        return $this->activity;
+    public function getActivityID(){
+        return $this->activityID;
     }
     
     /**
@@ -161,7 +161,7 @@ class ProcessData {
     public function getTotalSlotCost(){
         $sum = $this->getSlotCost();
         foreach ($this->getSubProcesses() as $subProcessData){
-            if($subProcessData instanceof InventionData)
+            if($subProcessData instanceof InventionProcessData)
                 $sum += $subProcessData->getTotalSuccessSlotCost();
             else
                 $sum += $subProcessData->getTotalSlotCost();
@@ -177,7 +177,7 @@ class ProcessData {
      */
     public function getMaterialBuyCost($maxPriceDataAge = null){
         if(!isset($this->materials)) return 0;
-        return $this->getMaterialSet()->getMaterialBuyCost($maxPriceDataAge);
+        return $this->getMaterialMap()->getMaterialBuyCost($maxPriceDataAge);
     }
     
     /**
@@ -189,7 +189,7 @@ class ProcessData {
     public function getTotalMaterialBuyCost($maxPriceDataAge = null){
         $sum = $this->getMaterialBuyCost($maxPriceDataAge);
         foreach ($this->getSubProcesses() as $subProcessData){
-            if($subProcessData instanceof InventionData)
+            if($subProcessData instanceof InventionProcessData)
                 $sum += $subProcessData->getTotalSuccessMaterialBuyCost($maxPriceDataAge);
             else
                 $sum += $subProcessData->getTotalMaterialBuyCost($maxPriceDataAge);
@@ -208,28 +208,34 @@ class ProcessData {
     }
     
     /**
-     * Returns required materials object for this process, WITHOUT sub-processes
-     * @return MaterialSet
+     * Returns required materials object for this process, WITHOUT sub-processes. Will return an empty new MaterialMap
+     * object if this has none.
+     * @return MaterialMap
      */
-    public function getMaterialSet(){
-        return $this->materials;
+    public function getMaterialMap(){
+        if(isset($this->materials)){
+            return $this->materials;
+        } else {
+            $materialClass = iveeCoreConfig::getIveeClassName('MaterialMap');
+            return new $materialClass;
+        }
     }
     
     /**
-     * Returns a new MaterialSet object containing all required materials, including sub-processes.
+     * Returns a new MaterialMap object containing all required materials, including sub-processes.
      * Note that material quantities might be fractionary, due to invention chance effects, requesting builds of items
      * in numbers that are not multiple of portionSize or due to materials that take damage instead of being consumed.
-     * @return MaterialSet
+     * @return MaterialMap
      */
-    public function getTotalMaterialSet(){
-        $materialsClass = iveeCoreConfig::getIveeClassName('materials');
+    public function getTotalMaterialMap(){
+        $materialsClass = iveeCoreConfig::getIveeClassName('MaterialMap');
         $tmat = new $materialsClass;
-        if(isset($this->materials)) $tmat->addMaterialSet($this->getMaterialSet());
+        if(isset($this->materials)) $tmat->addMaterialMap($this->getMaterialMap());
         foreach ($this->getSubProcesses() as $subProcessData){
-            if($subProcessData instanceof InventionData)
-                $tmat->addMaterialSet($subProcessData->getTotalSuccessMaterialSet());
+            if($subProcessData instanceof InventionProcessData)
+                $tmat->addMaterialMap($subProcessData->getTotalSuccessMaterialMap());
             else
-                $tmat->addMaterialSet($subProcessData->getTotalMaterialSet());
+                $tmat->addMaterialMap($subProcessData->getTotalMaterialMap());
         }
         return $tmat;
     }
@@ -240,7 +246,7 @@ class ProcessData {
      */
     public function getMaterialVolume(){
         if(!isset($this->materials)) return 0;
-        return $this->getMaterialSet()->getMaterialVolume();
+        return $this->getMaterialMap()->getMaterialVolume();
     }
     
     /**
@@ -250,7 +256,7 @@ class ProcessData {
     public function getTotalMaterialVolume(){
         $sum = $this->getMaterialVolume();
         foreach ($this->getSubProcesses() as $subProcessData){
-            if($subProcessData instanceof InventionData)
+            if($subProcessData instanceof InventionProcessData)
                 $sum += $subProcessData->getTotalSuccessMaterialVolume();
             else
                 $sum += $subProcessData->getTotalMaterialVolume();
@@ -260,22 +266,27 @@ class ProcessData {
     
     /**
      * Returns object defining the skills required for this process, WITHOUT sub-processes
-     * @return SkillSet
+     * @return SkillMap
      */
-    public function getSkillSet(){
-        return $this->skills;
+    public function getSkillMap(){
+        if(isset($this->skills))
+            return $this->skills;
+        else {
+            $skillClass = iveeCoreConfig::getIveeClassName('SkillMap');
+            return new $skillClass;
+        }
     }
     
     /**
      * Returns a new object with all skills required, including sub-processes
-     * @return SkillSet
+     * @return SkillMap
      */
-    public function getTotalSkillSet(){
-        $skillClass = iveeCoreConfig::getIveeClassName('skills');
+    public function getTotalSkillMap(){
+        $skillClass = iveeCoreConfig::getIveeClassName('SkillMap');
         $tskills =  new $skillClass;
-        if(isset($this->skills)) $tskills->addSkillSet($this->getSkillSet());
-        foreach ($this->subProcessData as $subProcessData){
-            $tskills->addSkillSet($subProcessData->getTotalSkillSet());
+        if(isset($this->skills)) $tskills->addSkillMap($this->getSkillMap());
+        foreach ($this->getSubProcesses() as $subProcessData){
+            $tskills->addSkillMap($subProcessData->getTotalSkillMap());
         }
         return $tskills;
     }
@@ -295,7 +306,7 @@ class ProcessData {
     public function getTotalTime(){
         $sum = $this->getTime();
         foreach ($this->getSubProcesses() as $subProcessData){
-            if($subProcessData instanceof InventionData)
+            if($subProcessData instanceof InventionProcessData)
                 $sum += $subProcessData->getTotalSuccessTime();
             else
                 $sum += $subProcessData->getTotalTime();
@@ -314,16 +325,16 @@ class ProcessData {
             self::ACTIVITY_INVENTING => 0
         );
         
-        if($this->processTime > 0) $sum[$this->activity] = $this->processTime;
+        if($this->processTime > 0) $sum[$this->activityID] = $this->processTime;
         
         foreach ($this->getSubProcesses() as $subProcessData){
-            if($subProcessData instanceof InventionData){
-                foreach ($subProcessData->getTotalSuccessTimes() as $activity => $time){
-                    $sum[$activity] += $time;
+            if($subProcessData instanceof InventionProcessData){
+                foreach ($subProcessData->getTotalSuccessTimes() as $activityID => $time){
+                    $sum[$activityID] += $time;
                 }
             } else {
-                foreach ($subProcessData->getTotalTimes() as $activity => $time){
-                    $sum[$activity] += $time;
+                foreach ($subProcessData->getTotalTimes() as $activityID => $time){
+                    $sum[$activityID] += $time;
                 }
             }
         }
@@ -331,7 +342,7 @@ class ProcessData {
     }
     
     /**
-     * Returns total profit for this batch (direkt child ManufactureData sub-processes)
+     * Returns total profit for this batch (direct child ManufactureProcessData sub-processes)
      * @param int $maxPriceDataAge maximum acceptable price data age
      * @return array
      * @throws PriceDataTooOldException if a maxPriceDataAge has been specified and the data is too old
@@ -339,7 +350,7 @@ class ProcessData {
     public function getTotalProfit($maxPriceDataAge = null) {
         $sum = 0;
         foreach ($this->getSubProcesses() as $spd){
-            if($spd instanceof ManufactureData)
+            if($spd instanceof ManufactureProcessData)
                 $sum += $spd->getTotalProfit($maxPriceDataAge);
         }
         return $sum;
@@ -349,11 +360,11 @@ class ProcessData {
      * Prints data about this process
      */
     public function printData(){
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         echo "Total slot time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
 
         //iterate over materials
-        foreach ($this->getTotalMaterialSet()->getMaterials() as $typeID => $amount){
+        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount){
             echo $amount . 'x ' . SDE::instance()->getType($typeID)->getName() . PHP_EOL;
         }
         echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost()) . "ISK" . PHP_EOL;

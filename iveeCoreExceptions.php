@@ -3,7 +3,7 @@
 /**
  * This file holds the custom exceptions for iveeCore.
  * As of now they are all classes with empty body, their purpose being to allow the application calling iveeCore to 
- * catch and handle types differently.
+ * catch and handle exception types differently.
  *
  * @author aineko-m <Aineko Macx @ EVE Online>
  * @license public domain

@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Holds data about invention processes
+ * Holds data about invention processes.
+ * Inheritance: InventionProcessData -> ProcessData.
  * 
  * Note the design decision of making "invention attempt" cases override the normal inherited methods while the 
  * "invention success" cases are defined explicitly in new methods. This is less error error prone than the other way
@@ -9,15 +10,15 @@
  *
  * @author aineko-m <Aineko Macx @ EVE Online>
  * @license https://github.com/aineko-m/iveeCore/blob/master/LICENSE
- * @link https://github.com/aineko-m/iveeCore/blob/master/InventionData.php
+ * @link https://github.com/aineko-m/iveeCore/blob/master/InventionProcessData.php
  * @package iveeCore
  */
-class InventionData extends ProcessData {
+class InventionProcessData extends ProcessData {
     
     /**
      * @var int $activityID of this process.
      */
-    protected $activity = self::ACTIVITY_INVENTING;
+    protected $activityID = self::ACTIVITY_INVENTING;
     
     /**
      * @var float $inventionChance chance of success for invention.
@@ -117,25 +118,25 @@ class InventionData extends ProcessData {
             self::ACTIVITY_INVENTING => 0
         );
         
-        $sum[$this->activity] = $this->processTime / $this->inventionChance;
+        $sum[$this->activityID] = $this->processTime / $this->inventionChance;
         
-        foreach ($this->subProcessData as $subProcessData){
-            foreach ($subProcessData->getTotalTimes() as $activity => $time){
-                $sum[$activity] += $time / $this->inventionChance;
+        foreach ($this->getSubProcesses() as $subProcessData){
+            foreach ($subProcessData->getTotalTimes() as $activityID => $time){
+                $sum[$activityID] += $time / $this->inventionChance;
             }
         }
         return $sum;
     }
     
     /**
-     * Returns array with sum of average required materials until invention success, WITHOUT sub-processes
-     * @return MaterialSet
+     * Returns MaterialMap object with average required materials until invention success, WITHOUT sub-processes
+     * @return MaterialMap
      */
-    public function getSuccessMaterialSet(){
-        $materialsClass = iveeCoreConfig::getIveeClassName('materials');
+    public function getSuccessMaterialMap(){
+        $materialsClass = iveeCoreConfig::getIveeClassName('MaterialMap');
         $smat = new $materialsClass;
         if(isset($this->materials)){
-            foreach ($this->getMaterialSet()->getMaterials() as $typeID => $quantity){
+            foreach ($this->getMaterialMap()->getMaterials() as $typeID => $quantity){
                 $smat->addMaterial($typeID, $quantity / $this->inventionChance);
             }
         }
@@ -143,13 +144,13 @@ class InventionData extends ProcessData {
     }
     
     /**
-     * Returns array with sum of average required materials until invention success, including sub-processes
-     * @return MaterialSet
+     * Returns MaterialMap object with average required materials until invention success, including sub-processes
+     * @return MaterialMap
      */
-    public function getTotalSuccessMaterialSet(){
-        $smat = $this->getSuccessMaterialSet();
+    public function getTotalSuccessMaterialMap(){
+        $smat = $this->getSuccessMaterialMap();
         foreach ($this->getSubProcesses() as $subProcessData){
-            foreach ($subProcessData->getTotalMaterialSet()->getMaterials() as $typeID => $quantity){
+            foreach ($subProcessData->getTotalMaterialMap()->getMaterials() as $typeID => $quantity){
                 $smat->addMaterial($typeID, $quantity / $this->inventionChance);
             }
         }
@@ -177,7 +178,7 @@ class InventionData extends ProcessData {
      * @return float
      */
     public function getSlotCost(){
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         return $this->processTime * (iveeCoreConfig::getUsePosInvention() ? 
             $utilClass::getPosSlotCostPerSecond() : iveeCoreConfig::getStationInventionCostPerSecond());
     }
@@ -226,19 +227,23 @@ class InventionData extends ProcessData {
      * Prints data about this process
      */
     public function printData(){
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         echo "Average total success times:" . PHP_EOL;
         print_r($this->getTotalSuccessTimes());
         
         echo "Average total success materials:" . PHP_EOL;
-        foreach ($this->getTotalSuccessMaterialSet()->getMaterials() as $typeID => $amount){
+        foreach ($this->getTotalSuccessMaterialMap()->getMaterials() as $typeID => $amount){
             echo $amount . 'x ' . SDE::instance()->getType($typeID)->getName() . PHP_EOL;
         }
         
-        echo "Total average success material cost: " . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialBuyCost()) . "ISK" . PHP_EOL;
-        echo "Total average success slot cost: "     . $utilClass::quantitiesToReadable($this->getTotalSuccessSlotCost()) . "ISK" . PHP_EOL;
-        echo "Total average success cost: "          . $utilClass::quantitiesToReadable($this->getTotalSuccessCost()) . "ISK" . PHP_EOL;
-        echo "Total profit: "                        . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
+        echo "Total average success material cost: " . $utilClass::quantitiesToReadable(
+            $this->getTotalSuccessMaterialBuyCost()) . "ISK" . PHP_EOL;
+        echo "Total average success slot cost: " . $utilClass::quantitiesToReadable(
+            $this->getTotalSuccessSlotCost()) . "ISK" . PHP_EOL;
+        echo "Total average success cost: " . $utilClass::quantitiesToReadable(
+            $this->getTotalSuccessCost()) . "ISK" . PHP_EOL;
+        echo "Total profit: " . $utilClass::quantitiesToReadable(
+            $this->getTotalProfit()) . "ISK" . PHP_EOL;
     }
 }
 

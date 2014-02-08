@@ -2,14 +2,14 @@
 
 /**
  * Holds data about manufacturing processes.
- * Inheritance: ManufactureData -> ProcessData
+ * Inheritance: ManufactureProcessData -> ProcessData
  *
  * @author aineko-m <Aineko Macx @ EVE Online>
  * @license https://github.com/aineko-m/iveeCore/blob/master/LICENSE
- * @link https://github.com/aineko-m/iveeCore/blob/master/ManufactureData.php
+ * @link https://github.com/aineko-m/iveeCore/blob/master/ManufactureProcessData.php
  * @package iveeCore
  */
-class ManufactureData extends ProcessData {
+class ManufactureProcessData extends ProcessData {
 
     /**
      * @var int $bpMeLevel ME level of the blueprint used in the manufacturing.
@@ -24,7 +24,7 @@ class ManufactureData extends ProcessData {
     /**
      * @var int $activityID of this process.
      */
-    protected $activity = self::ACTIVITY_MANUFACTURING;
+    protected $activityID = self::ACTIVITY_MANUFACTURING;
     
     /**
      * Constructor.
@@ -62,7 +62,7 @@ class ManufactureData extends ProcessData {
      * @return float
      */
     public function getSlotCost(){
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         return $this->processTime * (iveeCoreConfig::getUsePosManufacturing() ? 
             $utilClass::getPosSlotCostPerSecond() : iveeCoreConfig::getStationManufacturingCostPerSecond());
     }
@@ -81,25 +81,32 @@ class ManufactureData extends ProcessData {
      */
     public function getTotalProfit($maxPriceDataAge = null) {
         return (SDE::instance()->getType($this->producesTypeID)->getSellPrice($maxPriceDataAge) 
-            * $this->producesQuantity * iveeCoreConfig::getDefaultSellTaxFactor()) - ($this->getTotalCost($maxPriceDataAge));
+            * $this->producesQuantity * iveeCoreConfig::getDefaultSellTaxFactor()) 
+                - ($this->getTotalCost($maxPriceDataAge));
     }
     
     /**
      * Prints data about this process
      */
     public function printData(){
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         echo "Total Slot Time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
-        echo "Total Materials for " . $this->producesQuantity . "x " . SDE::instance()->getType($this->producesTypeID)->getName() . ":" . PHP_EOL;
+        echo "Total Materials for " . $this->producesQuantity . "x " 
+            . SDE::instance()->getType($this->producesTypeID)->getName() . ":" . PHP_EOL;
 
         //iterate over materials
-        foreach ($this->getTotalMaterialSet()->getMaterials() as $typeID => $amount){
+        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount){
             echo $amount . 'x ' . SDE::instance()->getType($typeID)->getName() . PHP_EOL;
         }
-        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost()) . "ISK" . PHP_EOL;
-        echo "Total Slot Cost: "     . $utilClass::quantitiesToReadable($this->getTotalSlotCost()) . "ISK" . PHP_EOL;
-        echo "Total Cost: "          . $utilClass::quantitiesToReadable($this->getTotalCost()) . "ISK" . PHP_EOL;
-        echo "Total Profit: "        . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
+        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost()) 
+            . "ISK" . PHP_EOL;
+        echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalSlotCost()) . "ISK" . PHP_EOL;
+        echo "Total Cost: " . $utilClass::quantitiesToReadable($this->getTotalCost()) . "ISK" . PHP_EOL;
+        try {
+            echo "Total Profit: "        . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
+        } catch(NoPriceDataAvailableException $e){
+            echo "No profit calculation possible due to missing price data for product" . PHP_EOL;
+        }
     }
 }
 

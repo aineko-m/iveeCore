@@ -1,7 +1,8 @@
 <?php
 
 /**
- * SDEUtil offers a series of helper functions, mostly for looking up default values and handling string formatting
+ * SDEUtil offers a series of helper functions, mostly for looking up default values, sanity checking parameters and 
+ * handling string formatting
  *
  * @author aineko-m <Aineko Macx @ EVE Online>
  * @license https://github.com/aineko-m/iveeCore/blob/master/LICENSE
@@ -16,37 +17,9 @@ class SDEUtil {
     protected static $posSlotCost = null;
     
     /**
-     * Returns the skill level.
-     * This is a stub implementation. Extend as required.
-     * @param int $skillID the ID of the skill being looked up
-     * @return int skill level
+     * @var array $bpMeLevels holds the default ME levels of specific blueprints
      */
-    public static function getSkillLevel($skillID){
-        //stub
-        return 5;
-    }
-    
-    /**
-     * Sanity checks a skill level (verify it's an integer between 0 and 5)
-     * @param int $skillLevel the value to be checked
-     * @return bool true on success
-     * @throws InvalidParameterValueException if $skillLevel is not a valid skill level
-     */
-    public static function sanityCheckSkillLevel($skillLevel){
-        if($skillLevel < 0 OR $skillLevel > 5 OR $skillLevel%1 > 0)
-            throw new InvalidParameterValueException("Skill level needs to be an integer between 0 and 5");
-        return true;
-    }
-    
-    /**
-     * Returns the blueprint ME level.
-     * This is a stub implementation. Extend as required.
-     * @param int $bpID the ID of the blueprint being looked up
-     * @return int blueprint ME level
-     */
-    public static function getBpMeLevel($bpID){
-        //stub
-        $meData = array(
+    protected static $bpMeLevels = array(
             23758 => 2, //Archon BP
             23920 => 2, //Aeon BP
             11568 => 2, //Avatar BP
@@ -70,21 +43,11 @@ class SDEUtil {
             20186 => 2, //Charon BP
             20190 => 2, //Fenrir BP
         );
-        if(isset($meData[$bpID]))
-            return $meData[$bpID];
-        else
-            return iveeCoreConfig::getDefaultBpoMe();
-    }
     
     /**
-     * Returns the blueprint PE level.
-     * This is a stub implementation. Extend as required.
-     * @param int $bpID the ID of the blueprint being looked up
-     * @return int blueprint PE level
+     * @var array $bpPeLevels holds the default PE levels of specific blueprints
      */
-    public static function getBpPeLevel($bpID){
-        //Stub
-        $peData = array(
+    protected static $bpPeLevels = array(
             23758 => 1, //Archon BP
             23920 => 1, //Aeon BP
             11568 => 1, //Avatar BP
@@ -108,41 +71,98 @@ class SDEUtil {
             20186 => 1, //Charon BP
             20190 => 1, //Fenrir BP
         );
-        if(isset($peData[$bpID]))
-            return $peData[$bpID];
+    
+    /**
+     * Returns the skill level for a certain skill.
+     * This is a stub implementation.
+     * @param int $skillID the ID of the skill being looked up
+     * @return int skill level
+     */
+    public static function getSkillLevel($skillID){
+        return 5;
+    }
+    
+    /**
+     * Sanity checks a skill level (verify it's an integer between 0 and 5)
+     * @param int $skillLevel the value to be checked
+     * @return bool true on success
+     * @throws InvalidParameterValueException if $skillLevel is not a valid skill level
+     */
+    public static function sanityCheckSkillLevel($skillLevel){
+        if($skillLevel < 0 OR $skillLevel > 5 OR $skillLevel%1 > 0)
+            throw new InvalidParameterValueException("Skill level needs to be an integer between 0 and 5");
+        return true;
+    }
+    
+    /**
+     * Returns the blueprint ME level.
+     * @param int $bpID the ID of the blueprint being looked up
+     * @return int blueprint ME level
+     */
+    public static function getBpMeLevel($bpID){
+
+        if(isset(self::$bpMeLevels[$bpID]))
+            return self::$bpMeLevels[$bpID];
+        else
+            return iveeCoreConfig::getDefaultBpoMe();
+    }
+    
+    /**
+     * Sets a ME level for a blueprint.
+     * @param int $bpID the ID of the blueprint
+     * @param int $meLevel blueprint ME level to be set
+     */
+    public static function setBpMeLevel($bpID, $meLevel){
+        self::$bpMeLevels[$bpID] = (int) $meLevel;
+    }
+    
+    /**
+     * Returns the blueprint PE level.
+     * @param int $bpID the ID of the blueprint being looked up
+     * @return int blueprint PE level
+     */
+    public static function getBpPeLevel($bpID){
+ 
+        if(isset(self::$bpPeLevels[$bpID]))
+            return self::$bpPeLevels[$bpID];
         else
             return iveeCoreConfig::getDefaultBpoPe();
     }
     
     /**
+     * Sets a PE level for a blueprint.
+     * @param int $bpID the ID of the blueprint
+     * @param int $peLevel blueprint PE level to be set
+     */
+    public static function setBpPeLevel($bpID, $peLevel){
+        self::$bpPeLevels[$bpID] = (int) $peLevel;
+    }
+    
+    /**
      * Calulcates the effective reprocessing (= refining) yield
-     * @param float $standings with the corporation of the station you are reprocessing at
      * @param float $stationRefineryEffiency of the station you are reprocessing at
      * @param int $refiningSkillLevel. If left null, it is looked up.
      * @param int $refineryEfficiencySkillLevel. If left null it is looked up.
-     * @param int $specificRefiningSkillLevel item-specific reprocessing skill level (or refining or scrap metal processing)
+     * @param int $specificRefiningSkillLevel item-specific reprocessing skill level (or refining or scrap metal 
+     * processing)
      * @param float $implantMod implant reprocessing yield bonus, as factor (1.0 >= x <= 1.05)
-     * @return int blueprint PE level
+     * @return float reprocessing yield
      * @throws InvalidParameterValueException if invalid parameter values are given
      */
-    public static function calcReprocessingFactor(
-            $standings = 6.67, 
+    public static function calcReprocessingYield(
             $stationRefineryEffiency = 0.5, 
             $refiningSkillLevel = null, 
             $refineryEfficiencySkillLevel = null, 
             $specificRefiningSkillLevel = 0, 
             $implantMod = 1.0){
         
-        //sanity checks
-        if($standings < 0 OR $standings > 10) 
-            throw new InvalidParameterValueException("Standing needs to be between 0.0 and 10.0");
         if($stationRefineryEffiency < 0.3 OR $stationRefineryEffiency > 0.5) 
             throw new InvalidParameterValueException("Station refinery efficiency needs to be >=0.3 and <= 0.5");
         if($implantMod < 1.0 OR $implantMod > 1.05) 
             throw new InvalidParameterValueException("Implant modifier needs to be >= 1.0 and <= 1.05");
         
         //set undefined skill levels, sanity check otherwise
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         if(is_null($refiningSkillLevel))
             $refiningSkillLevel = $utilClass::getSkillLevel(3385);
         else
@@ -162,19 +182,34 @@ class SDEUtil {
             * (1 + $refineryEfficiencySkillLevel * 0.04) 
             * (1 + $specificRefiningSkillLevel * 0.05)
         + ($implantMod - 1);
+        
         //clamp to 1
         if($reprocessingYield > 1.0) $reprocessingYield = 1.0;
         
-        //calculate tax factor
-        $tax = 0.05 - (0.075 * $standings);
-        if($tax < 0) $tax = 0;
-        
-        return $reprocessingYield * (1 - $tax);
+        return $reprocessingYield;
     }
     
     /**
-     * Returns a hipothetical POS slots cost assuming the configured hourly fuel materials, number of active slots and
-     * use factor.
+     * Calulcates the tax factor for refining in stations (5% tax = factor of 0.95)
+     * @param float $standings with the corporation of the station you are reprocessing at
+     * @return float reprocessing tax factor
+     * @throws InvalidParameterValueException if invalid parameter values are given
+     */
+    public static function calcReprocessingTaxFactor($standings = 6.67){
+        //sanity checks
+        if($standings < 0 OR $standings > 10) 
+            throw new InvalidParameterValueException("Standing needs to be between 0.0 and 10.0");
+        
+        //calculate tax factor
+        $tax = 0.05 - (0.0075 * $standings);
+        if($tax < 0) $tax = 0;
+        
+        return 1 - $tax;
+    }
+    
+    /**
+     * Returns a hipothetical POS slots cost assuming the configured hourly fuel materials, number of active slots 
+     * and use factor.
      * @return float the estimated cost per POS slot per second
      */
     public static function getPosSlotCostPerSecond() {

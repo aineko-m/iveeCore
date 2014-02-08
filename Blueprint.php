@@ -38,7 +38,7 @@ class Blueprint extends Sellable {
     protected $researchMaterialTime;
     
     /**
-     * @var int $researchCopyTime base copy time = the time in seconds to make maxProductionLimit/2 single run copies.
+     * @var int $researchCopyTime base copy time = the seconds to make maxProductionLimit/2 single run copies.
      */
     protected $researchCopyTime;
     
@@ -68,9 +68,12 @@ class Blueprint extends Sellable {
     protected $maxProductionLimit;
     
     /**
-     * @var array $requirements holds activity materials and requirements
-     */
-    protected $requirements = array();
+     * @var array $typeRequirements holds data from ramTypeRequirements, which covers activity materials and 
+     * requirements.
+     * $typeRequirements[$activityID][$typeID]['q'|'d'|'r'] for quantity, damage and recycle flag, respectively.
+     * Array entries for d and r are omitted if the value is 0.
+     */   
+    protected $typeRequirements;
     
     /**
      * Constructor.
@@ -90,23 +93,50 @@ class Blueprint extends Sellable {
         
         $sde = SDE::instance();
         
-        //query requirements for all BP activities by calling stored procedure.
-        $res = $sde->query("CALL iveeGetRequirements(" . (int)$this->typeID . ");");
-
-        while ($row = $res->fetch_assoc()) {
-            $this->requirements[(int) $row['activityID']][] = array(
-                'cat' => (int)   $row['categoryID'],
-                'typ' => (int)   $row['requiredTypeID'],
-                'qua' => (int)   $row['quantity'],
-                'dam' => (float) $row['damagePerJob'],
-                'bas' => (int)   $row['baseMaterial'],
-                'rec' => (bool)  $row['recycle']
-            );
+        //get typeRequirements, if any
+        $res = $sde->query(
+            '(SELECT activityID, requiredTypeID, quantity, damagePerJob, recycle # extra materials and skills
+                FROM ramTypeRequirements
+                WHERE typeID = ' . (int) $this->typeID . ')
+            UNION
+            (SELECT DISTINCT # invention skills
+                8 activityID, 
+                COALESCE(dta.valueInt, dta.valueFloat) requiredTypeID,
+                sl.level quantity, 
+                0 damagePerJob, 
+                0 recycle
+            FROM ramTypeRequirements r, invBlueprintTypes bt, dgmTypeAttributes dta
+            LEFT JOIN (
+                select r.requiredTypeID, COALESCE(dta.valueInt, dta.valueFloat) level, bt.blueprintTypeID
+                FROM ramTypeRequirements r, invBlueprintTypes bt, dgmTypeAttributes dta
+                WHERE r.typeID = bt.blueprintTypeID
+                AND r.activityID = 8
+                AND dta.typeID = r.requiredTypeID
+                AND dta.attributeID = 277) as sl
+            ON sl.requiredTypeID = dta.typeID
+            WHERE r.typeID = bt.blueprintTypeID
+            AND bt.blueprintTypeID = sl.blueprintTypeID
+            AND bt.blueprintTypeID = ' . (int) $this->typeID . '
+            AND r.activityID = 8
+            AND dta.typeID = r.requiredTypeID
+            AND dta.attributeID = 182);'
+        );
+        if($res->num_rows > 0){
+            $this->typeRequirements = array();
+            //add materials to the array
+            //to reduce memory usage, damage and recycle flag are only stored if > 0
+            while ($row = $res->fetch_assoc()){
+                $this->typeRequirements[(int) $row['activityID']][(int) $row['requiredTypeID']]['q'] 
+                    = (int) $row['quantity'];
+                if($row['damagePerJob'] > 0)
+                    $this->typeRequirements[(int) $row['activityID']][(int) $row['requiredTypeID']]['d'] 
+                        = $row['damagePerJob'];
+                if($row['recycle'] > 0){
+                    $this->typeRequirements[(int) $row['activityID']][(int) $row['requiredTypeID']]['r'] 
+                        = $row['recycle'];
+                }
+            }
         }
-        $res->free();
-        
-        //get rid of other result sets
-        $sde->flushDbResults();
     }
 
     /**
@@ -205,8 +235,8 @@ class Blueprint extends Sellable {
     /**
      * Gets the buy price for this BP
      * @param int $maxPriceDataAge the maximum price data age in seconds
-     * @return float the buy price for default region as calculated in emdr.php, or basePrice if the BP cannot be sold 
-     * on the market
+     * @return float the buy price for default region as calculated in emdr.php, or basePrice if the BP cannot be 
+     * sold on the market
      * @throws NoPriceDataAvailableException if no buy price available
      * @throws PriceDataTooOldException if a maxPriceDataAge has been specified and the data is too old
      */
@@ -221,8 +251,8 @@ class Blueprint extends Sellable {
     /**
      * Gets the sell price for this BP
      * @param int $maxPriceDataAge the maximum price data age in seconds
-     * @return float the sell price for default region as calculated in emdr.php, or basePrice if the BP cannot be sold 
-     * on the market
+     * @return float the sell price for default region as calculated in emdr.php, or basePrice if the BP cannot be 
+     * sold on the market
      * @throws NoPriceDataAvailableException if no buy price available
      * @throws PriceDataTooOldException if a maxPriceDataAge has been specified and the data is too old
      */
@@ -240,27 +270,32 @@ class Blueprint extends Sellable {
      * @param int $ME level of the BP; if left null, it is looked up in SDEUtil::getBpMeLevel()
      * @param int $PE level of the BP; if left null, it is looked up in SDEUtil::getBpPeLevel()
      * @param boolean $recursive defines if components should be manufactured recursively
-     * @return ManufactureData describing the manufacturing process
+     * @param int $productionEfficiencySkill the level of the influencing skill. If left null, a default level is 
+     * looked up in SDEUtil
+     * @return ManufactureProcessData describing the manufacturing process
      * @throws NoManufacturingRequirementsException if there is no manufacturing requirements data for this BP
      */
-    public function manufacture($units = 1, $ME = null, $PE = null, $recursive = true) {
-        if (!isset($this->requirements[ProcessData::ACTIVITY_MANUFACTURING]))
-            throw new NoManufacturingRequirementsException('No manufacturing requirements data for this blueprint available');
+    public function manufacture($units = 1, $ME = null, $PE = null, $recursive = true, 
+        $productionEfficiencySkill = null) {
+        if (!isset($this->typeRequirements[ProcessData::ACTIVITY_MANUFACTURING]))
+            throw new NoManufacturingRequirementsException(
+                'No manufacturing requirements data for this blueprint available');
         
         //Lookup default ME and PE levels for this BP if not set
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         if(is_null($ME)) $ME = $utilClass::getBpMeLevel($this->typeID);
         if(is_null($PE)) $PE = $utilClass::getBpPeLevel($this->typeID);
+        if(is_null($productionEfficiencySkill)) $productionEfficiencySkill = $utilClass::getSkillLevel(3388);
 
         //get waste factor
-        $materialFactor = $this->calcMaterialFactor($ME);
+        $materialFactor = $this->calcMaterialFactor($ME, $productionEfficiencySkill);
 
         //Some items are manufactured in atomic batches (charges, for instance). 
         //We need to normalize quantities and times to the equivalent needed for 1 unit * requested units.
         $runFactor = $units / $this->getProduct()->getPortionSize();
 
         //get Manufacture Data class name
-        $manufactureDataClass = iveeCoreConfig::getIveeClassName('manufacturedata');
+        $manufactureDataClass = iveeCoreConfig::getIveeClassName('ManufactureProcessData');
 
         //instantiate manu data object
         $md = new $manufactureDataClass(
@@ -272,41 +307,71 @@ class Blueprint extends Sellable {
         );
 
         $sde = SDE::instance();
+        
+        //get raw materials from product
+        $raw = $this->getProduct()->getTypeMaterials();
+        
+        // iterate over extra materials to handle materials with recycle flag
+        foreach ($this->typeRequirements[ProcessData::ACTIVITY_MANUFACTURING] as $typeID => $mat) {
+            //skip if no recycle flag
+            if(!isset($mat['r'])) continue;
+            
+            //get the materials reprocessing materials
+            foreach ($sde->getType($typeID)->getTypeMaterials() as $reprocTypeID => $qua){
+                if(isset($raw[$reprocTypeID])){
+                    //subtract from the raw quantities
+                    $raw[$reprocTypeID] -= $qua;
+                    
+                    //remove from raw requirements if eliminated
+                    if($raw[$reprocTypeID] <= 0) unset($raw[$reprocTypeID]);
+                }
+            }
+        }
+        
+        //add raw materials applying waste factor
+        foreach ($raw as $typeID => $amount){
+            $type = $sde->getType($typeID);
+            $totalNeeded = round($amount * $materialFactor) * $runFactor;
+            if($recursive AND $type instanceof Manufacturable){
+                $md->addSubProcessData($type->getBlueprint()->manufacture($totalNeeded));
+            } else {
+                $md->addMaterial($typeID, $totalNeeded);
+            }
+        }
 
-        //iterate over manufacturing requirements
-        foreach ($this->requirements[ProcessData::ACTIVITY_MANUFACTURING] as $mat) {
+        //iterate over extra manufacturing requirements
+        foreach ($this->typeRequirements[ProcessData::ACTIVITY_MANUFACTURING] as $typeID => $mat) {
+            $type = $sde->getType($typeID);
+            
             //add needed skills to skill array
-            if ($mat['cat'] == 16) {
-                $md->addSkill($mat['typ'], $mat['qua']);
+            if ($type->getCategoryID() == 16) {
+                $md->addSkill($typeID, $mat['q']);
                 continue;
             }
 
-            //only apply extra material waste factor if that material is also a base material
-            if($mat['qua'] > $mat['bas'] AND $mat['bas'] > 0)
-                $extraMaterialFactor = 1 + (0.25 - 0.05 * $utilClass::getSkillLevel(3388));
-            else
+            //apply skill dependant waste factor if the extra material also appears in the raw materials
+            if(isset($raw[$typeID]) AND $raw[$typeID] > 0)
+                $extraMaterialFactor = 1 + (0.25 - 0.05 * $productionEfficiencySkill);
+            else 
                 $extraMaterialFactor = 1;
             
-            //Quantity needed for 1 batch (= portionSize). Apply regular waste factor to base materials. 
-            //Apple extra material waste to extra materials. Also apply damage factor to all.
-            $matQuantity = (round($mat['bas'] * $materialFactor) 
-                + round(($mat['qua'] - $mat['bas']) * $extraMaterialFactor)) * $mat['dam'];
-
+            //extra material quantity needed for 1 batch (= portionSize). 
+            //Apply extra material waste and damage factors.
+            $totalExtra = $runFactor * round($mat['q'] * $extraMaterialFactor) * (isset($mat['d']) ? $mat['d'] : 0);
+            
             //handle recursive component building
-            if ($recursive) {
-                $type = $sde->getType($mat['typ']);
-                if ($type instanceof Manufacturable) {
-                    //build components
-                    $subMd = $type->getBlueprint()->manufacture($matQuantity * $runFactor);
-                    //add it to main processData object
-                    $md->addSubProcessData($subMd);
-                    continue;
-                }
+            if ($recursive AND $type instanceof Manufacturable) {
+                //build components
+                $subMd = $type->getBlueprint()->manufacture($totalExtra);
+                //add it to main processData object
+                $md->addSubProcessData($subMd);
             }
             //non-recursive building or not manufacturable
-            //add materials applying run factor
-            $md->addMaterial($mat['typ'], $runFactor * $matQuantity);
+            //add extra materials applying run factor
+            else 
+                $md->addMaterial($typeID, $totalExtra);
         }
+        
         return $md;
     }
 
@@ -316,7 +381,7 @@ class Blueprint extends Sellable {
      * @param int|string $runs the number of runs on each copy. Use 'max' for the maximum possible number of runs.
      * @param boolean $recursive
      * @param bool $recursive defines if used materials should be manufactured recursively
-     * @return CopyData describing the copy process
+     * @return CopyProcessData describing the copy process
      */
     public function copy($copies = 1, $runs = 'max', $recursive = true) {
         //convert 'max' into max number of runs
@@ -325,7 +390,7 @@ class Blueprint extends Sellable {
         $totalRuns = $copies * $runs;
         
         //get copy data class
-        $copyDataClass = iveeCoreConfig::getIveeClassName('copydata');
+        $copyDataClass = iveeCoreConfig::getIveeClassName('CopyProcessData');
 
         //instantiate copy data class with required parameters
         $cd = new $copyDataClass(
@@ -338,48 +403,48 @@ class Blueprint extends Sellable {
         $sde = SDE::instance();
 
         //iterate over copying requirements, if any
-        if (isset($this->requirements[ProcessData::ACTIVITY_COPYING])) {
-            foreach ($this->requirements[ProcessData::ACTIVITY_COPYING] as $mat) {
+        if (isset($this->typeRequirements[ProcessData::ACTIVITY_COPYING])) {
+            foreach ($this->typeRequirements[ProcessData::ACTIVITY_COPYING] as $typeID => $mat) {
+                $type = $sde->getType($typeID);
+
                 //add needed skills to skill array
-                if ($mat['cat'] == 16) {
-                    $cd->addSkill($mat['typ'], $mat['qua']);
+                if ($type->getCategoryID() == 16) {
+                    $cd->addSkill($typeID, $mat['q']);
                     continue;
                 }
 
                 //quantity needed for one single run copy
-                $matQuantity = $mat['qua'] * $mat['dam'];
+                $matQuantity = $mat['q'] * (isset($mat['d']) ? $mat['d'] : 0);
 
                 //handle recursive component building
-                if ($recursive) {
-                    $type = $sde->getType($mat['typ']);
-                    if ($type instanceof Manufacturable) {
-                        //build required manufacturables
-                        $subMd = $type->getBlueprint()->manufacture($totalRuns * $matQuantity);
-                        //add it to main processData object
-                        $cd->addSubProcessData($subMd);
-                        continue;
-                    }
+                if ($recursive AND $type instanceof Manufacturable) {
+                    //build required manufacturables
+                    $subMd = $type->getBlueprint()->manufacture($totalRuns * $matQuantity);
+                    //add it to main processData object
+                    $cd->addSubProcessData($subMd);
+                    continue;
                 }
                 //non-recursive building or not manufacturable
                 //add materials applying run factor
-                $cd->addMaterial($mat['typ'], $totalRuns * $matQuantity);
+                $cd->addMaterial($typeID, $totalRuns * $matQuantity);
             }
         }
         return $cd;
     }
     
     /**
-     * Returns raw requirements
-     * @param int $activityID optional parameter that specifies for which activity the requirements should be returned.
+     * Returns raw typeRequirements
+     * @param int $activityID optional parameter that specifies for which activity the requirements should be
+     * returned.
      * @return array with the requirements
      * @throws ActivityIdNotFoundException if the given activityID is not found in the requirements array
      */
-    public function getRequirements($activityID = null){
+    public function getTypeRequirements($activityID = null){
         if(is_null($activityID)){
-            return $this->requirements;
+            return $this->typeRequirements;
         } else {
-            if(isset($this->requirements[$activityID])){
-                return $this->requirements[$activityID];
+            if(isset($this->typeRequirements[$activityID])){
+                return $this->typeRequirements[$activityID];
             } else {
                 throw new ActivityIdNotFoundException("ActivityID " . (int) $activityID . " not found.");
             }
@@ -474,7 +539,7 @@ class Blueprint extends Sellable {
      * @return float the waste factor
      */
     public function calcMaterialFactor($ME = null, $productionEfficiencySkill = null) {
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         if(is_null($ME)) $ME = $utilClass::getBpMeLevel($this->typeID);
         if(is_null($productionEfficiencySkill))
             $productionEfficiencySkill = $utilClass::getSkillLevel(3388);
@@ -501,7 +566,7 @@ class Blueprint extends Sellable {
      * @throws InvalidParameterValueException if invalid parameters given
      */
     public function calcProductionTime($PE = null, $industrySkill = null, $slotMod = null, $implantMod = 1) {
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         if(is_null($PE)) $PE = $utilClass::getBpPeLevel($this->typeID);
         if(is_null($industrySkill))
             $industrySkill = $utilClass::getSkillLevel(3380);        
@@ -509,7 +574,8 @@ class Blueprint extends Sellable {
             $utilClass::sanityCheckSkillLevel($industrySkill);
 
         if(is_null($slotMod))
-            $slotMod = iveeCoreConfig::getUsePosManufacturing() ? iveeCoreConfig::getPosManufactureSlotTimeFactor() : 1;
+            $slotMod = 
+            iveeCoreConfig::getUsePosManufacturing() ? iveeCoreConfig::getPosManufactureSlotTimeFactor() : 1;
         if($implantMod > 1 OR $implantMod < 0.95) 
             throw new InvalidParameterValueException("Implant factor needs to be between 0.95 and 1.0");
         
@@ -533,7 +599,7 @@ class Blueprint extends Sellable {
      * @throws InvalidParameterValueException if invalid parameters given
      */
     public function calcCopyTime($scienceSkill = null, $slotMod = null, $implantMod = 1) {
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         if(is_null($scienceSkill))
             $scienceSkill = $utilClass::getSkillLevel(3402);
         else
@@ -559,7 +625,7 @@ class Blueprint extends Sellable {
      * @throws InvalidParameterValueException if invalid parameters given
      */
     public function calcPEResearchTime($researchSkill = null, $slotMod = null, $implantMod = 1){
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         if(is_null($researchSkill))  
             $researchSkill = $utilClass::getSkillLevel(3403);
         else
@@ -584,7 +650,7 @@ class Blueprint extends Sellable {
      * @throws InvalidParameterValueException if invalid parameters given
      */
     public function calcMEResearchTime($metallurgySkill = null, $slotMod = null, $implantMod = 1){
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         if(is_null($metallurgySkill))
             $metallurgySkill = $utilClass::getSkillLevel(3409);
         else
@@ -608,54 +674,12 @@ class Blueprint extends Sellable {
     /**
      * This method overwrites the inherited one from Type, as Blueprints are never reprocessable
      * @param int $batchSize number of items being reprocessed
-     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
+     * @param float $reprocessingYield the skill and station dependant reprocessing yield
+     * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor
      * @throws NotReprocessableException always
      */
-    public function getReprocessingMaterialSet($batchSize, $effectiveYield){
+    public function getReprocessingMaterialMap($batchSize, $reprocessingYield, $reprocessingTaxFactor){
         throw new NotReprocessableException($this->typeName . ' is not reprocessable');
-    }
-    
-    /**
-     * Returns a MaterialSet object representing the reprocessing materials of the product
-     * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
-     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
-     * @return MaterialSet
-     * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not sane
-     */
-    public function getProductReprocessingMaterialSet($batchSize, $effectiveYield){
-        $portionSize = $this->getProduct()->getPortionSize();
-        if($batchSize < $portionSize OR $batchSize % $portionSize != 0) 
-            throw new InvalidParameterValueException('Recycling batch size needs to be multiple of ' . $portionSize);
-        if($effectiveYield > 1)
-            throw new InvalidParameterValueException('Effective reprocessing yield can never be > 1.0');
-        
-        $materialsClass = iveeCoreConfig::getIveeClassName('materials');
-        $rmat = new $materialsClass;
-        
-        //get the number of portions being reprocessed
-        $numPortions = $batchSize / $portionSize;
-        
-        //iterate over requirements
-        foreach ($this->getRequirements(ProcessData::ACTIVITY_MANUFACTURING) as $mat){
-            //skip skill requirements
-            if($mat['cat'] == 16) continue;
-            
-            //if recycle flag set, this ingredient is also automatically recycled when reprocessing
-            if($mat['rec']){
-                $rmat->addMaterialSet(
-                    SDE::instance()->getType($mat['typ'])
-                    ->getReprocessingMaterialSet($mat['qua'] * $numPortions, $effectiveYield)
-                );
-                continue;
-            }
-            
-            //skip if no baseMaterial
-            if($mat['bas'] < 1) continue;
-            
-            //add base material to reprocessing materials, account for portionSize
-            $rmat->addMaterial($mat['typ'], round($mat['bas'] * $effectiveYield) * $numPortions);
-        }
-        return $rmat;
     }
 }
 

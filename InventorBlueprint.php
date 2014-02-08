@@ -87,13 +87,13 @@ class InventorBlueprint extends Blueprint {
     }
 
     /**
-     * Returns an InventionData object describing the invention process.
+     * Returns an InventionProcessData object describing the invention process.
      * @param int $inventedBpTypeID the ID if the blueprint to be invented. If left null, it is set to the first 
      * inventable blueprint ID
      * @param int $decryptorID the decryptor the be used, if any
      * @param int|string $inputBPCRuns the number of input runs on the BPC, 'max' for maximum runs.
      * @param boolean $recursive defines if manufacturables should be build recursively
-     * @return InventionData 
+     * @return InventionProcessData 
      * @throws NotInventableException if the specified blueprint can't be invented from this
      * @throws InvalidParameterValueException if inputBPCRuns exceeds limit
      * @throws WrongTypeException if decryptorID isn't a decryptor
@@ -119,7 +119,7 @@ class InventorBlueprint extends Blueprint {
         $sde = SDE::instance();
         
         //get Invention Data class
-        $inventionDataClass = iveeCoreConfig::getIveeClassName('inventiondata');
+        $inventionDataClass = iveeCoreConfig::getIveeClassName('InventionProcessData');
         
         //branch with decryptor
         if ($decryptorId > 0) {
@@ -157,32 +157,25 @@ class InventorBlueprint extends Blueprint {
         }
 
         //iterate over invention requirements
-        foreach ($this->requirements[ProcessData::ACTIVITY_INVENTING] as $mat) {
+        foreach ($this->typeRequirements[ProcessData::ACTIVITY_INVENTING] as $typeID => $mat) {
+            $type = $sde->getType($typeID);
+            
             //add needed skills to skill array
-            if ($mat['cat'] == 16) {
-                $id->addSkill($mat['typ'], $mat['qua']);
-                continue;
-            }
+            if ($type->getCategoryID() == 16){
+                $id->addSkill($typeID, $mat['q']);
+            } 
 
-            //effective quantity
-            $quantity = $mat['qua'] * $mat['dam'];
+            //handle recursive component building; don't build interfaces
+            elseif ($recursive AND $type instanceof Manufacturable AND $type->getGroupID() != 716) {
+                //build components
+                $subPd = $type->getBlueprint()->manufacture($mat['q']);
 
-            //handle recursive component building
-            if ($recursive) {
-                $type = $sde->getType($mat['typ']);
-                if ($type instanceof Manufacturable
-                    AND $type->getMarketGroupID() != 980){ //skip data interfaces
-
-                    //build components
-                    $subPd = $type->getBlueprint()->manufacture($quantity);
-                    
-                    //add it to main inventionData object
-                    $id->addSubProcessData($subPd);
-                    continue;
-                }
-            }
+                //add it to main inventionProcessData object
+                $id->addSubProcessData($subPd);
+            } 
             //add non-manufacturable materials
-            $id->addMaterial($mat['typ'], $quantity);
+            else 
+                $id->addMaterial($typeID, $mat['q'] * ($type->getGroupID() == 716 ? 0 : $mat['d']));
         }
 
         return $id;
@@ -195,7 +188,7 @@ class InventorBlueprint extends Blueprint {
      * @param int $decryptorID the decryptor the be used, if any
      * @param int|string $inputBPCRuns the number of input runs on the BPC, 'max' for maximum runs.
      * @param boolean $recursive defines if manufacturables should be build recursively
-     * @return ManufactureData with cascaded InventionData and CopyData objects 
+     * @return ManufactureProcessData with cascaded InventionProcessData and CopyProcessData objects 
      */
     public function copyInventManufacture($inventedBpTypeID = null, $decryptorID = null, $BPCRuns = 1, 
         $recursive = true) {
@@ -221,7 +214,7 @@ class InventorBlueprint extends Blueprint {
             $recursive
         );
 
-        //add invention data to the manufactureData object
+        //add invention data to the manufactureProcessData object
         $manufactureData->addSubProcessData($inventionData);
         
         return $manufactureData;

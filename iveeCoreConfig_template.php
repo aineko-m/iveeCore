@@ -12,7 +12,7 @@
  */
 
 //include all required classes. If you extended iveeCore classes, you'll want to add them here.
-$iveeCoreClassPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'iveeCore'.DIRECTORY_SEPARATOR;
+$iveeCoreClassPath = dirname(__FILE__).DIRECTORY_SEPARATOR;
 require_once($iveeCoreClassPath . 'iveeCoreExceptions.php');
 require_once($iveeCoreClassPath . 'SDE.php');
 require_once($iveeCoreClassPath . 'Type.php');
@@ -22,13 +22,16 @@ require_once($iveeCoreClassPath . 'Blueprint.php');
 require_once($iveeCoreClassPath . 'InventorBlueprint.php');
 require_once($iveeCoreClassPath . 'InventableBlueprint.php');
 require_once($iveeCoreClassPath . 'Decryptor.php');
+require_once($iveeCoreClassPath . 'Reaction.php');
+require_once($iveeCoreClassPath . 'ReactionProduct.php');
 require_once($iveeCoreClassPath . 'ProcessData.php');
-require_once($iveeCoreClassPath . 'ManufactureData.php');
-require_once($iveeCoreClassPath . 'CopyData.php');
-require_once($iveeCoreClassPath . 'InventionData.php');
+require_once($iveeCoreClassPath . 'ManufactureProcessData.php');
+require_once($iveeCoreClassPath . 'CopyProcessData.php');
+require_once($iveeCoreClassPath . 'InventionProcessData.php');
+require_once($iveeCoreClassPath . 'ReactionProcessData.php');
 require_once($iveeCoreClassPath . 'SDEUtil.php');
-require_once($iveeCoreClassPath . 'MaterialSet.php');
-require_once($iveeCoreClassPath . 'SkillSet.php');
+require_once($iveeCoreClassPath . 'MaterialMap.php');
+require_once($iveeCoreClassPath . 'SkillMap.php');
 
 //eve runs on UTC time
 date_default_timezone_set('UTC');
@@ -66,6 +69,7 @@ class iveeCoreConfig{
     protected static $DEFAULT_SELL_TAX_FACTOR = 0.985; // = 100% - (0.75% broker fee + 0.75% transaction tax)
 
     //default BPO ME/PE to use
+    //note that default values for specific BPs can be configured in SDEUtil
     protected static $DEFAULT_BPO_ME = 120;
     protected static $DEFAULT_BPO_PE = 10;
 
@@ -114,20 +118,23 @@ class iveeCoreConfig{
     
     //controls which classes get instantiated. If extending iveeCore via subclassing, change accordingly
     protected static $classes = array(
-        'stdtype'         => 'Type',
-        'sellable'        => 'Sellable',
-        'manufacturable'  => 'Manufacturable',
-        'decryptor'       => 'Decryptor',
-        'blueprint'       => 'Blueprint',
-        'inventor'        => 'InventorBlueprint',
-        'inventable'      => 'InventableBlueprint',
-        'processdata'     => 'ProcessData',
-        'manufacturedata' => 'ManufactureData',
-        'copydata'        => 'CopyData',
-        'inventiondata'   => 'InventionData',
-        'util'            => 'SDEUtil',
-        'materials'       => 'MaterialSet',
-        'skills'          => 'SkillSet'
+        'Type'                   => 'Type',
+        'Sellable'               => 'Sellable',
+        'Manufacturable'         => 'Manufacturable',
+        'Decryptor'              => 'Decryptor',
+        'Blueprint'              => 'Blueprint',
+        'InventorBlueprint'      => 'InventorBlueprint',
+        'InventableBlueprint'    => 'InventableBlueprint',
+        'Reaction'               => 'Reaction',
+        'ReactionProduct'        => 'ReactionProduct',
+        'ReactionProcessData'    => 'ReactionProcessData',
+        'ProcessData'            => 'ProcessData',
+        'ManufactureProcessData' => 'ManufactureProcessData',
+        'CopyProcessData'        => 'CopyProcessData',
+        'InventionProcessData'   => 'InventionProcessData',
+        'SDEUtil'                => 'SDEUtil',
+        'MaterialMap'            => 'MaterialMap',
+        'SkillMap'               => 'SkillMap'
     );
     
     ////////////////////////////
@@ -197,7 +204,8 @@ class iveeCoreConfig{
     public static function getNumPeResearchSlots(){return self::$NUM_PE_RESEARCH_SLOTS;}
     
     //station slot cost getters
-    public static function getStationManufacturingCostPerSecond(){return self::$STATION_MANUFACTURING_HOUR_COST / 3600;}
+    public static function getStationManufacturingCostPerSecond(){
+        return self::$STATION_MANUFACTURING_HOUR_COST / 3600;}
     public static function getStationCopyingCostPerSecond(){return self::$STATION_COPYING_HOUR_COST / 3600;}
     public static function getStationInventionCostPerSecond(){return self::$STATION_INVENTION_HOUR_COST / 3600;}
     public static function getStationMeResearchCostPerSecond(){return self::$STATION_ME_RESEARCH_HOUR_COST / 3600;}

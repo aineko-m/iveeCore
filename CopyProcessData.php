@@ -2,19 +2,19 @@
 
 /**
  * Class for holding copy process data. 
- * Inheritance: CopyData -> ProcessData.
+ * Inheritance: CopyProcessData -> ProcessData.
  *
  * @author aineko-m <Aineko Macx @ EVE Online>
  * @license https://github.com/aineko-m/iveeCore/blob/master/LICENSE
- * @link https://github.com/aineko-m/iveeCore/blob/master/CopyData.php
+ * @link https://github.com/aineko-m/iveeCore/blob/master/CopyProcessData.php
  * @package iveeCore
  */
-class CopyData extends ProcessData {
+class CopyProcessData extends ProcessData {
 
     /**
      * @var int $activityID of this process.
      */
-    protected $activity = self::ACTIVITY_COPYING;
+    protected $activityID = self::ACTIVITY_COPYING;
     
     /**
      * @var int $outputRuns per copy.
@@ -39,7 +39,7 @@ class CopyData extends ProcessData {
      * @return float
      */
     public function getSlotCost(){
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         return $this->processTime * (iveeCoreConfig::getUsePosCopying() ? 
             $utilClass::getPosSlotCostPerSecond() : iveeCoreConfig::getStationCopyingCostPerSecond());
     }

@@ -1,5 +1,18 @@
 This file lists major changes in iveeCore versions.
 
+Version 1.2 - February 8, 2014
+--------------
+- Added reaction calculations
+- Rewrote type materials and requirements handling. This fixed reprocessing calculations and most off-by-1 errors. The 
+memory use of the type array was reduced by up to 30%. The stored procedure iveeGetRequirements() is obsoleted by this 
+change, which makes for more maintainable code.
+- Bug fixes and more convenience functions
+- Renamed MaterialSet to MaterialMap and SkillSet to SkillMap as it better describes the classes purpose
+- Renamed CopyData to CopyProcessData, InventionData to InventionProcessData and ManufactureData to 
+ManufactureProcessData for concistency
+- Added some PHPUnit test cases covering different parts of iveeCore
+- Note that the file iveeCoreConfig_template.php changed, thus adaptation of the configuration file is required 
+
 Version 1.1 - November 10, 2013
 -------------------------------
 - Added reprocessing calculations for Type objects

@@ -55,7 +55,8 @@ class Decryptor extends Sellable {
             FROM dgmTypeAttributes
             WHERE
             typeID = " . (int)$this->typeID . "
-            AND attributeID IN (1112, 1113, 1114, 1124);");
+            AND attributeID IN (1112, 1113, 1114, 1124);"
+        );
         
         //set modifiers to object
         while ($row = $res->fetch_assoc()) {
@@ -143,7 +144,7 @@ class Decryptor extends Sellable {
      * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
      * @throws NotReprocessableException always
      */
-    public function getReprocessingMaterialSet($batchSize, $effectiveYield){
+    public function getReprocessingMaterialMap($batchSize, $effectiveYield){
         throw new NotReprocessableException($this->typeName . ' is not reprocessable');
     }
 }

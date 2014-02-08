@@ -47,9 +47,9 @@ class Type {
     protected $basePrice;
     
     /**
-     * @var array $requirements holds reprocessing materials
+     * @var array $typeMaterials holds data from invTypeMaterials, which is used in manufacturing and reprocessing
      */
-    protected $requirements;
+    protected $typeMaterials;
 
     /**
      * Constructor.
@@ -66,7 +66,7 @@ class Type {
         //set data to object attributes
         $this->setAttributes($row);
         
-        //get reprocessing materials, if any
+        //get typeMaterials, if any
         $res = SDE::instance()->query(
             'SELECT 
             materialTypeID, 
@@ -75,13 +75,10 @@ class Type {
             WHERE typeID = ' . (int) $this->typeID . ';'
         );
         if($res->num_rows > 0){
-            $this->requirements = array();
-            //add materials to the requirements array, following the schema of Blueprint
+            $this->typeMaterials = array();
+            //add materials to the array
             while ($row = $res->fetch_assoc()){
-                $this->requirements[ProcessData::ACTIVITY_MANUFACTURING][] = array(
-                    'typ' => (int) $row['materialTypeID'],
-                    'qua' => (int) $row['quantity']
-                );
+                $this->typeMaterials[(int) $row['materialTypeID']] = (int) $row['quantity'];
             }
         }
     }
@@ -155,17 +152,26 @@ class Type {
         $res = SDE::instance()->query(
             "SELECT 
             it.typeID, 
+            it.groupID,
+            ig.categoryID,
 	    it.marketGroupID as sellable, 
 	    bpProduct.productTypeID as manufacturable, 
 	    bp.bluePrintTypeID as blueprint,
-	    IF(it.groupID IN (728, 729, 730, 731), it.groupID, NULL) as decryptor,
 	    inventor.parentTypeID as inventor, 
-	    inventable.typeId as inventable
+	    inventable.typeId as inventable,
+            rp.typeID as reactionProduct
 	    FROM invTypes as it
+            JOIN invGroups as ig ON it.groupID = ig.groupID
 	    LEFT JOIN invBlueprintTypes as bpProduct ON it.typeID = bpProduct.productTypeID
 	    LEFT JOIN invBlueprintTypes as bp ON it.typeID = bp.blueprintTypeID
-	    LEFT JOIN (SELECT parentTypeID FROM invMetaTypes WHERE metaGroupID = 2 GROUP BY parentTypeID) as inventor ON inventor.parentTypeID = bp.productTypeID
-	    LEFT JOIN (SELECT       typeID FROM invMetaTypes WHERE metaGroupID = 2) as inventable ON inventable.typeID = bp.productTypeID
+	    LEFT JOIN (SELECT parentTypeID FROM invMetaTypes WHERE metaGroupID = 2 GROUP BY parentTypeID) as inventor 
+                ON inventor.parentTypeID = bp.productTypeID
+	    LEFT JOIN (SELECT typeID FROM invMetaTypes WHERE metaGroupID = 2) as inventable 
+                ON inventable.typeID = bp.productTypeID
+            LEFT JOIN (SELECT ir.typeID FROM invTypeReactions as ir
+	        JOIN invTypes ON ir.reactionTypeID = invTypes.typeID
+		    WHERE ir.typeID = " . (int) $typeID . " AND input = 0 AND published = 1 LIMIT 1) as rp 
+                    ON rp.typeID = it.typeID
 	    WHERE it.typeID = " . (int) $typeID . ';'
         );
 
@@ -185,21 +191,25 @@ class Type {
     protected static function decideType($subtypeInfo) {
         if (empty($subtypeInfo))
             throw new Exception("typeID not found");
-        if (!empty($subtypeInfo['inventable'])) {
-            $subtype = 'inventable';
-        } elseif (!empty($subtypeInfo['inventor'])) {
-            $subtype = 'inventor';
-        } elseif (!empty($subtypeInfo['blueprint'])) {
-            $subtype = 'blueprint';
-        } elseif (!empty($subtypeInfo['decryptor'])) {
-            $subtype = 'decryptor';
-        } elseif (!empty($subtypeInfo['manufacturable'])) {
-            $subtype = 'manufacturable';
-        } elseif (!empty($subtypeInfo['sellable'])) {
-            $subtype = 'sellable';
-        } else {
-            $subtype = 'stdtype';
-        }
+        if($subtypeInfo['categoryID'] == 24)
+            $subtype = 'Reaction';
+        elseif(!empty($subtypeInfo['reactionProduct']))
+            $subtype = 'ReactionProduct';
+        elseif (!empty($subtypeInfo['inventable']))
+            $subtype = 'InventableBlueprint';
+        elseif (!empty($subtypeInfo['inventor']))
+            $subtype = 'InventorBlueprint';
+        elseif (!empty($subtypeInfo['blueprint']))
+            $subtype = 'Blueprint';
+        elseif ($subtypeInfo['categoryID'] == 35)
+            $subtype = 'Decryptor';
+        elseif (!empty($subtypeInfo['manufacturable']))
+            $subtype = 'Manufacturable';
+        elseif (!empty($subtypeInfo['sellable']))
+            $subtype = 'Sellable';
+        else
+            $subtype = 'Type';
+
         return iveeCoreConfig::getIveeClassName($subtype);
     }
     
@@ -256,34 +266,49 @@ class Type {
      * @return bool if the item is reprocessable
      */    
     public function isReprocessable(){
-        if(empty($this->requirements))
+        if(empty($this->typeMaterials))
             return false;
         else
             return true;
     }
     
     /**
-     * Returns a MaterialSet object representing the reprocessing materials of the item
+     * @return array with the type materials info
+     */   
+    public function getTypeMaterials(){
+        if(empty($this->typeMaterials)) 
+            return array();
+        else 
+            return $this->typeMaterials;
+    }
+    
+    /**
+     * Returns a MaterialMap object representing the reprocessing materials of the item
      * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
-     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
-     * @return MaterialSet
+     * @param float $reprocessingYield the skill and station dependant reprocessing yield
+     * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor
+     * @return MaterialMap
      * @throws NotReprocessableException if item is not reprocessable
-     * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not sane
+     * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not 
+     * sane
      */
-    public function getReprocessingMaterialSet($batchSize, $effectiveYield){
-        if(empty($this->requirements))
+    public function getReprocessingMaterialMap($batchSize, $reprocessingYield = 1, $reprocessingTaxFactor = 1){
+        if(empty($this->typeMaterials))
             throw new NotReprocessableException($this->typeName . ' is not reprocessable');
         if($batchSize < $this->portionSize OR $batchSize % $this->portionSize != 0) 
             throw new InvalidParameterValueException('Recycling batch size needs to be multiple of ' . $this->portionSize);
-        if($effectiveYield > 1)
-            throw new InvalidParameterValueException('Effective reprocessing yield can never be > 1.0');
+        if($reprocessingYield > 1)
+            throw new InvalidParameterValueException('Reprocessing yield can never be > 1.0');
+        if($reprocessingTaxFactor > 1)
+            throw new InvalidParameterValueException('Reprocessing tax factor can never be > 1.0');
         
-        $materialsClass = iveeCoreConfig::getIveeClassName('materials');
+        $materialsClass = iveeCoreConfig::getIveeClassName('MaterialMap');
         $rmat = new $materialsClass;
         
         $numPortions = $batchSize / $this->portionSize;
-        foreach ($this->requirements[ProcessData::ACTIVITY_MANUFACTURING] as $mat) {
-            $rmat->addMaterial($mat['typ'], $mat['qua'] * $numPortions);
+        foreach ($this->typeMaterials as $type => $quantity) {
+            $rmat->addMaterial($type, 
+                round(round($quantity * $reprocessingYield) * $reprocessingTaxFactor) * $numPortions);
         }
         return $rmat;
     }

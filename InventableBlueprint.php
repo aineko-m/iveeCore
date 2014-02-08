@@ -131,18 +131,18 @@ class InventableBlueprint extends Blueprint {
      * @param int $decryptorID the decryptor the be used, if any
      * @param int|string $inputBPCRuns the number of input runs on the BPC, 'max' for maximum runs.
      * @param boolean $recursive defines if manufacturables should be build recursively
-     * @return InventionData 
+     * @return InventionProcessData 
      */
     public function invent($decryptorID = null, $inputBPCRuns = 1, $recursive = true) {
         return $this->getInventorBlueprint()->invent($this->typeID, $decryptorID, $inputBPCRuns, $recursive);
     }
 
     /**
-     * Convenience function to copy, invent T2 blueprint and manufacture from it in one go
+     * Convenience function to copy, invent T2 blueprint and manufacture from blueprint in one go
      * @param int $decryptorID the decryptor the be used, if any
      * @param int|string $inputBPCRuns the number of input runs on the BPC, 'max' for maximum runs.
      * @param boolean $recursive defines if manufacturables should be build recursively
-     * @return ManufactureData with cascaded InventionData and CopyData objects 
+     * @return ManufactureProcessData with cascaded InventionProcessData and CopyProcessData objects 
      */
     public function copyInventManufacture($decryptorID = null, $BPCRuns = 1, $recursive = true) {
         return $this->getInventorBlueprint()->copyInventManufacture($this->typeID, $decryptorID, $BPCRuns, $recursive);

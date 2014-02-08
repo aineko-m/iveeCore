@@ -2,6 +2,7 @@
 
 /**
  * Class for all Types that can be manufactured
+  * Inheritance: Manufacturable -> Sellable -> Type.
  *
  * @author aineko-m <Aineko Macx @ EVE Online>
  * @license https://github.com/aineko-m/iveeCore/blob/master/LICENSE
@@ -97,14 +98,43 @@ class Manufacturable extends Sellable {
     }
     
     /**
-     * Returns a MaterialSet object representing the reprocessing materials of this item
+     * Returns a MaterialMap object representing the reprocessing materials of the manufacturable.
+     * Do note that due to EvE's "weird" rounding, values might be off-by-1.
      * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
-     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
-     * @return MaterialSet
-     * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not sane
+     * @param float $reprocessingYield the skill and station dependant reprocessing yield
+     * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor
+     * @return MaterialMap
+     * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not 
+     * sane
      */
-    public function getReprocessingMaterialSet($batchSize, $effectiveYield){
-        return $this->getBlueprint()->getProductReprocessingMaterialSet($batchSize, $effectiveYield);
+    public function getReprocessingMaterialMap($batchSize, $reprocessingYield, $reprocessingTaxFactor){
+        if($reprocessingYield > 1)
+            throw new InvalidParameterValueException('Reprocessing yield can never be > 1.0');
+        if($reprocessingTaxFactor > 1)
+            throw new InvalidParameterValueException('Reprocessing tax factor can never be > 1.0');
+        
+        $materialsClass = iveeCoreConfig::getIveeClassName('MaterialMap');
+        $rmat = new $materialsClass;
+        
+        //get the number of portions being reprocessed
+        $numPortions = $batchSize / $this->portionSize;
+        
+        $sde = SDE::instance();
+        
+        //iterate over requirements
+       foreach ($this->typeMaterials as $typeID => $quantity) {
+            $type = $sde->getType($typeID);
+            
+            //skip skill requirements
+            if($type->getCategoryID() == 16) 
+                continue;
+
+            //add base material to reprocessing materials, account for portionSize
+            else 
+                $rmat->addMaterial($typeID, 
+                    round(round($quantity * $reprocessingYield) * $reprocessingTaxFactor) * $numPortions);
+        }
+        return $rmat;
     }
 }
 

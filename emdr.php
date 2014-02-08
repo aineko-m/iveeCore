@@ -118,8 +118,8 @@ class EmdrConsumer {
     /**
      * Main work method.
      * Loops indefinitely unless interrupted.
-     * Note that the MySQL connection might time out if no relevant data is received over longer periods, EvE downtimes,
-     * for instance.
+     * Note that the MySQL connection might time out if no relevant data is received over longer periods, EvE 
+     * downtimes, for instance.
      */
     public function run(){
         if(VERBOSE) echo "Starting EMDR data stream" . PHP_EOL;
@@ -162,7 +162,8 @@ class EmdrConsumer {
                 //skip data with impossible generation date. Make sure your systems clock is correct.
                 if($generatedAt > time()){
                     if(VERBOSE > 2) 
-                        echo '- skipping data for typeID=' . $typeID . ', generated in the future: ' . $rowset->generatedAt . PHP_EOL;
+                        echo '- skipping data for typeID=' . $typeID . ', generated in the future: ' 
+                            . $rowset->generatedAt . PHP_EOL;
                     continue;
                 }
                 
@@ -190,7 +191,8 @@ class EmdrConsumer {
         //skip if data is older than newest generatedAt/priceUpdateTimestamp
         if($generatedAt < $this->priceUpdateTimestamps[$typeID]){
             if(VERBOSE > 2) 
-                echo '- skipping old price data for typeID=' . $typeID . ', generated at ' . $rowset->generatedAt . PHP_EOL;
+                echo '- skipping old price data for typeID=' . $typeID . ', generated at ' 
+                    . $rowset->generatedAt . PHP_EOL;
             return;
         }
 
@@ -222,7 +224,8 @@ class EmdrConsumer {
         //skip if data is older than newest generatedAt/historyUpdateTimestamp
         if($generatedAt < $this->historyUpdateTimestamps[$typeID]){
             if(VERBOSE > 2) 
-                echo '- skipping old history data for typeID=' . $typeID . ', generated at ' . $rowset->generatedAt . PHP_EOL;
+                echo '- skipping old history data for typeID=' . $typeID . ', generated at ' 
+                    . $rowset->generatedAt . PHP_EOL;
             return;
         }
 
@@ -310,7 +313,7 @@ class EmdrHistoryUpdate {
     public function insertIntoDB(){
         $combinedSql = '';
         $latestDate = 0;
-        $utilClass = iveeCoreConfig::getIveeClassName('util');
+        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
         
         foreach($this->rows as $day){
             $rowdate = (int) strtotime($day[0]);
@@ -505,7 +508,7 @@ class EmdrPriceUpdate {
      */
     public function insertIntoDB(){
         if(isset($this->sell) OR isset($this->buy)){
-            $utilClass = iveeCoreConfig::getIveeClassName('util');
+            $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
             $updateData = array(
                 'typeID' => $this->typeID,
                 'regionID' => $this->regionID,

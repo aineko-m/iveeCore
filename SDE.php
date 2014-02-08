@@ -217,7 +217,7 @@ class SDE {
             return $this->types[$typeID];
         } else {
             //lookup Type class
-            $typeClass = iveeCoreConfig::getIveeClassName('stdtype');
+            $typeClass = iveeCoreConfig::getIveeClassName('Type');
             
             //try memcached
             if(iveeCoreConfig::getUseMemcached()){
@@ -243,7 +243,7 @@ class SDE {
     /**
      * Returns Type object.
      * Loads all type names from DB or memached to PHP when first used. 
-     * The names use a few MB of RAM, so avoid if you have little available.
+     * Note that populating the name => id array takes time and uses a few MBs of RAM
      * @param string $typeName of requested Type
      * @return Type the requested Type or subclass object
      * @throws TypeNameNotFoundException if type name is not found
