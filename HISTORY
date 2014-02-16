@@ -1,5 +1,11 @@
 This file lists major changes in iveeCore versions.
 
+Version 1.2.1 - February 16, 2014
+---------------------------------
+- Minor changes to include path handling
+- Adapted README to Rubicon 1.2 release
+- Added iveeCoreConfig.php to .gitignore
+
 Version 1.2 - February 8, 2014
 ------------------------------
 - Added reaction calculations

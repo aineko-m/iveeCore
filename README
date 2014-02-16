@@ -64,9 +64,10 @@ If everything went well, you should see a line with the libzmq version.
 - Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to some helpful developers. At the time of this writing the latest conversion can be found here: 
-https://forums.eveonline.com/default.aspx?g=posts&m=4150597#post4150597
+https://forums.eveonline.com/default.aspx?g=posts&m=4238376#post4238376
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_rubi11". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like HeidiSQL.
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_rubi12". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like HeidiSQL.
+Since Rubicon 1.2 the SDE comes in two parts, base and universe data. Currently, iveeCore only required the base data, but there is no downside to importing the universe data as well.
 
 - Setup iveeCore
 
@@ -104,7 +105,7 @@ USAGE
 Please take a look at the class diagram in iveeCore/doc/iveeCore_class_diagram.pdf and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples:
 
 <?php
-//include and initialize iveeCore
+//include and initialize iveeCore. Adapt path if required.
 require_once('iveeCoreConfig.php');
 
 //get SDE object

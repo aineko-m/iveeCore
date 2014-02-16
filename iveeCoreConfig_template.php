@@ -3,7 +3,8 @@
 /**
  * Main include and configuration file for iveeCore.
  * 
- * Copy and edit this file according to your environment and industrial setup in eve
+ * Copy and edit this file according to your environment and industrial setup in eve.
+ * The edited file should be named iveeCoreConfig.php
  *
  * @author aineko-m <Aineko Macx @ EVE Online>
  * @license public domain
@@ -11,8 +12,8 @@
  * @package iveeCore
  */
 
-//include all required classes. If you extended iveeCore classes, you'll want to add them here.
-$iveeCoreClassPath = dirname(__FILE__).DIRECTORY_SEPARATOR;
+//include all required classes with absolute path. If you extended iveeCore classes, you'll want to add them here.
+$iveeCoreClassPath = dirname(__FILE__) . DIRECTORY_SEPARATOR;
 require_once($iveeCoreClassPath . 'iveeCoreExceptions.php');
 require_once($iveeCoreClassPath . 'SDE.php');
 require_once($iveeCoreClassPath . 'Type.php');
@@ -47,7 +48,7 @@ class iveeCoreConfig{
     protected static $DB_PORT = 3306;
     protected static $DB_USER = 'eve_sde';
     protected static $DB_PW   = 'eve_sde_pw';
-    protected static $DB_NAME = 'eve_sde_ody11';
+    protected static $DB_NAME = 'eve_sde_ody12';
     
     //Memcached config
     protected static $USE_MEMCACHED    = TRUE;

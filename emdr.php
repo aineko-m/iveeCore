@@ -24,8 +24,8 @@ ini_set('display_errors', 'on');
 
 DEFINE('VERBOSE', 1);
 
-//include config from one directory above, via absolute path
-require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreConfig.php');
+//include the iveeCore configuration, expected to be in the same directory, with absolute path
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'iveeCoreConfig.php');
 
 $ec = EmdrConsumer::instance();
 $ec->run();
