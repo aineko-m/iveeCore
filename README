@@ -35,7 +35,7 @@ For basic usage, iveeCore requires:
 - MySQL 5.5 or newer or derivate (MariaDB, Percona Server)
 - A current EVE Static Data Export (SDE) in MySQL format
 
-However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calulcation capabilities, as this requires the ZMQ PHP bindings.
+However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calculation capabilities, as this requires the ZMQ PHP bindings.
 
 Since ZMQ is a not a standard module you'll need root access to whatever box you plan on running the EMDR client on. iveeCore can also easily make PHP scripts use more RAM than what is typically configured on shared hosting offers, so a VPS is likely the minimum required setup for full functionality. A VM on a desktop is fine too.
 Note that the complete market data for a single region over a one year timeframe takes roughly 200MB in the database.

@@ -3,7 +3,10 @@ This file lists major changes in iveeCore versions.
 Version 1.3 - March 29, 2014
 ----------------------------
 - Added parsers for EFT-style and EvE's XML fitting descriptions as well as cargo and ship scanning results.
-- Reworked how configuration & defaults and utility methods are organized, for cleaner separation and better consistency. Defaults now reside in IveeCoreDefaults.php and customization is done in the subclass/file MyIveeCoreDefaults.php. As a consequence, iveeCoreConfig_template.php also changed a lot, therefore configuration files will have to be redone.
+- Reworked how configuration & defaults and utility methods are organized, for cleaner separation and better 
+consistency. Defaults now reside in IveeCoreDefaults.php and customization is done in the subclass/file 
+MyIveeCoreDefaults.php. As a consequence, iveeCoreConfig_template.php also changed a lot, therefore configuration files 
+will have to be redone.
 - Adapted README to Rubicon 1.3 release
 - More bugfixes and unit tests
 
