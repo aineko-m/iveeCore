@@ -156,7 +156,7 @@ class MaterialMap {
             if (!($type instanceof Sellable) OR !$type->onMarket()) 
                 continue;
             if($amount > 0)
-                $sum += $type->getBuyPrice($maxPriceDataAge) * $amount * iveeCoreConfig::getDefaultBuyTaxFactor();
+                $sum += $type->getBuyPrice($maxPriceDataAge) * $amount * $sde->defaults->getDefaultBuyTaxFactor();
         }
         return $sum;
     }
@@ -175,7 +175,7 @@ class MaterialMap {
             if (!($type instanceof Sellable) OR !$type->onMarket()) 
                 continue;
             if($amount > 0)
-                $sum += $type->getSellPrice($maxPriceDataAge) * $amount * iveeCoreConfig::getDefaultSellTaxFactor();
+                $sum += $type->getSellPrice($maxPriceDataAge) * $amount * $sde->defaults->getDefaultSellTaxFactor();
         }
         return $sum;
     }

@@ -113,9 +113,9 @@ class InventionProcessData extends ProcessData {
      */
     public function getTotalSuccessTimes(){
         $sum = array(
-            self::ACTIVITY_MANUFACTURING => 0, 
-            self::ACTIVITY_COPYING => 0, 
-            self::ACTIVITY_INVENTING => 0
+            static::ACTIVITY_MANUFACTURING => 0, 
+            static::ACTIVITY_COPYING => 0, 
+            static::ACTIVITY_INVENTING => 0
         );
         
         $sum[$this->activityID] = $this->processTime / $this->inventionChance;
@@ -178,9 +178,9 @@ class InventionProcessData extends ProcessData {
      * @return float
      */
     public function getSlotCost(){
-        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
-        return $this->processTime * (iveeCoreConfig::getUsePosInvention() ? 
-            $utilClass::getPosSlotCostPerSecond() : iveeCoreConfig::getStationInventionCostPerSecond());
+        $defaults = SDE::instance()->defaults;
+        return $this->processTime * ($defaults->getUsePosInvention() ? 
+            $defaults->getPosSlotCostPerSecond() : $defaults->getStationInventionCostPerSecond());
     }
 
     /**

@@ -22,8 +22,7 @@ class SkillMap {
      * @throws InvalidParameterValueException if the skill level is not a valid integer between 0 and 5
      */
     public function addSkill($skillID, $level) {
-        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
-        $utilClass::sanityCheckSkillLevel($level);
+        static::sanityCheckSkillLevel($level);
         if (isset($this->skills[(int)$skillID])) {
             //overwrite existing skill if $level is higher
             if ($this->skills[(int)$skillID] < $level)
@@ -48,6 +47,18 @@ class SkillMap {
      */
     public function getSkills(){
         return $this->skills;
+    }
+    
+    /**
+     * Sanity checks a skill level (verify it's an integer between 0 and 5)
+     * @param int $skillLevel the value to be checked
+     * @return bool true on success
+     * @throws InvalidParameterValueException if $skillLevel is not a valid skill level
+     */
+    public static function sanityCheckSkillLevel($skillLevel){
+        if($skillLevel < 0 OR $skillLevel > 5 OR $skillLevel%1 > 0)
+            throw new InvalidParameterValueException("Skill level needs to be an integer between 0 and 5");
+        return true;
     }
 }
 ?>

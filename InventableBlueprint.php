@@ -22,7 +22,8 @@ class InventableBlueprint extends Blueprint {
      * @throws TypeIdNotFoundException when a typeID is not found
      */
     protected function queryAttributes() {
-        $row = SDE::instance()->query(
+        $sde = SDE::instance();
+        $row = $sde->query(
             "SELECT 
             it.groupID, 
             ig.categoryID,
@@ -69,7 +70,7 @@ class InventableBlueprint extends Blueprint {
                 LEFT JOIN iveePrices AS ah ON iveeTrackedPrices.newestHistData = ah.id
                 LEFT JOIN iveePrices AS ap ON iveeTrackedPrices.newestPriceData = ap.id
                 WHERE iveeTrackedPrices.typeID = " . (int) $this->typeID . "
-                AND iveeTrackedPrices.regionID = " . (int) iveeCoreConfig::getDefaultRegionID() . "
+                AND iveeTrackedPrices.regionID = " . (int) $sde->defaults->getDefaultRegionID() . "
             ) AS atp ON atp.typeID = it.typeID
             LEFT JOIN (
                 SELECT 

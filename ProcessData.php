@@ -320,9 +320,9 @@ class ProcessData {
      */
     public function getTotalTimes(){
         $sum = array(
-            self::ACTIVITY_MANUFACTURING => 0, 
-            self::ACTIVITY_COPYING => 0, 
-            self::ACTIVITY_INVENTING => 0
+            static::ACTIVITY_MANUFACTURING => 0, 
+            static::ACTIVITY_COPYING => 0, 
+            static::ACTIVITY_INVENTING => 0
         );
         
         if($this->processTime > 0) $sum[$this->activityID] = $this->processTime;

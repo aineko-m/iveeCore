@@ -12,9 +12,14 @@
 class SDE {
     
     /**
-     * @var SDE $instance contains the singleton SDE object.
+     * @var SDE $instance holds the singleton SDE object.
      */
     protected static $instance;
+    
+    /**
+     * @var IveeCoreDefaults $defaults holds the singleton IveeCoreDefaults object.
+     */
+    public $defaults;
     
     /**
      * @var mysqli $db holds the DB connections.
@@ -61,8 +66,11 @@ class SDE {
     /**
      * Constructor. Implements the singleton pattern.
      * @param mysqli $db is an optional reference to an existing DB connection object
+     * @param Memcached $memcached is an optional reference to an existing Memcached object.
      */
-    protected function __construct($db) {
+    protected function __construct(mysqli $db = null, Memcached $memcached = null) {
+        $defaultsClass = iveeCoreConfig::getIveeClassName('IveeCoreDefaults');
+        $this->defaults = $defaultsClass::instance();
         $this->types = array();
         if (!isset($db)) {
             $db = new mysqli(
@@ -86,20 +94,27 @@ class SDE {
         
         //init Memcached
         if(iveeCoreConfig::getUseMemcached()){
-            $this->memcached = new Memcached();
-            $this->memcached->addServer(iveeCoreConfig::getMemcachedHost(), iveeCoreConfig::getMemcachedPort());
+            if(isset($memcached)){
+                if (count($memcached->getServerList() < 1)) 
+                    throw new InvalidParameterValueException("No memcache server defined in given Memcached object.");
+                $this->memcached = $memcached;
+            } else {
+                $this->memcached = new Memcached();
+                $this->memcached->addServer(iveeCoreConfig::getMemcachedHost(), iveeCoreConfig::getMemcachedPort());
+            }
         }
     }
 
     /**
      * Returns SDE instance.
-     * @param mysqli $db is an optional reference to an existing DB connection
+     * @param mysqli $db is an optional reference to an existing DB connection object
+     * @param Memcached $memcached is an optional reference to an existing Memcached object.
      * @return SDE
      */
-    public static function instance($db = null) {
-        if (!isset(self::$instance))
-            self::$instance = new SDE($db);
-        return self::$instance;
+    public static function instance(mysqli $db = null, Memcached $memcached = null) {
+        if (!isset(static::$instance))
+            static::$instance = new static($db, $memcached);
+        return static::$instance;
     }
     
     /**
@@ -161,12 +176,13 @@ class SDE {
      * Stores object in Memcached.
      * @param object $object to be stored
      * @param string|int $key under which the object will be stored
+     * @param int $expiration Time To Live of the stored object
      * @return boolean true on success
      * @throws MemcachedDisabledException if memcached has been disabled
      */
-    public function storeInCache($object, $key){
+    public function storeInCache($object, $key, $expiration = 0){
         if(iveeCoreConfig::getUseMemcached())
-            return $this->memcached->set(iveeCoreConfig::getMemcachedPrefix() . $key, $object);
+            return $this->memcached->set(iveeCoreConfig::getMemcachedPrefix() . $key, $object, $expiration);
         else
             throw new MemcachedDisabledException('Use of Memcached has been disabled in the configuration');
     }
@@ -198,6 +214,17 @@ class SDE {
     public function invalidateCache($key){
         if(iveeCoreConfig::getUseMemcached())
             return $this->memcached->delete(iveeCoreConfig::getMemcachedPrefix() . $key);
+        else
+            return true;
+    }
+    
+    /**
+     * Clears all stored objects in memcached.
+     * @return boolean true on success or if memcached has been disabled.
+     */
+    public function flushCache(){
+        if(iveeCoreConfig::getUseMemcached())
+            return $this->memcached->flush();
         else
             return true;
     }
@@ -239,16 +266,16 @@ class SDE {
             return $type;
         }
     }
-    
+
     /**
-     * Returns Type object.
+     * Returns Type ID for a TypeName
      * Loads all type names from DB or memached to PHP when first used. 
      * Note that populating the name => id array takes time and uses a few MBs of RAM
      * @param string $typeName of requested Type
-     * @return Type the requested Type or subclass object
+     * @return int the ID of the requested Type
      * @throws TypeNameNotFoundException if type name is not found
      */
-    public function getTypeByName($typeName){
+    public function getTypeIdByName($typeName){
         //check if names have been loaded yet
         if(empty($this->typeNames)){
             //try memcached
@@ -267,11 +294,22 @@ class SDE {
             }
         }
         
-        //return proper Type object
+        $typeName = trim($typeName);
+        //return ID if type exists
         if(isset($this->typeNames[$typeName]))
-            return $this->getType($this->typeNames[$typeName]);
+            return $this->typeNames[$typeName];
         else
             throw new TypeNameNotFoundException("type name not found");
+    }
+    
+    /**
+     * Returns Type object.
+     * @param string $typeName of requested Type
+     * @return Type the requested Typeobject
+     * @throws TypeNameNotFoundException if type name is not found
+     */
+    public function getTypeByName($typeName){
+        return $this->getType($this->getTypeIdByName($typeName));
     }
     
     /**

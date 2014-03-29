@@ -39,9 +39,9 @@ class CopyProcessData extends ProcessData {
      * @return float
      */
     public function getSlotCost(){
-        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
-        return $this->processTime * (iveeCoreConfig::getUsePosCopying() ? 
-            $utilClass::getPosSlotCostPerSecond() : iveeCoreConfig::getStationCopyingCostPerSecond());
+        $defaults = SDE::instance()->defaults;
+        return $this->processTime * ($defaults->getUsePosCopying() ? 
+            $defaults->getPosSlotCostPerSecond() : $defaults->getStationCopyingCostPerSecond());
     }
     
     /**

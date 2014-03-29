@@ -89,7 +89,8 @@ class Sellable extends Type {
      * @throws TypeIdNotFoundException when a typeID is not found
      */
     protected function queryAttributes() {
-        $row = SDE::instance()->query(
+        $sde = SDE::instance();
+        $row = $sde->query(
             "SELECT 
             it.groupID, 
             ig.categoryID,
@@ -133,7 +134,7 @@ class Sellable extends Type {
                 LEFT JOIN iveePrices AS ah ON iveeTrackedPrices.newestHistData = ah.id
                 LEFT JOIN iveePrices AS ap ON iveeTrackedPrices.newestPriceData = ap.id
                 WHERE iveeTrackedPrices.typeID = " . (int) $this->typeID . "
-                AND iveeTrackedPrices.regionID = " . (int) iveeCoreConfig::getDefaultRegionID() . "
+                AND iveeTrackedPrices.regionID = " . (int) $sde->defaults->getDefaultRegionID() . "
             ) AS atp ON atp.typeID = it.typeID
             WHERE it.published = 1 
             AND it.typeID = " . (int) $this->typeID . ";"
@@ -246,11 +247,12 @@ class Sellable extends Type {
      * @throws InvalidParameterValueException if invalid dates are given
      */
     public function getHistory($regionID = null, $fromDate = null, $toDate = null){
+        $sde = SDE::instance();
         if(is_null($this->marketGroupID))
             throw new NotOnMarketException($this->typeName . ' is not sellable on the market');        
         //set default region if null
         if(is_null($regionID))
-            $regionID = iveeCoreConfig::getDefaultRegionID();
+            $regionID = $sde->defaults->getDefaultRegionID();
         
         //set 90 day default if fromDate is null
         if(is_null($fromDate))
@@ -272,7 +274,7 @@ class Sellable extends Type {
             }
         }
         
-        $res = SDE::instance()->query("
+        $res = $sde->query("
             SELECT
             date,
             low,

@@ -114,7 +114,7 @@ class Decryptor extends Sellable {
      */
     public static function getIDsFromGroup($groupID) {
         //lazy load data from DB
-        if (empty(self::$decryptorGroups)) {
+        if (empty(static::$decryptorGroups)) {
             $res = SDE::instance()->query(
                 "SELECT it.groupID, it.typeID FROM invGroups as ig
                 JOIN invTypes as it ON ig.groupID = it.groupID
@@ -122,13 +122,13 @@ class Decryptor extends Sellable {
                 AND it.published = 1"
             );
             while ($row = $res->fetch_assoc()){
-                self::$decryptorGroups[(int) $row['groupID']][] = $row['typeID'];
+                static::$decryptorGroups[(int) $row['groupID']][] = $row['typeID'];
             }
         }
         
-        if (!isset(self::$decryptorGroups[$groupID]))
+        if (!isset(static::$decryptorGroups[$groupID]))
             throw new InvalidDecryptorGroupException("Decryptor group " . (int)$groupID . " not found");
-        return self::$decryptorGroups[$groupID];
+        return static::$decryptorGroups[$groupID];
     }
     
     /**

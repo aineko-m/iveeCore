@@ -62,9 +62,9 @@ class ManufactureProcessData extends ProcessData {
      * @return float
      */
     public function getSlotCost(){
-        $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
-        return $this->processTime * (iveeCoreConfig::getUsePosManufacturing() ? 
-            $utilClass::getPosSlotCostPerSecond() : iveeCoreConfig::getStationManufacturingCostPerSecond());
+        $defaults = SDE::instance()->defaults;
+        return $this->processTime * ($defaults->getUsePosManufacturing() ? 
+            $defaults->getPosSlotCostPerSecond() : $defaults->getStationManufacturingCostPerSecond());
     }
     
     /**
@@ -81,7 +81,7 @@ class ManufactureProcessData extends ProcessData {
      */
     public function getTotalProfit($maxPriceDataAge = null) {
         return (SDE::instance()->getType($this->producesTypeID)->getSellPrice($maxPriceDataAge) 
-            * $this->producesQuantity * iveeCoreConfig::getDefaultSellTaxFactor()) 
+            * $this->producesQuantity * SDE::instance()->defaults->getDefaultSellTaxFactor()) 
                 - ($this->getTotalCost($maxPriceDataAge));
     }
     

@@ -1,6 +1,7 @@
 <?php
 
-require_once('../iveeCoreConfig.php');
+//include the iveeCore configuration, expected in the iveeCore directory, with absolute path
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreConfig.php');
 
 /**
  * PHPUnit test for iveeCore
@@ -18,31 +19,75 @@ require_once('../iveeCoreConfig.php');
  */
 class IveeCoreTest extends PHPUnit_Framework_TestCase {
     
-    protected $sde;
-    
     protected function setUp(){
-        $this->sde = SDE::instance();
+        SDE::instance()->flushCache();
     }
     
-    public function testSdeSingleton(){
-        $this->assertTrue($this->sde instanceof SDE);
-        $this->assertTrue($this->sde === SDE::instance());
+    public function testSde(){
+        $this->assertTrue(SDE::instance() instanceof SDE);
+    }
+    
+    public function testBasicTypeMethods(){
+        $type = SDE::instance()->getType(22);
+        $this->assertTrue($type instanceof Sellable);
+        $this->assertTrue($type->getTypeID() == 22);
+        $this->assertTrue($type->getGroupID() == 450);
+        $this->assertTrue($type->getCategoryID() == 25);
+        $this->assertTrue($type->getName() == 'Arkonor');
+        $this->assertTrue($type->getVolume() == 16);
+        $this->assertTrue($type->getPortionSize() == 200);
+        $this->assertTrue($type->getBasePrice() == 2133490.0);
+        $this->assertTrue($type->isReprocessable());
+        $this->assertTrue(is_array($type->getTypeMaterials()));
+    }
+    
+    public function testBasicSDEUtilMethods(){
+        $this->assertTrue(SDEUtil::calcReprocessingYield(0.5, 0, 0) == 0.875);
+        $this->assertTrue(SDEUtil::calcReprocessingTaxFactor(0) == 0.95);
     }
     
     public function testGetTypeAndCache(){
+        //can't test cache with cache disabled
+        if(!iveeCoreConfig::getUseMemcached())
+            return;
+        
         //empty cache entry for type
-        $this->sde->invalidateCache('type_' . 645);
+        $sde = SDE::instance();
+        $sde->invalidateCache('type_' . 645);
         //get type
-        $type = $this->sde->getType(645);
+        $type = $sde->getType(645);
         $this->assertTrue($type instanceof Manufacturable);
-        if(iveeCoreConfig::getUseMemcached())
-            $this->assertTrue($type == $this->sde->getFromCache('type_' . 645));
-        $this->assertTrue($type == $this->sde->getTypeByName('Dominix'));
+        $this->assertTrue($type == $sde->getFromCache('type_' . 645));
+        $this->assertTrue($type == $sde->getTypeByName('Dominix'));
+    }
+    
+    public function testBasicBlueprintMethods(){
+        $type = SDE::instance()->getType(2047);
+        $this->assertTrue($type instanceof Blueprint);
+        //stubs
+        $type->manufacture();
+        $type->copy();
+        $type->getTypeRequirements();
+        $type->getProduct();
+        $type->getProductionTime();
+        $type->getTechLevel();
+        $type->getResearchProductivityTime();
+        $type->getResearchMaterialTime();
+        $type->getResearchCopyTime();
+        $type->getResearchTechTime();
+        $type->getProductivityModifier();
+        $type->getMaterialModifier();
+        $type->getMaxProductionLimit();
+        $type->calcMaterialFactor();
+        $type->calcProductionTime();
+        $type->calcCopyTime();
+        $type->calcPEResearchTime();
+        $type->calcMEResearchTime();
     }
     
     public function testManufacturing(){
         //Dominix - Test if extra materials are handled correctly when PE skill level < 5
-        $mpd = $this->sde->getType(645)->getBlueprint()->manufacture(1, 10, 5, false, 4);
+        $mpd = SDE::instance()->getType(645)->getBlueprint()->manufacture(1, 10, 5, false, 4);
         $this->assertTrue($mpd->getProducedType()->getTypeID() == 645);
         $this->assertTrue($mpd->getTime() == 12000);
         $materialTarget = new MaterialMap();
@@ -56,7 +101,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($mpd->getMaterialMap() == $materialTarget);
         
         //Improved Cloaking Device II - Tests if materials with recycle flag are handled correctly
-        $mpd = $this->sde->getTypeByName('Improved Cloaking Device II')->getBlueprint()->manufacture(1, -4, 0, false, 4);
+        $mpd = SDE::instance()->getTypeByName('Improved Cloaking Device II')->getBlueprint()->manufacture(1, -4, 0, false, 4);
         $materialTarget = new MaterialMap();
         $materialTarget->addMaterial(9840, 10);
         $materialTarget->addMaterial(9842, 5);
@@ -69,8 +114,8 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
         
         //test recursive building and adding ManufactureProcessData objects to ProcessData objects as sub-processes
         $pd = new ProcessData();
-        $pd->addSubProcessData($this->sde->getTypeByName('Archon')->getBlueprint()->manufacture(1, 2, 1, true, 5));
-        $pd->addSubProcessData($this->sde->getTypeByName('Rhea')->getBlueprint()->manufacture(1, -2, 1, true, 5));
+        $pd->addSubProcessData(SDE::instance()->getTypeByName('Archon')->getBlueprint()->manufacture(1, 2, 1, true, 5));
+        $pd->addSubProcessData(SDE::instance()->getTypeByName('Rhea')->getBlueprint()->manufacture(1, -2, 1, true, 5));
         $materialTarget = new MaterialMap();
         $materialTarget->addMaterial(34, 173107652);
         $materialTarget->addMaterial(35, 28768725);
@@ -106,14 +151,15 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testReprocessing(){      
-        $rmap = $this->sde->getTypeByName('Arkonor')->getReprocessingMaterialMap(200, 0.8825, 1);
+        $sde = SDE::instance();
+        $rmap = $sde->getTypeByName('Arkonor')->getReprocessingMaterialMap(200, 0.8825, 1);
         $materialTarget = new MaterialMap();
         $materialTarget->addMaterial(34, 8825);
         $materialTarget->addMaterial(39, 146);
         $materialTarget->addMaterial(40, 294);
         $this->assertTrue($rmap == $materialTarget);
         
-        $rmap = $this->sde->getTypeByName('Zealot')->getReprocessingMaterialMap(1, 0.8825, 0.95);
+        $rmap = $sde->getTypeByName('Zealot')->getReprocessingMaterialMap(1, 0.8825, 0.95);
         $materialTarget = new MaterialMap();
         $materialTarget->addMaterial(34, 41704);
         $materialTarget->addMaterial(35, 21779);
@@ -132,7 +178,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
         $materialTarget->addMaterial(11557, 252);
         $this->assertTrue($rmap == $materialTarget);
         
-        $rmap = $this->sde->getTypeByName('Ark')->getReprocessingMaterialMap(1, 0.8825, 0.95);
+        $rmap = $sde->getTypeByName('Ark')->getReprocessingMaterialMap(1, 0.8825, 0.95);
         $materialTarget = new MaterialMap();
         $materialTarget->addMaterial(3828, 1258);
         $materialTarget->addMaterial(11399, 2096);
@@ -149,7 +195,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
     
     public function testCopying(){
         //test copying of BPs that consume materials
-        $cpd = $this->sde->getTypeByName('Prototype Cloaking Device I')->getBlueprint()->copy(3, 'max', true);
+        $cpd = SDE::instance()->getTypeByName('Prototype Cloaking Device I')->getBlueprint()->copy(3, 'max', true);
         $materialTarget = new MaterialMap();
         $materialTarget->addMaterial(3812, 6000);
         $materialTarget->addMaterial(36, 24000);
@@ -160,7 +206,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testInventing(){
-        $ipd = $this->sde->getTypeByName('Ishtar Blueprint')->invent(23185);
+        $ipd = SDE::instance()->getTypeByName('Ishtar Blueprint')->invent(23185);
         $this->assertTrue($ipd->getInventionChance() == 0.312);
         $materialTarget = new MaterialMap();
         $materialTarget->addMaterial(23185, 1);
@@ -171,7 +217,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testCopyInventManufacture(){
-        $cimpd = $this->sde->getTypeByName('Ishtar Blueprint')->copyInventManufacture(23185);
+        $cimpd = SDE::instance()->getTypeByName('Ishtar Blueprint')->copyInventManufacture(23185);
         $materialTarget = new MaterialMap();
         $materialTarget->addMaterial(38, 9320.4);
         $materialTarget->addMaterial(3828, 420);
@@ -206,13 +252,13 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
     }
     
     public function testReaction(){
-        $reactionProduct = $this->sde->getTypeByName('Platinum Technite');
+        $reactionProduct = SDE::instance()->getTypeByName('Platinum Technite');
         $this->assertTrue($reactionProduct instanceof ReactionProduct);
         //test correct handling of reaction products that can result from alchemy + refining
         $this->assertTrue($reactionProduct->getReactionIDs() == array(17952, 32831));
 
         //test handling of alchemy reactions with refining + feedback
-        $rpd = $this->sde->getTypeByName('Unrefined Platinum Technite Reaction')->react(24 * 30, true, true, 1, 1);
+        $rpd = SDE::instance()->getTypeByName('Unrefined Platinum Technite Reaction')->react(24 * 30, true, true, 1, 1);
         $inTarget = new MaterialMap();
         $inTarget->addMaterial(16640, 72000);
         $inTarget->addMaterial(16644, 7200);
@@ -220,6 +266,95 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
         $outTarget = new MaterialMap();
         $outTarget->addMaterial(16662, 14400);
         $this->assertTrue($rpd->getOutputMaterialMap()->getMaterials() == $outTarget->getMaterials());
+    }
+    
+    public function testEftFitParsing(){
+        $fit = "
+            
+            [Naglfar, My Nag]
+Republic Fleet Gyrostabilizer
+Republic Fleet Gyrostabilizer
+
+Tracking Computer II,Tracking Speed Script
+Tracking Computer II,Optimal Range Script
+
+6x2500mm Repeating Cannon I,Arch Angel Nuclear XL x1234
+6x2500mm Repeating Cannon I,Arch Angel Nuclear XL
+Siege Module II
+";
+        $pr = FitParser::parseEftFit($fit);
+        
+        $materialTarget = new MaterialMap();
+        $materialTarget->addMaterial(19722, 1);
+        $materialTarget->addMaterial(15806, 2);
+        $materialTarget->addMaterial(1978, 2);
+        $materialTarget->addMaterial(29001, 1);
+        $materialTarget->addMaterial(28999, 1);
+        $materialTarget->addMaterial(20452, 2);
+        $materialTarget->addMaterial(20745, 1235);
+        $materialTarget->addMaterial(4292, 1);
+        
+        $this->assertTrue($pr->getMaterialMap() == $materialTarget);
+    }
+    
+    public function testScanParsing(){
+        $scanResult = "
+            10MN Afterburner I
+Inertia Stabilizers II
+Expanded Cargohold II
+
+1 Improved Cloaking Device II
+9 Hobgoblin I
+1 Siege Warfare Link - Shield Efficiency II
+1 Siege Warfare Link - Active Shielding II
+10  Salvage Drone I
+
+            ";
+        $pr = FitParser::parseScanResult($scanResult);
+        
+        $materialTarget = new MaterialMap();
+        $materialTarget->addMaterial(12056, 1);
+        $materialTarget->addMaterial(1405, 1);
+        $materialTarget->addMaterial(1319, 1);
+        $materialTarget->addMaterial(11577, 1);
+        $materialTarget->addMaterial(2454, 9);
+        $materialTarget->addMaterial(4282, 1);
+        $materialTarget->addMaterial(4280, 1);
+        $materialTarget->addMaterial(32787, 10);
+        
+        $this->assertTrue($pr->getMaterialMap() == $materialTarget);
+    }
+    
+    public function testXmlFitParsing(){
+        $fitDom = new DOMDocument();
+        $fitDom->loadXML('<?xml version="1.0" ?>
+	<fittings>
+            <fitting name="Abadong">
+                <description value=""/>
+                <shipType value="Abaddon"/>
+                <hardware slot="low slot 0" type="Damage Control II"/>
+                <hardware slot="low slot 1" type="Heat Sink II"/>
+                <hardware slot="low slot 2" type="1600mm Reinforced Rolled Tungsten Plates I"/>
+                <hardware slot="hi slot 7" type="Mega Pulse Laser II"/>
+                <hardware slot="rig slot 2" type="Large Trimark Armor Pump I"/>
+                <hardware qty="5" slot="drone bay" type="Hammerhead II"/>
+                <hardware qty="5" slot="drone bay" type="Warrior II"/>
+            </fitting>
+        </fittings>');
+        
+        $pr = FitParser::parseXmlFit($fitDom);
+        
+        $materialTarget = new MaterialMap();
+        $materialTarget->addMaterial(24692, 1);
+        $materialTarget->addMaterial(2048, 1);
+        $materialTarget->addMaterial(2364, 1);
+        $materialTarget->addMaterial(11325, 1);
+        $materialTarget->addMaterial(3057, 1);
+        $materialTarget->addMaterial(25894, 1);
+        $materialTarget->addMaterial(2185, 5);
+        $materialTarget->addMaterial(2488, 5);
+        
+        $this->assertTrue($pr->getMaterialMap() == $materialTarget);
     }
 }
 ?>

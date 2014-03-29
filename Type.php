@@ -132,18 +132,17 @@ class Type {
     public static function factory($typeID, $subtypeInfo = NULL) {
         //get type decision data if not given
         if(is_null($subtypeInfo))
-            $subtypeInfo = self::getSubtypeInfo((int)$typeID);
+            $subtypeInfo = static::getSubtypeInfo((int)$typeID);
 
         //decide type
-        $subtype = self::decideType($subtypeInfo);
+        $subtype = static::decideType($subtypeInfo);
         
         //instantiate the appropriate Type or subclass object
         return new $subtype((int)$typeID);
     }
 
     /**
-     * Helper method that returns data to be used to determine as which class 
-     * to instantiate a certain type ID.
+     * Helper method that returns data to be used to determine as which class to instantiate a certain type ID.
      * @param int $typeID of the Type object
      * @return array with the type decision data from the SDE DB
      * @throws TypeIdNotFoundException when a typeID is not found
@@ -183,8 +182,7 @@ class Type {
     }
 
     /**
-     * Helper method to determine as which class to instantiate a certain Type.
-     * to instantiate a certain type ID.
+     * Helper method to determine as which subclass to instantiate a certain Type.
      * @param array $subtypeInfo as returned by method getSubtypeInfo()
      * @return string name of the class to instantiate
      */
@@ -313,5 +311,4 @@ class Type {
         return $rmat;
     }
 }
-
 ?>

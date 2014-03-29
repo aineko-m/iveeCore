@@ -273,8 +273,9 @@ class InventorBlueprint extends Blueprint {
      * @return int
      */
     public function calcInventionTime($slotMod = null, $implantMod = 1){
+        $defaults = SDE::instance()->defaults;
         if(is_null($slotMod))
-            $slotMod = iveeCoreConfig::getUsePosInvention() ? iveeCoreConfig::getPosInventionSlotTimeFactor() : 1;
+            $slotMod = $defaults->getUsePosInvention() ? $defaults->getPosInventionSlotTimeFactor() : 1;
         
         return (int)round($this->researchTechTime * $slotMod * $implantMod);
     }
