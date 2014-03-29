@@ -115,7 +115,7 @@ class InventableBlueprint extends Blueprint {
      * Invetanble blueprints can't be sold on the market
      * @throws NotOnMarketException 
      */
-    public function getBuyPrice() {
+    public function getBuyPrice($maxPriceDataAge = null) {
         throw new NotOnMarketException($this->typeName." can't be bought on the market.");
     }
     
@@ -123,7 +123,7 @@ class InventableBlueprint extends Blueprint {
      * Invetanble blueprints can't be sold on the market
      * @throws NotOnMarketException 
      */
-    public function getSellPrice() {
+    public function getSellPrice($maxPriceDataAge = null) {
         throw new NotOnMarketException($this->typeName." can't be sold on the market.");
     }
 

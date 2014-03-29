@@ -696,7 +696,7 @@ class Blueprint extends Sellable {
      * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor
      * @throws NotReprocessableException always
      */
-    public function getReprocessingMaterialMap($batchSize, $reprocessingYield, $reprocessingTaxFactor){
+    public function getReprocessingMaterialMap($batchSize, $reprocessingYield = 1, $reprocessingTaxFactor = 1){
         throw new NotReprocessableException($this->typeName . ' is not reprocessable');
     }
 }

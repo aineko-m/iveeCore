@@ -1,5 +1,8 @@
 <?php
 
+error_reporting(E_STRICT);
+ini_set('display_errors', 'on');
+
 //include the iveeCore configuration, expected in the iveeCore directory, with absolute path
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreConfig.php');
 

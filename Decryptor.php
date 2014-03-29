@@ -141,10 +141,11 @@ class Decryptor extends Sellable {
     /**
      * This method overwrites the inherited one from Type, as decryptors are never reprocessable
      * @param int $batchSize number of items being reprocessed
-     * @param float $effectiveYield the skill, standing and station dependant reprocessing yield
+     * @param float $reprocessingYield the skill and station dependant reprocessing yield
+     * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor
      * @throws NotReprocessableException always
      */
-    public function getReprocessingMaterialMap($batchSize, $effectiveYield){
+    public function getReprocessingMaterialMap($batchSize, $reprocessingYield = 1, $reprocessingTaxFactor = 1){
         throw new NotReprocessableException($this->typeName . ' is not reprocessable');
     }
 }

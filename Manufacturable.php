@@ -108,7 +108,7 @@ class Manufacturable extends Sellable {
      * @throws InvalidParameterValueException if batchSize is not multiple of portionSize or if effectiveYield is not 
      * sane
      */
-    public function getReprocessingMaterialMap($batchSize, $reprocessingYield, $reprocessingTaxFactor){
+    public function getReprocessingMaterialMap($batchSize, $reprocessingYield = 1, $reprocessingTaxFactor = 1){
         if($reprocessingYield > 1)
             throw new InvalidParameterValueException('Reprocessing yield can never be > 1.0');
         if($reprocessingTaxFactor > 1)
