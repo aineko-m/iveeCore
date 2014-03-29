@@ -603,7 +603,7 @@ class Blueprint extends Sellable {
     /**
      * Calculates the copying time for a single run copy
      * @param int $scienceSkill the level of the influencing skill. If left null, a default level is looked up in 
-     * SDEUtiliveeCoreConfig
+     * MyIveeCoreDefaults
      * @param float $slotMod defines the slot dependant time modifier. If left null, a default value is looked up in 
      * SDEUtil 
      * @param float $implantMod defines implant dependant time modifiers. Optional.
