@@ -52,7 +52,7 @@ class iveeCoreConfig{
     protected static $DB_PORT = 3306;
     protected static $DB_USER = 'eve_sde';
     protected static $DB_PW   = 'eve_sde_pw';
-    protected static $DB_NAME = 'eve_sde_rubi13';
+    protected static $DB_NAME = 'eve_sde_kro10';
     
     //Memcached config
     protected static $USE_MEMCACHED    = TRUE;

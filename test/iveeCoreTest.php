@@ -39,7 +39,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($type->getName() == 'Arkonor');
         $this->assertTrue($type->getVolume() == 16);
         $this->assertTrue($type->getPortionSize() == 200);
-        $this->assertTrue($type->getBasePrice() == 2133490.0);
+        $this->assertTrue($type->getBasePrice() == 2174386.0);
         $this->assertTrue($type->isReprocessable());
         $this->assertTrue(is_array($type->getTypeMaterials()));
     }

@@ -27,6 +27,8 @@ DEFINE('VERBOSE', 1);
 //include the iveeCore configuration, expected to be in the same directory, with absolute path
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'iveeCoreConfig.php');
 
+set_time_limit(3600);
+
 //instantiate and run
 $ec = EmdrConsumer::instance();
 $ec->run();

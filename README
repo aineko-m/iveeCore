@@ -67,9 +67,9 @@ If everything went well, you should see a line with the libzmq version.
 - Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to  helpful 3rd party developers like Steve Ronuken. At the time of this writing the latest conversion can be found here: 
-https://forums.eveonline.com/default.aspx?g=posts&m=4329249#post4329249
+https://forums.eveonline.com/default.aspx?g=posts&t=348364
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_rubi13". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like HeidiSQL.
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_kro10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like HeidiSQL.
 
 - Setup iveeCore
 
@@ -88,7 +88,8 @@ To test the setup try running the EMDR client:
 
 php iveeCore/emdr.php
 
-If everything is fine, you should see IDs of items for which price and history market data is being updated as it comes in. Ctrl+C to cancel. You'll want to setup this script to run in the background to have up-to-date market data available in iveeCore at all times.
+If everything is fine, you should see IDs of items for which price and history market data is being updated as it comes in. Ctrl+C to cancel. 
+You'll want to setup this script to run in the background to have up-to-date market data available in iveeCore at all times. The EMDR client tends to become zombified if it doesn't receive data for a while so occasionaly you'll have to kill the existing process and restart it. restart_emdr.sh is a bash script that does this. You can set up a cronjob to run it on a hourly basis, for instance. The job needs to run under a user with the necessary rights, but not root!
 
 Note that EMDR relays can change, so visit https://eve-market-data-relay.readthedocs.org/en/latest/access.html and pick the one nearest to you and change iveeCoreConfig.php accordingly.
 
@@ -153,7 +154,7 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - (My)IveeCoreDefaults.php contains functions for setting and looking up default BPO ME and PE levels. Also see EXTENDING iveeCore below.
 
 Generals notes:
-- Remember to restart or flush memcached after making changes to type classes. From the terminal you can do so with a command like: echo 'flush_all' | nc localhost 11211
+- Remember to restart or flush memcached after making changes to type classes or changing the DB. From the terminal you can do so with a command like: echo 'flush_all' | nc localhost 11211
 - iveeCore is under active development so I can't promise the API will be stable.
 - When iveeCore is updated, be sure to read HISTORY for changes that might affect your application or setup
 
@@ -166,7 +167,8 @@ You can modify iveeCore directly, however, you'll need to comply with the LGPL a
 
 FUTURE PLANS
 ============
-Things I'm considering implementing in iveeCore are T3 production chains, something for calculating ore compression and more generic features. I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: https://forums.eveonline.com/default.aspx?g=posts&t=292458
+The upcoming, comprehensive changes to industry in EvE will require refactoring some of the basic components in iveeCore. As there will be many more variables to consider to determine cost and profit of activities, some of which might or might not be queryable via API, major architectural changes might become necessary. 
+Things I'm considering implementing in iveeCore are T3 production chains, something for calculating ore compression and more generic features.  I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: https://forums.eveonline.com/default.aspx?g=posts&t=292458
 
 
 FAQ
@@ -176,7 +178,7 @@ A: In early 2012 I began writing my own indy application in PHP. I had been usin
 Eventually I decided I wanted to release the part of the code that provided general useful functionality, without revealing too much of ivee's secret sauce. So I put in some effort into separating and generalizing the code dealing with SDE DB interaction and Type classes into the library which now is iveeCore.
 
 Q: What's the motivation for releasing iveeCore?
-A: I wanted to share something back to the eve developer community. I also see it as an opportunity to dip my toes into working on a Github hosted project, even if it is a small one.
+A: I wanted to share something back to the eve developer community. I also see it as an opportunity to dip my toes into working on a Github hosted project, even if it is a small one, and it is a motivation to strive for better code quality.
 
 Q: Are you going to release ivee proper?
 A: No.
