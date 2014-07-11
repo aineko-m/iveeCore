@@ -35,10 +35,11 @@ For basic usage, iveeCore requires:
 - MySQL 5.5 or newer or derivate (MariaDB, Percona Server)
 - A current EVE Static Data Export (SDE) in MySQL format
 
-However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calculation capabilities, as this requires the ZMQ PHP bindings.
+However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calculation capabilities, as this requires the ZMQ PHP bindings. Since ZMQ is a not a standard module you'll need root access to whatever box you plan on running the EMDR client on. iveeCore can also easily make PHP scripts use more RAM than what is typically configured on shared hosting offers, so a VPS is likely the minimum required setup for full functionality. A VM on a desktop is fine too.
 
-Since ZMQ is a not a standard module you'll need root access to whatever box you plan on running the EMDR client on. iveeCore can also easily make PHP scripts use more RAM than what is typically configured on shared hosting offers, so a VPS is likely the minimum required setup for full functionality. A VM on a desktop is fine too.
-Note that the complete market data for a single region over a one year timeframe takes roughly 200MB in the database.
+For best performance, using Memcache is highly recommended.
+
+Depending on how many regions market data is tracked for, the database can grow to multiple gigabytes in size.
 
 
 INSTALLATION
@@ -79,17 +80,18 @@ cd /path/to/my/project
 git clone https://github.com/aineko-m/iveeCore.git
 
 Once you've done this, you'll find the directory 'iveeCore'. Import the file iveeCore/sql/iveeCore_tables_and_SP.sql into the same database you set up for the SDE. This will create the tables iveeCore uses, stored procedures and add some missing indices in the SDE tables to improve performance.
-This package also comes with sample market data to allow for some experiments without having to set up ZMQ/EMDR. To use this data, unzip the file iveeCore/sql/iveeCore_sample_market_data_2013_11_02.zip and import the extracted SQL file into the database. Note this data covers only the region "The Forge" over the period of one week and is not garanteed to be complete or correct.
 
 Make a copy of the file iveeCoreConfig_template.php, naming it iveeCoreConfig.php and edit the configuration to match your environment. 
-iveeCore comes with a lot of default variables describing an industrial setup in eve, defined in IveeCoreDefaults.php.Once you get comfortable using iveeCore you'll want to customize these defaults, to be done in MyIveeCoreDefaults.php, which extends the IveeCoreDefaults class and thus allows you to overwrite whichever aspect is required. The variables are commented or should be self-explanatory to an EvE industrialist or developer.
+iveeCore comes with a lot of default variables describing an industrial setup in eve, defined in IveeCoreDefaults.php. Once you get comfortable using iveeCore you'll want to customize these defaults, to be done in MyIveeCoreDefaults.php, which extends the IveeCoreDefaults class and thus allows you to overwrite whichever aspect is required. The variables are commented or should be self-explanatory to an EvE industrialist or developer.
 
 To test the setup try running the EMDR client:
 
 php iveeCore/emdr.php
 
-If everything is fine, you should see IDs of items for which price and history market data is being updated as it comes in. Ctrl+C to cancel. 
+If everything is fine, you should see IDs of items and regions for which price and history market data is being updated as it comes in. Ctrl+C to cancel. 
 You'll want to setup this script to run in the background to have up-to-date market data available in iveeCore at all times. The EMDR client tends to become zombified if it doesn't receive data for a while so occasionaly you'll have to kill the existing process and restart it. restart_emdr.sh is a bash script that does this. You can set up a cronjob to run it on a hourly basis, for instance. The job needs to run under a user with the necessary rights, but not root!
+
+During the first few days of market data collection the load on the DB will be higher, especially if multiple regions are tracked, due to the large number of inserts for the market history of items. By default, the EMDR client only tracks The Forge market region. This can be changed in MyIveeCoreDefaults.php. 
 
 Note that EMDR relays can change, so visit https://eve-market-data-relay.readthedocs.org/en/latest/access.html and pick the one nearest to you and change iveeCoreConfig.php accordingly.
 
@@ -103,6 +105,17 @@ Whenever you want to upgrade to another SDE, the following steps are recommended
 - Copy the contents of the tables iveePrices and iveeTrackedPrices from the old database to the new
 - Adapt iveeCoreConfig.php to the new database
 - if using memcached, flush it
+- it is good practice to run the provided unit test to check if everything is working as intended
+
+
+UPGRADING iveeCore
+==================
+Most of the time upgrading to newer versions of iveeCore is as simple as cd-ing into iveeCore's directory and running "git pull".
+When the iveeCreConfig_template.php is extended you'll have to recreate or adapt your own iveeCoreConfig.php.
+
+If upgrading from a previous version of iveeCore to 1.4, run the SQL commands in sql/DB_migration_to_1.4.sql to adapt the database schema.
+
+Again, running the provided unit test to check for problems is a good idea.
 
 
 USAGE
@@ -154,7 +167,7 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - (My)IveeCoreDefaults.php contains functions for setting and looking up default BPO ME and PE levels. Also see EXTENDING iveeCore below.
 
 Generals notes:
-- Remember to restart or flush memcached after making changes to type classes or changing the DB. From the terminal you can do so with a command like: echo 'flush_all' | nc localhost 11211
+- Remember to restart or flush memcached after making changes to type classes or changing the DB. From the terminal you can do so with a command like: echo 'flush_all' | nc localhost 11211 . Alternatively you can run the unit test, which also clears the cache.
 - iveeCore is under active development so I can't promise the API will be stable.
 - When iveeCore is updated, be sure to read HISTORY for changes that might affect your application or setup
 
@@ -185,10 +198,6 @@ A: No.
 
 Q: Why Memcache?
 A: I wanted to use APC first, but APC caches do not persist across CLI PHP program runs, so it was pointless. Memcache is probably the most commonly used cache for PHP and it works with both web-served and CLI scripts. It should be trivial to add other key-value or object stores, though.
-
-Q: Why use EMDR if so much data is filtered out?
-A: I'd happily use a pre-filtered EMDR stream to reduce traffic, and this has been requested on the EMDR mailing list, but the developers so far have declined.
-Other market data sources could only be used if they'd provide actual order data, as it's needed to calculate some of the more interesting indices in iveeCore.
 
 
 ACKNOWLEDGEMENTS

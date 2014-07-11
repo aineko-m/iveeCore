@@ -36,7 +36,9 @@ require_once($iveeCoreClassPath . 'MaterialMap.php');
 require_once($iveeCoreClassPath . 'SkillMap.php');
 require_once($iveeCoreClassPath . 'FitParser.php');
 require_once($iveeCoreClassPath . 'MaterialParseResult.php');
-require_once($iveeCoreClassPath . 'EmdrClasses.php');
+require_once($iveeCoreClassPath . 'EmdrConsumer.php');
+require_once($iveeCoreClassPath . 'EmdrHistoryUpdate.php');
+require_once($iveeCoreClassPath . 'EmdrPriceUpdate.php');
 
 //eve runs on UTC time
 date_default_timezone_set('UTC');
@@ -85,7 +87,10 @@ class iveeCoreConfig{
         'MaterialMap'            => 'MaterialMap',
         'SkillMap'               => 'SkillMap',
         'FitParser'              => 'FitParser',
-        'MaterialParseResult'    => 'MaterialParseResult'
+        'MaterialParseResult'    => 'MaterialParseResult',
+        'EmdrConsumer'           => 'EmdrConsumer',
+        'EmdrPriceUpdate'        => 'EmdrPriceUpdate',
+        'EmdrHistoryUpdate'      => 'EmdrHistoryUpdate'
     );
     
     ////////////////////////////

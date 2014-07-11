@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class for all blueprints. 
+ * Blueprint base class. 
  * Where applicable, attribute names are the same as SDE database column names.
  * Inheritance: Blueprint -> Sellable -> Type.
  *
@@ -177,8 +177,8 @@ class Blueprint extends Sellable {
                 iveeTrackedPrices.typeID, 
                 UNIX_TIMESTAMP(lastHistUpdate) AS histDate, 
                 UNIX_TIMESTAMP(lastPriceUpdate) AS priceDate,  
-                ah.vol, 
-                ah.tx,
+                iveeTrackedPrices.avgVol AS vol, 
+                iveeTrackedPrices.avgTx AS tx,
                 ah.low,
                 ah.high,
                 ah.avg,

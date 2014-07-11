@@ -24,36 +24,41 @@ CREATE TABLE IF NOT EXISTS `iveePrices` (
   `avgBuy5OrderAge` mediumint(8) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `typeID` (`typeID`,`regionID`,`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=ascii COMMENT='This table holds the price and history information we collect.\r\nlow, high, avg, vol and tx are considered history data.\r\nsell, buy, supplyIn5, demandIn5, avgSell5OrderAge and avgBuy5OrderAge are considered price (order) data.\r\n\r\nlow, high, avg: Are the indices as returned by Eve''s market\r\ntx and vol: Are the indices as returned by Eve''s market, with one important difference: The latest stored value is an average over the 7 days before. This is a performance hack. The data returned by Eve''s maket for the current day is incomplete anyway, therefore of little value.\r\n\r\nsell and buy: Realistic price estimates. See emdr.php for algorithm.\r\nsupplyIn5, demandIn5, avgSell5OrderAge and avgBuy5OrderAge: Supply/demand and average order ages within 5% of the estimated prices. See emdr.php for algorithm.';
+) ENGINE=InnoDB DEFAULT CHARSET=ascii COMMENT='This table holds the price and history information we collect.\r\nlow, high, avg, vol and tx are considered history data.\r\nsell, buy, supplyIn5, demandIn5, avgSell5OrderAge and avgBuy5OrderAge are considered price (order) data.\r\n\r\nlow, high, avg: Are the indices as returned by Eve\'s market\r\ntx and vol: Are the indices as returned by Eve\'s market\r\n\r\nsell and buy: Realistic price estimates. See EmdrPriceUpdate.php for algorithm.\r\nsupplyIn5, demandIn5, avgSell5OrderAge and avgBuy5OrderAge: Supply/demand and average order ages within 5% of the estimated prices.';
 
-CREATE TABLE IF NOT EXISTS `iveeTrackedPrices` (
-  `regionID` int(11) NOT NULL,
-  `typeID` int(11) NOT NULL,
-  `newestHistData` int(10) unsigned DEFAULT NULL,
-  `newestPriceData` int(10) unsigned DEFAULT NULL,
-  `lastHistUpdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `lastPriceUpdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`regionID`,`typeID`),
-  UNIQUE KEY `latestHistUpdate` (`newestHistData`),
-  UNIQUE KEY `latestPriceUpdate` (`newestPriceData`),
-  CONSTRAINT `iveeTrackedPrices_ibfk_1` FOREIGN KEY (`newestHistData`) REFERENCES `iveePrices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `iveeTrackedPrices_ibfk_2` FOREIGN KEY (`newestPriceData`) REFERENCES `iveePrices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=ascii COMMENT='This table holds foreign keys to the latest price and history rows in iveePrices for each regionID/typeID combination, as well as update timestamps.\r\n\r\nnewestHistData and newestPriceData: Foreign Keys to iveePrices.\r\nlastHistUpdate and lastPriceUpdate: Timestamps for last data received ("generatedAt")';
+CREATE TABLE `iveeTrackedPrices` (
+	`regionID` INT(11) NOT NULL,
+	`typeID` INT(11) NOT NULL,
+	`newestHistData` INT(10) UNSIGNED NULL DEFAULT NULL,
+	`newestPriceData` INT(10) UNSIGNED NULL DEFAULT NULL,
+	`lastHistUpdate` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+	`lastPriceUpdate` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+	`avgVol` FLOAT NULL DEFAULT NULL,
+	`avgTx` FLOAT NULL DEFAULT NULL,
+	PRIMARY KEY (`regionID`, `typeID`),
+	UNIQUE INDEX `latestHistUpdate` (`newestHistData`),
+	UNIQUE INDEX `latestPriceUpdate` (`newestPriceData`),
+	CONSTRAINT `iveeTrackedPrices_ibfk_1` FOREIGN KEY (`newestHistData`) REFERENCES `iveePrices` (`id`) ON UPDATE CASCADE ON DELETE SET NULL,
+	CONSTRAINT `iveeTrackedPrices_ibfk_2` FOREIGN KEY (`newestPriceData`) REFERENCES `iveePrices` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
+)
+COMMENT='This table holds the price and history information we collect.\r\nlow, high, avg, vol and tx are considered history data.\r\nsell, buy, supplyIn5, demandIn5, avgSell5OrderAge and avgBuy5OrderAge are considered price (order) data.\r\n\r\nlow, high, avg: Are the indices as returned by Eve\'s market\r\ntx and vol: Are the indices as returned by Eve\'s market\r\n\r\nsell and buy: Realistic price estimates. See EmdrPriceUpdate.php for algorithm.\r\nsupplyIn5, demandIn5, avgSell5OrderAge and avgBuy5OrderAge: Supply/demand and average order ages within 5% of the estimated prices.'
+COLLATE='ascii_general_ci'
+ENGINE=InnoDB;
 
 
 DELIMITER //
 CREATE DEFINER=`root`@`%` PROCEDURE `iveeCompleteHistoryUpdate`(IN `IN_typeID` INT, IN `IN_regionID` INT, IN `IN_generatedAt` DATETIME)
-    MODIFIES SQL DATA
-    DETERMINISTIC
-    SQL SECURITY INVOKER
-    COMMENT 'This procedure updates iveeTrackedPrices to point to the newest history data in iveePrices. It should be called after history data has been updated or inserted into iveePrices. It also calculates the averaged vol and tx values.'
+	DETERMINISTIC
+	MODIFIES SQL DATA
+	SQL SECURITY INVOKER
+	COMMENT 'This procedure updates iveeTrackedPrices to point to the newest history row in iveePrices and also calculates the week average volume and transaction count for market items'
 BEGIN
 	DECLARE newestHistId INT;
 	DECLARE newestHistDate DATE;
-	DECLARE avgVol DOUBLE;
-	DECLARE avgTx FLOAT;
+	DECLARE c_avgVol FLOAT;
+	DECLARE c_avgTx FLOAT;
 	
-	# get the newest id
+	# get id of newest history row
 	SELECT id, date INTO newestHistId, newestHistDate 
 	FROM iveePrices 
 	WHERE regionID = IN_regionID 
@@ -63,21 +68,17 @@ BEGIN
 	LIMIT 1;
 	
 	# get average volume and transactions for last week
-	SELECT AVG(COALESCE(vol, 0)), AVG(COALESCE(tx, 0)) INTO avgVol, avgTx 
+	SELECT AVG(COALESCE(vol, 0)), AVG(COALESCE(tx, 0)) INTO c_avgVol, c_avgTx 
 	FROM iveePrices
 	WHERE regionID = IN_regionID 
 	AND typeID = IN_typeID
 	AND date < newestHistDate 
 	AND date > DATE_SUB(newestHistDate, INTERVAL 8 DAY);
 	
-	# update average volume and transactions on latest history row
-	UPDATE iveePrices 
-	SET vol = avgVol, tx = avgTx
-	WHERE id = newestHistId;
-	
 	# upsert tracked prices
-	INSERT INTO iveeTrackedPrices (regionID, typeID, newestHistData, lastHistUpdate) VALUES (IN_regionID, IN_typeId, newestHistId, IN_generatedAt)
-	ON DUPLICATE KEY UPDATE newestHistData = newestHistId, lastHistUpdate = IN_generatedAt;
+	INSERT INTO iveeTrackedPrices (regionID, typeID, newestHistData, lastHistUpdate, avgVol, avgTx) 
+	VALUES (IN_regionID, IN_typeId, newestHistId, IN_generatedAt, c_avgVol, c_avgTx)
+	ON DUPLICATE KEY UPDATE newestHistData = newestHistId, lastHistUpdate = IN_generatedAt, avgVol = c_avgVol, avgTx = c_avgTx;
 END//
 DELIMITER ;
 
@@ -87,7 +88,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `iveeCompletePriceUpdate`(IN `IN_typeID` INT
     MODIFIES SQL DATA
     DETERMINISTIC
     SQL SECURITY INVOKER
-    COMMENT 'This procedure updates iveeTrackedPrices to point to the newest price data in iveePrices. It should be called after price data has been updated or inserted into iveePrices.'
+    COMMENT 'This procedure updates iveeTrackedPrices to point to the newest price row in iveePrices'
 BEGIN
 	DECLARE newestPriceId INT;
 	

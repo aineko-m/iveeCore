@@ -17,7 +17,7 @@ class SDE {
     protected static $instance;
     
     /**
-     * @var IveeCoreDefaults $defaults holds the singleton IveeCoreDefaults object.
+     * @var IveeCoreDefaults $defaults holds the singleton (My)IveeCoreDefaults object.
      */
     public $defaults;
     
@@ -326,7 +326,6 @@ class SDE {
         while ($row = $res->fetch_assoc()) {
             $this->typeNames[$row['typeName']] = (int) $row['typeID'];
         }
-        $res->free();
     }
 
     /**
@@ -347,15 +346,23 @@ class SDE {
     }
     
     /**
-     * Prints information about cache and DB queries
+     * Returns various statistics for caches, database and queries
+     * @return array
      */
-    public function printDbStats() {
-        echo $this->internalCacheHit . " internal cache hits" . PHP_EOL;
-        if(iveeCoreConfig::getUseMemcached()) echo $this->memcachedHit . " memcached hits" . PHP_EOL;
-        echo $this->numQueries . " queries" . PHP_EOL;
-        echo $this->timeQueries . " total SQL time" . PHP_EOL;
-        echo $this->getCachedTypeCount() . " types in internal cache" . PHP_EOL;
-        echo ceil(memory_get_peak_usage() / 1024) . " KiB peak PHP memory" . PHP_EOL;
+    public function getStats() {
+        $stats = array(
+            'internalCacheHit' => $this->internalCacheHit,
+            'numQueries'       => $this->numQueries,
+            'timeQueries'      => $this->timeQueries,
+            'cachedTypesCount' => $this->getCachedTypeCount(),
+            'peakMemoryUsage'  => memory_get_peak_usage(true),
+            'mysqlStats'       => $this->db->get_connection_stats()
+        );
+        if(iveeCoreConfig::getUseMemcached()){
+            $stats['memcachedHits']  = $this->memcachedHit;
+            $stats['memcachedStats'] = $this->memcached->getStats();
+        }
+        return $stats;
     }
 }
 

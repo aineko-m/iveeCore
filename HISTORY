@@ -1,5 +1,12 @@
 This file lists major changes in iveeCore versions.
 
+Version 1.4 - July 11, 2014
+---------------------------
+- Refactored EMDR client: Multi region support, reduce memory usage, avoid id autoincrement inflation
+- Replaced SDE->printDbStats() with getStats()
+- Replaced DB hack for vol and tx weekly averages, DB schema changed as a result; DB migration provided
+- Note that the file iveeCoreConfig_template.php changed, thus adaptation of the configuration file is required
+
 Version 1.3.1 - June 8, 2014
 ----------------------------
 - Adapted README, the configuration template and the unit test to Kronos 1.0.
@@ -32,7 +39,7 @@ change, which makes for more maintainable code.
 - Renamed CopyData to CopyProcessData, InventionData to InventionProcessData and ManufactureData to 
 ManufactureProcessData for consistency
 - Added some PHPUnit test cases covering different parts of iveeCore
-- Note that the file iveeCoreConfig_template.php changed, thus adaptation of the configuration file is required 
+- Note that the file iveeCoreConfig_template.php changed, thus adaptation of the configuration file is required
 
 Version 1.1 - November 10, 2013
 -------------------------------

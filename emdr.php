@@ -19,7 +19,7 @@ echo " _____ __  __ ____  ____     __              _____     _______ _____
 | |___| |  | | |_| |  _ <  |  _| (_) | |     | |  \ V / | |___| |___ 
 |_____|_|  |_|____/|_| \_\ |_|  \___/|_|    |___|  \_/  |_____|_____|\n";
 
-error_reporting(E_ALL);
+error_reporting(E_STRICT);
 ini_set('display_errors', 'on');
 
 DEFINE('VERBOSE', 1);
@@ -27,10 +27,11 @@ DEFINE('VERBOSE', 1);
 //include the iveeCore configuration, expected to be in the same directory, with absolute path
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'iveeCoreConfig.php');
 
-set_time_limit(3600);
+//get EmdrConsumer class name
+$EmdrConsumerClass = iveeCoreConfig::getIveeClassName('EmdrConsumer');
 
 //instantiate and run
-$ec = EmdrConsumer::instance();
+$ec = $EmdrConsumerClass::instance();
 $ec->run();
 
 ?>

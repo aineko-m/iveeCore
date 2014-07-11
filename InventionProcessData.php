@@ -228,6 +228,7 @@ class InventionProcessData extends ProcessData {
      */
     public function printData(){
         $utilClass = iveeCoreConfig::getIveeClassName('SDEUtil');
+        
         echo "Average total success times:" . PHP_EOL;
         print_r($this->getTotalSuccessTimes());
         

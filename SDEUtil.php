@@ -138,11 +138,13 @@ class SDEUtil {
     /**
      * Makes INSERT .. ON DUPLICATE KEY UPDATE query string
      * @param string $table the name of the SQL table to be used
-     * @param array $insert the data to be inserted as column => value
-     * @param array $update the data to be updated as column => value, optional
+     * @param array $insert the data to be inserted as column => value. Values need to be already escaped, if required 
+     * by type.
+     * @param array $update the data to be updated as column => value, optional. If not given, a regular insert is 
+     * performed.
      * @return string the SQL query
      */
-    public static function makeUpsertQuery($table, &$insert, &$update = NULL){
+    public static function makeUpsertQuery($table, $insert, $update = NULL){
         //prepare columns and values list
         $icols   = "";
         $ivalues = "";
@@ -166,6 +168,29 @@ class SDEUtil {
             $q .= PHP_EOL . "ON DUPLICATE KEY UPDATE ".substr($us, 2);
         } 
         return $q.";" . PHP_EOL;
+    }
+    
+    /**
+     * Makes simple UPDATE query string
+     * @param string $table the name of the SQL table to be used
+     * @param array $update the data to be updated as column => value. Values need to be already escaped, if required 
+     * by type.
+     * @param array $where the conditions for the update as column => value. Conditions are linked via 'AND'.
+     * @return string the SQL query
+     */
+    public static function makeUpdateQuery($table, $update, $where){
+        $data = array();
+        $condition = array();
+        
+        foreach ($update as $col => $val){
+            $data[] = $col . "=" . $val;
+        }
+        
+        foreach ($where as $col => $val) {
+            $condition[] = $col . "=" . $val;
+        }
+        
+        return "UPDATE " . $table . " SET " . implode(', ', $data) . " WHERE " . implode(' AND ', $condition) . ';';
     }
 }
 

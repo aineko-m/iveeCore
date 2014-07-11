@@ -175,7 +175,7 @@ class Type {
         );
 
         $row = $res->fetch_assoc();
-        $res->free();
+        
         if (empty($row))
             throw new TypeIdNotFoundException("typeID " . (int) $typeID . " not found");
         return $row;
@@ -293,8 +293,9 @@ class Type {
     public function getReprocessingMaterialMap($batchSize, $reprocessingYield = 1, $reprocessingTaxFactor = 1){
         if(empty($this->typeMaterials))
             throw new NotReprocessableException($this->typeName . ' is not reprocessable');
-        if($batchSize < $this->portionSize OR $batchSize % $this->portionSize != 0) 
-            throw new InvalidParameterValueException('Recycling batch size needs to be multiple of ' . $this->portionSize);
+        if($batchSize % $this->portionSize != 0) 
+            throw new InvalidParameterValueException('Reprocessing batch size needs to be multiple of ' 
+                . $this->portionSize);
         if($reprocessingYield > 1)
             throw new InvalidParameterValueException('Reprocessing yield can never be > 1.0');
         if($reprocessingTaxFactor > 1)
