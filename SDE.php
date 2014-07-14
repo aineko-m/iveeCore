@@ -121,25 +121,28 @@ class SDE {
      * Performs a SQL query.
      * @param string $sql the query to be sent to the DB
      * @return mysql_result
+     * @throws SQLErrorException when the query execution errors out
      */
     public function query($sql){
         $startTime = microtime(true);
         $res = $this->db->query($sql);
+        if ($this->db->error)
+            throw new SQLErrorException($this->db->error . "\nQuery: " . $sql, $this->db->errno); 
         $this->addQueryTime(microtime(true) - $startTime);
         return $res;
     }
     
     /**
-     * Performs multiple SQL queries. Results are flushed and not returned.
+     * Performs multiple SQL queries. Results are flushed and not returned. Useful for multiple updates and inserts.
      * @param string $multiSql semicolon separated queries to be sent to the DB
-     * @return boolean true on success
+     * @throws SQLErrorException when the query execution errors out
      */
     public function multiQuery($multiSql){
         $startTime = microtime(true);
-        $success = $this->db->multi_query($multiSql);
+        if(!$this->db->multi_query($multiSql))
+            throw new SQLErrorException($this->db->error . "\nQuery: " . $sql, $this->db->errno); 
         $this->addQueryTime(microtime(true) - $startTime);
         $this->flushDbResults();
-        return $success;
     }
     
     /**

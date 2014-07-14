@@ -76,8 +76,7 @@ class EmdrHistoryUpdate {
             WHERE typeID = " . $this->typeID . " 
             AND regionID = " . $this->regionID . " 
             AND date <= '" . date('Y-m-d', $latestDate) . "' 
-            AND date >= '" . date('Y-m-d', $oldestDate) . "' 
-            AND tx IS NOT NULL"
+            AND date >= '" . date('Y-m-d', $oldestDate) . "';"
         );
         while($tmp = $res->fetch_array(MYSQL_NUM)){
             $existingDates[(int) $tmp[0]] = 1;
@@ -135,8 +134,12 @@ class EmdrHistoryUpdate {
         //run all queries
         SDE::instance()->multiQuery($combinedSql);
         
-        if(VERBOSE) 
-            echo "H: " . $this->typeID . ', ' . $this->regionID . ', ' . count($this->rows) . " days" . PHP_EOL;
+        if(VERBOSE){
+            $ec = EmdrConsumer::instance();
+            echo "H: " . $ec->getTypeNameById($this->typeID) . ' (' . $this->typeID . '), ' 
+                . $ec->getRegionNameById($this->regionID) . ' ('. $this->regionID . '), ' 
+                . count($this->rows) . " days" . PHP_EOL;
+        }
     }
 }
 

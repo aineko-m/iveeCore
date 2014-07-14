@@ -190,7 +190,8 @@ class SDEUtil {
             $condition[] = $col . "=" . $val;
         }
         
-        return "UPDATE " . $table . " SET " . implode(', ', $data) . " WHERE " . implode(' AND ', $condition) . ';';
+        return "UPDATE " . $table . " SET " . implode(', ', $data) 
+            . " WHERE " . implode(' AND ', $condition) . ';' . PHP_EOL;
     }
 }
 

@@ -1,5 +1,11 @@
 This file lists major changes in iveeCore versions.
 
+Version 1.4.1 - Juli 14, 2014
+-----------------------------
+- Fixed faulty SQL queries in the EMDR client
+- Throw exceptions on SQL errors
+- Print type and region names in the EMDR client for incoming data
+
 Version 1.4 - July 11, 2014
 ---------------------------
 - Refactored EMDR client: Multi region support, reduce memory usage, avoid id autoincrement inflation

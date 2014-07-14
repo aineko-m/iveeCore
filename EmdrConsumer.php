@@ -18,7 +18,7 @@ class EmdrConsumer {
     protected static $instance;
     
     /**
-     * @var array $trackedTypeIDs array holding the IDs of items to track on the market
+     * @var array $trackedTypeIDs array holding the typeIDs => typeNames of items to track on the market
      */
     protected $trackedTypeIDs = array();
     
@@ -31,6 +31,11 @@ class EmdrConsumer {
      * @var int $defaultRegionID the default regionID
      */
     protected $defaultRegionID;
+    
+    /**
+     * @var array $regions regionID => regionName
+     */
+    protected $regions;
     
     /**
      * @var SDE $sde holds the SDE instance, for convenience
@@ -70,16 +75,25 @@ class EmdrConsumer {
         
         //load IDs of items to track on market
         $res = $this->sde->query(
-            "SELECT typeID
+            "SELECT typeID, typeName
             FROM invTypes 
             WHERE marketGroupID IS NOT NULL
             AND published = 1;"
         );
         while($tmp = $res->fetch_array(MYSQL_NUM)){
-            $this->trackedTypeIDs[(int) $tmp[0]] = 1;
+            $this->trackedTypeIDs[(int) $tmp[0]] = $tmp[1];
         }
 
         if(VERBOSE) echo count($this->trackedTypeIDs)." found." . PHP_EOL;
+        
+        //load regionIDs
+        $res = $this->sde->query(
+            "SELECT regionID, regionName
+            FROM mapRegions;"
+        );
+        while($tmp = $res->fetch_array(MYSQL_NUM)){
+            $this->regions[(int) $tmp[0]] = $tmp[1];
+        }
         
         $this->trackedMarketRegionIDs = $this->sde->defaults->getTrackedMarketRegionIDs();
         $this->defaultRegionID        = $this->sde->defaults->getDefaultRegionID();
@@ -228,7 +242,7 @@ class EmdrConsumer {
         $res = $this->sde->query(
             "SELECT
             UNIX_TIMESTAMP(atp.lastPriceUpdate) as lastPriceDataTS, 
-            UNIX_TIMESTAMP(atp.lastHistUpdate) as lastHistDataTS, 
+            UNIX_TIMESTAMP(atp.lastHistUpdate) as lastHistDataTS 
             FROM iveeTrackedPrices as atp 
             WHERE atp.typeID = " . (int) $typeID . " AND atp.regionID = " . (int) $regionID . ";"
         );
@@ -324,6 +338,32 @@ class EmdrConsumer {
 
         //update history data generation timestamp
         $timestamps[1] = $generatedAt;
+    }
+    
+    /**
+     * Gets the typeName for a market tracked TypeID
+     * @param $typeID of the item to get the name for
+     * @returns string typeName
+     * @throws TypeIdNotFoundException if the requested typeID is not found among the tracked typeIDs
+     */
+    public function getTypeNameById($typeID){
+        if(isset($this->trackedTypeIDs[(int)$typeID]))
+            return $this->trackedTypeIDs[(int)$typeID];
+        else
+            throw new TypeIdNotFoundException((int)$typeID . ' not found among market tracked item IDs.');
+    }
+    
+    /**
+     * Gets the regionName for a regionID
+     * @param $regionID of the region to get the name for
+     * @returns string regionName
+     * @throws TypeIdNotFoundException if the requested regionID is not found
+     */
+    public function getRegionNameById($regionID){
+        if(isset($this->regions[(int)$regionID]))
+            return $this->regions[(int)$regionID];
+        else
+            throw new TypeIdNotFoundException((int)$regionID . ' not found among region IDs.');
     }
 }
 

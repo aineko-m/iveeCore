@@ -101,4 +101,9 @@ class NoOutputItemException extends IveeCoreException{}
  */
 class NoRelevantDataException extends IveeCoreException{}
 
+/**
+ * Thrown when a SQL query produces an error
+ */
+class SQLErrorException extends IveeCoreException{}
+
 ?>

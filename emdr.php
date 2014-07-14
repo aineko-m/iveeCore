@@ -19,7 +19,7 @@ echo " _____ __  __ ____  ____     __              _____     _______ _____
 | |___| |  | | |_| |  _ <  |  _| (_) | |     | |  \ V / | |___| |___ 
 |_____|_|  |_|____/|_| \_\ |_|  \___/|_|    |___|  \_/  |_____|_____|\n";
 
-error_reporting(E_STRICT);
+error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 
 DEFINE('VERBOSE', 1);

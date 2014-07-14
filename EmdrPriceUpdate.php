@@ -172,14 +172,13 @@ class EmdrPriceUpdate {
             //if row already exists
             if($res->num_rows == 1){
                 //update data
-                $updatetData = array(
-                    'sell'      => $this->sell,
-                    'buy'       => $this->buy,
-                    'avgSell5OrderAge' => $this->avgSell5OrderAge,
-                    'avgBuy5OrderAge'  => $this->avgBuy5OrderAge,
-                    'demandIn5' => $this->demandIn5,
-                    'supplyIn5' => $this->supplyIn5
-                );
+                $updatetData = array();
+                if(isset($this->sell)) $updatetData['sell'] = $this->sell;
+                if(isset($this->buy))  $updatetData['buy']  = $this->buy;
+                if(isset($this->avgSell5OrderAge)) $updatetData['avgSell5OrderAge'] = $this->avgSell5OrderAge;
+                if(isset($this->avgBuy5OrderAge))  $updatetData['avgBuy5OrderAge']  = $this->avgBuy5OrderAge;
+                if(isset($this->demandIn5)) $updatetData['demandIn5'] = $this->demandIn5;
+                if(isset($this->supplyIn5)) $updatetData['supplyIn5'] = $this->supplyIn5;
                 
                 $where = array(
                     'typeID'   => $this->typeID,
@@ -193,16 +192,17 @@ class EmdrPriceUpdate {
             //insert data
             else {
                 $insertData = array(
-                    'typeID'    => $this->typeID,
-                    'regionID'  => $this->regionID,
-                    'date'      => "'" . date('Y-m-d', $this->generatedAt) . "'",
-                    'sell'      => $this->sell,
-                    'buy'       => $this->buy,
-                    'avgSell5OrderAge' => $this->avgSell5OrderAge,
-                    'avgBuy5OrderAge'  => $this->avgBuy5OrderAge,
-                    'demandIn5' => $this->demandIn5,
-                    'supplyIn5' => $this->supplyIn5
+                    'typeID'   => $this->typeID,
+                    'regionID' => $this->regionID,
+                    'date'     => "'" . date('Y-m-d', $this->generatedAt) . "'"
                 );
+                
+                if(isset($this->sell)) $insertData['sell'] = $this->sell;
+                if(isset($this->buy))  $insertData['buy']  = $this->buy;
+                if(isset($this->avgSell5OrderAge)) $insertData['avgSell5OrderAge'] = $this->avgSell5OrderAge;
+                if(isset($this->avgBuy5OrderAge))  $insertData['avgBuy5OrderAge']  = $this->avgBuy5OrderAge;
+                if(isset($this->demandIn5)) $insertData['demandIn5'] = $this->demandIn5;
+                if(isset($this->supplyIn5)) $insertData['supplyIn5'] = $this->supplyIn5;
                 
                 //build insert query
                 $sql = $utilClass::makeUpsertQuery('iveePrices', $insertData);
@@ -210,12 +210,16 @@ class EmdrPriceUpdate {
 
             //add stored procedure call to complete the update
             $sql .= "CALL iveeCompletePriceUpdate(" . $this->typeID . ", " . $this->regionID . ", '" 
-                . date('Y-m-d H:i:s', $this->generatedAt) . "'); COMMIT;";
+                . date('Y-m-d H:i:s', $this->generatedAt) . "'); COMMIT;" . PHP_EOL;
             
             //execute the combined queries
             SDE::instance()->multiQuery($sql);
             
-            if(VERBOSE) echo "P: " . $this->typeID . ', ' . $this->regionID . PHP_EOL;
+            if(VERBOSE){
+                $ec = EmdrConsumer::instance();
+                echo "P: " . $ec->getTypeNameById($this->typeID) . ' (' . $this->typeID . '), ' 
+                    . $ec->getRegionNameById($this->regionID) . ' ('. $this->regionID . ')' . PHP_EOL;
+            }
         } 
     }
     
