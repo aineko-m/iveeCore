@@ -1,6 +1,20 @@
 This file lists major changes in iveeCore versions.
 
-Version 1.4.1 - Juli 14, 2014
+Version 2.0 beta - August 1st, 2014
+-----------------------------------
+This is a beta release so bugs are expected!
+
+- Major overhaul to adapt to EvE's Crius expansion
+-> CREST data fetchers for system industry indices, teams & specialities, facilities and market prices
+-> Refactored all industry activity methods to make use of the new modifiers, removed obsoleted methods
+- Namespaces, class autoloading and style changes to make iveeCore a bit more PSR compliant
+- Restructured SDE, Type and Cache classes for better separation of concerns
+- Made every instantiation of iveeCore objects use dynamic class name lookup
+- Removed POS slot fuel cost estimation as it was deemed out of scope for this library and confusing
+- Database changes, migration provided
+- Existing users will have to remake the configuration file based on the new template
+
+Version 1.4.1 - July 14, 2014
 -----------------------------
 - Fixed faulty SQL queries in the EMDR client
 - Throw exceptions on SQL errors
