@@ -41,7 +41,7 @@ class MyDefaults extends \iveeCore\Defaults
      * @var array $TRACKED_MARKET_REGION_IDS defines the regions for which market data should by gathered by the EMDR 
      * client
      */
-//    protected $TRACKED_MARKET_REGION_IDS = array(
-//        10000002 //The Forge
-//    );
+    protected $TRACKED_MARKET_REGION_IDS = array(
+        10000002 //The Forge
+    );
 }

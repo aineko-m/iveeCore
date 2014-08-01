@@ -132,7 +132,7 @@ Please take a look at the class diagram in iveeCore/doc/iveeCore_class_diagram.p
 
 <?php
 //initialize iveeCore. Adapt path if required.
-require_once('iveeCoreInit.php');
+require_once('/path/to/iveeCore/iveeCoreInit.php');
 
 //show the object for 'Damage Control I'
 print_r(\iveeCore\Type::getType(2046));
@@ -154,7 +154,7 @@ print_r($manuData);
 //print materials, cost and profits for this process
 $manuData->printData();
 
-//get the data for making a max run Damage Control I BPC copy, inventing from it with a 
+//get the data for making Damage Control I blueprint copy, inventing from it with a 
 //decryptor and building from the resulting T2 BPC, recursively building the necessary 
 //components
 $processData = \iveeCore\Type::getTypeByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 21583, true);
