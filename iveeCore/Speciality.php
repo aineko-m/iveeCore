@@ -68,9 +68,9 @@ class Speciality
             static::$_internalCacheHit++;
             return static::$_specialities[$specialityID];
         } else {
+            $specialityClass = Config::getIveeClassName('Speciality');
             //try cache
             if (Config::getUseCache()) {
-                $specialityClass = Config::getIveeClassName('Speciality');
                 //lookup Cache class
                 $cacheClass = Config::getIveeClassName('Cache');
                 $cache = $cacheClass::instance();

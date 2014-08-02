@@ -8,7 +8,7 @@
         <Name>Type</Name>
         <Access>Public</Access>
         <Location left="455" top="49" />
-        <Size width="339" height="655" />
+        <Size width="339" height="757" />
         <Collapsed>False</Collapsed>
         <Member type="Field">private static array _types</Member>
         <Member type="Field">private static array _typeNames</Member>
@@ -22,6 +22,9 @@
         <Member type="Field">protected int basePrice</Member>
         <Member type="Field">protected array typeMaterials</Member>
         <Member type="Field">protected int reprocessingSkillID</Member>
+        <Member type="Field">protected float crestAveragePrice</Member>
+        <Member type="Field">protected float crestAdjustedPrice</Member>
+        <Member type="Field">protected int crestPriceDate</Member>
         <Member type="Method">public static Type getType(int typeID)</Member>
         <Member type="Method">public static int getTypeIdByName(string typeName)</Member>
         <Member type="Method">protected static void loadTypeNames()</Member>
@@ -42,6 +45,9 @@
         <Member type="Method">public bool isReprocessable()</Member>
         <Member type="Method">public array getTypeMaterials()</Member>
         <Member type="Method">public int getReprocessingSkillID()</Member>
+        <Member type="Method">public int getCrestPriceDate()</Member>
+        <Member type="Method">public float getCrestAveragePrice(int maxPriceDataAge)</Member>
+        <Member type="Method">public float getCrestAdjustedPrice(int maxPriceDataAge)</Member>
         <Member type="Method">public MaterialMap getReprocessingMaterialMap(int batchSize, float equipmentYield, float taxFactor, float implantBonusFactor)</Member>
         <Member type="Method">public static float calcReprocessingTaxFactor(float standings)</Member>
         <Modifier>None</Modifier>
@@ -49,8 +55,8 @@
       <Entity type="Class">
         <Name>Sellable</Name>
         <Access>Public</Access>
-        <Location left="455" top="755" />
-        <Size width="339" height="757" />
+        <Location left="455" top="866" />
+        <Size width="339" height="655" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int marketGroupID</Member>
         <Member type="Field">protected int priceDate</Member>
@@ -66,9 +72,6 @@
         <Member type="Field">protected float low</Member>
         <Member type="Field">protected float high</Member>
         <Member type="Field">protected float avg</Member>
-        <Member type="Field">protected float crestAveragePrice</Member>
-        <Member type="Field">protected float crestAdjustedPrice</Member>
-        <Member type="Field">protected int crestPriceDate</Member>
         <Member type="Method">protected Sellable __construct(int typeID)</Member>
         <Member type="Method">protected array queryAttributes()</Member>
         <Member type="Method">protected void setAttributes(array row)</Member>
@@ -88,16 +91,13 @@
         <Member type="Method">public float getLow()</Member>
         <Member type="Method">public float getHigh()</Member>
         <Member type="Method">public float getAvg()</Member>
-        <Member type="Method">public int getCrestPriceDate()</Member>
-        <Member type="Method">public float getCrestAveragePrice(int maxPriceDataAge)</Member>
-        <Member type="Method">public float getCrestAdjustedPrice(int maxPriceDataAge)</Member>
         <Member type="Method">protected void throwNotOnMarketException()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>Manufacturable</Name>
         <Access>Public</Access>
-        <Location left="132" top="1582" />
+        <Location left="132" top="1601" />
         <Size width="180" height="145" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int producedFromBlueprintID</Member>
@@ -109,7 +109,7 @@
       <Entity type="Class">
         <Name>Blueprint</Name>
         <Access>Public</Access>
-        <Location left="455" top="1582" />
+        <Location left="455" top="1601" />
         <Size width="339" height="553" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int productTypeID</Member>
@@ -145,7 +145,7 @@
       <Entity type="Class">
         <Name>Decryptor</Name>
         <Access>Public</Access>
-        <Location left="923" top="1582" />
+        <Location left="923" top="1601" />
         <Size width="219" height="281" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int MEModifier</Member>
@@ -165,7 +165,7 @@
       <Entity type="Class">
         <Name>InventorBlueprint</Name>
         <Access>Public</Access>
-        <Location left="257" top="2211" />
+        <Location left="257" top="2230" />
         <Size width="339" height="264" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array inventsBlueprintIDsChance</Member>
@@ -184,7 +184,7 @@
       <Entity type="Class">
         <Name>InventableBlueprint</Name>
         <Access>Public</Access>
-        <Location left="648" top="2211" />
+        <Location left="648" top="2230" />
         <Size width="339" height="216" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int inventedFromBlueprintID</Member>
@@ -265,7 +265,7 @@
       <Entity type="Class">
         <Name>ReactionProduct</Name>
         <Access>Public</Access>
-        <Location left="819" top="1949" />
+        <Location left="819" top="1968" />
         <Size width="235" height="145" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array productOfReactionIDs</Member>
@@ -277,7 +277,7 @@
       <Entity type="Class">
         <Name>Reaction</Name>
         <Access>Public</Access>
-        <Location left="150" top="1766" />
+        <Location left="150" top="1785" />
         <Size width="278" height="216" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array cycleInputMaterial</Member>
@@ -898,7 +898,7 @@
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>223</X>
-          <Y>1544</Y>
+          <Y>1563</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="3" second="1">
@@ -910,7 +910,7 @@
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>1032</X>
-          <Y>1544</Y>
+          <Y>1563</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="5" second="3">
@@ -934,11 +934,11 @@
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>863</X>
-          <Y>1915</Y>
+          <Y>1934</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>834</X>
-          <Y>1540</Y>
+          <X>837</X>
+          <Y>1554</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Comment" first="15" second="14">
@@ -961,8 +961,8 @@
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="False">
-          <X>374</X>
-          <Y>1540</Y>
+          <X>382</X>
+          <Y>1554</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="20" second="21">
@@ -978,6 +978,8 @@
         <EndOrientation>Horizontal</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="34" second="35">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -990,6 +992,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="35" second="30">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1005,6 +1009,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="34" second="36">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1021,6 +1027,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="26" second="26">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1036,6 +1044,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="33" second="34">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1051,6 +1061,8 @@
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="36" second="37">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1094,6 +1106,8 @@
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="33" second="36">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1105,6 +1119,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="33" second="30">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">

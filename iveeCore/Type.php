@@ -87,6 +87,22 @@ class Type
      */
     protected $reprocessingSkillID;
 
+        /**
+     * @var float $crestAveragePrice eve-wide average, as returned by CREST
+     */
+    protected $crestAveragePrice;
+
+    /**
+     * @var float $crestAdjustedPrice eve-wide adjusted price, as returned by CREST, relevant for industry activity
+     * cost calculations
+     */
+    protected $crestAdjustedPrice;
+
+    /**
+     * @var int $crestPriceDate unix timstamp for the last update to market prices from CREST (day granularity)
+     */
+    protected $crestPriceDate;
+
     /**
      * Main function for getting Type objects. Tries caches and instantiates new objects if necessary.
      *
@@ -102,7 +118,6 @@ class Type
         if (isset(static::$_types[$typeID])) {
             //count internal cache hit
             static::$_internalCacheHit++;
-
             return static::$_types[$typeID];
         } else {
             //try memcached
@@ -399,7 +414,10 @@ class Type
             volume,
             portionSize,
             basePrice,
-            valueInt as reprocessingSkillID
+            valueInt as reprocessingSkillID,
+            cp.crestPriceDate,
+            cp.crestAveragePrice,
+            cp.crestAdjustedPrice
             FROM invTypes as it
             JOIN invGroups as ig ON it.groupID = ig.groupID
             LEFT JOIN (
@@ -408,6 +426,13 @@ class Type
                 WHERE attributeID = 790
                 AND typeID = " . (int) $this->typeID . "
             ) as reproc ON reproc.typeID = it.typeID
+            LEFT JOIN (
+                SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
+                averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
+                FROM iveeCrestPrices
+                WHERE typeID = " . (int) $this->typeID . "
+                ORDER BY date DESC LIMIT 1
+            ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND it.typeID = " . (int) $this->typeID . ';'
         )->fetch_assoc();
@@ -436,6 +461,12 @@ class Type
         $this->basePrice   = (int) $row['basePrice'];
         if (isset($row['reprocessingSkillID']))
             $this->reprocessingSkillID = (int) $row['reprocessingSkillID'];
+        if (isset($row['crestPriceDate']))
+            $this->crestPriceDate     = (int) $row['crestPriceDate'];
+        if (isset($row['crestAveragePrice']))
+            $this->crestAveragePrice  = (float) $row['crestAveragePrice'];
+        if (isset($row['crestAdjustedPrice']))
+            $this->crestAdjustedPrice = (float) $row['crestAdjustedPrice'];
     }
 
     /**
@@ -540,6 +571,66 @@ class Type
     public function getReprocessingSkillID()
     {
         return $this->reprocessingSkillID;
+    }
+
+    /**
+     * Gets the unix timestamp of the date of the last CREST price data update (day granularity)
+     * 
+     * @return int
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
+     */
+    public function getCrestPriceDate()
+    {
+        if ($this->crestPriceDate > 0)
+            return $this->crestPriceDate;
+        else {
+            $exceptionClass = Config::getIveeClassName('NoPriceDataAvailableException');
+            throw new $exceptionClass("No CREST price available for " . $this->typeName);
+        }
+    }
+
+    /**
+     * Gets eve-wide average, as returned by CREST
+     * 
+     * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
+     * 
+     * @return float
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
+     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST 
+     * price data is older
+     */
+    public function getCrestAveragePrice($maxPriceDataAge = null)
+    {
+        if (is_null($this->crestAveragePrice)) {
+            $exceptionClass = Config::getIveeClassName('NoPriceDataAvailableException');
+            throw new $exceptionClass("No crestAveragePrice available for " . $this->typeName);
+        } elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time()) {
+            $exceptionClass = Config::getIveeClassName('PriceDataTooOldException');
+            throw new $exceptionClass('crestAveragePrice data for ' . $this->typeName . ' is too old');
+        }
+        return $this->crestAveragePrice;
+    }
+
+    /**
+     * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations
+     * 
+     * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
+     * 
+     * @return float
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
+     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST 
+     * price data is older
+     */
+    public function getCrestAdjustedPrice($maxPriceDataAge = null)
+    {
+        if (is_null($this->crestAdjustedPrice)) {
+            $exceptionClass = Config::getIveeClassName('NoPriceDataAvailableException');
+            throw new $exceptionClass("No crestAdjustedPrice available for " . $this->typeName);
+        } elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time()) {
+            $exceptionClass = Config::getIveeClassName('PriceDataTooOldException');
+            throw new $exceptionClass('crestAdjustedPrice data for ' . $this->typeName . ' is too old');
+        }
+        return $this->crestAdjustedPrice;
     }
 
     /**

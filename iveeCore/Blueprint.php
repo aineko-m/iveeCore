@@ -177,12 +177,22 @@ class Blueprint extends Sellable
             it.marketGroupID,
             prod.productTypeID,
             maxprod.maxProductionLimit,
-            COALESCE(r.valueInt, r.valueFloat) as rank
+            COALESCE(r.valueInt, r.valueFloat) as rank,
+            cp.crestPriceDate,
+            cp.crestAveragePrice,
+            cp.crestAdjustedPrice
             FROM invTypes AS it
             JOIN invGroups AS ig ON it.groupID = ig.groupID
             JOIN industryActivityProducts as prod ON prod.typeID = it.typeID
             JOIN industryBlueprints as maxprod ON maxprod.typeID = it.typeID
             JOIN dgmTypeAttributes as r ON r.typeID = it.typeID
+            LEFT JOIN (
+                SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
+                averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
+                FROM iveeCrestPrices
+                WHERE typeID = " . (int) $this->typeID . "
+                ORDER BY date DESC LIMIT 1
+            ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND prod.activityID = 1
             AND r.attributeID = 1955

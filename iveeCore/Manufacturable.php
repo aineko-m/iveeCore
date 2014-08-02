@@ -49,11 +49,20 @@ class Manufacturable extends Sellable
             it.volume,
             it.portionSize,
             it.basePrice,
-            it.marketGroupID,
+            it.marketGroupID,cp.crestPriceDate,
+            cp.crestAveragePrice,
+            cp.crestAdjustedPrice,
             iap.typeID as blueprintTypeID
             FROM invTypes AS it
             JOIN industryActivityProducts as iap ON iap.productTypeID = it.typeID
             JOIN invGroups AS ig ON it.groupID = ig.groupID
+            LEFT JOIN (
+                SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
+                averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
+                FROM iveeCrestPrices
+                WHERE typeID = " . (int) $this->typeID . "
+                ORDER BY date DESC LIMIT 1
+            ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND iap.activityID = 1
             AND it.typeID = " . (int) $this->typeID . ";"
