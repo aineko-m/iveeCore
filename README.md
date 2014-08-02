@@ -33,9 +33,10 @@ For basic usage, iveeCore requires:
 - MySQL 5.5 or newer or derivate (MariaDB, Percona Server)
 - Steve Ronuken's EVE Static Data Export (SDE) in MySQL format with industry tables
 
-However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calculation capabilities, as this requires the ZMQ PHP bindings. Since ZMQ is a not a standard module you'll need (at least terminal) root access to whatever box you plan on running the EMDR client on. iveeCore can also easily make PHP scripts use more RAM than what is typically configured on shared hosting offers (for instance, for parsing the CREST data php requires 84MB RAM), so a VPS is likely the minimum required setup for full functionality. A VM on a desktop is fine too.
+However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calculation capabilities, as this requires the ZMQ PHP bindings. Since ZMQ is a not a standard module you'll need (at least terminal) root access to whatever box you plan on running the EMDR client on. iveeCore can also easily make PHP scripts use more RAM than what is typically configured on shared hosting offers (for instance, for parsing the CREST data PHP 5.3 requires 84MB RAM), so a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
 
 For best performance, using Memcached is highly recommended. Also using APC is recommended for faster application startup.
+Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third compared to 5.3.
 
 With increasing number of tracked regional markets, the database size and load from the EMDR client also increases.
 
@@ -43,10 +44,10 @@ With increasing number of tracked regional markets, the database size and load f
 ## Installation
 - Setting up the environment
 
-These steps assume a Ubuntu Server 12.04 as environment, which is where the author develops and uses iveeCore. Other can probably work too, but are untested. 
+These steps assume an Ubuntu Server 14.04 as environment, which is where the author develops and uses iveeCore. Other can probably work too, but are untested. 
 Run the following command with root privileges to install the required packages:
 ```
-apt-get install build-essential git mysql-server-5.5 php5-dev php5-cli php5-mysqlnd php5-curl php5-memcached libzmq1 libzmq-dev memcached re2c pkg-config gawk
+apt-get install build-essential git mysql-server-5.6 php5-dev php5-cli phpunit php5-mysqlnd php5-curl php5-memcached libzmq3 libzmq3-dev memcached re2c pkg-config 
 ```
 
 If you are using MariaDB or another MySQL derivate, or have a different setup and know what your are doing, adapt the command as required.
@@ -57,7 +58,7 @@ To install the PHP ZMQ binding, follow the "Building from Github" instructions f
 [http://zeromq.org/bindings:php](http://zeromq.org/bindings:php)
 
 Enable the freshly built extension in PHP by creating the file 
-/etc/php5/conf.d/zmq.ini with the following content:
+/etc/php5/cli/conf.d/zmq.ini with the following content:
 ```
 extension=zmq.so
 ```
@@ -72,7 +73,7 @@ If everything went well, you should see a line with the libzmq version.
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to  helpful 3rd party developers like Steve Ronuken. At the time of this writing the latest conversion can be found here: 
 [https://forums.eveonline.com/default.aspx?g=posts&m=4866992#post4866992](https://forums.eveonline.com/default.aspx?g=posts&m=4866992#post4866992)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_cr16". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like HeidiSQL.
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_cri16". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like HeidiSQL.
 
 ### Setup iveeCore
 
@@ -80,7 +81,7 @@ You'll probably want to git clone iveeCore directly into your project:
 
 ```
 cd /path/to/my/project
-git clone https://github.com/aineko-m/iveeCore.git
+git clone git://github.com/aineko-m/iveeCore.git
 ```
 
 Once you've done this, you'll find the directory 'iveeCore'. Import the file iveeCore/sql/iveeCore_tables_and_SP.sql into the same database you set up for the SDE. This will create the tables iveeCore uses, stored procedures and add some missing indices in the SDE tables to improve performance.
@@ -189,12 +190,12 @@ You can modify iveeCore directly, however, you'll need to comply with the LGPL a
 
 
 ## Future Plans
-Currently iveeCore misses support for reverse engineering and T3 production chains, so this is an area where there is likely going to be improvements. Something for calculating ore compression would be nice.  I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
+Currently iveeCore misses support for reverse engineering and T3 production chains, so this is an area where there is likely going to be improvements. Something for calculating ore compression would be nice, too.  I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
 
 
 ## FAQ
 Q: What were the beginnings of iveeCore?
-A: In early 2012 I began writing my own indy application in PHP. I had been using the [Invention Calculator Plugin](http://oldforums.eveonline.com/?a=topic&threadID=1223530) for EvEHQ, but with the author going AFG and the new EvEHQ v2 having a good but not nearly flexible enough calculator for my expanding industrial needs, I decided to build my own. The application called "ivee" grew over time and well beyond the scope of it's predecessor. In the end it was rewritten from scratch three times, until I was happy with the overall structure. 
+A: In early 2012 I began writing my own indy application in PHP. I had been using the [Invention Calculator Plugin](http://oldforums.eveonline.com/?a=topic&threadID=1223530) for EvEHQ, but with the author going AFG and the new EvEHQ v2 having a good but not nearly flexible enough calculator for my expanding industrial needs, I decided to build my own. The application called "ivee" grew over time and well beyond the scope of it's predecessor. In the end it was rewritten from scratch two and a half times, until I was happy with the overall structure. 
 Eventually I decided I wanted to release the part of the code that provided general useful functionality, without revealing too much of ivee's secret sauce. So I put in some effort into separating and generalizing the code dealing with SDE DB interaction and Type classes into the library which now is iveeCore.
 
 Q: What's the motivation for releasing iveeCore?
@@ -205,6 +206,9 @@ A: No.
 
 Q: Why Memcache?
 A: I wanted to use APC first, but APC caches do not persist across CLI PHP program runs, so it was pointless. Memcache is probably the most commonly used cache for PHP and it works with both web-served and CLI scripts. It should be trivial to add other key-value or object stores, though.
+
+Q: Why not use a library like [Perry](https://github.com/3rdpartyeve/perry) for CREST access?
+A: I wanted to avoid more dependencies and the CREST functionality required by iveeCore is very simple, so I made a minimal implementation for it.
 
 
 ## Acknowledgements
