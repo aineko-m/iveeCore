@@ -222,10 +222,13 @@ class IndustryModifier
         //get skill level dependent time modifiers
         $this->skillTimeModifiers = array(
             //Industry and Advanced Industry skills
-            1 => (1.0 - 0.04 * $defaults->getSkillLevel(3380)) * (1.0 - 0.01 * $defaults->getSkillLevel(3388)),
-            3 => 1.0 - 0.05 * $defaults->getSkillLevel(3403), //Research skill
-            4 => 1.0 - 0.05 * $defaults->getSkillLevel(3409), //Metallurgy skill
-            5 => 1.0 - 0.05 * $defaults->getSkillLevel(3402)  //Science skill
+            1 => (1.0 - 0.04 * $defaults->getSkillLevel(3380)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
+            //Research and Advanced Industry skill
+            3 => (1.0 - 0.05 * $defaults->getSkillLevel(3403)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
+            //Metallurgy and Advanced Industry skill
+            4 => (1.0 - 0.05 * $defaults->getSkillLevel(3409)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
+            //Science and Advanced Industry skill
+            5 => (1.0 - 0.05 * $defaults->getSkillLevel(3402)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388))
         );
     }
 
