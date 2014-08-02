@@ -97,9 +97,9 @@ class Station
         if (isset(static::$_stations[$stationID])) {
             //count internal cache hit
             static::$_internalCacheHit++;
-
             return static::$_stations[$stationID];
         } else {
+            $stationClass = Config::getIveeClassName('Station');
             //try cache
             if (Config::getUseCache()) {
                 //lookup Cache class
@@ -109,13 +109,13 @@ class Station
                     $station = $cache->getItem('station_' . $stationID);
                 } catch (Exceptions\KeyNotFoundInCacheException $e) {
                     //go to DB
-                    $station = new static($stationID);
+                    $station = new $stationClass($stationID);
                     //store object in cache
                     $cache->setItem($station, 'station_' . $stationID);
                 }
             } else
                 //not using memcached, go to DB
-                $station = new static($stationID);
+                $station = new $stationClass($stationID);
 
             //store object in internal cache
             static::$_stations[$stationID] = $station;

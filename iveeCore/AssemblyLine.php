@@ -94,9 +94,9 @@ class AssemblyLine
         if (isset(static::$_assemblyLines[$assemblyLineTypeID])) {
             //count internal cache hit
             static::$_internalCacheHit++;
-
             return static::$_assemblyLines[$assemblyLineTypeID];
         } else {
+            $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
             //try cache
             if (Config::getUseCache()) {
                 //lookup Cache class
@@ -106,13 +106,13 @@ class AssemblyLine
                     $assemblyLine = $cache->getItem('assemblyLine_' . $assemblyLineTypeID);
                 } catch (Exceptions\KeyNotFoundInCacheException $e) {
                     //go to DB
-                    $assemblyLine = new static($assemblyLineTypeID);
+                    $assemblyLine = new $assemblyLineClass($assemblyLineTypeID);
                     //store object in cache
                     $cache->setItem($assemblyLine, 'assemblyLine_' . $assemblyLineTypeID);
                 }
             } else
                 //not using cache, go to DB
-                $assemblyLine = new static($assemblyLineTypeID);
+                $assemblyLine = new $assemblyLineClass($assemblyLineTypeID);
 
             //store object in internal cache
             static::$_assemblyLines[$assemblyLineTypeID] = $assemblyLine;

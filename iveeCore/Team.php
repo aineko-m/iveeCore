@@ -109,6 +109,7 @@ class Team
             static::$_internalCacheHit++;
             return static::$_teams[$teamID];
         } else {
+            $teamClass = Config::getIveeClassName('Team');
             //try cache
             if (Config::getUseCache()) {
                 //lookup Cache class
@@ -118,13 +119,13 @@ class Team
                     $team = $cache->getItem('team_' . $teamID);
                 } catch (Exceptions\KeyNotFoundInCacheException $e) {
                     //go to DB
-                    $team = new static($teamID);
+                    $team = new $teamClass($teamID);
                     //store object in cache
                     $cache->setItem($team, 'team_' . $teamID);
                 }
             } else
                 //not using cache, go to DB
-                $team = new static($teamID);
+                $team = new $teamClass($teamID);
 
             //store object in internal cache
             static::$_teams[$teamID] = $team;

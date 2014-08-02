@@ -98,6 +98,7 @@ class SolarSystem
             static::$_internalCacheHit++;
             return static::$_systems[$solarSystemID];
         } else {
+            $solarSystemClass = Config::getIveeClassName('SolarSystem');
             //try cache
             if (Config::getUseCache()) {
                 //lookup Cache class
@@ -107,13 +108,13 @@ class SolarSystem
                     $system = $cache->getItem('system_' . $solarSystemID);
                 } catch (Exceptions\KeyNotFoundInCacheException $e) {
                     //go to DB
-                    $system = new static($solarSystemID);
+                    $system = new $solarSystemClass($solarSystemID);
                     //store object in cache
                     $cache->setItem($system, 'system_' . $solarSystemID);
                 }
             } else
                 //not using cache, go to DB
-                $system = new static($solarSystemID);
+                $system = new $solarSystemClass($solarSystemID);
 
             //store object in internal cache
             static::$_systems[$solarSystemID] = $system;

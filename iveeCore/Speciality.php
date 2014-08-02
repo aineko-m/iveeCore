@@ -70,6 +70,7 @@ class Speciality
         } else {
             //try cache
             if (Config::getUseCache()) {
+                $specialityClass = Config::getIveeClassName('Speciality');
                 //lookup Cache class
                 $cacheClass = Config::getIveeClassName('Cache');
                 $cache = $cacheClass::instance();
@@ -77,13 +78,13 @@ class Speciality
                     $speciality = $cache->getItem('speciality_' . $specialityID);
                 } catch (Exceptions\KeyNotFoundInCacheException $e) {
                     //go to DB
-                    $speciality = new static($specialityID);
+                    $speciality = new $specialityClass($specialityID);
                     //store object in cache
                     $cache->setItem($speciality, 'speciality_' . $specialityID);
                 }
             } else
                 //not using cache, go to DB
-                $speciality = new static($specialityID);
+                $speciality = new $specialityClass($specialityID);
 
             //store object in internal cache
             static::$_specialities[$specialityID] = $speciality;
