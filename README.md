@@ -58,8 +58,9 @@ To install the PHP ZMQ binding, follow the "Building from Github" instructions f
 
 Enable the freshly built extension in PHP by creating the file 
 /etc/php5/conf.d/zmq.ini with the following content:
+```
 extension=zmq.so
-
+```
 Test it by running the command:
 ```
 php -i | grep zmq
@@ -71,7 +72,7 @@ If everything went well, you should see a line with the libzmq version.
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to  helpful 3rd party developers like Steve Ronuken. At the time of this writing the latest conversion can be found here: 
 [https://forums.eveonline.com/default.aspx?g=posts&m=4866992#post4866992](https://forums.eveonline.com/default.aspx?g=posts&m=4866992#post4866992)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_kro10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like HeidiSQL.
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_cr16". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like HeidiSQL.
 
 ### Setup iveeCore
 
@@ -127,10 +128,10 @@ Again, running the provided unit test to check for problems is a good idea.
 
 
 ## Usage
-Please take a look at the class diagram in iveeCore/doc/iveeCore_class_diagram.pdf and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have run update_crest.php at least once before any of the industry methods will work.
+Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.pdf](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf) and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have run update_crest.php at least once before any of the industry methods will work.
 ```php
 <?php
-//initialize iveeCore. Adapt path if required.
+//initialize iveeCore. Adapt path as required.
 require_once('/path/to/iveeCore/iveeCoreInit.php');
 
 //show the object for 'Damage Control I'
@@ -165,7 +166,7 @@ $reactionProcessData = \iveeCore\Type::getTypeByName('Unrefined Hyperflurite Rea
 echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit() . PHP_EOL;
 ?>
 ```
-The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested.
+The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the library are Type and its child classes, ProcessData and its child classes and IndustryModifier.
 
 ## Notes
 Although I tried to make iveeCore as configurable as possible, there are still a number of underlying assumptions made and caveats:
@@ -174,7 +175,7 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
 - While the class model is a decent match for EvE's items, it is by no means perfect. For instance, you'll find Manufacturable and Blueprint objects which can't be sold on the market although they inherit from Sellable.
 - The EMDR client does some basic filtering on the incoming market data, but there is no measure against malicious clients uploading fake data
-- (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see EXTENDING iveeCore below.
+- (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see Extending iveeCore below.
 
 Generals notes:
 - Remember to restart or flush memcached after making changes to type classes or changing the DB. From the terminal you can do so with a command like: echo 'flush_all' | nc localhost 11211 . Alternatively you can run the PHPUnit test, which also clears the cache.
