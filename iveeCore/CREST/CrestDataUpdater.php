@@ -92,7 +92,7 @@ abstract class CrestDataUpdater
      *
      * @return string the SQL queries
      */
-    protected function processDataItemToSQL($item)
+    protected function processDataItemToSQL(\stdClass $item)
     {
         return '';
     }
