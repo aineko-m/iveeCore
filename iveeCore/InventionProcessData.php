@@ -155,7 +155,10 @@ class InventionProcessData extends ProcessData
     {
         $sum = array(
             static::ACTIVITY_MANUFACTURING => 0,
+            static::ACTIVITY_RESEARCH_TE => 0,
+            static::ACTIVITY_RESEARCH_ME => 0,
             static::ACTIVITY_COPYING => 0,
+            static::ACTIVITY_REVERSE_ENGINEERING => 0,
             static::ACTIVITY_INVENTING => 0
         );
 
