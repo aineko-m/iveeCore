@@ -302,8 +302,18 @@ class Type
                 AND iap.activityID = 1
                 LIMIT 1
             ) as bpProduct ON it.typeID = bpProduct.productTypeID
-            LEFT JOIN industryBlueprints as bp ON it.typeID = bp.typeID
-            LEFT JOIN industryActivityProbabilities as inventor ON it.typeID = inventor.typeID
+            LEFT JOIN (
+                SELECT typeID FROM industryActivity
+                WHERE typeID = " . (int) $typeID . "
+                AND activityID != 7
+                LIMIT 1
+            ) as bp ON it.typeID = bp.typeID
+            LEFT JOIN (
+                SELECT typeID FROM industryActivityProbabilities
+                WHERE typeID = " . (int) $typeID . "
+                AND activityID != 7
+                LIMIT 1
+            ) as inventor ON it.typeID = inventor.typeID
             LEFT JOIN (
                 SELECT productTypeID FROM industryActivityProbabilities as prob
                 WHERE prob.productTypeID = " . (int) $typeID . "
