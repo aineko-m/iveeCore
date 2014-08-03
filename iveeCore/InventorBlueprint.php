@@ -155,8 +155,8 @@ class InventorBlueprint extends Blueprint
                 $baseCost * 0.02 * $modifier['c'],
                 $this->calcInventionChance($inventedBpID) * $decryptor->getProbabilityModifier(),
                 $inventedBp->getMaxProductionLimit() + $decryptor->getRunModifier(),
-                0 - $decryptor->getMEModifier(),
-                0 - $decryptor->getTEModifier(),
+                -2 - $decryptor->getMEModifier(),
+                -4 - $decryptor->getTEModifier(),
                 $modifier['solarSystemID'],
                 $modifier['assemblyLineTypeID'],
                 isset($modifier['teamID']) ? $modifier['teamID'] : null
@@ -169,8 +169,8 @@ class InventorBlueprint extends Blueprint
                 $baseCost * 0.02 * $modifier['c'],
                 $this->calcInventionChance($inventedBpID),
                 $inventedBp->getMaxProductionLimit(),
-                0,
-                0,
+                -2,
+                -4,
                 $modifier['solarSystemID'],
                 $modifier['assemblyLineTypeID'],
                 isset($modifier['teamID']) ? $modifier['teamID'] : null
