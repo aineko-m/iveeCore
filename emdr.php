@@ -4,7 +4,12 @@
  * 
  * PHP version 5.3
  *
- * Connects to a relay, processes order and history data and stores it to iveeCore's DB tables.
+ * This command line PHP script connects to an EMDR relay, processes received order and history data and stores it to 
+ * iveeCore's DB tables. You'll want to set it up to run in the background to have up-to-date market data available at 
+ * all times. While in theory it should run indefinitely, it occasionally gets stale, for instance when no data is 
+ * received for longer periods, and then needs to be restarted. For this purpose, the bash script restart_emdr.sh is 
+ * provided. It kills existing emdr.php processes and starts a new one in the background. You could call this script 
+ * hourly from a cronjob. Only one instance of it should run at any time.
  *
  * Requires Zero-MQ and php-zmq binding. See README for build instructions.
  *

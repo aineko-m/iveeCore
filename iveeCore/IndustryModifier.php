@@ -24,7 +24,8 @@ namespace iveeCore;
  * passing the required arguments based on a specific NPC station, a POS in a system, all NPC stations in a system or
  * a system plus manual assembly line type definition (necessary for player built outposts and wormholes).
  * 
- * IndustryModifier objects are passed as argument to the Blueprint methods calculating the industrial activity.
+ * IndustryModifier objects are passed as argument to the Blueprint methods calculating the industrial activity. They
+ * can be reused.
  * 
  * For a given industry activityID and Type object, IndustryModifier objects can calculate the cost, material and time
  * factors, considering all of the modifiers.

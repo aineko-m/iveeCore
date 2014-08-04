@@ -1,7 +1,8 @@
 <?php
 
 /**
- * The single include file required for iveeCore. All other required classes are loaded via autoloader.
+ * This is the single include file required for using iveeCore in web applications or command line scripts. All other 
+ * required classes are loaded via autoloader.
  *
  * PHP version 5.3
  *

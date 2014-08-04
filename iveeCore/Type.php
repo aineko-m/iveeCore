@@ -94,12 +94,15 @@ class Type
 
     /**
      * @var float $crestAdjustedPrice eve-wide adjusted price, as returned by CREST, relevant for industry activity
-     * cost calculations
+     * cost calculations. CREST returns price data even for some items that aren't on the market, explaining why this 
+     * attribute already appears on Type and not only Sellable.
      */
     protected $crestAdjustedPrice;
 
     /**
-     * @var int $crestPriceDate unix timstamp for the last update to market prices from CREST (day granularity)
+     * @var int $crestPriceDate unix timstamp for the last update to market prices from CREST (day granularity). CREST 
+     * returns price data even for some items that aren't on the market, explaining why this attribute already appears 
+     * on Type and not only Sellable.
      */
     protected $crestPriceDate;
 
