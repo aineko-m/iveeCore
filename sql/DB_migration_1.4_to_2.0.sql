@@ -1,3 +1,6 @@
+ALTER TABLE `industryActivityProducts`
+	ADD INDEX `productTypeID` (`productTypeID`);
+
 CREATE TABLE `iveeCrestPrices` (
 	`typeID` INT(11) NOT NULL,
 	`date` DATE NOT NULL,

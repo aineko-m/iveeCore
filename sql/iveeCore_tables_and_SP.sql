@@ -1,6 +1,9 @@
 -- add index invMetaTypes parentTypeID
 ALTER TABLE `invMetaTypes`
 	ADD INDEX `parentTypeID` (`parentTypeID`);
+
+ALTER TABLE `industryActivityProducts`
+	ADD INDEX `productTypeID` (`productTypeID`);
 	
 CREATE TABLE IF NOT EXISTS `iveePrices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
