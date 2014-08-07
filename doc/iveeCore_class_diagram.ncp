@@ -685,10 +685,11 @@
       <Entity type="Class">
         <Name>SolarSystem</Name>
         <Access>Public</Access>
-        <Location left="1562" top="2097" />
-        <Size width="324" height="502" />
+        <Location left="1532" top="2097" />
+        <Size width="384" height="604" />
         <Collapsed>False</Collapsed>
         <Member type="Field">private static array _systems</Member>
+        <Member type="Field">private static array _systemNames</Member>
         <Member type="Field">private static int _internalCacheHit</Member>
         <Member type="Field">protected int solarSystemID</Member>
         <Member type="Field">protected string systemName</Member>
@@ -700,6 +701,9 @@
         <Member type="Field">protected array stationIDs</Member>
         <Member type="Field">protected array teamIDs</Member>
         <Member type="Method">public static SolarSystem getSolarSystem(int solarSystemID)</Member>
+        <Member type="Method">public static int getSolarSystemIdByName(string solarSystemName)</Member>
+        <Member type="Method">public static SolarSystem getSolarSystemByName(string solarSystemName)</Member>
+        <Member type="Method">protected static void loadSolarSystemNames()</Member>
         <Member type="Method">public static bool deleteSolarSystemsFromCache(array solarSystemIDs)</Member>
         <Member type="Method">protected SolarSystem __construct(int solarSystemID)</Member>
         <Member type="Method">public int getSolarSystemID()</Member>
@@ -708,7 +712,9 @@
         <Member type="Method">public int getConstellationID()</Member>
         <Member type="Method">public float getSecurity()</Member>
         <Member type="Method">public array getStationIDs()</Member>
+        <Member type="Method">public array getStations()</Member>
         <Member type="Method">public array getTeamIDs()</Member>
+        <Member type="Method">public array getTeams()</Member>
         <Member type="Method">public int getIndustryIndexDate()</Member>
         <Member type="Method">public array getIndustryIndices(int maxIndexDataAge)</Member>
         <Member type="Method">public float getIndustryIndexForActivity(int activityID, int maxIndexDataAge)</Member>
@@ -806,7 +812,7 @@
       <Entity type="Class">
         <Name>CrestDataUpdater</Name>
         <Access>Public</Access>
-        <Location left="1638" top="2645" />
+        <Location left="1207" top="2711" />
         <Size width="259" height="230" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static string path</Member>
@@ -823,7 +829,7 @@
       <Entity type="Class">
         <Name>CrestFetcher</Name>
         <Access>Public</Access>
-        <Location left="1219" top="2645" />
+        <Location left="1532" top="2759" />
         <Size width="346" height="179" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected string baseUrl</Member>
@@ -837,7 +843,7 @@
       <Entity type="Class">
         <Name>IndustryFacilitiesUpdater</Name>
         <Access>Public</Access>
-        <Location left="1462" top="2965" />
+        <Location left="1031" top="3031" />
         <Size width="173" height="216" />
         <Collapsed>True</Collapsed>
         <Modifier>None</Modifier>
@@ -845,7 +851,7 @@
       <Entity type="Class">
         <Name>IndustrySystemsUpdater</Name>
         <Access>Public</Access>
-        <Location left="1676" top="2965" />
+        <Location left="1245" top="3031" />
         <Size width="170" height="216" />
         <Collapsed>True</Collapsed>
         <Modifier>None</Modifier>
@@ -853,7 +859,7 @@
       <Entity type="Class">
         <Name>MarketPricesUpdater</Name>
         <Access>Public</Access>
-        <Location left="1891" top="2965" />
+        <Location left="1460" top="3031" />
         <Size width="162" height="216" />
         <Collapsed>True</Collapsed>
         <Modifier>None</Modifier>
@@ -861,7 +867,7 @@
       <Entity type="Class">
         <Name>SpecialitiesUpdater</Name>
         <Access>Public</Access>
-        <Location left="2099" top="2965" />
+        <Location left="1668" top="3031" />
         <Size width="162" height="216" />
         <Collapsed>True</Collapsed>
         <Modifier>None</Modifier>
@@ -869,7 +875,7 @@
       <Entity type="Class">
         <Name>TeamsUpdater</Name>
         <Access>Public</Access>
-        <Location left="1260" top="2965" />
+        <Location left="829" top="3031" />
         <Size width="162" height="216" />
         <Collapsed>True</Collapsed>
         <Modifier>None</Modifier>
@@ -978,12 +984,10 @@
         <EndOrientation>Horizontal</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="34" second="35">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>1911</X>
+          <X>1941</X>
           <Y>2176</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
@@ -992,8 +996,6 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="35" second="30">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1009,12 +1011,10 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="34" second="36">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>1520</X>
+          <X>1490</X>
           <Y>2174</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
@@ -1027,8 +1027,6 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="26" second="26">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1044,8 +1042,6 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="33" second="34">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1061,8 +1057,6 @@
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="36" second="37">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1089,12 +1083,12 @@
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>1767</X>
-          <Y>2939</Y>
+          <X>1336</X>
+          <Y>3005</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>1767</X>
-          <Y>2902</Y>
+          <X>1336</X>
+          <Y>2968</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="42" second="38">
@@ -1106,8 +1100,6 @@
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="33" second="36">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1119,8 +1111,6 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="33" second="30">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">

@@ -30,6 +30,11 @@ class SolarSystem
      * @var array $_systems acts as internal Station object cache, solarSystemID => SolarSystem.
      */
     private static $_systems;
+    
+    /**
+     * @var array $_systemNames acts as a lazyloaded systemName to ID lookup table, systemName => systemID.
+     */
+    private static $_systemNames;
 
     /**
      * @var int $_internalCacheHit counter for the internal SolarSystem cache hits
@@ -119,6 +124,82 @@ class SolarSystem
             //store object in internal cache
             static::$_systems[$solarSystemID] = $system;
             return $system;
+        }
+    }
+
+    /**
+     * Returns SolarSystem ID for a given system name
+     * Loads all system names from DB or cache to PHP when first used.
+     * Note that populating the name => id array takes time and uses a few MBs of RAM
+     *
+     * @param string $solarSystemName of requested SolarSysten
+     *
+     * @return int the ID of the requested system
+     * @throws \iveeCore\Exceptions\SystemNameNotFoundException if system name is not found
+     */
+    public static function getSolarSystemIdByName($solarSystemName)
+    {
+        //check if names have been loaded yet
+        if (empty(static::$_systemNames)) {
+            //try cache
+            if (Config::getUseCache()) {
+                //lookup Cache class
+                $cacheClass = Config::getIveeClassName('Cache');
+                $cache = $cacheClass::instance();
+                try {
+                    static::$_systemNames = $cache->getItem('solarSystemNames');
+                } catch (Exceptions\KeyNotFoundInCacheException $e) {
+                    //load names from DB
+                    static::loadSolarSystemNames();
+                    //store in cache
+                    $cache->setItem(static::$_systemNames, 'solarSystemNames');
+                }
+            } else
+                //load names from DB
+                static::loadSolarSystemNames();
+        }
+
+        $solarSystemName = trim($solarSystemName);
+        //return ID if system name exists
+        if (isset(static::$_systemNames[$solarSystemName]))
+            return static::$_systemNames[$solarSystemName];
+        else {
+            $exceptionClass = Config::getIveeClassName('SystemNameNotFoundException');
+            throw new $exceptionClass("SolarSystem name not found");
+        }
+    }
+
+    /**
+     * Returns SolarSystem object by name.
+     *
+     * @param string $solarSystenName of requested SolarSystem
+     *
+     * @return \iveeCore\SolarSystem the requested SolarSystem object
+     * @throws \iveeCore\Exceptions\SystemNameNotFoundException if system name is not found
+     */
+    public static function getSolarSystemByName($solarSystenName)
+    {
+        $solarSystemClass = Config::getIveeClassName("SolarSystem");
+        return $solarSystemClass::getSolarSystem($solarSystemClass::getSolarSystemIdByName($solarSystenName));
+    }
+    
+    /**
+     * Loads all SolarSystem names from DB to PHP
+     *
+     * @return void
+     */
+    protected static function loadSolarSystemNames()
+    {
+        //lookup SDE class
+        $sdeClass = Config::getIveeClassName('SDE');
+
+        $res = $sdeClass::instance()->query(
+            "SELECT solarSystemID, solarSystemName 
+            FROM mapSolarSystems;"
+        );
+
+        while ($row = $res->fetch_assoc()) {
+            static::$_systemNames[$row['solarSystemName']] = (int) $row['solarSystemID'];
         }
     }
 
@@ -277,6 +358,19 @@ class SolarSystem
     {
         return $this->stationIDs;
     }
+    
+    /**
+     * Gets Stations in SolarSystem
+     * 
+     * @return array
+     */
+    public function getStations(){
+        $stations = array();
+        $stationClass = Config::getIveeClassName("Station");
+        foreach ($this->getStationIDs() as $stationID)
+            $stations[$stationID] = $stationClass::getStation($stationID);
+        return $stations;
+    }
 
     /**
      * Gets IDs of Teams in SolarSystem
@@ -286,6 +380,19 @@ class SolarSystem
     public function getTeamIDs()
     {
         return $this->teamIDs;
+    }
+    
+    /**
+     * Gets Teams in SolarSystem
+     * 
+     * @return array
+     */
+    public function getTeams(){
+        $teams = array();
+        $teamClass = Config::getIveeClassName("Team");
+        foreach ($this->getTeamIDs() as $teamID)
+            $teams[$teamID] = $teamClass::getTeam($teamID);
+        return $teams;
     }
 
     /**
