@@ -277,6 +277,19 @@ class SolarSystem
     {
         return $this->stationIDs;
     }
+    
+    /**
+     * Gets Stations in SolarSystem
+     * 
+     * @return array
+     */
+    public function getStations(){
+        $stations = array();
+        $stationClass = Config::getIveeClassName("Station");
+        foreach ($this->getStationIDs() as $stationID)
+            $stations[$stationID] = $stationClass::getStation($stationID);
+        return $stations;
+    }
 
     /**
      * Gets IDs of Teams in SolarSystem
@@ -286,6 +299,19 @@ class SolarSystem
     public function getTeamIDs()
     {
         return $this->teamIDs;
+    }
+    
+    /**
+     * Gets Teams in SolarSystem
+     * 
+     * @return array
+     */
+    public function getTeams(){
+        $teams = array();
+        $teamClass = Config::getIveeClassName("Team");
+        foreach ($this->getTeamIDs() as $teamID)
+            $teams[$teamID] = $teamClass::getTeam($teamID);
+        return $teams;
     }
 
     /**
