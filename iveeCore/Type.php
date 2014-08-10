@@ -87,7 +87,7 @@ class Type
      */
     protected $reprocessingSkillID;
 
-        /**
+    /**
      * @var float $crestAveragePrice eve-wide average, as returned by CREST
      */
     protected $crestAveragePrice;
@@ -294,15 +294,17 @@ class Type
             it.marketGroupID as sellable,
             bpProduct.productTypeID as manufacturable,
             bp.typeID as blueprint,
-            inventor.typeID as inventor,
-            inventable.productTypeID as inventable,
+            inventor.activityID as inventor,
+            inventable.activityID as inventable,
             rp.typeID as reactionProduct
             FROM invTypes as it
             JOIN invGroups as ig ON it.groupID = ig.groupID
             LEFT JOIN (
                 SELECT productTypeID FROM industryActivityProducts as iap
+                JOIN invTypes as it ON it.typeID = iap.typeID
                 WHERE iap.productTypeID = " . (int) $typeID . "
                 AND iap.activityID = 1
+                AND it.published = 1
                 LIMIT 1
             ) as bpProduct ON it.typeID = bpProduct.productTypeID
             LEFT JOIN (
@@ -312,13 +314,12 @@ class Type
                 LIMIT 1
             ) as bp ON it.typeID = bp.typeID
             LEFT JOIN (
-                SELECT typeID FROM industryActivityProbabilities
+                SELECT activityID, typeID FROM industryActivityProbabilities
                 WHERE typeID = " . (int) $typeID . "
-                AND activityID != 7
                 LIMIT 1
             ) as inventor ON it.typeID = inventor.typeID
             LEFT JOIN (
-                SELECT productTypeID FROM industryActivityProbabilities as prob
+                SELECT productTypeID, activityID FROM industryActivityProbabilities as prob
                 WHERE prob.productTypeID = " . (int) $typeID . "
                 LIMIT 1
             ) as inventable ON it.typeID = inventable.productTypeID
@@ -354,8 +355,12 @@ class Type
             $subtype = 'Reaction';
         elseif (!empty($subtypeInfo['reactionProduct']))
             $subtype = 'ReactionProduct';
+        elseif ($subtypeInfo['inventable'] == 7)
+            $subtype = 'REBlueprint';
         elseif (!empty($subtypeInfo['inventable']))
             $subtype = 'InventableBlueprint';
+        elseif ($subtypeInfo['inventor'] == 7)
+            $subtype = 'Relic';
         elseif (!empty($subtypeInfo['inventor']))
             $subtype = 'InventorBlueprint';
         elseif (!empty($subtypeInfo['blueprint']))

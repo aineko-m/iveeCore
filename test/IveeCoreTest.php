@@ -234,7 +234,7 @@ public function testManufacturing()
     public function testInventing()
     {
 //        $ipd = SDE::instance()->getTypeByName('Ishtar Blueprint')->invent(23185);
-//        $this->assertTrue($ipd->getInventionChance() == 0.312);
+//        $this->assertTrue($ipd->getProbability() == 0.312);
 //        $materialTarget = new \iveeCore\MaterialMap;
 //        $materialTarget->addMaterial(23185, 1);
 //        $materialTarget->addMaterial(20410, 8);

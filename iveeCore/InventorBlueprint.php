@@ -30,7 +30,12 @@ class InventorBlueprint extends Blueprint
     /**
      * @var array $inventsBlueprintID holds the inventable blueprint ID(s)
      */
-    protected $inventsBlueprintIDsChance = array();
+    protected $inventsBlueprintIDs = array();
+
+    /**
+     * @var float $inventionProbability the base invention chance
+     */
+    protected $inventionProbability;
 
     /**
      * @var int $decryptorGroupID groupID of compatible decryptors
@@ -79,7 +84,8 @@ class InventorBlueprint extends Blueprint
         }
 
         while ($row = $res->fetch_assoc()) {
-            $this->inventsBlueprintIDsChance[(int) $row['productTypeID']] = (float) $row['probability'];
+            $this->inventsBlueprintIDs[(int) $row['productTypeID']] = 1;
+            $this->inventionProbability = (float) $row['probability'];
             $this->decryptorGroupID = (int) $row['decryptorGroupID'];
         }
 
@@ -114,7 +120,6 @@ class InventorBlueprint extends Blueprint
      * 
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if the specified blueprint can't be invented from this
-     * @throws \iveeCore\Exceptions\InvalidParameterValueException if inputBPCRuns exceeds limit
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor
      * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if a non-matching decryptor is specified
      */
@@ -129,7 +134,7 @@ class InventorBlueprint extends Blueprint
              $inventedBpID = $inventableBpIDs[0];
 
         //check if the given BP can be invented from this
-        elseif (!isset($this->inventsBlueprintIDsChance[$inventedBpID])) {
+        elseif (!isset($this->inventsBlueprintIDs[$inventedBpID])) {
             $exceptionClass = Config::getIveeClassName('NotInventableException');
             throw new $exceptionClass("Specified blueprint can't be invented from this inventor blueprint.");
         }
@@ -153,7 +158,7 @@ class InventorBlueprint extends Blueprint
                 $inventedBpID,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
-                $this->calcInventionChance($inventedBpID) * $decryptor->getProbabilityModifier(),
+                $this->calcInventionProbability() * $decryptor->getProbabilityModifier(),
                 $inventedBp->getMaxProductionLimit() + $decryptor->getRunModifier(),
                 -2 - $decryptor->getMEModifier(),
                 -4 - $decryptor->getTEModifier(),
@@ -167,7 +172,7 @@ class InventorBlueprint extends Blueprint
                 $inventedBpID,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
-                $this->calcInventionChance($inventedBpID),
+                $this->calcInventionProbability(),
                 $inventedBp->getMaxProductionLimit(),
                 -2,
                 -4,
@@ -273,12 +278,32 @@ class InventorBlueprint extends Blueprint
 
     /**
      * Returns an array with the IDs of inventable blueprints
-     * 
+     *
      * @return array
      */
     public function getInventableBlueprintIDs()
     {
-        return array_keys($this->inventsBlueprintIDsChance);
+        return array_keys($this->inventsBlueprintIDs);
+    }
+
+    /**
+     * Returns the base invention chance
+     *
+     * @return float
+     */
+    public function getInventionProbability()
+    {
+        return $this->inventionProbability;
+    }
+
+    /**
+     * Returns the groupID of compatible Decryptors
+     *
+     * @return int
+     */
+    public function getDecryptorGroupID()
+    {
+        return $this->decryptorGroupID;
     }
 
     /**
@@ -288,30 +313,26 @@ class InventorBlueprint extends Blueprint
      */
     public function getDecryptorIDs()
     {
-        return Decryptor::getIDsFromGroup($this->decryptorGroupID);
+        return Decryptor::getIDsFromGroup($this->getDecryptorGroupID());
     }
 
     /**
-     * Calculates the invention chance
+     * Calculates the invention chance considering skills and optional meta level item
      * 
-     * @param int $inventedBpID the ID of the InvetableBlueprint to check
      * @param int $metaLevel the metalevel of the optional input item
      * 
      * @return float
      */
-    public function calcInventionChance($inventedBpID, $metaLevel = 0)
+    public function calcInventionProbability($metaLevel = null)
     {
-        if (!isset($this->inventsBlueprintIDsChance[$inventedBpID])) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("The given blueprint cannot be invented from blueprintID=" . $this->getTypeID());
-        }
         $defaultsClass = Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
 
-        return $this->inventsBlueprintIDsChance[$inventedBpID]
-            * (1 + 0.01 * $defaults->getSkillLevel($this->encryptionSkillID))
-            * (1 + ($defaults->getSkillLevel($this->datacoreSkillIDs[0])
-                + $defaults->getSkillLevel($this->datacoreSkillIDs[1]))
-            * (0.1 / (5 - $metaLevel)));
+        return $this->getInventionProbability()
+            * (1 + 0.01 * $defaults->getSkillLevel($this->encryptionSkillID)
+                + 0.02 * ($defaults->getSkillLevel($this->datacoreSkillIDs[0])
+                    + $defaults->getSkillLevel($this->datacoreSkillIDs[1]))
+            )
+            * (isset($metaLevel) ? (1 + 0.5 / (5 - $metalevel)) : 1);
     }
 }

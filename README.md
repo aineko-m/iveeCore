@@ -191,7 +191,8 @@ You can modify iveeCore directly, however, you'll need to comply with the LGPL a
 
 
 ## Future Plans
-Currently iveeCore misses support for reverse engineering and T3 production chains, so this is an area where there is likely going to be improvements. The multi-region market price support needs to be extended. Something for calculating ore compression would be nice, too.  I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
+The multi-region market price support needs to be extended. Something for calculating ore compression would be nice. While reverse engineering is now supported by iveeCore, T3 production chains aren't, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
+I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
 
 
 ## FAQ
