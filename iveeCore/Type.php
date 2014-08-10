@@ -678,7 +678,7 @@ class Type
         if ($implantBonusFactor > 1.04)
             throw new $exceptionClass('No implants has reprocessing bonus > 4%');
         if ($taxFactor > 1)
-            throw new $exceptionClass('Reprocessing tax can be lower than 0%');
+            throw new $exceptionClass('Reprocessing tax cannot be lower than 0%');
         
         //if (compressed) ore or ice
         if ($this->getCategoryID() == 25)
