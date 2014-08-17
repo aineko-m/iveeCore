@@ -364,7 +364,8 @@ class SolarSystem
      * 
      * @return array
      */
-    public function getStations(){
+    public function getStations()
+    {
         $stations = array();
         $stationClass = Config::getIveeClassName("Station");
         foreach ($this->getStationIDs() as $stationID)
@@ -387,7 +388,8 @@ class SolarSystem
      * 
      * @return array
      */
-    public function getTeams(){
+    public function getTeams()
+    {
         $teams = array();
         $teamClass = Config::getIveeClassName("Team");
         foreach ($this->getTeamIDs() as $teamID)

@@ -1,7 +1,31 @@
 <?php
+/**
+ * REBlueprint class file.
+ *
+ * PHP version 5.3
+ *
+ * @category IveeCore
+ * @package  IveeCoreClasses
+ * @author   Aineko Macx <ai@sknop.net>
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/REBlueprint.php
+ *
+ */
 
 namespace iveeCore;
 
+/**
+ * REBlueprint represents blueprints that can be reverse engineered from Relics.
+ * Where applicable, attribute names are the same as SDE database column names.
+ * Inheritance: REBlueprint ->Blueprint -> Sellable -> Type.
+ *
+ * @category IveeCore
+ * @package  IveeCoreClasses
+ * @author   Aineko Macx <ai@sknop.net>
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/REBlueprint.php
+ *
+ */
 class REBlueprint extends Blueprint
 {
     /**
@@ -141,10 +165,12 @@ class REBlueprint extends Blueprint
      * @param bool $recursive defines if used materials should be manufactured recursively
      *
      * @return \iveeCore\CopyProcessData describing the copy process
+     * @throws \iveeCore\Exceptions\NotResearchableException always
      */
     public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $recursive = true)
     {
-        throw new \iveeCore\Exceptions\IveeCoreException;
+        $exceptionClass = Config::getIveeClassName('NotResearchableException');
+        throw new $exceptionClass("Relics can't be copied");
     }
 
     /**
@@ -157,10 +183,12 @@ class REBlueprint extends Blueprint
      * @param bool $recursive defines if used materials should be manufactured recursively
      *
      * @return \iveeCore\ResearchMEProcessData describing the research process
+     * @throws \iveeCore\Exceptions\NotResearchableException always
      */
     public function researchME(IndustryModifier $iMod, $startME, $endME, $recursive = true)
     {
-        throw new \iveeCore\Exceptions\IveeCoreException;
+        $exceptionClass = Config::getIveeClassName('NotResearchableException');
+        throw new $exceptionClass("Relics can't be researched");
     }
 
     /**
@@ -173,9 +201,11 @@ class REBlueprint extends Blueprint
      * @param bool $recursive defines if used materials should be manufactured recursively
      *
      * @return \iveeCore\ResearchTEProcessData describing the research process
+     * @throws \iveeCore\Exceptions\NotResearchableException always
      */
     public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $recursive = true)
     {
-        throw new \iveeCore\Exceptions\IveeCoreException;
+        $exceptionClass = Config::getIveeClassName('NotResearchableException');
+        throw new $exceptionClass("Relics can't be researched");
     }
 }

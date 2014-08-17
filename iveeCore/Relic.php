@@ -279,6 +279,8 @@ class Relic extends Sellable
     /**
      * Returns the reverse engineerable BPC IDs of a given race
      *
+     * @param int $raceID the race for which the blueprints should be looked up. See table chrRaces for IDs.
+     *
      * @return array
      */
     public function getReverseEngineeringBlueprintIDsByRaceID($raceID)

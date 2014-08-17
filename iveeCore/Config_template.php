@@ -122,6 +122,7 @@ class Config
         'NotInventableException'              => '\iveeCore\Exceptions\NotInventableException',
         'NotOnMarketException'                => '\iveeCore\Exceptions\NotOnMarketException',
         'NotReprocessableException'           => '\iveeCore\Exceptions\NotReprocessableException',
+        'NotResearchableException'            => '\iveeCore\Exceptions\NotResearchableException',
         'NotReverseEngineerableException'     => '\iveeCore\Exceptions\NotReverseEngineerableException',
         'PriceDataTooOldException'            => '\iveeCore\Exceptions\PriceDataTooOldException',
         'StationIdNotFoundException'          => '\iveeCore\Exceptions\StationIdNotFoundException',

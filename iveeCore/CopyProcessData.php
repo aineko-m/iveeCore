@@ -40,7 +40,7 @@ class CopyProcessData extends ProcessData
     /**
      * Constructor
      * 
-     * @param int $BpCopyID typeID of the blueprint being copied
+     * @param int $bpCopyID typeID of the blueprint being copied
      * @param int $copyQuantity the number of copies being made
      * @param int $outputRuns the number of runs per copy
      * @param int $copyTime the time the copy process takes
