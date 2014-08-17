@@ -119,7 +119,7 @@ class ReactionProcessData
      */
     public function withReprocessing()
     {
-        return $this->$withReprocessing;
+        return $this->withReprocessing;
     }
 
     /**

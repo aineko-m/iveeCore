@@ -540,7 +540,7 @@ class IndustryModifier
     {
         $bestAssemblyLine = null;
         $bestModifier = null;
-        foreach ($this->getAssemblyLinesForActivity($activityID) as $assemblyLineID => $candidateAssemblyLine) {
+        foreach ($this->getAssemblyLinesForActivity($activityID) as $candidateAssemblyLine) {
             //skip incompatible assemblyLines
             if (!$candidateAssemblyLine->isTypeCompatible($type))
                 continue;
@@ -596,7 +596,7 @@ class IndustryModifier
             return null;
         }
 
-        foreach ($teams as $teamID => $candidateTeam) {
+        foreach ($teams as $candidateTeam) {
             //skip teams incompatible with output groupID
             if (!$candidateTeam->isGroupIDCompatible($type->getGroupID()))
                 continue;

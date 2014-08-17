@@ -30,12 +30,12 @@ class Decryptor extends Sellable
     /**
      * @var int the material efficiency modifier
      */
-    protected $MEModifier;
+    protected $meModifier;
 
     /**
      * @var int the production efficiency modifier
      */
-    protected $TEModifier;
+    protected $teModifier;
 
     /**
      * @var int the production run modifier
@@ -86,10 +86,10 @@ class Decryptor extends Sellable
                 $this->probabilityModifier = (float) $row['valueFloat'];
                 break;
             case 1113:
-                $this->MEModifier = (int) $row['valueFloat'];
+                $this->meModifier = (int) $row['valueFloat'];
                 break;
             case 1114:
-                $this->TEModifier = (int) $row['valueFloat'];
+                $this->teModifier = (int) $row['valueFloat'];
                 break;
             case 1124:
                 $this->runModifier = (int) $row['valueFloat'];
@@ -108,7 +108,7 @@ class Decryptor extends Sellable
      */
     public function getMEModifier()
     {
-        return $this->MEModifier;
+        return $this->teModifier;
     }
 
     /**
@@ -118,7 +118,7 @@ class Decryptor extends Sellable
      */
     public function getTEModifier()
     {
-        return $this->TEModifier;
+        return $this->teModifier;
     }
 
     /**

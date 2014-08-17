@@ -66,12 +66,12 @@ class Consumer
     /**
      * @var string $EmdrPriceUpdateClass holds the class name for EmdrPriceUpdate objects
      */
-    protected $EmdrPriceUpdateClass;
+    protected $emdrPriceUpdateClass;
 
     /**
      * @var string $EmdrHistoryUpdateClass holds the class name for EmdrHistoryUpdate objects
      */
-    protected $EmdrHistoryUpdateClass;
+    protected $emdrHistoryUpdateClass;
 
     /**
      * Returns singleton instance
@@ -127,8 +127,8 @@ class Consumer
 
         $this->trackedMarketRegionIDs = $defaults->getTrackedMarketRegionIDs();
         $this->defaultRegionID        = $defaults->getDefaultRegionID();
-        $this->EmdrPriceUpdateClass   = \iveeCore\Config::getIveeClassName('EmdrPriceUpdater');
-        $this->EmdrHistoryUpdateClass = \iveeCore\Config::getIveeClassName('EmdrHistoryUpdater');
+        $this->emdrPriceUpdateClass   = \iveeCore\Config::getIveeClassName('EmdrPriceUpdater');
+        $this->emdrHistoryUpdateClass = \iveeCore\Config::getIveeClassName('EmdrHistoryUpdater');
     }
 
     /**
@@ -347,7 +347,7 @@ class Consumer
         }
 
         //process price data
-        $epu = new $this->EmdrPriceUpdateClass(
+        $epu = new $this->emdrPriceUpdateClass(
             $typeID,
             $regionID,
             $generatedAt,
@@ -383,7 +383,7 @@ class Consumer
         }
 
         //process history data
-        $ehu = new $this->EmdrHistoryUpdateClass(
+        $ehu = new $this->emdrHistoryUpdateClass(
             $typeID,
             $regionID,
             $generatedAt,

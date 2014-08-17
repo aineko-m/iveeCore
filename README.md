@@ -40,6 +40,8 @@ Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third com
 
 With increasing number of tracked regional markets, the database size and load from the EMDR client also increases.
 
+Preliminary tests indicate iveeCore also works with the [HipHop Virtual Machine](http://en.wikipedia.org/wiki/HHVM). For long running scripts it can bring some speed improvements and significant memory savings. The EMDR client is not compatible out of the box due to the ZMQ binding requirement.
+Pre-built HHVM packages can be found [here](https://github.com/facebook/hhvm/wiki/Prebuilt%20Packages%20for%20HHVM).
 
 ## Installation
 - Setting up the environment

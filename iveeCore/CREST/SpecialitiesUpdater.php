@@ -49,7 +49,6 @@ class SpecialitiesUpdater extends CrestDataUpdater
 
         //clear existing data
         $sql = 'DELETE FROM iveeSpecialityGroups; DELETE FROM iveeSpecialities;';
-        $count = 0;
 
         foreach ($this->data->items as $item)
             $sql .= $this->processDataItemToSQL($item);

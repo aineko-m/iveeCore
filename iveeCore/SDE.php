@@ -126,7 +126,7 @@ class SDE
         $startTime = microtime(true);
         if (!$this->db->multi_query($multiSql)) {
             $exceptionClass = Config::getIveeClassName('SQLErrorException');
-            throw new $exceptionClass($this->db->error . "\nQuery: " . $sql, $this->db->errno);
+            throw new $exceptionClass($this->db->error . "\nQuery: " . $multiSql, $this->db->errno);
         }
         //gather stats about queries
         $this->addQueryTime(microtime(true) - $startTime);
@@ -264,6 +264,7 @@ class SDE
     {
         $data = array();
         $condition = array();
+        $exceptionClass = Config::getIveeClassName('InvalidArgumentException');
 
         foreach ($update as $col => $val) {
             if (!(is_int($val) OR is_float($val) OR is_string($val)))
