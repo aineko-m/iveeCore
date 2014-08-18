@@ -40,6 +40,8 @@ Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third com
 
 With increasing number of tracked regional markets, the database size and load from the EMDR client also increases.
 
+Preliminary tests indicate iveeCore also works with the [HipHop Virtual Machine](http://en.wikipedia.org/wiki/HHVM). For long running scripts it can bring some speed improvements and significant memory savings. The EMDR client is not compatible out of the box due to the ZMQ binding requirement.
+Pre-built HHVM packages can be found [here](https://github.com/facebook/hhvm/wiki/Prebuilt%20Packages%20for%20HHVM).
 
 ## Installation
 - Setting up the environment
@@ -191,7 +193,8 @@ You can modify iveeCore directly, however, you'll need to comply with the LGPL a
 
 
 ## Future Plans
-Currently iveeCore misses support for reverse engineering and T3 production chains, so this is an area where there is likely going to be improvements. The multi-region market price support needs to be extended. Something for calculating ore compression would be nice, too.  I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
+The multi-region market price support needs to be extended. Something for calculating ore compression would be nice. While reverse engineering is now supported by iveeCore, T3 production chains aren't, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
+I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
 
 
 ## FAQ

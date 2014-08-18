@@ -410,7 +410,7 @@ class Blueprint extends Sellable
 
             //if consume flag is set to 0, add to needed mats with quantity 0
             if (isset($matData['c']) and $matData['c'] == 0) {
-                $md->addMaterial($matID, 0);
+                $cd->addMaterial($matID, 0);
                 continue;
             }
 

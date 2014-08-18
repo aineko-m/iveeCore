@@ -33,27 +33,27 @@ class Config
     /////////////////////
 
     //DB config
-    protected static $DB_HOST = 'localhost';
-    protected static $DB_PORT = 3306;
-    protected static $DB_USER = 'eve_sde';
-    protected static $DB_PW   = 'eve_sde_pw';
-    protected static $DB_NAME = 'eve_sde_cri16';
+    protected static $dbHost = 'localhost';
+    protected static $dbPort = 3306;
+    protected static $dbUser = 'eve_sde';
+    protected static $dbPw   = 'eve_sde_pw';
+    protected static $dbName = 'eve_sde_cri16';
 
     //Cache config
-    protected static $USE_CACHE    = true;
-    protected static $CACHE_HOST   = 'localhost';
-    protected static $CACHE_PORT   = '11211';
-    protected static $CACHE_PREFIX = 'ivee_';
+    protected static $useCache    = true;
+    protected static $cacheHost   = 'localhost';
+    protected static $cachePort   = '11211';
+    protected static $cachePrefix = 'ivee_';
 
     //EMDR config
     //https://eve-market-data-relay.readthedocs.org/en/latest/access.html
-    protected static $EMDR_RELAY_URL = 'tcp://relay-eu-germany-1.eve-emdr.com:8050';
+    protected static $emdrRelayUrl = 'tcp://relay-eu-germany-1.eve-emdr.com:8050';
 
     //EVE CREST base URL. Needs trailing slash.
-    protected static $CREST_BASE_URL = 'http://public-crest.eveonline.com/';
+    protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
 
     //change the application name in the parenthesis to your application. It is used when accessing the CREST API.
-    protected static $USER_AGENT = 'iveeCore/2.0 (unknown application)';
+    protected static $userAgent = 'iveeCore/2.0 (unknown application)';
 
     //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
     //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
@@ -79,8 +79,11 @@ class Config
         'Reaction'               => '\iveeCore\Reaction',
         'ReactionProcessData'    => '\iveeCore\ReactionProcessData',
         'ReactionProduct'        => '\iveeCore\ReactionProduct',
+        'Relic'                  => '\iveeCore\Relic',
         'ResearchMEProcessData'  => '\iveeCore\ResearchMEProcessData',
         'ResearchTEProcessData'  => '\iveeCore\ResearchTEProcessData',
+        'ReverseEngineerProcessData' => '\iveeCore\ReverseEngineerProcessData',
+        'REBlueprint'            => '\iveeCore\REBlueprint',
         'SDE'                    => '\iveeCore\SDE',
         'Sellable'               => '\iveeCore\Sellable',
         'SkillMap'               => '\iveeCore\SkillMap',
@@ -119,6 +122,8 @@ class Config
         'NotInventableException'              => '\iveeCore\Exceptions\NotInventableException',
         'NotOnMarketException'                => '\iveeCore\Exceptions\NotOnMarketException',
         'NotReprocessableException'           => '\iveeCore\Exceptions\NotReprocessableException',
+        'NotResearchableException'            => '\iveeCore\Exceptions\NotResearchableException',
+        'NotReverseEngineerableException'     => '\iveeCore\Exceptions\NotReverseEngineerableException',
         'PriceDataTooOldException'            => '\iveeCore\Exceptions\PriceDataTooOldException',
         'StationIdNotFoundException'          => '\iveeCore\Exceptions\StationIdNotFoundException',
         'SystemDataTooOldException'           => '\iveeCore\Exceptions\SystemDataTooOldException',
@@ -168,7 +173,7 @@ class Config
      */
     public static function getDbHost()
     {
-        return static::$DB_HOST;    
+        return static::$dbHost;
     }
     
     /**
@@ -178,7 +183,7 @@ class Config
      */
     public static function getDbPort()
     {
-        return static::$DB_PORT;
+        return static::$dbPort;
     }
     
     /**
@@ -188,7 +193,7 @@ class Config
      */
     public static function getDbUser()
     {
-        return static::$DB_USER;
+        return static::$dbUser;
     }
     
     /**
@@ -198,7 +203,7 @@ class Config
      */
     public static function getDbPw()
     {
-        return static::$DB_PW;
+        return static::$dbPw;
     }
     
     /**
@@ -208,7 +213,7 @@ class Config
      */
     public static function getDbName()
     {
-        return static::$DB_NAME;
+        return static::$dbName;
     }
 
     /**
@@ -218,7 +223,7 @@ class Config
      */
     public static function getUseCache()
     {
-        return static::$USE_CACHE;
+        return static::$useCache;
     }
     
     /**
@@ -228,7 +233,7 @@ class Config
      */
     public static function getCacheHost()
     {
-        return static::$CACHE_HOST;
+        return static::$cacheHost;
     }
     
     /**
@@ -238,7 +243,7 @@ class Config
      */
     public static function getCachePort()
     {
-        return static::$CACHE_PORT;
+        return static::$cachePort;
     }
     
     /**
@@ -248,7 +253,7 @@ class Config
      */
     public static function getCachePrefix()
     {
-        return static::$CACHE_PREFIX;
+        return static::$cachePrefix;
     }
 
     /**
@@ -258,7 +263,7 @@ class Config
      */
     public static function getEmdrRelayUrl()
     {
-        return static::$EMDR_RELAY_URL;
+        return static::$emdrRelayUrl;
     }
     
     /**
@@ -268,7 +273,7 @@ class Config
      */
     public static function getCrestBaseUrl()
     {
-        return static::$CREST_BASE_URL;
+        return static::$crestBaseUrl;
     }
     
     /**
@@ -278,7 +283,7 @@ class Config
      */
     public static function getUserAgent()
     {
-        return static::$USER_AGENT;
+        return static::$userAgent;
     }
 
     /**
@@ -294,7 +299,7 @@ class Config
         if (isset(static::$classes[$classNickname]))
             return static::$classes[$classNickname];
         else
-            exit('Fatal Error: No Class configured  for "' . $classNickname . '" in iveeCore' . DIRECTORY_SEPARATOR
+            exit('Fatal Error: No class configured  for "' . $classNickname . '" in iveeCore' . DIRECTORY_SEPARATOR
                 . 'Config.php' . PHP_EOL);
     }
 }

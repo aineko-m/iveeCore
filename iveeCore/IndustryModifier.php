@@ -229,7 +229,9 @@ class IndustryModifier
             //Metallurgy and Advanced Industry skill
             4 => (1.0 - 0.05 * $defaults->getSkillLevel(3409)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
             //Science and Advanced Industry skill
-            5 => (1.0 - 0.05 * $defaults->getSkillLevel(3402)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388))
+            5 => (1.0 - 0.05 * $defaults->getSkillLevel(3402)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
+            //Advanced Industry skill
+            7 => 1.0 - 0.03 * $defaults->getSkillLevel(3388)
         );
     }
 
@@ -477,9 +479,9 @@ class IndustryModifier
      * variables.
      * 
      * @param int $activityID ID of the activity to get modifiers for
-     * @param Type $type It's always the final output item that needs to be given for checking. This means that for 
+     * @param Type $type It's the final output item that needs to be given for checking. This means that for
      * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product 
-     * of the invented blueprint.
+     * of the invented blueprint. Only for reverse engineering the input Relic must be checked.
      *
      * @return array
      */
@@ -538,7 +540,7 @@ class IndustryModifier
     {
         $bestAssemblyLine = null;
         $bestModifier = null;
-        foreach ($this->getAssemblyLinesForActivity($activityID) as $assemblyLineID => $candidateAssemblyLine) {
+        foreach ($this->getAssemblyLinesForActivity($activityID) as $candidateAssemblyLine) {
             //skip incompatible assemblyLines
             if (!$candidateAssemblyLine->isTypeCompatible($type))
                 continue;
@@ -594,7 +596,7 @@ class IndustryModifier
             return null;
         }
 
-        foreach ($teams as $teamID => $candidateTeam) {
+        foreach ($teams as $candidateTeam) {
             //skip teams incompatible with output groupID
             if (!$candidateTeam->isGroupIDCompatible($type->getGroupID()))
                 continue;

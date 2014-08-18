@@ -37,9 +37,9 @@ class InventionProcessData extends ProcessData
     protected $activityID = self::ACTIVITY_INVENTING;
 
     /**
-     * @var float $inventionChance chance of success for invention.
+     * @var float $probability chance of success for invention.
      */
-    protected $inventionChance;
+    protected $probability;
 
     /**
      * @var int $resultRuns the number of runs on the resulting T2 BPC if invention is successful
@@ -59,7 +59,7 @@ class InventionProcessData extends ProcessData
     /**
      * Constructor.
      * 
-     * @param int $inventedBpID typeID of the inveted blueprint
+     * @param int $inventedBpID typeID of the invented blueprint
      * @param int $inventTime the invention takes in seconds
      * @param float $processCost the cost of performing this reseach process
      * @param float $inventionChance  chance of success for invention
@@ -70,13 +70,13 @@ class InventionProcessData extends ProcessData
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
      * @param int $teamID the ID of the Team being used, if at all
      * 
-     * @return ProcessData
+     * @return InventionProcessData
      */
     public function __construct($inventedBpID, $inventTime, $processCost, $inventionChance, $resultRuns,
         $resultME, $resultTE, $solarSystemID, $assemblyLineID, $teamID = null
     ) {
         parent::__construct($inventedBpID, 1, $inventTime, $processCost);
-        $this->inventionChance = (float) $inventionChance;
+        $this->probability = (float) $inventionChance;
         $this->resultRuns      = (int) $resultRuns;
         $this->resultME        = (int) $resultME;
         $this->resultTE        = (int) $resultTE;
@@ -121,9 +121,9 @@ class InventionProcessData extends ProcessData
      * 
      * @return float
      */
-    public function getInventionChance()
+    public function getProbability()
     {
-        return $this->inventionChance;
+        return $this->probability;
     }
 
     /**
@@ -133,7 +133,7 @@ class InventionProcessData extends ProcessData
      */
     public function getSuccesTime()
     {
-        return $this->getTime() / $this->inventionChance;
+        return $this->getTime() / $this->probability;
     }
 
     /**
@@ -143,7 +143,7 @@ class InventionProcessData extends ProcessData
      */
     public function getTotalSuccessTime()
     {
-        return $this->getTotalTime() / $this->inventionChance;
+        return $this->getTotalTime() / $this->probability;
     }
 
     /**
@@ -162,11 +162,11 @@ class InventionProcessData extends ProcessData
             static::ACTIVITY_INVENTING => 0
         );
 
-        $sum[$this->activityID] = $this->processTime / $this->inventionChance;
+        $sum[$this->activityID] = $this->processTime / $this->probability;
 
         foreach ($this->getSubProcesses() as $subProcessData)
             foreach ($subProcessData->getTotalTimes() as $activityID => $time)
-                $sum[$activityID] += $time / $this->inventionChance;
+                $sum[$activityID] += $time / $this->probability;
 
         return $sum;
     }
@@ -182,7 +182,7 @@ class InventionProcessData extends ProcessData
         $smat = new $materialsClass;
         if (isset($this->materials))
             foreach ($this->getMaterialMap()->getMaterials() as $typeID => $quantity)
-                $smat->addMaterial($typeID, $quantity / $this->inventionChance);
+                $smat->addMaterial($typeID, $quantity / $this->probability);
 
         return $smat;
     }
@@ -197,7 +197,7 @@ class InventionProcessData extends ProcessData
         $smat = $this->getSuccessMaterialMap();
         foreach ($this->getSubProcesses() as $subProcessData)
             foreach ($subProcessData->getTotalMaterialMap()->getMaterials() as $typeID => $quantity)
-                $smat->addMaterial($typeID, $quantity / $this->inventionChance);
+                $smat->addMaterial($typeID, $quantity / $this->probability);
 
         return $smat;
     }
@@ -209,7 +209,7 @@ class InventionProcessData extends ProcessData
      */
     public function getSuccessMaterialVolume()
     {
-        return $this->getMaterialVolume() / $this->inventionChance;
+        return $this->getMaterialVolume() / $this->probability;
     }
 
     /**
@@ -219,7 +219,7 @@ class InventionProcessData extends ProcessData
      */
     public function getTotalSuccessMaterialVolume()
     {
-        return $this->getTotalMaterialVolume() / $this->inventionChance;
+        return $this->getTotalMaterialVolume() / $this->probability;
     }
 
     /**
@@ -229,7 +229,7 @@ class InventionProcessData extends ProcessData
      */
     public function getSuccessProcessCost()
     {
-        return $this->getProcessCost() / $this->inventionChance;
+        return $this->getProcessCost() / $this->probability;
     }
 
     /**
@@ -239,7 +239,7 @@ class InventionProcessData extends ProcessData
      */
     public function getTotalSuccessProcessCost()
     {
-        return $this->getTotalProcessCost() / $this->inventionChance;
+        return $this->getTotalProcessCost() / $this->probability;
     }
 
     /**
@@ -251,7 +251,7 @@ class InventionProcessData extends ProcessData
      */
     public function getSuccessMaterialBuyCost($maxPriceDataAge = null)
     {
-        return $this->getMaterialBuyCost($maxPriceDataAge) / $this->inventionChance;
+        return $this->getMaterialBuyCost($maxPriceDataAge) / $this->probability;
     }
 
     /**
@@ -263,7 +263,7 @@ class InventionProcessData extends ProcessData
      */
     public function getTotalSuccessMaterialBuyCost($maxPriceDataAge = null)
     {
-        return $this->getTotalMaterialBuyCost($maxPriceDataAge) / $this->inventionChance;
+        return $this->getTotalMaterialBuyCost($maxPriceDataAge) / $this->probability;
     }
 
     /**
@@ -275,7 +275,7 @@ class InventionProcessData extends ProcessData
      */
     public function getTotalSuccessCost($maxPriceDataAge = null)
     {
-        return $this->getTotalCost($maxPriceDataAge) / $this->inventionChance;
+        return $this->getTotalCost($maxPriceDataAge) / $this->probability;
     }
 
     /**

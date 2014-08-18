@@ -36,13 +36,13 @@ class Defaults
     /**
      * @var int $DEFAULT_REGIONID defines the default market region
      */
-    protected $DEFAULT_REGIONID  = 10000002; //The Forge
+    protected $defaultRegionID  = 10000002; //The Forge
 
     /**
      * @var array $TRACKED_MARKET_REGION_IDS defines the regions for which market data should by gathered by the EMDR 
      * client
      */
-    protected $TRACKED_MARKET_REGION_IDS = array(
+    protected $trackedMarketRegionIDs = array(
         10000001, //Derelik
         10000002, //The Forge
         10000003, //Vale of the Silent
@@ -113,32 +113,32 @@ class Defaults
     );
 
     /**
-     * @var float $DEFAULT_BUY_TAX_FACTOR defines the tax factor used for cost calculations
+     * @var float $DefaultBuyTaxFactor defines the tax factor used for cost calculations
      */
-    protected $DEFAULT_BUY_TAX_FACTOR = 1.015;  // = 100% + 0.75% broker fee + 0.75% transaction tax
+    protected $defaultBuyTaxFactor = 1.015;  // = 100% + 0.75% broker fee + 0.75% transaction tax
     
     /**
-     * @var float $DEFAULT_SELL_TAX_FACTOR defines the tax factor used for profit calculations
+     * @var float $DefaultSellTaxFactor defines the tax factor used for profit calculations
      */
-    protected $DEFAULT_SELL_TAX_FACTOR = 0.985; // = 100% - (0.75% broker fee + 0.75% transaction tax)
+    protected $defaultSellTaxFactor = 0.985; // = 100% - (0.75% broker fee + 0.75% transaction tax)
 
     /**
-     * @var int $DEFAULT_BPO_ME defines the default BPO ME level to be used when explicit values have not been defined 
+     * @var int $defaultBpoMe defines the default BPO ME level to be used when explicit values have not been defined
      * in $bpMeLevels
      */
-    protected $DEFAULT_BPO_ME = -10;
+    protected $defaultBpoMe = -10;
     
     /**
-     * @var int $DEFAULT_BPO_TE defines the default BPO TE level to be used when explicit values have not been defined 
+     * @var int $defaultBpoTe defines the default BPO TE level to be used when explicit values have not been defined
      * in $bpTeLevels
      */
-    protected $DEFAULT_BPO_TE = -20;
+    protected $defaultBpoTe = -20;
 
     /**
-     * @var int $MAX_PRICE_DATA_AGE defines the maximum acceptable price data age in seconds. 0 for unlimited.
+     * @var int $maxPriceDataAge defines the maximum acceptable price data age in seconds. 0 for unlimited.
      * If values greater than 0 are used, methods will start throwing exceptions if the relevant price data is too old.
      */
-    protected $MAX_PRICE_DATA_AGE = 0;
+    protected $maxPriceDataAge = 0;
 
     /**
      * @var array $bpMeLevels holds the default ME levels of specific blueprints
@@ -220,7 +220,7 @@ class Defaults
      */
     public function getDefaultRegionID()
     {
-        return $this->DEFAULT_REGIONID;
+        return $this->defaultRegionID;
     }
 
     /**
@@ -230,7 +230,7 @@ class Defaults
      */
     public function getTrackedMarketRegionIDs()
     {
-        return array_flip($this->TRACKED_MARKET_REGION_IDS);
+        return array_flip($this->trackedMarketRegionIDs);
     }
 
     /**
@@ -240,7 +240,7 @@ class Defaults
      */
     public function getDefaultBuyTaxFactor()
     {
-        return $this->DEFAULT_BUY_TAX_FACTOR;
+        return $this->defaultBuyTaxFactor;
     }
     
     /**
@@ -250,7 +250,7 @@ class Defaults
      */
     public function getDefaultSellTaxFactor()
     {
-        return $this->DEFAULT_SELL_TAX_FACTOR;
+        return $this->defaultSellTaxFactor;
     }
 
     /**
@@ -260,7 +260,7 @@ class Defaults
      */
     public function getDefaultBpoMe()
     {
-        return $this->DEFAULT_BPO_ME;
+        return $this->defaultBpoMe;
     }
 
     /**
@@ -270,7 +270,7 @@ class Defaults
      */
     public function getDefaultBpoTe()
     {
-        return $this->DEFAULT_BPO_TE;
+        return $this->defaultBpoTe;
     }
 
     /**
@@ -280,7 +280,7 @@ class Defaults
      */
     public function getMaxPriceDataAge()
     {
-        return $this->MAX_PRICE_DATA_AGE;
+        return $this->maxPriceDataAge;
     }
 
     /**
@@ -303,7 +303,7 @@ class Defaults
     public function getIndustryImplantTimeModifiers()
     {
         return array(
-            1 => 0.98,
+            1 => 1.0,
             3 => 1.0,
             4 => 1.0,
             5 => 1.0,
