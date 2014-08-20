@@ -376,7 +376,7 @@
         <Name>Relic</Name>
         <Access>Public</Access>
         <Location left="1023" top="1597" />
-        <Size width="339" height="417" />
+        <Size width="339" height="434" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array activityMaterials</Member>
         <Member type="Field">protected array activitySkills</Member>
@@ -390,6 +390,7 @@
         <Member type="Field">protected array datacoreSkillIDs</Member>
         <Member type="Method">protected Relic __constructor(int typeID)</Member>
         <Member type="Method">public reverseEngineerProcessData reverseEngineer(IndustryModifier iMod, int reverseEngineerBpID, bool recursive)</Member>
+        <Member type="Method">public ProcessData reverseEngineerByRaceID(IndustryModifier iMod, int raceID, bool recursive)</Member>
         <Member type="Method">public array getReverseEngineerBlueprintIDs()</Member>
         <Member type="Method">public array getReverseEngineerBlueprintIDsByRaceID(int raceID)</Member>
         <Member type="Method">public int getReverseEngineerOutputRuns()</Member>
@@ -546,7 +547,7 @@
         <Member type="Field">protected array activityMaterials</Member>
         <Member type="Field">protected array activitySkills</Member>
         <Member type="Field">protected array activityTimes</Member>
-        <Member type="Field">protected static array baseResearchCostMultiplier</Member>
+        <Member type="Field">protected static array baseResearchMultiplier</Member>
         <Member type="Method">protected Blueprint __construct(int typeID)</Member>
         <Member type="Method">protected array queryAttributes()</Member>
         <Member type="Method">protected void setAttributes(array row)</Member>
@@ -566,8 +567,8 @@
         <Member type="Method">public int getRank()</Member>
         <Member type="Method">public int getMaxProductionLimit()</Member>
         <Member type="Method">public bool isReprocessable()</Member>
-        <Member type="Method">public static int calcBaseResearchTime(int startLevel, int endLevel)</Member>
-        <Member type="Method">public static float calcResearchCostMultiplier(int startLevel, int endLevel)</Member>
+        <Member type="Method">public static int convertBpLevelToFactor(int bpLevel)</Member>
+        <Member type="Method">public static float calcResearchMultiplier(int startLevel, int endLevel)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -878,6 +879,8 @@
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="3" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1103,6 +1106,8 @@
     </Entities>
     <Relationships>
       <Relationship type="Association" first="2" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1115,6 +1120,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="2" second="4">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1131,6 +1138,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1146,6 +1155,8 @@
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="4">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1157,6 +1168,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="0">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
