@@ -135,7 +135,8 @@ CREATE TABLE `iveeIndustrySystems` (
 	`copyIndex` FLOAT UNSIGNED NOT NULL,
 	`reverseIndex` FLOAT UNSIGNED NOT NULL,
 	`inventionIndex` FLOAT UNSIGNED NOT NULL,
-	PRIMARY KEY (`systemID`, `date`)
+	PRIMARY KEY (`systemID`, `date`),
+        INDEX `date` (`date`)
 )
 COLLATE='ascii_general_ci'
 ENGINE=InnoDB;
