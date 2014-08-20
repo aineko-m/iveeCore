@@ -63,9 +63,10 @@ class Blueprint extends Sellable
     protected $activityTimes = array();
 
     /**
-     * @var array $baseResearchTimes holds the base research times
+     * @var array $baseResearchModifier holds the base research modifier for time and cost scaling
      */
-    protected static $baseResearchTimes = array(
+    protected static $baseResearchModifier = array(
+        0 => 0,
         1 => 105,
         2 => 250,
         3 => 595,
@@ -76,22 +77,6 @@ class Blueprint extends Sellable
         8 => 45255,
         9 => 107700,
         10 => 256000
-    );
-
-    /**
-     * @var array $baseResearchCostMultiplier holds the base research cost multipliers
-     */
-    protected static $baseResearchCostMultiplier = array(
-        1 => 1.0,
-        2 => 1.380952381,
-        3 => 3.285714286,
-        4 => 7.8,
-        5 => 18.533333333,
-        6 => 44.19047619,
-        7 => 104.761904762,
-        8 => 250.047619048,
-        9 => 594.714285714,
-        10 => 1412.380952381
     );
 
     /**
@@ -448,12 +433,13 @@ class Blueprint extends Sellable
 
         $researchMEDataClass = Config::getIveeClassName('ResearchMEProcessData');
         $typeClass = Config::getIveeClassName('Type');
+        
+        $scaleModifier = static::calcResearchMultiplier($startME, $endME);
 
         $rmd = new $researchMEDataClass(
             $this->typeID,
-            static::calcBaseResearchTime($startME, $endME) * $this->getRank() * $modifier['t'],
-            static::calcResearchCostMultiplier($startME, $endME)
-                * $this->getProductBaseCost() * 0.02 * $modifier['c'],
+            ceil($scaleModifier * $modifier['t'] * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_ME)),
+            $scaleModifier * $modifier['c'] * $this->getProductBaseCost() * 0.02,
             - $startME,
             - $endME,
             $modifier['solarSystemID'],
@@ -509,12 +495,13 @@ class Blueprint extends Sellable
 
         $researchTEDataClass = Config::getIveeClassName('ResearchTEProcessData');
         $typeClass = Config::getIveeClassName('Type');
+        
+        $scaleModifier = static::calcResearchMultiplier($startTE / 2, $endTE / 2);
 
         $rtd = new $researchTEDataClass(
             $this->typeID,
-            static::calcBaseResearchTime($startTE / 2, $endTE / 2) * $this->getRank() * $modifier['t'],
-            static::calcResearchCostMultiplier($startTE / 2, $endTE / 2)
-                * $this->getProductBaseCost() * 0.02 * $modifier['c'],
+            ceil($scaleModifier * $modifier['t'] * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_TE)),
+            $scaleModifier * $modifier['c'] * $this->getProductBaseCost() * 0.02,
             - $startTE,
             - $endTE,
             $modifier['solarSystemID'],
@@ -671,30 +658,7 @@ class Blueprint extends Sellable
     }
 
     /**
-     * Calculates the base research time depending on start and end ME/TE levels
-     * Note: TE levels have to be divided by 2, as they go from 0 to -20 in 10 steps
-     * 
-     * @param int $startLevel the initial ME or TE level
-     * @param int $endLevel the end ME or TE level
-     * 
-     * @return int
-     */
-    public static function calcBaseResearchTime($startLevel, $endLevel)
-    {
-        if ($startLevel < 0 OR $startLevel >= $endLevel OR $endLevel > 10) {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Invalid start or end research levels given");
-        }
-
-        $timeSum = 0;
-        for($i = $startLevel + 1; $i <= $endLevel; $i++)
-            $timeSum += static::$baseResearchTimes[$i];
-
-        return $timeSum;
-    }
-
-    /**
-     * Calculates the base research cost depending on start and end ME/TE levels
+     * Calculates the research multiplier for time and cost scaling depending on start and end ME/TE levels
      * Note: TE levels have to be divided by 2, as they go from 0 to -20 in 10 steps
      * 
      * @param int $startLevel the initial ME or TE level
@@ -702,17 +666,13 @@ class Blueprint extends Sellable
      * 
      * @return float
      */
-    public static function calcResearchCostMultiplier($startLevel, $endLevel)
+    public static function calcResearchMultiplier($startLevel, $endLevel)
     {
         if ($startLevel < 0 OR $startLevel >= $endLevel OR $endLevel > 10) {
             $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
             throw new $exceptionClass("Invalid start or end research levels given");
         }
 
-        $multiplierSum = 0;
-        for($i = $startLevel + 1; $i <= $endLevel; $i++)
-            $multiplierSum += static::$baseResearchCostMultiplier[$i];
-
-        return $multiplierSum;
+        return (static::$baseResearchModifier[$endLevel] - static::$baseResearchModifier[$startLevel]) / 105;
     }
 }
