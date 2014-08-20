@@ -19,10 +19,10 @@ iveeCore will likely be most useful for developers with at least basic PHP knowl
 ## Features
 - Object oriented API to the SDE DB, no manual SQL required
 - Object oriented model for inventory items
-- Classes for representing manufacturing, copying, T2 invention and reaction activities, with recursive component building
+- Classes for representing manufacturing, copying, T2 invention, research, reverse engineering and reaction activities, with recursive component building
 - Market data gathering via EMDR with realistic price estimation and profit calculation
 - CREST data fetcher handling system industry indices, market prices, facilities, teams and specialities
-- Parsers for EFT-style and EvE XML ship fittings descriptions aswell as cargo and ship scanning results
+- Parsers for EFT-style and EvE XML ship fittings descriptions as well as cargo and ship scanning results
 - Can use caching provided by Memcached
 - Extensible via configurable subclassing
 
@@ -73,9 +73,9 @@ If everything went well, you should see a line with the libzmq version.
 ### Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to  helpful 3rd party developers like Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&m=4866992#post4866992](https://forums.eveonline.com/default.aspx?g=posts&m=4866992#post4866992)
+[https://forums.eveonline.com/default.aspx?g=posts&m=4828809#post4828809](https://forums.eveonline.com/default.aspx?g=posts&m=4828809#post4828809)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_cri16". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_cri19". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 
 ### Setup iveeCore
 
@@ -115,7 +115,8 @@ Whenever you want to upgrade to another SDE, the following steps are recommended
 - Create a new database and set up permissions for it
 - Import the new SDE into this new database
 - Import iveeCore_tables_and_SP.sql into it
-- Copy the contents of the tables ivee* from the old database to the new
+- Stop the EMDR client and anything that causes changes in the database
+- Copy the contents of the tables ivee* from the old database to the new. Example SQL available in sql/SDE_migration.sql
 - Adapt iveeCore/Config.php to the new database
 - if using memcached, flush it
 - it is good practice to run the provided unit test to check if everything is working as intended
@@ -182,7 +183,8 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see Extending iveeCore below.
 
 Generals notes:
-- Remember to restart or flush memcached after making changes to type classes or changing the DB. From the terminal you can do so with a command like: echo 'flush_all' | nc localhost 11211 . Alternatively you can run the PHPUnit test, which also clears the cache.
+- Remember to restart or flush memcached after making changes to type classes or changing the DB. From the terminal you can do so with a command like: ```echo 'flush_all' | nc localhost 11211```
+Alternatively you can run the PHPUnit test, which also clears the cache.
 - iveeCore is under active development so I can't promise the API will be stable.
 - When iveeCore is updated, be sure to read HISTORY for changes that might affect your application or setup
 
@@ -193,7 +195,7 @@ You can modify iveeCore directly, however, you'll need to comply with the LGPL a
 
 
 ## Future Plans
-The multi-region market price support needs to be extended. Something for calculating ore compression would be nice. While reverse engineering is now supported by iveeCore, T3 production chains aren't, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
+The multi-region market price support needs to be extended. Something for calculating ore compression would be nice. While reverse engineering is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
 I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
 
 

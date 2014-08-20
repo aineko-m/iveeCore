@@ -197,11 +197,18 @@ class Relic extends Sellable
     }
 
     /**
-     * Returns an ReverseEngineerProcessData object describing the reverse engineering process.
+     * Returns an ReverseEngineerProcessData object describing the reverse engineering process. It can give both
+     * requirements per attempt or average per success, by using the appropriate methods.
+     * 
+     * Note that, unlike with invention, it is not possible to select which item exactly is gonna be produced by the 
+     * reverse engineering process apart from the race. Therefore using this method for determining the profits for
+     * a certain reverse engineered item is not realistic, as it does not take into account the other items that might 
+     * also be produced instead. The method reverseEngineerByRaceID() tries to better model this by calculating the 
+     * process for each of the possible results. 
      *
      * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $reverseEngineeredBpID the ID if the blueprint to be reverse engineered
-     * @param boolean $recursive defines if manufacturables should be build recursively
+     * @param int $reverseEngineeredBpID the ID of the blueprint to be reverse engineered
+     * @param boolean $recursive defines if manufacturables should be built recursively
      *
      * @return \iveeCore\ReverseEngineerProcessData
      * @throws \iveeCore\Exceptions\NotReverseEngineerableException if the specified blueprint can't be reverse
@@ -264,6 +271,38 @@ class Relic extends Sellable
         }
 
         return $red;
+    }
+
+    /**
+     * This method exists to better model the fact that in reverse engineering, it is only possible to chose the race of
+     * the output item by definig the decryptor to be used. This method thus returns a ProcessData object with sub
+     * processes for each of the possible outputs. This allows for more realistic profit estimation. This is only 
+     * relevant when multiple possible outputs exist per race, i.e. subsystems.
+     *
+     * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
+     * @param int $raceID for the race of the items you are trying to reverse engineer (implies a decryptor)
+     * @param boolean $recursive defines if manufacturables should be built recursively
+     *
+     * @return \iveeCore\ProcessData
+     * @throws \iveeCore\Exceptions\NotReverseEngineerableException if no REBlueprints are found for the specified 
+     * raceID
+     */
+    public function reverseEngineerByRaceID(IndustryModifier $iMod, $raceID, $recursive = true)
+    {
+        $raceBpIDs = $this->getReverseEngineeringBlueprintIDsByRaceID($raceID);
+        if (count($raceBpIDs) < 1) {
+            $exceptionClass = Config::getIveeClassName('NotReverseEngineerableException');
+            throw new $exceptionClass("No REBlueprints were found for the given raceID");
+        } elseif (count($raceBpIDs) == 1)
+            return $this->reverseEngineer($iMod, $raceBpIDs[0], $recursive);
+        
+        $processDataClass = Config::getIveeClassName('ProcessData');
+        $pd = new $processDataClass;
+        
+        foreach ($raceBpIDs as $bpID)
+            $pd->addSubProcessData($this->reverseEngineer($iMod, $bpID, $recursive));
+
+        return $pd;
     }
 
     /**
