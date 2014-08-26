@@ -85,7 +85,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $type->getProduct();
         $type->getMaxProductionLimit();
         $type->getProductBaseCost(0);
-        $this->assertTrue($type->calcBaseResearchTime(0, 2) == 355);
+        $this->assertTrue($type->calcResearchMultiplier(0, 2) * 105 == 250);
         
         $iMod = \iveeCore\IndustryModifier::getBySystemIdForPos(30000119);
         $type->manufacture($iMod);
