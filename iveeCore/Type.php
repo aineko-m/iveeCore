@@ -184,7 +184,7 @@ class Type
         if (isset(self::$_typeNames[$typeName]))
             return self::$_typeNames[$typeName];
         else 
-            $this->throwException('TypeNameNotFoundException', 'type name not found');
+            self::throwException('TypeNameNotFoundException', 'type name not found');
     }
 
     /**
@@ -330,8 +330,8 @@ class Type
             WHERE it.typeID = " . (int) $typeID . ";"
         )->fetch_assoc();
 
-        if (empty($row)) 
-            $this->throwException ('TypeIdNotFoundException', "typeID " . (int) $typeID . " not found");
+        if (empty($row))
+            self::throwException('TypeIdNotFoundException', "typeID " . (int) $typeID . " not found");
 
         return $row;
     }
@@ -346,7 +346,7 @@ class Type
     private static function decideType(array $subtypeInfo)
     {
         if (empty($subtypeInfo))
-            $this->throwException ('TypeIdNotFoundException', "typeID not found");
+            self::throwException('TypeIdNotFoundException', "typeID not found");
         elseif ($subtypeInfo['categoryID'] == 24)
             $subtype = 'Reaction';
         elseif (!empty($subtypeInfo['reactionProduct']))
@@ -384,7 +384,7 @@ class Type
      * @return \iveeCore\Type
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
-    protected function throwException($exceptionName, $message = "", $code = 0, $previous = null)
+    protected static function throwException($exceptionName, $message = "", $code = 0, $previous = null)
     {
         $exceptionClass = Config::getIveeClassName($exceptionName);
         throw new $exceptionClass($message, $code, $previous);
@@ -469,7 +469,7 @@ class Type
         )->fetch_assoc();
 
         if (empty($row))
-            $this->throwException ('TypeIdNotFoundException', "typeID " . $this->typeID . " not found");
+            self::throwException('TypeIdNotFoundException', "typeID " . $this->typeID . " not found");
 
         return $row;
     }
@@ -614,7 +614,7 @@ class Type
         if ($this->crestPriceDate > 0)
             return $this->crestPriceDate;
         else 
-            $this->throwException ('NoPriceDataAvailableException', "No CREST price available for " . $this->typeName);
+            self::throwException('NoPriceDataAvailableException', "No CREST price available for " . $this->typeName);
     }
 
     /**
@@ -630,12 +630,12 @@ class Type
     public function getCrestAveragePrice($maxPriceDataAge = null)
     {
         if (is_null($this->crestAveragePrice))
-            $this->throwException(
+            self::throwException(
                 'NoPriceDataAvailableException', 
                 "No crestAveragePrice available for " . $this->typeName
             );
         elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time())
-            $this->throwException(
+            self::throwException(
                 'PriceDataTooOldException', 
                 'crestAveragePrice data for ' . $this->typeName . ' is too old'
             );
@@ -656,12 +656,12 @@ class Type
     public function getCrestAdjustedPrice($maxPriceDataAge = null)
     {
         if (is_null($this->crestAdjustedPrice))
-            $this->throwException(
+            self::throwException(
                 'NoPriceDataAvailableException', 
                 "No crestAdjustedPrice available for " . $this->typeName
             );
         elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time())
-            $this->throwException(
+            self::throwException(
                 'PriceDataTooOldException', 
                 'crestAdjustedPrice data for ' . $this->typeName . ' is too old'
             );
@@ -674,7 +674,7 @@ class Type
      * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
      * @param float $equipmentYield the reprocessing yield of the station or array
      * @param float $taxFactor the tax imposed by station as factor (<1.0)
-     * @param int $implantBonusFactor the reprocessing bonus given by an implant as factor (>1.0)
+     * @param float $implantBonusFactor the reprocessing bonus given by an implant as factor (>1.0)
      *
      * @return \iveeCore\MaterialMap
      * @throws \iveeCore\Exceptions\NotReprocessableException if item is not reprocessable
@@ -685,7 +685,7 @@ class Type
         $implantBonusFactor = 1.0
     ) {
         if (!$this->isReprocessable())
-            $this->throwException ('NotReprocessableException', $this->typeName . ' is not reprocessable');
+            self::throwException('NotReprocessableException', $this->typeName . ' is not reprocessable');
 
         $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
         $defaultsClass = Config::getIveeClassName('Defaults');
@@ -733,7 +733,7 @@ class Type
     {
         //sanity checks
         if ($standings < 0 OR $standings > 10)
-            $this->throwException("InvalidParameterValueException", "Standing needs to be between 0.0 and 10.0");
+            self::throwException("InvalidParameterValueException", "Standing needs to be between 0.0 and 10.0");
 
         //calculate tax factor
         $tax = 0.05 - (0.0075 * $standings);

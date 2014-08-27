@@ -95,7 +95,7 @@ class Decryptor extends Sellable
                 $this->runModifier = (int) $row['valueFloat'];
                 break;
             default:
-                $this->throwException('UnexpectedDataException', "Error loading Decryptor data.");
+                self::throwException('UnexpectedDataException', "Error loading Decryptor data.");
             }
         }
     }
@@ -165,7 +165,7 @@ class Decryptor extends Sellable
         }
 
         if (!isset(static::$decryptorGroups[$groupID]))
-            $this->throwException('InvalidDecryptorGroupException', "Decryptor group " . (int) $groupID . " not found");
+            self::throwException('InvalidDecryptorGroupException', "Decryptor group " . (int) $groupID . " not found");
         
         return static::$decryptorGroups[$groupID];
     }

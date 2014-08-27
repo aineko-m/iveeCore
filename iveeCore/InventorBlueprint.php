@@ -79,7 +79,7 @@ class InventorBlueprint extends Blueprint
         );
 
         if ($res->num_rows < 1)
-            $this->throwException(
+            self::throwException(
                 'TypeIdNotFoundException', 
                 "Inventor data for blueprintID=" . (int) $this->typeID ." not found"
             );
@@ -136,7 +136,7 @@ class InventorBlueprint extends Blueprint
 
         //check if the given BP can be invented from this
         elseif (!isset($this->inventsBlueprintIDs[$inventedBpID]))
-            $this->throwException(
+            self::throwException(
                 'NotInventableException', 
                 "Specified blueprint can't be invented from this inventor blueprint."
             );
@@ -223,11 +223,11 @@ class InventorBlueprint extends Blueprint
 
         //check if decryptorID is actually a decryptor
         if (!($decryptor instanceof Decryptor))
-            $this->throwException('WrongTypeException', 'typeID ' . $decryptorID . ' is not a Decryptor');
+            self::throwException('WrongTypeException', 'typeID ' . $decryptorID . ' is not a Decryptor');
 
         //check if decryptor group matches blueprint
         if ($decryptor->getGroupID() != $this->decryptorGroupID)
-            $this->throwException('InvalidDecryptorGroupException', 'Given decryptor does not match blueprint race');
+            self::throwException('InvalidDecryptorGroupException', 'Given decryptor does not match blueprint race');
  
         return $decryptor;
     }

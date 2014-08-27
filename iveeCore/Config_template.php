@@ -42,7 +42,7 @@ class Config
     //Cache config
     protected static $useCache    = true;
     protected static $cacheHost   = 'localhost';
-    protected static $cachePort   = '11211';
+    protected static $cachePort   = 11211;
     protected static $cachePrefix = 'ivee_';
 
     //EMDR config

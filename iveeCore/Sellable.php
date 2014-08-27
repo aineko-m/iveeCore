@@ -111,7 +111,10 @@ class Sellable extends Type
      */
     public static final function getType($typeID)
     {
-        $this->throwException("Use \iveeCore\Type::getType() to instantiate objects from Type and it's children");
+        self::throwException(
+            'IveeCoreException', 
+            "Use \iveeCore\Type::getType() to instantiate objects from Type and it's children"
+        );
     }
 
     /**
@@ -124,7 +127,7 @@ class Sellable extends Type
      */
     public static final function getTypeIdByName($typeName)
     {
-        $this->throwException("Use \iveeCore\Type::getTypeIdByName() instead");
+        self::throwException('IveeCoreException', "Use \iveeCore\Type::getTypeIdByName() instead");
     }
 
     /**
@@ -137,7 +140,7 @@ class Sellable extends Type
      */
     public static final function getTypeByName($typeName)
     {
-        $this->throwException("Use \iveeCore\Type::getTypeByName() instead");
+        self::throwException('IveeCoreException', "Use \iveeCore\Type::getTypeByName() instead");
     }
 
     /**
@@ -254,7 +257,7 @@ class Sellable extends Type
         )->fetch_assoc();
 
         if (empty($row))
-            $this->throwException('TypeIdNotFoundException', "typeID ". (int) $this->typeID . " not found");
+            self::throwException('TypeIdNotFoundException', "typeID ". (int) $this->typeID . " not found");
 
         return $row;
     }
@@ -310,9 +313,9 @@ class Sellable extends Type
         if (is_null($this->marketGroupID)) 
             $this->throwNotOnMarketException();
         elseif (is_null($this->buyPrice)) 
-            $this->throwException('NoPriceDataAvailableException', "No buy price available for " . $this->typeName);
+            self::throwException('NoPriceDataAvailableException', "No buy price available for " . $this->typeName);
         elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
-            $this->throwException('PriceDataTooOldException', 'Price data for ' . $this->typeName . ' is too old');
+            self::throwException('PriceDataTooOldException', 'Price data for ' . $this->typeName . ' is too old');
 
         return $this->buyPrice;
     }
@@ -333,9 +336,9 @@ class Sellable extends Type
         if (is_null($this->marketGroupID))
             $this->throwNotOnMarketException();
         elseif (is_null($this->sellPrice))
-            $this->throwException('NoPriceDataAvailableException', "No sell price available for " . $this->typeName);
+            self::throwException('NoPriceDataAvailableException', "No sell price available for " . $this->typeName);
         elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
-            $this->throwException('PriceDataTooOldException', 'Price data for ' . $this->typeName . ' is too old');
+            self::throwException('PriceDataTooOldException', 'Price data for ' . $this->typeName . ' is too old');
 
         return $this->sellPrice;
     }

@@ -164,7 +164,7 @@ class Relic extends Sellable
         );
 
         if ($res->num_rows < 1)
-            $this->throwException(
+            self::throwException(
                 'TypeIdNotFoundException', 
                 "ReverseEngineering data for Relic ID=" . (int) $this->typeID ." not found"
             );
@@ -221,7 +221,7 @@ class Relic extends Sellable
         $typeClass = Config::getIveeClassName('Type');
 
         if (!isset($this->reverseEngineersBlueprintIDs[$reverseEngineeredBpID]))
-            $this->throwException(
+            self::throwException(
                 'NotReverseEngineerableException', 
                 "Specified type can't be reverse engineered from this Relic"
             );
@@ -291,7 +291,7 @@ class Relic extends Sellable
     {
         $raceBpIDs = $this->getReverseEngineeringBlueprintIDsByRaceID($raceID);
         if (count($raceBpIDs) < 1)
-            $this->throwException('NotReverseEngineerableException', "No REBlueprints were found for the given raceID");
+            self::throwException('NotReverseEngineerableException', "No REBlueprints were found for the given raceID");
         elseif (count($raceBpIDs) == 1)
             return $this->reverseEngineer($iMod, $raceBpIDs[0], $recursive);
         
@@ -393,7 +393,7 @@ class Relic extends Sellable
         if (isset($this->activityTimes[(int) $activityID]))
             return $this->activityTimes[(int) $activityID];
         else 
-            $this->throwException('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
+            self::throwException('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
     }
 
     /**

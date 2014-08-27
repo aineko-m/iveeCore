@@ -177,7 +177,7 @@ class Blueprint extends Sellable
         )->fetch_assoc();
 
         if (empty($row))
-            $this->throwException ('TypeIdNotFoundException', "typeID " . (int) $this->typeID . " not found");
+            self::throwException('TypeIdNotFoundException', "typeID " . (int) $this->typeID . " not found");
 
         return $row;
     }
@@ -413,10 +413,8 @@ class Blueprint extends Sellable
     {
         $startME = abs((int) $startME);
         $endME   = abs((int) $endME);
-        if ($startME < 0 OR $startME >= $endME OR $endME > 10) {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Invalid start or end research levels given");
-        }
+        if ($startME < 0 OR $startME >= $endME OR $endME > 10)
+            self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
 
         //get modifiers and test if ME research is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_ME, $this);
@@ -475,10 +473,8 @@ class Blueprint extends Sellable
     {
         $startTE = abs((int) $startTE);
         $endTE   = abs((int) $endTE);
-        if ($startTE < 0 OR $startTE >= $endTE OR $endTE > 20 OR $startTE % 2 != 0 OR $endTE % 2 != 0) {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Invalid start or end research levels given");
-        }
+        if ($startTE < 0 OR $startTE >= $endTE OR $endTE > 20 OR $startTE % 2 != 0 OR $endTE % 2 != 0)
+            self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
 
         //get modifiers and test if TE research is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_TE, $this);
@@ -599,7 +595,7 @@ class Blueprint extends Sellable
         if (isset($this->activityTimes[(int) $activityID]))
             return $this->activityTimes[(int) $activityID];
         else 
-            $this->throwException ('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
+            self::throwException('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
     }
 
     /**
@@ -657,7 +653,7 @@ class Blueprint extends Sellable
     public static function calcResearchMultiplier($startLevel, $endLevel)
     {
         if ($startLevel < 0 OR $startLevel >= $endLevel OR $endLevel > 10)
-            $this->throwException ('InvalidParameterValueException', "Invalid start or end research levels given");
+            self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
 
         return (static::$baseResearchModifier[$endLevel] - static::$baseResearchModifier[$startLevel]) / 105;
     }

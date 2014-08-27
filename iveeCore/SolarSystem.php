@@ -408,7 +408,7 @@ class SolarSystem
             return $this->industryIndexDate;
         } else {
             $exceptionClass = Config::getIveeClassName('NoSystemDataAvailableException');
-            throw new $exceptionClass('No CREST system data available for systemID=' . $this->systemSystemID);
+            throw new $exceptionClass('No CREST system data available for systemID=' . $this->solarSystemID);
         }
     }
 

@@ -74,7 +74,7 @@ class REBlueprint extends Blueprint
         );
 
         if ($res->num_rows < 1)
-            $this->throwException(
+            self::throwException(
                 'TypeIdNotFoundException', 
                 "Reverse Engineering data for REBlueprint ID=" . (int) $this->typeID ." not found"
             );
@@ -90,7 +90,7 @@ class REBlueprint extends Blueprint
         );
 
         if ($res->num_rows < 1)
-            $this->throwException(
+            self::throwException(
                 'TypeIdNotFoundException', 
                 "Reverse Engineering data for REBlueprint ID=" . (int) $this->typeID ." not found"
             );
@@ -171,7 +171,7 @@ class REBlueprint extends Blueprint
      */
     public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $recursive = true)
     {
-        $this->throwException('NotResearchableException', "Relics can't be copied");
+        self::throwException('NotResearchableException', "Relics can't be copied");
     }
 
     /**
@@ -188,7 +188,7 @@ class REBlueprint extends Blueprint
      */
     public function researchME(IndustryModifier $iMod, $startME, $endME, $recursive = true)
     {
-        $this->throwException('NotResearchableException', "Relics can't be copied");
+        self::throwException('NotResearchableException', "Relics can't be copied");
     }
 
     /**
@@ -205,6 +205,6 @@ class REBlueprint extends Blueprint
      */
     public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $recursive = true)
     {
-        $this->throwException('NotResearchableException', "Relics can't be copied");
+        self::throwException('NotResearchableException', "Relics can't be copied");
     }
 }
