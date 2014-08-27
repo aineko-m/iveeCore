@@ -94,10 +94,10 @@ class Station
     {
         $stationID = (int) $stationID;
         //try php array first
-        if (isset(static::$_stations[$stationID])) {
+        if (isset(self::$_stations[$stationID])) {
             //count internal cache hit
-            static::$_internalCacheHit++;
-            return static::$_stations[$stationID];
+            self::$_internalCacheHit++;
+            return self::$_stations[$stationID];
         } else {
             $stationClass = Config::getIveeClassName('Station');
             //try cache
@@ -118,7 +118,7 @@ class Station
                 $station = new $stationClass($stationID);
 
             //store object in internal cache
-            static::$_stations[$stationID] = $station;
+            self::$_stations[$stationID] = $station;
             return $station;
         }
     }

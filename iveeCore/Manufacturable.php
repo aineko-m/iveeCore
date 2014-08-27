@@ -68,10 +68,9 @@ class Manufacturable extends Sellable
             AND it.typeID = " . (int) $this->typeID . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("typeID ". (int) $this->typeID . " not found");
-        }
+        if (empty($row))
+            $this->throwException ('TypeIdNotFoundException', "typeID " . (int) $this->typeID . " not found");
+
         return $row;
     }
 

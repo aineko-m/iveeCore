@@ -176,10 +176,9 @@ class Blueprint extends Sellable
             AND it.typeID = " . (int) $this->typeID . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("typeID " . (int) $this->typeID ." not found");
-        }
+        if (empty($row))
+            $this->throwException ('TypeIdNotFoundException', "typeID " . (int) $this->typeID . " not found");
+
         return $row;
     }
 
@@ -599,10 +598,8 @@ class Blueprint extends Sellable
     {
         if (isset($this->activityTimes[(int) $activityID]))
             return $this->activityTimes[(int) $activityID];
-        else {
-            $exceptionClass = Config::getIveeClassName('ActivityIdNotFoundException');
-            throw new $exceptionClass("ActivityID " . (int) $activityID . " not found.");
-        }
+        else 
+            $this->throwException ('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
     }
 
     /**
@@ -659,10 +656,8 @@ class Blueprint extends Sellable
      */
     public static function calcResearchMultiplier($startLevel, $endLevel)
     {
-        if ($startLevel < 0 OR $startLevel >= $endLevel OR $endLevel > 10) {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Invalid start or end research levels given");
-        }
+        if ($startLevel < 0 OR $startLevel >= $endLevel OR $endLevel > 10)
+            $this->throwException ('InvalidParameterValueException', "Invalid start or end research levels given");
 
         return (static::$baseResearchModifier[$endLevel] - static::$baseResearchModifier[$startLevel]) / 105;
     }

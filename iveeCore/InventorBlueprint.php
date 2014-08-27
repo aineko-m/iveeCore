@@ -78,10 +78,11 @@ class InventorBlueprint extends Blueprint
             AND iam.typeID = " . (int) $this->typeID . ';'
         );
 
-        if ($res->num_rows < 1) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("Inventor data for blueprintID=" . (int) $this->typeID ." not found");
-        }
+        if ($res->num_rows < 1)
+            $this->throwException(
+                'TypeIdNotFoundException', 
+                "Inventor data for blueprintID=" . (int) $this->typeID ." not found"
+            );
 
         while ($row = $res->fetch_assoc()) {
             $this->inventsBlueprintIDs[(int) $row['productTypeID']] = 1;
@@ -134,10 +135,11 @@ class InventorBlueprint extends Blueprint
              $inventedBpID = $inventableBpIDs[0];
 
         //check if the given BP can be invented from this
-        elseif (!isset($this->inventsBlueprintIDs[$inventedBpID])) {
-            $exceptionClass = Config::getIveeClassName('NotInventableException');
-            throw new $exceptionClass("Specified blueprint can't be invented from this inventor blueprint.");
-        }
+        elseif (!isset($this->inventsBlueprintIDs[$inventedBpID]))
+            $this->throwException(
+                'NotInventableException', 
+                "Specified blueprint can't be invented from this inventor blueprint."
+            );
 
         //get invented BP
         $inventedBp = $typeClass::getType($inventedBpID);
@@ -220,16 +222,13 @@ class InventorBlueprint extends Blueprint
         $decryptor = $typeClass::getType($decryptorID);
 
         //check if decryptorID is actually a decryptor
-        if (!($decryptor instanceof Decryptor)) {
-            $exceptionClass = Config::getIveeClassName('WrongTypeException');
-            throw new $exceptionClass('typeID ' . $decryptorID . ' is not a Decryptor');
-        }
+        if (!($decryptor instanceof Decryptor))
+            $this->throwException('WrongTypeException', 'typeID ' . $decryptorID . ' is not a Decryptor');
 
         //check if decryptor group matches blueprint
-        if ($decryptor->getGroupID() != $this->decryptorGroupID) {
-            $exceptionClass = Config::getIveeClassName('InvalidDecryptorGroupException');
-            throw new $exceptionClass('Given decryptor does not match blueprint race');
-        }
+        if ($decryptor->getGroupID() != $this->decryptorGroupID)
+            $this->throwException('InvalidDecryptorGroupException', 'Given decryptor does not match blueprint race');
+ 
         return $decryptor;
     }
 
@@ -333,6 +332,6 @@ class InventorBlueprint extends Blueprint
                 + 0.02 * ($defaults->getSkillLevel($this->datacoreSkillIDs[0])
                     + $defaults->getSkillLevel($this->datacoreSkillIDs[1]))
             )
-            * (isset($metaLevel) ? (1 + 0.5 / (5 - $metalevel)) : 1);
+            * (isset($metaLevel) ? (1 + 0.5 / (5 - $metaLevel)) : 1);
     }
 }

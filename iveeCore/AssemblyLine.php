@@ -91,10 +91,10 @@ class AssemblyLine
     {
         $assemblyLineTypeID = (int) $assemblyLineTypeID;
         //try php array first
-        if (isset(static::$_assemblyLines[$assemblyLineTypeID])) {
+        if (isset(self::$_assemblyLines[$assemblyLineTypeID])) {
             //count internal cache hit
-            static::$_internalCacheHit++;
-            return static::$_assemblyLines[$assemblyLineTypeID];
+            self::$_internalCacheHit++;
+            return self::$_assemblyLines[$assemblyLineTypeID];
         } else {
             $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
             //try cache
@@ -115,7 +115,7 @@ class AssemblyLine
                 $assemblyLine = new $assemblyLineClass($assemblyLineTypeID);
 
             //store object in internal cache
-            static::$_assemblyLines[$assemblyLineTypeID] = $assemblyLine;
+            self::$_assemblyLines[$assemblyLineTypeID] = $assemblyLine;
             return $assemblyLine;
         }
     }

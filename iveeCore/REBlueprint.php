@@ -73,10 +73,11 @@ class REBlueprint extends Blueprint
             AND productTypeID = " . (int) $this->typeID . ';'
         );
 
-        if ($res->num_rows < 1) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("Reverse Engineering data for REBlueprint ID=" . (int) $this->typeID ." not found");
-        }
+        if ($res->num_rows < 1)
+            $this->throwException(
+                'TypeIdNotFoundException', 
+                "Reverse Engineering data for REBlueprint ID=" . (int) $this->typeID ." not found"
+            );
 
         while ($row = $res->fetch_assoc())
             $this->reverseEngineeredFromRelicIDs[] = (int) $row['typeID'];
@@ -88,10 +89,11 @@ class REBlueprint extends Blueprint
             WHERE typeID = " . (int) $this->productTypeID . ';'
         );
 
-        if ($res->num_rows < 1) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("Reverse Engineering data for REBlueprint ID=" . (int) $this->typeID ." not found");
-        }
+        if ($res->num_rows < 1)
+            $this->throwException(
+                'TypeIdNotFoundException', 
+                "Reverse Engineering data for REBlueprint ID=" . (int) $this->typeID ." not found"
+            );
 
         //lookup decryptor based on race
         while ($row = $res->fetch_assoc())
@@ -169,8 +171,7 @@ class REBlueprint extends Blueprint
      */
     public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $recursive = true)
     {
-        $exceptionClass = Config::getIveeClassName('NotResearchableException');
-        throw new $exceptionClass("Relics can't be copied");
+        $this->throwException('NotResearchableException', "Relics can't be copied");
     }
 
     /**
@@ -187,8 +188,7 @@ class REBlueprint extends Blueprint
      */
     public function researchME(IndustryModifier $iMod, $startME, $endME, $recursive = true)
     {
-        $exceptionClass = Config::getIveeClassName('NotResearchableException');
-        throw new $exceptionClass("Relics can't be researched");
+        $this->throwException('NotResearchableException', "Relics can't be copied");
     }
 
     /**
@@ -205,7 +205,6 @@ class REBlueprint extends Blueprint
      */
     public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $recursive = true)
     {
-        $exceptionClass = Config::getIveeClassName('NotResearchableException');
-        throw new $exceptionClass("Relics can't be researched");
+        $this->throwException('NotResearchableException', "Relics can't be copied");
     }
 }

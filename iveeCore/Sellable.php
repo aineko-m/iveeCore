@@ -102,6 +102,45 @@ class Sellable extends Type
     protected $avg;
 
     /**
+     * Use \iveeCore\Type::getType() instead
+     *
+     * @param int $typeID of requested Type
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\IveeCoreException always
+     */
+    public static final function getType($typeID)
+    {
+        $this->throwException("Use \iveeCore\Type::getType() to instantiate objects from Type and it's children");
+    }
+
+    /**
+     * Use \iveeCore\Type::getTypeIdByName() instead
+     *
+     * @param string $typeName of requested Type
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\IveeCoreException always
+     */
+    public static final function getTypeIdByName($typeName)
+    {
+        $this->throwException("Use \iveeCore\Type::getTypeIdByName() instead");
+    }
+
+    /**
+     * Use \iveeCore\Type::getTypeByName() instead
+     *
+     * @param string $typeName of requested Type
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\IveeCoreException always
+     */
+    public static final function getTypeByName($typeName)
+    {
+        $this->throwException("Use \iveeCore\Type::getTypeByName() instead");
+    }
+
+    /**
      * Constructor. Use \iveeCore\Type::getType() to instantiate Sellable objects instead.
      * 
      * @param int $typeID of the Sellable object
@@ -214,10 +253,9 @@ class Sellable extends Type
             AND it.typeID = " . (int) $this->typeID . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("typeID ". (int) $this->typeID . " not found");
-        }
+        if (empty($row))
+            $this->throwException('TypeIdNotFoundException', "typeID ". (int) $this->typeID . " not found");
+
         return $row;
     }
 
@@ -271,13 +309,11 @@ class Sellable extends Type
     {
         if (is_null($this->marketGroupID)) 
             $this->throwNotOnMarketException();
-        elseif (is_null($this->buyPrice)) {
-            $exceptionClass = Config::getIveeClassName('NoPriceDataAvailableException');
-            throw new $exceptionClass("No buy price available for " . $this->typeName);
-        } elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time()) {
-            $exceptionClass = Config::getIveeClassName('PriceDataTooOldException');
-            throw new $exceptionClass('Price data for ' . $this->typeName . ' is too old');
-        }
+        elseif (is_null($this->buyPrice)) 
+            $this->throwException('NoPriceDataAvailableException', "No buy price available for " . $this->typeName);
+        elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
+            $this->throwException('PriceDataTooOldException', 'Price data for ' . $this->typeName . ' is too old');
+
         return $this->buyPrice;
     }
 
@@ -296,13 +332,11 @@ class Sellable extends Type
     {
         if (is_null($this->marketGroupID))
             $this->throwNotOnMarketException();
-        elseif (is_null($this->sellPrice)) {
-            $exceptionClass = Config::getIveeClassName('NoPriceDataAvailableException');
-            throw new $exceptionClass("No sell price available for " . $this->typeName);
-        } elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time()) {
-            $exceptionClass = Config::getIveeClassName('PriceDataTooOldException');
-            throw new $exceptionClass('Price data for ' . $this->typeName . ' is too old');
-        }
+        elseif (is_null($this->sellPrice))
+            $this->throwException('NoPriceDataAvailableException', "No sell price available for " . $this->typeName);
+        elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
+            $this->throwException('PriceDataTooOldException', 'Price data for ' . $this->typeName . ' is too old');
+
         return $this->sellPrice;
     }
 
@@ -333,8 +367,6 @@ class Sellable extends Type
         if (is_null($regionID))
             $regionID = $defaults->getDefaultRegionID();
 
-        $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-
         //set 90 day default if fromDate is null
         if (is_null($fromDateTS))
             $fromDateTS = time() - 90 * 24 * 3600;
@@ -348,7 +380,7 @@ class Sellable extends Type
             $toDateTS = (int) $toDateTS;
         
         if($fromDateTS > $toDateTS)
-            throw new $exceptionClass("From-date is more recent than to-date");
+            $this->throwException ('InvalidParameterValueException', "From-date is more recent than to-date");
 
         $res = $sde->query(
             "SELECT

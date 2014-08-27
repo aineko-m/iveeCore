@@ -104,10 +104,10 @@ class Team
     {
         $teamID = (int) $teamID;
         //try php array first
-        if (isset(static::$_teams[$teamID])) {
+        if (isset(self::$_teams[$teamID])) {
             //count internal cache hit
-            static::$_internalCacheHit++;
-            return static::$_teams[$teamID];
+            self::$_internalCacheHit++;
+            return self::$_teams[$teamID];
         } else {
             $teamClass = Config::getIveeClassName('Team');
             //try cache
@@ -128,7 +128,7 @@ class Team
                 $team = new $teamClass($teamID);
 
             //store object in internal cache
-            static::$_teams[$teamID] = $team;
+            self::$_teams[$teamID] = $team;
             return $team;
         }
     }

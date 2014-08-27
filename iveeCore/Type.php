@@ -118,10 +118,10 @@ class Type
     {
         $typeID = (int) $typeID;
         //try php Type array first
-        if (isset(static::$_types[$typeID])) {
+        if (isset(self::$_types[$typeID])) {
             //count internal cache hit
-            static::$_internalCacheHit++;
-            return static::$_types[$typeID];
+            self::$_internalCacheHit++;
+            return self::$_types[$typeID];
         } else {
             //try memcached
             if (Config::getUseCache()) {
@@ -132,16 +132,16 @@ class Type
                     $type = $cache->getItem('type_' . $typeID);
                 } catch (Exceptions\KeyNotFoundInCacheException $e) {
                     //go to DB
-                    $type = static::factory($typeID);
+                    $type = self::factory($typeID);
                     //store type object in cache
                     $cache->setItem($type, 'type_' . $typeID);
                 }
             } else
                 //not using cache, go to DB
-                $type = static::factory($typeID);
+                $type = self::factory($typeID);
 
             //store type object in internal cache
-            static::$_types[$typeID] = $type;
+            self::$_types[$typeID] = $type;
 
             return $type;
         }
@@ -160,33 +160,31 @@ class Type
     public static function getTypeIdByName($typeName)
     {
         //check if names have been loaded yet
-        if (empty(static::$_typeNames)) {
+        if (empty(self::$_typeNames)) {
             //try cache
             if (Config::getUseCache()) {
                 //lookup Cache class
                 $cacheClass = Config::getIveeClassName('Cache');
                 $cache = $cacheClass::instance();
                 try {
-                    static::$_typeNames = $cache->getItem('typeNames');
+                    self::$_typeNames = $cache->getItem('typeNames');
                 } catch (Exceptions\KeyNotFoundInCacheException $e) {
                     //load names from DB
-                    static::loadTypeNames();
+                    self::loadTypeNames();
                     //store in cache
-                    $cache->setItem(static::$_typeNames, 'typeNames');
+                    $cache->setItem(self::$_typeNames, 'typeNames');
                 }
             } else
                 //load names from DB
-                static::loadTypeNames();
+                self::loadTypeNames();
         }
 
         $typeName = trim($typeName);
         //return ID if type exists
-        if (isset(static::$_typeNames[$typeName]))
-            return static::$_typeNames[$typeName];
-        else {
-            $exceptionClass = Config::getIveeClassName('TypeNameNotFoundException');
-            throw new $exceptionClass("type name not found");
-        }
+        if (isset(self::$_typeNames[$typeName]))
+            return self::$_typeNames[$typeName];
+        else 
+            $this->throwException('TypeNameNotFoundException', 'type name not found');
     }
 
     /**
@@ -199,7 +197,7 @@ class Type
      */
     public static function getTypeByName($typeName)
     {
-        return static::getType(static::getTypeIdByName($typeName));
+        return self::getType(self::getTypeIdByName($typeName));
     }
 
     /**
@@ -207,7 +205,7 @@ class Type
      *
      * @return void
      */
-    protected static function loadTypeNames()
+    private static function loadTypeNames()
     {
         //lookup SDE class
         $sdeClass = Config::getIveeClassName('SDE');
@@ -219,7 +217,7 @@ class Type
         );
 
         while ($row = $res->fetch_assoc()) {
-            static::$_typeNames[$row['typeName']] = (int) $row['typeID'];
+            self::$_typeNames[$row['typeName']] = (int) $row['typeID'];
         }
     }
 
@@ -249,11 +247,11 @@ class Type
      */
     public static function getCachedTypeCount()
     {
-        return count(static::$types);
+        return count(self::$_types);
     }
 
     /**
-     * Instantiates type objects.
+     * Instantiates type objects without caching logic.
      * This method shouldn't be called directly. Use Type::getType() instead.
      *
      * @param int   $typeID of the Type object
@@ -262,14 +260,14 @@ class Type
      * @return \iveeCore\Type the requested Type or subclass object
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
      */
-    public static function factory($typeID, array $subtypeInfo = null)
+    private static function factory($typeID, array $subtypeInfo = null)
     {
         //get type decision data if not given
         if (is_null($subtypeInfo))
-            $subtypeInfo = static::getSubtypeInfo((int) $typeID);
+            $subtypeInfo = self::getSubtypeInfo((int) $typeID);
 
         //decide type
-        $subtype = static::decideType($subtypeInfo);
+        $subtype = self::decideType($subtypeInfo);
 
         //instantiate the appropriate Type or subclass object
         return new $subtype((int) $typeID);
@@ -283,7 +281,7 @@ class Type
      * @return array with the type decision data from the SDE DB
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
      */
-    protected static function getSubtypeInfo($typeID)
+    private static function getSubtypeInfo($typeID)
     {
         $sdeClass = Config::getIveeClassName('SDE');
         $row = $sdeClass::instance()->query(
@@ -332,10 +330,9 @@ class Type
             WHERE it.typeID = " . (int) $typeID . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("typeID " . (int) $typeID . " not found");
-        }
+        if (empty($row)) 
+            $this->throwException ('TypeIdNotFoundException', "typeID " . (int) $typeID . " not found");
+
         return $row;
     }
 
@@ -346,12 +343,11 @@ class Type
      *
      * @return string name of the class to instantiate
      */
-    protected static function decideType(array $subtypeInfo)
+    private static function decideType(array $subtypeInfo)
     {
-        if (empty($subtypeInfo)) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("typeID not found");
-        } elseif ($subtypeInfo['categoryID'] == 24)
+        if (empty($subtypeInfo))
+            $this->throwException ('TypeIdNotFoundException', "typeID not found");
+        elseif ($subtypeInfo['categoryID'] == 24)
             $subtype = 'Reaction';
         elseif (!empty($subtypeInfo['reactionProduct']))
             $subtype = 'ReactionProduct';
@@ -375,6 +371,23 @@ class Type
             $subtype = 'Type';
 
         return Config::getIveeClassName($subtype);
+    }
+
+    /**
+     * Convenience method for throwing iveeCore Exceptions
+     *
+     * @param string $exceptionName nickname of the exception as configured in Config
+     * @param string $message to be passed to the exception
+     * @param int $code the exception code
+     * @param Exception $previous the previous exception used for chaining
+     *
+     * @return \iveeCore\Type
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     */
+    protected function throwException($exceptionName, $message = "", $code = 0, $previous = null)
+    {
+        $exceptionClass = Config::getIveeClassName($exceptionName);
+        throw new $exceptionClass($message, $code, $previous);
     }
 
     /**
@@ -455,10 +468,9 @@ class Type
             AND it.typeID = " . (int) $this->typeID . ';'
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("typeID " . (int) $this->typeID ." not found");
-        }
+        if (empty($row))
+            $this->throwException ('TypeIdNotFoundException', "typeID " . $this->typeID . " not found");
+
         return $row;
     }
 
@@ -601,10 +613,8 @@ class Type
     {
         if ($this->crestPriceDate > 0)
             return $this->crestPriceDate;
-        else {
-            $exceptionClass = Config::getIveeClassName('NoPriceDataAvailableException');
-            throw new $exceptionClass("No CREST price available for " . $this->typeName);
-        }
+        else 
+            $this->throwException ('NoPriceDataAvailableException', "No CREST price available for " . $this->typeName);
     }
 
     /**
@@ -619,13 +629,17 @@ class Type
      */
     public function getCrestAveragePrice($maxPriceDataAge = null)
     {
-        if (is_null($this->crestAveragePrice)) {
-            $exceptionClass = Config::getIveeClassName('NoPriceDataAvailableException');
-            throw new $exceptionClass("No crestAveragePrice available for " . $this->typeName);
-        } elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time()) {
-            $exceptionClass = Config::getIveeClassName('PriceDataTooOldException');
-            throw new $exceptionClass('crestAveragePrice data for ' . $this->typeName . ' is too old');
-        }
+        if (is_null($this->crestAveragePrice))
+            $this->throwException(
+                'NoPriceDataAvailableException', 
+                "No crestAveragePrice available for " . $this->typeName
+            );
+        elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time())
+            $this->throwException(
+                'PriceDataTooOldException', 
+                'crestAveragePrice data for ' . $this->typeName . ' is too old'
+            );
+
         return $this->crestAveragePrice;
     }
 
@@ -641,13 +655,16 @@ class Type
      */
     public function getCrestAdjustedPrice($maxPriceDataAge = null)
     {
-        if (is_null($this->crestAdjustedPrice)) {
-            $exceptionClass = Config::getIveeClassName('NoPriceDataAvailableException');
-            throw new $exceptionClass("No crestAdjustedPrice available for " . $this->typeName);
-        } elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time()) {
-            $exceptionClass = Config::getIveeClassName('PriceDataTooOldException');
-            throw new $exceptionClass('crestAdjustedPrice data for ' . $this->typeName . ' is too old');
-        }
+        if (is_null($this->crestAdjustedPrice))
+            $this->throwException(
+                'NoPriceDataAvailableException', 
+                "No crestAdjustedPrice available for " . $this->typeName
+            );
+        elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time())
+            $this->throwException(
+                'PriceDataTooOldException', 
+                'crestAdjustedPrice data for ' . $this->typeName . ' is too old'
+            );
         return $this->crestAdjustedPrice;
     }
 
@@ -667,11 +684,9 @@ class Type
     public function getReprocessingMaterialMap($batchSize, $equipmentYield = 0.5, $taxFactor = 0.95, 
         $implantBonusFactor = 1.0
     ) {
-        if (!$this->isReprocessable()) {
-            $exceptionClass = Config::getIveeClassName('NotReprocessableException');
-            throw new $exceptionClass($this->typeName . ' is not reprocessable');
-        }
-        
+        if (!$this->isReprocessable())
+            $this->throwException ('NotReprocessableException', $this->typeName . ' is not reprocessable');
+
         $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
         $defaultsClass = Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
@@ -717,10 +732,8 @@ class Type
     public static function calcReprocessingTaxFactor($standings = 6.67)
     {
         //sanity checks
-        if ($standings < 0 OR $standings > 10) {
-            $exceptionClass = Config::getIveeClassName("InvalidParameterValueException");
-            throw new $exceptionClass("Standing needs to be between 0.0 and 10.0");
-        }
+        if ($standings < 0 OR $standings > 10)
+            $this->throwException("InvalidParameterValueException", "Standing needs to be between 0.0 and 10.0");
 
         //calculate tax factor
         $tax = 0.05 - (0.0075 * $standings);
