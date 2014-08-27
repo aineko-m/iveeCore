@@ -37,7 +37,7 @@ abstract class CrestDataUpdater
     protected static $representationName = 'vnd.ccp.eve.Api-v3';
     
     /**
-     * @var stdClass $data holding the data received from CREST
+     * @var \stdClass $data holding the data received from CREST
      */
     protected $data;
 

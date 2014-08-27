@@ -52,25 +52,21 @@ class InventableBlueprint extends Blueprint
             it.marketGroupID,
             prod.productTypeID,
             maxprod.maxProductionLimit,
-            COALESCE(r.valueInt, r.valueFloat) as rank,
             inv.typeID as t1BpID
             FROM invTypes AS it
             JOIN invGroups AS ig ON it.groupID = ig.groupID
             JOIN industryActivityProducts as prod ON prod.typeID = it.typeID
             JOIN industryBlueprints as maxprod ON maxprod.typeID = it.typeID
-            JOIN dgmTypeAttributes as r ON r.typeID = it.typeID
             JOIN industryActivityProducts as inv ON inv.productTypeID = it.typeID
             WHERE it.published = 1
             AND prod.activityID = 1
             AND inv.activityID = 8
-            AND r.attributeID = 1955
             AND it.typeID = " . (int) $this->typeID . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("typeID ". (int) $this->typeID . " not found");
-        }
+        if (empty($row))
+            self::throwException('TypeIdNotFoundException', "typeID ". (int) $this->typeID . " not found");
+        
         return $row;
     }
 

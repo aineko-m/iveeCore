@@ -63,10 +63,10 @@ class Speciality
     {
         $specialityID = (int) $specialityID;
         //try php array first
-        if (isset(static::$_specialities[$specialityID])) {
+        if (isset(self::$_specialities[$specialityID])) {
             //count internal cache hit
-            static::$_internalCacheHit++;
-            return static::$_specialities[$specialityID];
+            self::$_internalCacheHit++;
+            return self::$_specialities[$specialityID];
         } else {
             $specialityClass = Config::getIveeClassName('Speciality');
             //try cache
@@ -87,7 +87,7 @@ class Speciality
                 $speciality = new $specialityClass($specialityID);
 
             //store object in internal cache
-            static::$_specialities[$specialityID] = $speciality;
+            self::$_specialities[$specialityID] = $speciality;
             return $speciality;
         }
     }

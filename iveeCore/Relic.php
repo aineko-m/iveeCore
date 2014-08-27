@@ -163,10 +163,11 @@ class Relic extends Sellable
             AND relicProd.typeID = " . (int) $this->typeID . ';'
         );
 
-        if ($res->num_rows < 1) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("ReverseEngineering data for Relic ID=" . (int) $this->typeID ." not found");
-        }
+        if ($res->num_rows < 1)
+            self::throwException(
+                'TypeIdNotFoundException', 
+                "ReverseEngineering data for Relic ID=" . (int) $this->typeID ." not found"
+            );
 
         while ($row = $res->fetch_assoc()) {
             $this->reverseEngineersBlueprintIDs[(int) $row['resultBpID']] = 1;
@@ -219,10 +220,11 @@ class Relic extends Sellable
         $reverseEngineeringDataClass = Config::getIveeClassName('ReverseEngineerProcessData');
         $typeClass = Config::getIveeClassName('Type');
 
-        if (!isset($this->reverseEngineersBlueprintIDs[$reverseEngineeredBpID])) {
-            $exceptionClass = Config::getIveeClassName('NotReverseEngineerableException');
-            throw new $exceptionClass("Specified type can't be reverse engineered from this Relic");
-        }
+        if (!isset($this->reverseEngineersBlueprintIDs[$reverseEngineeredBpID]))
+            self::throwException(
+                'NotReverseEngineerableException', 
+                "Specified type can't be reverse engineered from this Relic"
+            );
 
         //get reverse engineered BP
         $reBP = $typeClass::getType($reverseEngineeredBpID);
@@ -262,12 +264,10 @@ class Relic extends Sellable
             }
 
             //if using recursive building and material is manufacturable, recurse!
-            if ($recursive AND $mat instanceof Manufacturable) {
-                var_dump($mat->getTypeID());
+            if ($recursive AND $mat instanceof Manufacturable)
                 $red->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
-            } else {
+            else
                 $red->addMaterial($matID, $totalNeeded);
-            }
         }
 
         return $red;
@@ -290,10 +290,9 @@ class Relic extends Sellable
     public function reverseEngineerByRaceID(IndustryModifier $iMod, $raceID, $recursive = true)
     {
         $raceBpIDs = $this->getReverseEngineeringBlueprintIDsByRaceID($raceID);
-        if (count($raceBpIDs) < 1) {
-            $exceptionClass = Config::getIveeClassName('NotReverseEngineerableException');
-            throw new $exceptionClass("No REBlueprints were found for the given raceID");
-        } elseif (count($raceBpIDs) == 1)
+        if (count($raceBpIDs) < 1)
+            self::throwException('NotReverseEngineerableException', "No REBlueprints were found for the given raceID");
+        elseif (count($raceBpIDs) == 1)
             return $this->reverseEngineer($iMod, $raceBpIDs[0], $recursive);
         
         $processDataClass = Config::getIveeClassName('ProcessData');
@@ -393,10 +392,8 @@ class Relic extends Sellable
     {
         if (isset($this->activityTimes[(int) $activityID]))
             return $this->activityTimes[(int) $activityID];
-        else {
-            $exceptionClass = Config::getIveeClassName('ActivityIdNotFoundException');
-            throw new $exceptionClass("ActivityID " . (int) $activityID . " not found.");
-        }
+        else 
+            self::throwException('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
     }
 
     /**

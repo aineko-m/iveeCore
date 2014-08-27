@@ -103,11 +103,11 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
     {
         //test supercap modifiers on supercap assembly array
         $assLine = \iveeCore\AssemblyLine::getAssemblyLine(10);
-        $type = \iveeCore\Type::factory(23919);
+        $type = \iveeCore\Type::getType(23919);
         $this->assertTrue(array('t' => 1, 'm' => 1, 'c' => 1) == $assLine->getModifiersForType($type));
 
         //test battleship modifiers on large ship assembly array
-        $type = \iveeCore\Type::factory(645);
+        $type = \iveeCore\Type::getType(645);
         $assLine = \iveeCore\AssemblyLine::getAssemblyLine(155);
         $this->assertTrue(array('t' => 0.75, 'm' => 0.98, 'c' => 1) == $assLine->getModifiersForType($type));
     }
@@ -119,7 +119,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
     public function testAssemblyLineException()
     {
         $assLine = \iveeCore\AssemblyLine::getAssemblyLine(21);
-        $type = \iveeCore\Type::factory(23919);
+        $type = \iveeCore\Type::getType(23919);
         $assLine->getModifiersForType($type);
     }
 

@@ -29,7 +29,7 @@ namespace iveeCore\EMDR;
 class Consumer
 {
     /**
-     * @var EmdrConsumer $instance the singleton EmdrConsumer instance
+     * @var \iveeCore\EMDR\Consumer $instance the singleton EmdrConsumer instance
      */
     protected static $instance;
 
@@ -76,7 +76,7 @@ class Consumer
     /**
      * Returns singleton instance
      * 
-     * @return EmdrConsumer
+     * @return \iveeCore\EMDR\Consumer
      */
     public static function instance()
     {

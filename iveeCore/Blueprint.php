@@ -39,11 +39,6 @@ class Blueprint extends Sellable
     protected $maxProductionLimit;
 
     /**
-     * @var int $rank defines the Blueprints rank
-     */
-    protected $rank;
-
-    /**
      * @var array $activityMaterials holds activity material requirements.
      * $activityMaterials[$activityID][$typeID]['q'|'c'] for quantity and consume flag, respectively.
      * Array entries for consume flag are omitted if the value is 1.
@@ -162,7 +157,6 @@ class Blueprint extends Sellable
             it.marketGroupID,
             prod.productTypeID,
             maxprod.maxProductionLimit,
-            COALESCE(r.valueInt, r.valueFloat) as rank,
             cp.crestPriceDate,
             cp.crestAveragePrice,
             cp.crestAdjustedPrice
@@ -170,7 +164,6 @@ class Blueprint extends Sellable
             JOIN invGroups AS ig ON it.groupID = ig.groupID
             JOIN industryActivityProducts as prod ON prod.typeID = it.typeID
             JOIN industryBlueprints as maxprod ON maxprod.typeID = it.typeID
-            JOIN dgmTypeAttributes as r ON r.typeID = it.typeID
             LEFT JOIN (
                 SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
                 averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
@@ -180,14 +173,12 @@ class Blueprint extends Sellable
             ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND prod.activityID = 1
-            AND r.attributeID = 1955
             AND it.typeID = " . (int) $this->typeID . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
-            throw new $exceptionClass("typeID " . (int) $this->typeID ." not found");
-        }
+        if (empty($row))
+            self::throwException('TypeIdNotFoundException', "typeID " . (int) $this->typeID . " not found");
+
         return $row;
     }
 
@@ -203,7 +194,6 @@ class Blueprint extends Sellable
         parent::setAttributes($row);
         $this->productTypeID      = (int) $row['productTypeID'];
         $this->maxProductionLimit = (int) $row['maxProductionLimit'];
-        $this->rank               = (float) $row['rank'];
     }
 
     /**
@@ -423,10 +413,8 @@ class Blueprint extends Sellable
     {
         $startME = abs((int) $startME);
         $endME   = abs((int) $endME);
-        if ($startME < 0 OR $startME >= $endME OR $endME > 10) {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Invalid start or end research levels given");
-        }
+        if ($startME < 0 OR $startME >= $endME OR $endME > 10)
+            self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
 
         //get modifiers and test if ME research is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_ME, $this);
@@ -485,10 +473,8 @@ class Blueprint extends Sellable
     {
         $startTE = abs((int) $startTE);
         $endTE   = abs((int) $endTE);
-        if ($startTE < 0 OR $startTE >= $endTE OR $endTE > 20 OR $startTE % 2 != 0 OR $endTE % 2 != 0) {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Invalid start or end research levels given");
-        }
+        if ($startTE < 0 OR $startTE >= $endTE OR $endTE > 20 OR $startTE % 2 != 0 OR $endTE % 2 != 0)
+            self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
 
         //get modifiers and test if TE research is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_TE, $this);
@@ -608,10 +594,8 @@ class Blueprint extends Sellable
     {
         if (isset($this->activityTimes[(int) $activityID]))
             return $this->activityTimes[(int) $activityID];
-        else {
-            $exceptionClass = Config::getIveeClassName('ActivityIdNotFoundException');
-            throw new $exceptionClass("ActivityID " . (int) $activityID . " not found.");
-        }
+        else 
+            self::throwException('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
     }
 
     /**
@@ -621,7 +605,7 @@ class Blueprint extends Sellable
      */
     public function getRank()
     {
-        return $this->rank;
+        return $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_TE) / 105;
     }
 
     /**
@@ -668,10 +652,8 @@ class Blueprint extends Sellable
      */
     public static function calcResearchMultiplier($startLevel, $endLevel)
     {
-        if ($startLevel < 0 OR $startLevel >= $endLevel OR $endLevel > 10) {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Invalid start or end research levels given");
-        }
+        if ($startLevel < 0 OR $startLevel >= $endLevel OR $endLevel > 10)
+            self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
 
         return (static::$baseResearchModifier[$endLevel] - static::$baseResearchModifier[$startLevel]) / 105;
     }

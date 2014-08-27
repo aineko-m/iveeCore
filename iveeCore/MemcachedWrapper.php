@@ -37,12 +37,12 @@ namespace iveeCore;
 class MemcachedWrapper implements ICache
 {
     /**
-     * @var iveeCoreCache $instance holds the singleton iveeCoreCache object.
+     * @var \iveeCore\MemcachedWrapper $instance holds the singleton MemcachedWrapper object.
      */
     protected static $instance;
 
     /**
-     * @var Memcached $memcached holds the Memcached connections.
+     * @var \Memcached $memcached holds the Memcached connections.
      */
     protected $memcached;
 

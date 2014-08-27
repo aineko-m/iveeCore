@@ -29,7 +29,7 @@ namespace iveeCore;
 class Defaults
 {
     /**
-     * @var IveeCoreDefaults $_instance holds the singleton
+     * @var \iveeCore\Defaults $_instance holds the singleton
      */
     protected static $instance;
 

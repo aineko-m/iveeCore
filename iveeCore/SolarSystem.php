@@ -98,10 +98,10 @@ class SolarSystem
     {
         $solarSystemID = (int) $solarSystemID;
         //try php array first
-        if (isset(static::$_systems[$solarSystemID])) {
+        if (isset(self::$_systems[$solarSystemID])) {
             //count internal cache hit
-            static::$_internalCacheHit++;
-            return static::$_systems[$solarSystemID];
+            self::$_internalCacheHit++;
+            return self::$_systems[$solarSystemID];
         } else {
             $solarSystemClass = Config::getIveeClassName('SolarSystem');
             //try cache
@@ -122,7 +122,7 @@ class SolarSystem
                 $system = new $solarSystemClass($solarSystemID);
 
             //store object in internal cache
-            static::$_systems[$solarSystemID] = $system;
+            self::$_systems[$solarSystemID] = $system;
             return $system;
         }
     }
@@ -140,29 +140,29 @@ class SolarSystem
     public static function getSolarSystemIdByName($solarSystemName)
     {
         //check if names have been loaded yet
-        if (empty(static::$_systemNames)) {
+        if (empty(self::$_systemNames)) {
             //try cache
             if (Config::getUseCache()) {
                 //lookup Cache class
                 $cacheClass = Config::getIveeClassName('Cache');
                 $cache = $cacheClass::instance();
                 try {
-                    static::$_systemNames = $cache->getItem('solarSystemNames');
+                    self::$_systemNames = $cache->getItem('solarSystemNames');
                 } catch (Exceptions\KeyNotFoundInCacheException $e) {
                     //load names from DB
-                    static::loadSolarSystemNames();
+                    self::loadSolarSystemNames();
                     //store in cache
-                    $cache->setItem(static::$_systemNames, 'solarSystemNames');
+                    $cache->setItem(self::$_systemNames, 'solarSystemNames');
                 }
             } else
                 //load names from DB
-                static::loadSolarSystemNames();
+                self::loadSolarSystemNames();
         }
 
         $solarSystemName = trim($solarSystemName);
         //return ID if system name exists
-        if (isset(static::$_systemNames[$solarSystemName]))
-            return static::$_systemNames[$solarSystemName];
+        if (isset(self::$_systemNames[$solarSystemName]))
+            return self::$_systemNames[$solarSystemName];
         else {
             $exceptionClass = Config::getIveeClassName('SystemNameNotFoundException');
             throw new $exceptionClass("SolarSystem name not found");
@@ -188,7 +188,7 @@ class SolarSystem
      *
      * @return void
      */
-    protected static function loadSolarSystemNames()
+    private static function loadSolarSystemNames()
     {
         //lookup SDE class
         $sdeClass = Config::getIveeClassName('SDE');
@@ -199,7 +199,7 @@ class SolarSystem
         );
 
         while ($row = $res->fetch_assoc()) {
-            static::$_systemNames[$row['solarSystemName']] = (int) $row['solarSystemID'];
+            self::$_systemNames[$row['solarSystemName']] = (int) $row['solarSystemID'];
         }
     }
 
@@ -408,7 +408,7 @@ class SolarSystem
             return $this->industryIndexDate;
         } else {
             $exceptionClass = Config::getIveeClassName('NoSystemDataAvailableException');
-            throw new $exceptionClass('No CREST system data available for systemID=' . $this->systemID);
+            throw new $exceptionClass('No CREST system data available for systemID=' . $this->solarSystemID);
         }
     }
 

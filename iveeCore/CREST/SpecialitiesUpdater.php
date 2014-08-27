@@ -54,8 +54,6 @@ class SpecialitiesUpdater extends CrestDataUpdater
             $sql .= $this->processDataItemToSQL($item);
 
         $sde->multiQuery($sql . ' COMMIT;');
-
-        $this->invalidateCaches();
     }
 
     /**

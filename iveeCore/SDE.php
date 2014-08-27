@@ -34,7 +34,7 @@ class SDE
     protected static $instance;
 
     /**
-     * @var mysqli $db holds the DB connections.
+     * @var \mysqli $db holds the DB connections.
      */
     protected $db;
 
@@ -69,7 +69,6 @@ class SDE
      */
     protected function __construct(\mysqli $db = null)
     {
-        $this->types = array();
         if (!isset($db)) {
             $db = new \mysqli(
                 Config::getDbHost(),
