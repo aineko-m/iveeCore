@@ -28,14 +28,9 @@ namespace iveeCore;
 class AssemblyLine
 {
     /**
-     * @var array $_assemblyLines acts as internal object cache, assemblyLineTypeID => AssemblyLine.
+     * @var \iveeCore\InstancePool $instancePool (internal cache) for instantiated AssemblyLine objects
      */
-    private static $_assemblyLines;
-
-    /**
-     * @var int $_internalCacheHit stores the number of hits on the internal AssemblyLine cache.
-     */
-    private static $_internalCacheHit = 0;
+    private static $instancePool;
 
     /**
      * @var int $assemblyLineTypeID the ID of the type of AssemblyLine
@@ -43,7 +38,9 @@ class AssemblyLine
     protected $assemblyLineTypeID;
 
     /**
-     * @var string $assemblyLineTypeName the name of the type of AssemblyLine
+     * @var string $assemblyLineTypeName the name of the type of AssemblyLine. 
+     * Note that they don't necessarily match with the in-game assembly array names, e.g. 'Capital Ship Assembly Array'
+     * has an AssemblyLine with name 'X Large Ship Assembly Array'
      */
     protected $assemblyLineTypeName;
 
@@ -80,6 +77,19 @@ class AssemblyLine
     protected $categoryModifiers;
 
     /**
+     * Initializes static InstancePool
+     *
+     * @return void
+     */
+    private static function init()
+    {
+        if (!isset(self::$instancePool)) {
+            $ipoolClass = Config::getIveeClassName('InstancePool');
+            self::$instancePool = new $ipoolClass('assemblyLine_');
+        }
+    }
+
+    /**
      * Gets AssemblyLine objects. Tries caches and instantiates new objects if necessary.
      *
      * @param int $assemblyLineTypeID of requested AssemblyLine
@@ -89,33 +99,19 @@ class AssemblyLine
      */
     public static function getAssemblyLine($assemblyLineTypeID)
     {
+        if (!isset(self::$instancePool))
+            self::init();
+        
         $assemblyLineTypeID = (int) $assemblyLineTypeID;
-        //try php array first
-        if (isset(self::$_assemblyLines[$assemblyLineTypeID])) {
-            //count internal cache hit
-            self::$_internalCacheHit++;
-            return self::$_assemblyLines[$assemblyLineTypeID];
-        } else {
+        try {
+            return self::$instancePool->getObjById($assemblyLineTypeID);
+        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+            //go to DB
             $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    $assemblyLine = $cache->getItem('assemblyLine_' . $assemblyLineTypeID);
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //go to DB
-                    $assemblyLine = new $assemblyLineClass($assemblyLineTypeID);
-                    //store object in cache
-                    $cache->setItem($assemblyLine, 'assemblyLine_' . $assemblyLineTypeID);
-                }
-            } else
-                //not using cache, go to DB
-                $assemblyLine = new $assemblyLineClass($assemblyLineTypeID);
-
-            //store object in internal cache
-            self::$_assemblyLines[$assemblyLineTypeID] = $assemblyLine;
+            $assemblyLine = new $assemblyLineClass($assemblyLineTypeID);
+            //store AssemblyLine object in instance pool (and cache if configured)
+            self::$instancePool->setIdObj($assemblyLineTypeID, $assemblyLine);
+            
             return $assemblyLine;
         }
     }

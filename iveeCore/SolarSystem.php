@@ -27,19 +27,9 @@ namespace iveeCore;
 class SolarSystem
 {
     /**
-     * @var array $_systems acts as internal Station object cache, solarSystemID => SolarSystem.
+     * @var \iveeCore\InstancePool $instancePool (internal cache) for instantiated SolarSystem objects
      */
-    private static $_systems;
-    
-    /**
-     * @var array $_systemNames acts as a lazyloaded systemName to ID lookup table, systemName => systemID.
-     */
-    private static $_systemNames;
-
-    /**
-     * @var int $_internalCacheHit counter for the internal SolarSystem cache hits
-     */
-    private static $_internalCacheHit = 0;
+    private static $instancePool;
 
     /**
      * @var int $solarSystemID the ID of this SolarSystem.
@@ -87,6 +77,19 @@ class SolarSystem
     protected $teamIDs = array();
 
     /**
+     * Initializes static InstancePool
+     *
+     * @return void
+     */
+    private static function init()
+    {
+        if (!isset(self::$instancePool)) {
+            $ipoolClass = Config::getIveeClassName('InstancePool');
+            self::$instancePool = new $ipoolClass('system_', 'solarSystemNames');
+        }
+    }
+
+    /**
      * Main function for getting SolarSystem objects. Tries caches and instantiates new objects if necessary.
      *
      * @param int $solarSystemID of requested SolarSystem
@@ -96,33 +99,20 @@ class SolarSystem
      */
     public static function getSolarSystem($solarSystemID)
     {
-        $solarSystemID = (int) $solarSystemID;
-        //try php array first
-        if (isset(self::$_systems[$solarSystemID])) {
-            //count internal cache hit
-            self::$_internalCacheHit++;
-            return self::$_systems[$solarSystemID];
-        } else {
-            $solarSystemClass = Config::getIveeClassName('SolarSystem');
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    $system = $cache->getItem('system_' . $solarSystemID);
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //go to DB
-                    $system = new $solarSystemClass($solarSystemID);
-                    //store object in cache
-                    $cache->setItem($system, 'system_' . $solarSystemID);
-                }
-            } else
-                //not using cache, go to DB
-                $system = new $solarSystemClass($solarSystemID);
+        if (!isset(self::$instancePool))
+            self::init();
 
-            //store object in internal cache
-            self::$_systems[$solarSystemID] = $system;
+        $solarSystemID = (int) $solarSystemID;
+
+        try {
+            return self::$instancePool->getObjById($solarSystemID);
+        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+            //go to DB
+            $solarSystemClass = Config::getIveeClassName('SolarSystem');
+            $system = new $solarSystemClass($solarSystemID);
+            //store SolarSystem object in instance pool (and cache if configured)
+            self::$instancePool->setIdObj($solarSystemID, $system);
+            
             return $system;
         }
     }
@@ -139,33 +129,16 @@ class SolarSystem
      */
     public static function getSolarSystemIdByName($solarSystemName)
     {
-        //check if names have been loaded yet
-        if (empty(self::$_systemNames)) {
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    self::$_systemNames = $cache->getItem('solarSystemNames');
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //load names from DB
-                    self::loadSolarSystemNames();
-                    //store in cache
-                    $cache->setItem(self::$_systemNames, 'solarSystemNames');
-                }
-            } else
-                //load names from DB
-                self::loadSolarSystemNames();
-        }
+        if (!isset(self::$instancePool))
+            self::init();
 
         $solarSystemName = trim($solarSystemName);
-        //return ID if system name exists
-        if (isset(self::$_systemNames[$solarSystemName]))
-            return self::$_systemNames[$solarSystemName];
-        else {
-            $exceptionClass = Config::getIveeClassName('SystemNameNotFoundException');
-            throw new $exceptionClass("SolarSystem name not found");
+        try {
+            return self::$instancePool->getIdByName($solarSystemName);
+        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+            //load names from DB
+            self::loadSolarSystemNames();
+            return self::$instancePool->getIdByName($solarSystemName);
         }
     }
 
@@ -198,9 +171,11 @@ class SolarSystem
             FROM mapSolarSystems;"
         );
 
-        while ($row = $res->fetch_assoc()) {
-            self::$_systemNames[$row['solarSystemName']] = (int) $row['solarSystemID'];
-        }
+        $namesToIds = array();
+        while ($row = $res->fetch_assoc())
+            $namesToIds[$row['solarSystemName']] = (int) $row['solarSystemID'];
+        
+        self::$instancePool->setNamesToIds($namesToIds);
     }
 
     /**

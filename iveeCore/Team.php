@@ -27,14 +27,9 @@ namespace iveeCore;
 class Team
 {
     /**
-     * @var array $_teams acts as internal Team object cache, teamID => Team.
+     * @var \iveeCore\InstancePool $instancePool (internal cache) for instantiated Team objects
      */
-    private static $_teams;
-    
-    /**
-     * @var int $_internalCacheHit counter for the internal Team cache hits
-     */
-    private static $_internalCacheHit = 0;
+    private static $instancePool;
 
     /**
      * @var int $teamID ID of the Team
@@ -93,6 +88,19 @@ class Team
     protected $workerSpecialities;
 
     /**
+     * Initializes static InstancePool
+     *
+     * @return void
+     */
+    private static function init()
+    {
+        if (!isset(self::$instancePool)) {
+            $ipoolClass = Config::getIveeClassName('InstancePool');
+            self::$instancePool = new $ipoolClass('team_');
+        }
+    }
+
+    /**
      * Gets Team objects. Tries caches and instantiates new objects if necessary.
      *
      * @param int $teamID of requested Team
@@ -102,33 +110,19 @@ class Team
      */
     public static function getTeam($teamID)
     {
+        if (!isset(self::$instancePool))
+            self::init();
+        
         $teamID = (int) $teamID;
-        //try php array first
-        if (isset(self::$_teams[$teamID])) {
-            //count internal cache hit
-            self::$_internalCacheHit++;
-            return self::$_teams[$teamID];
-        } else {
+        try {
+            return self::$instancePool->getObjById($teamID);
+        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+            //go to DB
             $teamClass = Config::getIveeClassName('Team');
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    $team = $cache->getItem('team_' . $teamID);
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //go to DB
-                    $team = new $teamClass($teamID);
-                    //store object in cache
-                    $cache->setItem($team, 'team_' . $teamID);
-                }
-            } else
-                //not using cache, go to DB
-                $team = new $teamClass($teamID);
-
-            //store object in internal cache
-            self::$_teams[$teamID] = $team;
+            $team = new $teamClass($teamID);
+            //store Team object in instance pool (and cache if configured)
+            self::$instancePool->setIdObj($teamID, $team);
+            
             return $team;
         }
     }

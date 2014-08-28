@@ -28,19 +28,9 @@ namespace iveeCore;
 class Type
 {
     /**
-     * @var array $_types acts as internal Type object cache, typeID => Type.
+     * @var \iveeCore\InstancePool $instancePool (internal cache) for instantiated Type and child objects
      */
-    private static $_types;
-
-    /**
-     * @var array $_typeNames acts as a lazyloaded typeName to ID lookup table, typeName => typeID.
-     */
-    private static $_typeNames;
-
-    /**
-     * @var int $_internalCacheHit stores the number of hits on the internal Type cache.
-     */
-    private static $_internalCacheHit = 0;
+    private static $instancePool;
 
     /**
      * @var int $typeID the typeID of this Type.
@@ -107,6 +97,19 @@ class Type
     protected $crestPriceDate;
 
     /**
+     * Initializes static InstancePool
+     *
+     * @return void
+     */
+    private static function init()
+    {
+        if (!isset(self::$instancePool)) {
+            $ipoolClass = Config::getIveeClassName('InstancePool');
+            self::$instancePool = new $ipoolClass('type_', 'typeNames');
+        }
+    }
+
+    /**
      * Main function for getting Type objects. Tries caches and instantiates new objects if necessary.
      *
      * @param int $typeID of requested Type
@@ -116,32 +119,18 @@ class Type
      */
     public static function getType($typeID)
     {
-        $typeID = (int) $typeID;
-        //try php Type array first
-        if (isset(self::$_types[$typeID])) {
-            //count internal cache hit
-            self::$_internalCacheHit++;
-            return self::$_types[$typeID];
-        } else {
-            //try memcached
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    $type = $cache->getItem('type_' . $typeID);
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //go to DB
-                    $type = self::factory($typeID);
-                    //store type object in cache
-                    $cache->setItem($type, 'type_' . $typeID);
-                }
-            } else
-                //not using cache, go to DB
-                $type = self::factory($typeID);
+        if (!isset(self::$instancePool))
+            self::init();
 
-            //store type object in internal cache
-            self::$_types[$typeID] = $type;
+        $typeID = (int) $typeID;
+
+        try {
+            return self::$instancePool->getObjById($typeID);
+        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+            //go to DB
+            $type = self::factory($typeID);
+            //store Type object in instance pool (and cache if configured)
+            self::$instancePool->setIdObj($typeID, $type);
 
             return $type;
         }
@@ -159,32 +148,17 @@ class Type
      */
     public static function getTypeIdByName($typeName)
     {
-        //check if names have been loaded yet
-        if (empty(self::$_typeNames)) {
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    self::$_typeNames = $cache->getItem('typeNames');
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //load names from DB
-                    self::loadTypeNames();
-                    //store in cache
-                    $cache->setItem(self::$_typeNames, 'typeNames');
-                }
-            } else
-                //load names from DB
-                self::loadTypeNames();
-        }
-
+        if (!isset(self::$instancePool))
+            self::init();
+        
         $typeName = trim($typeName);
-        //return ID if type exists
-        if (isset(self::$_typeNames[$typeName]))
-            return self::$_typeNames[$typeName];
-        else 
-            self::throwException('TypeNameNotFoundException', 'type name not found');
+        try {
+            return self::$instancePool->getIdByName($typeName);
+        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+            //load names from DB
+            self::loadTypeNames();
+            return self::$instancePool->getIdByName($typeName);
+        }
     }
 
     /**
@@ -215,10 +189,12 @@ class Type
             FROM invTypes
             WHERE published = 1;"
         );
-
-        while ($row = $res->fetch_assoc()) {
-            self::$_typeNames[$row['typeName']] = (int) $row['typeID'];
-        }
+        
+        $namesToIds = array();
+        while ($row = $res->fetch_assoc())
+            $namesToIds[$row['typeName']] = (int) $row['typeID'];
+        
+        self::$instancePool->setNamesToIds($namesToIds);
     }
 
     /**
@@ -247,7 +223,7 @@ class Type
      */
     public static function getCachedTypeCount()
     {
-        return count(self::$_types);
+        return self::$instancePool->getObjCount();
     }
 
     /**

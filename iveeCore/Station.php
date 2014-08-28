@@ -26,15 +26,10 @@ namespace iveeCore;
  */
 class Station
 {
-    /**
-     * @var array $_stations acts as internal Station object cache, stationID => Station.
+   /**
+     * @var \iveeCore\InstancePool $instancePool (internal cache) for instantiated AssemblyLine objects
      */
-    private static $_stations;
-
-    /**
-     * @var int $_internalCacheHit counter for the internal Station cache hits
-     */
-    private static $_internalCacheHit = 0;
+    private static $instancePool;
 
     /**
      * @var int $stationID the ID of this Station.
@@ -83,6 +78,19 @@ class Station
     protected $assemblyLineTypeIDs = array();
 
     /**
+     * Initializes static InstancePool
+     *
+     * @return void
+     */
+    private static function init()
+    {
+        if (!isset(self::$instancePool)) {
+            $ipoolClass = Config::getIveeClassName('InstancePool');
+            self::$instancePool = new $ipoolClass('station_');
+        }
+    }
+
+    /**
      * Main function for getting Station objects. Tries caches and instantiates new objects if necessary.
      *
      * @param int $stationID of requested Station
@@ -92,33 +100,19 @@ class Station
      */
     public static function getStation($stationID)
     {
-        $stationID = (int) $stationID;
-        //try php array first
-        if (isset(self::$_stations[$stationID])) {
-            //count internal cache hit
-            self::$_internalCacheHit++;
-            return self::$_stations[$stationID];
-        } else {
-            $stationClass = Config::getIveeClassName('Station');
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    $station = $cache->getItem('station_' . $stationID);
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //go to DB
-                    $station = new $stationClass($stationID);
-                    //store object in cache
-                    $cache->setItem($station, 'station_' . $stationID);
-                }
-            } else
-                //not using memcached, go to DB
-                $station = new $stationClass($stationID);
+        if (!isset(self::$instancePool))
+            self::init();
 
-            //store object in internal cache
-            self::$_stations[$stationID] = $station;
+        $stationID = (int) $stationID;
+        try {
+            return self::$instancePool->getObjById($stationID);
+        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+            //go to DB
+            $stationClass = Config::getIveeClassName('Station');
+            $station = new $stationClass($stationID);
+            //store Station object in instance pool (and cache if configured)
+            self::$instancePool->setIdObj($stationID, $station);
+            
             return $station;
         }
     }

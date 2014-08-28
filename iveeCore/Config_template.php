@@ -68,6 +68,7 @@ class Config
         'FitParser'              => '\iveeCore\FitParser',
         'ICache'                 => '\iveeCore\ICache',
         'IndustryModifier'       => '\iveeCore\IndustryModifier',
+        'InstancePool'           => '\iveeCore\InstancePool',
         'InventionProcessData'   => '\iveeCore\InventionProcessData',
         'InventorBlueprint'      => '\iveeCore\InventorBlueprint',
         'InventableBlueprint'    => '\iveeCore\InventableBlueprint',
