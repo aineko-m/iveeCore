@@ -67,7 +67,7 @@ class Team
     protected $costModifier;
 
     /**
-     * @var int $specialityID ID of the speciality of the team. Not that no actual bonuses are available for the 
+     * @var int $specialityID ID of the speciality of the team. Note that no actual bonuses are available for the 
      * referenced specialityIDs 0-6.
      */
     protected $specialityID;
