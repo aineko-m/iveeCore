@@ -286,6 +286,20 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
+     * Returns an array with the inventable blueprint instances
+     *
+     * @return array
+     */
+    public function getInventableBlueprints()
+    {
+        $ret = array();
+        $typeClass = Config::getIveeClassName('Type');
+        foreach($this->getInventableBlueprintIDs() as $bpId)
+            $ret[$bpId] = $typeClass::getType($bpId);
+        return $ret;
+    }
+
+    /**
      * Returns the base invention chance
      *
      * @return float

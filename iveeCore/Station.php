@@ -295,12 +295,12 @@ class Station
     {
         return $this->assemblyLineTypeIDs;
     }
-    
+
     /**
      * Gets a stations assemblyLineTypeIDs
-     * 
+     *
      * @param int $activityID to get assemblyLineTypeIDs for
-     * 
+     *
      * @return array in the form array(id1, id2...)
      */
     public function getAssemblyLineTypeIDsForActivity($activityID)
@@ -309,5 +309,16 @@ class Station
             return $this->assemblyLineTypeIDs[$activityID];
         else
             return array();
+    }
+
+    /**
+     * Returns an IndustryModifier object for this station
+     *
+     * @return \iveeCore\IndustryModifier
+     */
+    public function getIndustryModifier()
+    {
+        $industryModifierClass = Config::getIveeClassName('IndustryModifier');
+        return $industryModifierClass::getByNpcStationID($this->stationID);
     }
 }

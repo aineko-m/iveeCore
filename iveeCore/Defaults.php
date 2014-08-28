@@ -199,7 +199,7 @@ class Defaults
     /**
      * Returns Defaults instance.
      * 
-     * @return \iveCore\Defaults
+     * @return \iveeCore\Defaults
      */
     public static function instance()
     {

@@ -85,6 +85,16 @@ class InventableBlueprint extends Blueprint
     }
 
     /**
+     * Returns the inventor blueprint ID
+     *
+     * @return int
+     */
+    public function getInvetorBlueprintId()
+    {
+        return $this->inventedFromBlueprintID;
+    }
+
+    /**
      * Returns the inventor blueprint
      * 
      * @return InventorBlueprint
@@ -92,7 +102,7 @@ class InventableBlueprint extends Blueprint
     public function getInventorBlueprint()
     {
         $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getType($this->inventedFromBlueprintID);
+        return $typeClass::getType($this->getInvetorBlueprintId());
     }
 
     /**

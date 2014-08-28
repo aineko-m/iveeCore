@@ -439,4 +439,28 @@ class SolarSystem
         $this->industryIndexDate = time();
         $this->industryIndices = $indices;
     }
+
+    /**
+     * Returns an IndustryModifier object for a POS in this system
+     *
+     * @param float $tax set on the POS
+     *
+     * @return \iveeCore\IndustryModifier
+     */
+    public function getIndustryModifierForPos($tax)
+    {
+        $industryModifierClass = Config::getIveeClassName('IndustryModifier');
+        return $industryModifierClass::getBySystemIdForPos($this->solarSystemID, $tax);
+    }
+
+    /**
+     * Returns an IndustryModifier object for all NPC stations in this system
+     *
+     * @return \iveeCore\IndustryModifier
+     */
+    public function getIndustryModifierForAllNpcStations()
+    {
+        $industryModifierClass = Config::getIveeClassName('IndustryModifier');
+        return $industryModifierClass::getBySystemIdForAllNpcStations($this->solarSystemID);
+    }
 }
