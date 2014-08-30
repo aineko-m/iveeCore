@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for all Reactions
- * Inheritance: Reaction -> Sellable -> Type.
+ * Inheritance: Reaction -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -43,16 +43,17 @@ class Reaction extends Sellable
     protected $isAlchemy = false;
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate Reaction objects.
+     * Constructor. Use \iveeCore\Type::getById() to instantiate Reaction objects.
      * 
-     * @param int $typeID of the Reaction object
+     * @param int $id of the Reaction object
      * 
      * @return Reaction
      * @throws Exception if typeID is not found
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
-        $this->typeID = (int) $typeID;
+        //call parent constructor
+        parent::__construct($id);
 
         //get data from SQL
         $row = $this->queryAttributes();
@@ -72,7 +73,7 @@ class Reaction extends Sellable
             LEFT JOIN dgmTypeAttributes as dta ON itr.typeID = dta.typeID
             WHERE it.published = 1
             AND (dta.attributeID = 726 OR dta.attributeID IS NULL)
-            AND itr.reactionTypeID = ' . (int) $this->typeID . ';'
+            AND itr.reactionTypeID = ' . $this->id . ';'
         );
 
         while ($row = $res->fetch_assoc()) {
@@ -80,7 +81,7 @@ class Reaction extends Sellable
                 $this->cycleInputMaterials[$row['typeID']] = $row['quantity'];
             else {
                 $this->cycleOutputMaterials[$row['typeID']] = $row['quantity'];
-                if ($typeClass::getType($row['typeID'])->isReprocessable())
+                if ($typeClass::getById($row['typeID'])->isReprocessable())
                     $this->isAlchemy = true;
             }
         }

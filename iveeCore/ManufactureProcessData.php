@@ -115,7 +115,7 @@ class ManufactureProcessData extends ProcessData
         $defaultsClass = Config::getIveeClassName('Defaults');
         $typeClass = Config::getIveeClassName('Type');
 
-        return ($typeClass::getType($this->producesTypeID)->getSellPrice($maxPriceDataAge)
+        return ($typeClass::getById($this->producesTypeID)->getSellPrice($maxPriceDataAge)
             * $this->producesQuantity * $defaultsClass::instance()->getDefaultSellTaxFactor())
                 - ($this->getTotalCost($maxPriceDataAge));
     }
@@ -132,11 +132,11 @@ class ManufactureProcessData extends ProcessData
 
         echo "Total Slot Time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
         echo "Total Materials for " . $this->producesQuantity . "x "
-            . $typeClass::getType($this->producesTypeID)->getName() . ":" . PHP_EOL;
+            . $typeClass::getById($this->producesTypeID)->getName() . ":" . PHP_EOL;
 
         //iterate over materials
         foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount)
-            echo $amount . 'x ' . $typeClass::getType($typeID)->getName() . PHP_EOL;
+            echo $amount . 'x ' . $typeClass::getById($typeID)->getName() . PHP_EOL;
 
         echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost())
             . "ISK" . PHP_EOL;

@@ -88,9 +88,9 @@ class PriceUpdater
      */
     public function __construct($typeID, $regionID, $generatedAt, array $orders)
     {
-        $this->typeID      = $typeID;
-        $this->regionID    = $regionID;
-        $this->generatedAt = $generatedAt;
+        $this->typeID      = (int) $typeID;
+        $this->regionID    = (int) $regionID;
+        $this->generatedAt = (int) $generatedAt;
 
         //separate buy and sell orders
         $sdata = array();
@@ -116,8 +116,8 @@ class PriceUpdater
             atp.avgVol,
             atp.avgTx
             FROM iveeTrackedPrices as atp
-            WHERE atp.regionID = " . (int) $this->regionID . "
-            AND atp.typeID = " . (int) $this->typeID . ";"
+            WHERE atp.regionID = " . $this->regionID . "
+            AND atp.typeID = " . $this->typeID . ";"
         );
 
         while ($tmp = $res->fetch_row()) {

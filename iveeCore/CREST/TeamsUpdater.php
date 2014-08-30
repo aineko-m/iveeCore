@@ -97,12 +97,8 @@ class TeamsUpdater extends CrestDataUpdater
     protected function invalidateCaches()
     {
         //Team caches do not need to be invalidated as teams are immutable
-
-        //delete Systems from cache where teams are
-        $cachePrefix = \iveeCore\Config::getCachePrefix();
-        $cacheClass  = \iveeCore\Config::getIveeClassName('Cache');
-        $cache = $cacheClass::instance();
-        foreach ($this->updatedIDs as $systemID => $nothing)
-            $cache->deleteItem($cachePrefix . 'system_' . $systemID);
+        //Delete Systems from cache where teams are
+        $assemblyLineClass  = \iveeCore\Config::getIveeClassName('SolarSystem');
+        $assemblyLineClass::getInstancePool()->deleteFromCache($this->updatedIDs);
     }
 }

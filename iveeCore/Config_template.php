@@ -86,6 +86,7 @@ class Config
         'ReverseEngineerProcessData' => '\iveeCore\ReverseEngineerProcessData',
         'REBlueprint'            => '\iveeCore\REBlueprint',
         'SDE'                    => '\iveeCore\SDE',
+        'SdeTypeCommon'          => '\iveeCore\SdeTypeCommon',
         'Sellable'               => '\iveeCore\Sellable',
         'SkillMap'               => '\iveeCore\SkillMap',
         'SolarSystem'            => '\iveeCore\SolarSystem',

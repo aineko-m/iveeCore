@@ -17,6 +17,7 @@ namespace iveeCore;
 /**
  * AssemblyLines represent the industry "slot" of a station or POS assembly array or lab. Although slots are not used in
  * EVE anymore since Crius, the restrictions or bonuses they confer still apply.
+ * Inheritance: AssemblyLine -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,25 +26,19 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/AssemblyLine.php
  *
  */
-class AssemblyLine
+class AssemblyLine extends SdeTypeCommon
 {
     /**
-     * @var \iveeCore\InstancePool $instancePool (internal cache) for instantiated AssemblyLine objects
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) AssemblyLine objects
      */
-    private static $instancePool;
+    protected static $instancePool;
 
     /**
-     * @var int $assemblyLineTypeID the ID of the type of AssemblyLine
+     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
      */
-    protected $assemblyLineTypeID;
-
-    /**
-     * @var string $assemblyLineTypeName the name of the type of AssemblyLine. 
-     * Note that they don't necessarily match with the in-game assembly array names, e.g. 'Capital Ship Assembly Array'
-     * has an AssemblyLine with name 'X Large Ship Assembly Array'
-     */
-    protected $assemblyLineTypeName;
-
+    protected static $classNick = 'AssemblyLine';
+    
     /**
      * @var float $baseTimeMultiplier the base time multiplier
      */
@@ -75,46 +70,6 @@ class AssemblyLine
      * additional multipliers.
      */
     protected $categoryModifiers;
-
-    /**
-     * Initializes static InstancePool
-     *
-     * @return void
-     */
-    private static function init()
-    {
-        if (!isset(self::$instancePool)) {
-            $ipoolClass = Config::getIveeClassName('InstancePool');
-            self::$instancePool = new $ipoolClass('assemblyLine_');
-        }
-    }
-
-    /**
-     * Gets AssemblyLine objects. Tries caches and instantiates new objects if necessary.
-     *
-     * @param int $assemblyLineTypeID of requested AssemblyLine
-     *
-     * @return \iveeCore\AssemblyLine
-     * @throws \iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeID is not found
-     */
-    public static function getAssemblyLine($assemblyLineTypeID)
-    {
-        if (!isset(self::$instancePool))
-            self::init();
-        
-        $assemblyLineTypeID = (int) $assemblyLineTypeID;
-        try {
-            return self::$instancePool->getObjById($assemblyLineTypeID);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
-            //go to DB
-            $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
-            $assemblyLine = new $assemblyLineClass($assemblyLineTypeID);
-            //store AssemblyLine object in instance pool (and cache if configured)
-            self::$instancePool->setIdObj($assemblyLineTypeID, $assemblyLine);
-            
-            return $assemblyLine;
-        }
-    }
 
     /**
      * Gets the assemblyLineTypeIDs for the best installable labs and assembly arrays for POSes depending on system
@@ -187,32 +142,46 @@ class AssemblyLine
     }
 
     /**
+     * Method blocked as there is no safe way to get an AssemblyLine by name
+     *
+     * @param string $name of requested AssemblyLine
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\IveeCoreException
+     */
+    public static function getIdByName($name)
+    {
+        static::throwException('IveeCoreException', 'GetByName methods not implemented for AssemblyLine');
+    }
+
+    /**
      * Constructor
      *
-     * @param int $assemblyLineTypeID of the AssemblyLine
+     * @param int $id of the AssemblyLine
      *
      * @return \iveeCore\AssemblyLine
      * @throws \iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeID is not found
      */
-    protected function __construct($assemblyLineTypeID)
+    protected function __construct($id)
     {
-        $this->assemblyLineTypeID = $assemblyLineTypeID;
+        $this->id = $id;
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
         $row = $sde->query(
             "SELECT assemblyLineTypeName, baseTimeMultiplier, baseMaterialMultiplier, baseCostMultiplier, activityID
             FROM ramAssemblyLineTypes
-            WHERE assemblyLineTypeID = " . $this->assemblyLineTypeID . ";"
+            WHERE assemblyLineTypeID = " . $this->id . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('AssemblyLineTypeIdNotFoundException');
-            throw new $exceptionClass("assemblyLineTypeID ". $this->assemblyLineTypeID . " not found");
-        }
+        if (empty($row))
+            static::throwException(
+                'AssemblyLineTypeIdNotFoundException', 
+                "assemblyLine TypeID=". $this->id . " not found"
+            );
 
         //set data to attributes
-        $this->assemblyLineTypeName   = $row['assemblyLineTypeName'];
+        $this->name                   = $row['assemblyLineTypeName'];
         $this->baseTimeMultiplier     = (float) $row['baseTimeMultiplier'];
         $this->baseMaterialMultiplier = (float) $row['baseMaterialMultiplier'];
         $this->baseCostMultiplier     = (float) $row['baseCostMultiplier'];
@@ -222,7 +191,7 @@ class AssemblyLine
         $res = $sde->query(
             "SELECT categoryID, timeMultiplier, materialMultiplier, costMultiplier
             FROM ramAssemblyLineTypeDetailPerCategory
-            WHERE assemblyLineTypeID = " . $this->assemblyLineTypeID . ';'
+            WHERE assemblyLineTypeID = " . $this->id . ';'
         );
 
         $this->categoryModifiers = array();
@@ -237,7 +206,7 @@ class AssemblyLine
         $res = $sde->query(
             "SELECT groupID, timeMultiplier, materialMultiplier, costMultiplier
             FROM ramAssemblyLineTypeDetailPerGroup
-            WHERE assemblyLineTypeID = " . $this->assemblyLineTypeID . ';'
+            WHERE assemblyLineTypeID = " . $this->id . ';'
         );
 
         $this->groupModifiers = array();
@@ -247,26 +216,6 @@ class AssemblyLine
                 'm' => (float) $row['materialMultiplier'],
                 't' => (float) $row['timeMultiplier']
             );
-    }
-
-    /**
-     * Gets the ID of the AssemblyLine
-     * 
-     * @return int
-     */
-    public function getAssemblyLineTypeID()
-    {
-        return $this->assemblyLineTypeID;
-    }
-
-    /**
-     * Gets the name of the AssemblyLine
-     * 
-     * @return string
-     */
-    public function getAssemblyLineTypeName()
-    {
-        return $this->assemblyLineTypeName;
     }
 
     /**
@@ -342,11 +291,11 @@ class AssemblyLine
     public function getModifiersForType(Type $type)
     {
         //check if type can actually be handled in this assembly line
-        if (!$this->isTypeCompatible($type)) {
-             $exceptionClass = Config::getIveeClassName('TypeNotCompatibleException');
-             throw new $exceptionClass($type->getName() . " is not compatible with "
-                 . $this->getAssemblyLineTypeName());
-        }
+        if (!$this->isTypeCompatible($type))
+            static::throwException(
+                'TypeNotCompatibleException', 
+                $type->getName() . " is not compatible with " . $this->getName()
+            );
 
         //gets the base modifiers
         $mods = array(

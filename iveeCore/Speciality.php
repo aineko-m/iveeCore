@@ -16,6 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing industry team specialities
+ * Inheritance: Speciality -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -24,22 +25,18 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Speciality.php
  *
  */
-class Speciality
+class Speciality extends SdeTypeCommon
 {
     /**
-     * @var \iveeCore\InstancePool $instancePool (internal cache) for instantiated Team objects
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) Speciality objects
      */
-    private static $instancePool;
+    protected static $instancePool;
 
     /**
-     * @var int $specialityID ID of the Speciality
+     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
      */
-    protected $specialityID;
-
-    /**
-     * @var string $specialityName name of the Speciality
-     */
-    protected $specialityName;
+    protected static $classNick = 'Speciality';
 
     /**
      * @var array $specialityGroupIDs holds the groupIDs of bonused Types
@@ -47,101 +44,52 @@ class Speciality
     protected $specialityGroupIDs = array();
 
     /**
-     * Initializes static InstancePool
+     * Method blocked as there is no safe way to get a Speciality by name
+     *
+     * @param string $name of requested Speciality
      *
      * @return void
+     * @throws \iveeCore\Exceptions\IveeCoreException
      */
-    private static function init()
+    public static function getIdByName($name)
     {
-        if (!isset(self::$instancePool)) {
-            $ipoolClass = Config::getIveeClassName('InstancePool');
-            self::$instancePool = new $ipoolClass('speciality_');
-        }
+        static::throwException('IveeCoreException', 'GetByName methods not implemented for Speciality');
     }
 
     /**
-     * Main function for getting Speciality objects. Tries caches and instantiates new objects if necessary.
+     * Constructor. Use \iveeCore\Speciality::getById() to instantiate Speciality objects instead.
      *
-     * @param int $specialityID of requested Speciality
+     * @param int $id of requested Speciality
      *
      * @return \iveeCore\Speciality
      * @throws \iveeCore\Exceptions\SpecialityIdNotFoundException if the specialityID is not found
      */
-    public static function getSpeciality($specialityID)
+    protected function __construct($id)
     {
-        if (!isset(self::$instancePool))
-            self::init();
-
-        $specialityID = (int) $specialityID;
-        try {
-            return self::$instancePool->getObjById($specialityID);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
-            //go to DB
-            $specialityClass = Config::getIveeClassName('Speciality');
-            $speciality = new $specialityClass($specialityID);
-            //store Speciality object in instance pool (and cache if configured)
-            self::$instancePool->setIdObj($specialityID, $speciality);
-            
-            return $speciality;
-        }
-    }
-
-    /**
-     * Constructor. Use \iveeCore\Speciality::getType() to instantiate Speciality objects instead.
-     *
-     * @param int $specialityID of requested Speciality
-     *
-     * @return \iveeCore\Speciality
-     * @throws \iveeCore\Exceptions\SpecialityIdNotFoundException if the specialityID is not found
-     */
-    protected function __construct($specialityID)
-    {
-        $this->specialityID = (int) $specialityID;
+        $this->id = (int) $id;
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
         $row = $sde->query(
             "SELECT specialityName
             FROM iveeSpecialities
-            WHERE specialityID = " . $this->specialityID . ';'
+            WHERE specialityID = " . $this->id . ';'
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('SpecialityIdNotFoundException');
-            throw new $exceptionClass("specialityID=". $this->specialityID . " not found");
-        }
+        if (empty($row))
+            static::throwException('SpecialityIdNotFoundException', "Speciality ID=". $this->id . " not found");
 
         //set data to attributes
-        $this->specialityName = $row['specialityName'];
+        $this->name = $row['specialityName'];
 
         $res = $sde->query(
             "SELECT groupID
             FROM iveeSpecialityGroups
-            WHERE specialityID = " . $this->specialityID . ';'
+            WHERE specialityID = " . $this->id . ';'
         );
 
         while ($row = $res->fetch_assoc())
             $this->specialityGroupIDs[(int) $row['groupID']] = 1;
-    }
-
-    /**
-     * Gets specialityID
-     * 
-     * @return int
-     */
-    public function getSpecialityID()
-    {
-        return $this->specialityID;
-    }
-
-    /**
-     * Gets speciality name
-     * 
-     * @return string
-     */
-    public function getSpecialityName()
-    {
-        return $this->specialityName;
     }
 
     /**

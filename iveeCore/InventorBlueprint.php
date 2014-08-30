@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for blueprints that can be used for inventing.
- * Inheritance: InventorBlueprint -> Blueprint -> Sellable -> Type.
+ * Inheritance: InventorBlueprint -> Blueprint -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -53,16 +53,16 @@ class InventorBlueprint extends Blueprint
     protected $datacoreSkillIDs;
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate InventorBlueprint objects instead.
+     * Constructor. Use \iveeCore\Type::getById() to instantiate InventorBlueprint objects instead.
      * 
-     * @param int $typeID of the InventorBlueprint object
+     * @param int $id of the InventorBlueprint object
      * 
      * @return \iveeCore\InventorBlueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
-        parent::__construct($typeID);
+        parent::__construct($id);
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
@@ -75,13 +75,13 @@ class InventorBlueprint extends Blueprint
             WHERE attributeID = 1115
             AND iam.activityID = 8
             AND iap.activityID = 8
-            AND iam.typeID = " . (int) $this->typeID . ';'
+            AND iam.typeID = " . $this->id . ';'
         );
 
         if ($res->num_rows < 1)
             self::throwException(
                 'TypeIdNotFoundException', 
-                "Inventor data for blueprintID=" . (int) $this->typeID ." not found"
+                "Inventor data for blueprintID=" . $this->id ." not found"
             );
 
         while ($row = $res->fetch_assoc()) {
@@ -142,7 +142,7 @@ class InventorBlueprint extends Blueprint
             );
 
         //get invented BP
-        $inventedBp = $typeClass::getType($inventedBpID);
+        $inventedBp = $typeClass::getById($inventedBpID);
 
         //get modifiers and test if inventing is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_INVENTING, $inventedBp->getProduct());
@@ -150,7 +150,7 @@ class InventorBlueprint extends Blueprint
         //calculate base cost, its the average of all possible invented BP's product base cost
         $baseCost = 0;
         foreach ($inventableBpIDs as $inventableBpID)
-            $baseCost += $typeClass::getType($inventableBpID)->getProductBaseCost();
+            $baseCost += $typeClass::getById($inventableBpID)->getProductBaseCost();
         $baseCost = $baseCost / count($inventableBpIDs);
 
         //with decryptor
@@ -186,7 +186,7 @@ class InventorBlueprint extends Blueprint
         $id->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING));
 
         foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_INVENTING) as $matID => $matData) {
-            $mat = $typeClass::getType($matID);
+            $mat = $typeClass::getById($matID);
 
             //calculate total quantity needed, applying all modifiers
             $totalNeeded = ceil($matData['q'] * $modifier['m']);
@@ -219,7 +219,7 @@ class InventorBlueprint extends Blueprint
     protected function getAndCheckDecryptor($decryptorID)
     {
         $typeClass = Config::getIveeClassName('Type');
-        $decryptor = $typeClass::getType($decryptorID);
+        $decryptor = $typeClass::getById($decryptorID);
 
         //check if decryptorID is actually a decryptor
         if (!($decryptor instanceof Decryptor))
@@ -295,7 +295,7 @@ class InventorBlueprint extends Blueprint
         $ret = array();
         $typeClass = Config::getIveeClassName('Type');
         foreach($this->getInventableBlueprintIDs() as $bpId)
-            $ret[$bpId] = $typeClass::getType($bpId);
+            $ret[$bpId] = $typeClass::getById($bpId);
         return $ret;
     }
 

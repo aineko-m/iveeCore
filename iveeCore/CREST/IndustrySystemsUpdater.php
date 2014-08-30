@@ -103,10 +103,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
      */
     protected function invalidateCaches()
     {
-        $cachePrefix = \iveeCore\Config::getCachePrefix();
-        $cacheClass  = \iveeCore\Config::getIveeClassName('Cache');
-        $cache = $cacheClass::instance();
-        foreach ($this->updatedIDs as $systemID)
-            $cache->deleteItem($cachePrefix . 'system_' . $systemID);
+        $assemblyLineClass  = \iveeCore\Config::getIveeClassName('SolarSystem');
+        $assemblyLineClass::getInstancePool()->deleteFromCache($this->updatedIDs);
     }
 }

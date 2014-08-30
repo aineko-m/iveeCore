@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for items that can result from reactions.
- * Inheritance: ReactionProduct -> Sellable -> Type.
+ * Inheritance: ReactionProduct -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -34,17 +34,17 @@ class ReactionProduct extends Sellable
     protected $productOfReactionIDs = array();
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate ReactionProduct objects instead.
+     * Constructor. Use \iveeCore\Type::getById() to instantiate ReactionProduct objects instead.
      * 
-     * @param int $typeID of the ReactionProduct object
+     * @param int $id of the ReactionProduct object
      * 
      * @return ReactionProduct
      * @throws Exception if typeID is not found
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
         //call parent constructor
-        parent::__construct($typeID);
+        parent::__construct($id);
 
         $sdeClass = Config::getIveeClassName('SDE');
 
@@ -53,7 +53,7 @@ class ReactionProduct extends Sellable
             "(SELECT reactionTypeID
             FROM invTypeReactions as itr
             JOIN invTypes as it ON it.typeID = itr.reactionTypeID
-            WHERE itr.typeID = " . (int) $this->typeID . "
+            WHERE itr.typeID = " . $this->id . "
             AND itr.input = 0
             AND it.published = 1)
             UNION
@@ -63,7 +63,7 @@ class ReactionProduct extends Sellable
             JOIN invTypeReactions as itr ON itr.typeID = it.typeID
             WHERE it.groupID = 428
             AND it.published = 1
-            AND materialTypeID = " . (int) $this->typeID . "
+            AND materialTypeID = " . $this->id . "
             AND itr.input = 0);"
         );
 
@@ -81,7 +81,7 @@ class ReactionProduct extends Sellable
         $typeClass = Config::getIveeClassName('Type');
         $ret = array();
         foreach ($this->productOfReactionIDs as $reactionID)
-            $ret[$reactionID] = $typeClass::getType($reactionID);
+            $ret[$reactionID] = $typeClass::getById($reactionID);
         
         return $ret;
     }

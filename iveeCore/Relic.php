@@ -20,7 +20,7 @@ namespace iveeCore;
  * either as there are a few key differences.
  *
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: Relic -> Sellable -> Type.
+ * Inheritance: Relic -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -86,17 +86,17 @@ class Relic extends Sellable
     protected $datacoreSkillIDs;
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate Relic objects instead.
+     * Constructor. Use \iveeCore\Type::getById() to instantiate Relic objects instead.
      *
-     * @param int $typeID of the Relic object
+     * @param int $id of the Relic object
      *
      * @return \iveeCore\Relic
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
         //call parent constructor
-        parent::__construct($typeID);
+        parent::__construct($id);
 
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
@@ -105,7 +105,7 @@ class Relic extends Sellable
         $res = $sde->query(
             'SELECT activityID, materialTypeID, quantity, consume
             FROM industryActivityMaterials
-            WHERE typeID = ' . (int) $this->typeID .';'
+            WHERE typeID = ' . $this->id .';'
         );
         //add materials to the array
         if ($res->num_rows > 0) {
@@ -123,7 +123,7 @@ class Relic extends Sellable
         $res = $sde->query(
             'SELECT activityID, skillID, level
             FROM industryActivitySkills
-            WHERE typeID = ' . (int) $this->typeID .';'
+            WHERE typeID = ' . $this->id .';'
         );
         //set skill data to array
         while ($row = $res->fetch_assoc()) {
@@ -138,7 +138,7 @@ class Relic extends Sellable
         $res = $sde->query(
             'SELECT activityID, time
             FROM industryActivity
-            WHERE typeID = ' . (int) $this->typeID .';'
+            WHERE typeID = ' . $this->id .';'
         );
         //set time data to array
         while ($row = $res->fetch_assoc())
@@ -159,14 +159,14 @@ class Relic extends Sellable
             AND iam.activityID = 7
             AND proba.activityID = 7
             AND t3BPprod.activityID = 1
-            AND iam.typeID = " . (int) $this->typeID . "
-            AND relicProd.typeID = " . (int) $this->typeID . ';'
+            AND iam.typeID = " . $this->id . "
+            AND relicProd.typeID = " . $this->id . ';'
         );
 
         if ($res->num_rows < 1)
             self::throwException(
                 'TypeIdNotFoundException', 
-                "ReverseEngineering data for Relic ID=" . (int) $this->typeID ." not found"
+                "ReverseEngineering data for Relic ID=" . $this->id ." not found"
             );
 
         while ($row = $res->fetch_assoc()) {
@@ -227,7 +227,7 @@ class Relic extends Sellable
             );
 
         //get reverse engineered BP
-        $reBP = $typeClass::getType($reverseEngineeredBpID);
+        $reBP = $typeClass::getById($reverseEngineeredBpID);
         $decryptor = $reBP->getReverseEngineeringDecryptor();
 
         //get modifiers and test if reverse engineering is possible with the given assemblyLines
@@ -238,7 +238,7 @@ class Relic extends Sellable
         $baseCost = $reBP->getProductBaseCost();
 
         $red = new $reverseEngineeringDataClass(
-            $reBP->getTypeID(),
+            $reBP->getId(),
             $this->getBaseTimeForActivity(ProcessData::ACTIVITY_REVERSE_ENGINEERING) * $modifier['t'],
             $baseCost * 0.02 * $modifier['c'],
             $this->calcReverseEngineeringProbability() * $decryptor->getProbabilityModifier(),
@@ -248,11 +248,11 @@ class Relic extends Sellable
             isset($modifier['teamID']) ? $modifier['teamID'] : null
         );
 
-        $red->addMaterial($decryptor->getTypeID(), 1);
+        $red->addMaterial($decryptor->getId(), 1);
         $red->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_REVERSE_ENGINEERING));
 
         foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_REVERSE_ENGINEERING) as $matID => $matData) {
-            $mat = $typeClass::getType($matID);
+            $mat = $typeClass::getById($matID);
 
             //calculate total quantity needed, applying all modifiers
             $totalNeeded = ceil($matData['q'] * $modifier['m']);

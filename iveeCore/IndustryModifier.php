@@ -109,7 +109,7 @@ class IndustryModifier
         $systemClass       = Config::getIveeClassName('SolarSystem');
         $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
         //instantiate system from ID
-        $system = $systemClass::getSolarSystem($solarSystemID);
+        $system = $systemClass::getById($solarSystemID);
 
         return static::getBySystemIdWithAssembly(
             $solarSystemID,
@@ -174,12 +174,12 @@ class IndustryModifier
         $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
         $teamClass         = Config::getIveeClassName('Team');
         //instantiate system from ID
-        $system = $systemClass::getSolarSystem($solarSystemID);
+        $system = $systemClass::getById($solarSystemID);
 
         //instantiate Teams from IDs
         $teams = array();
         foreach ($system->getTeamIDs() as $teamID) {
-            $team = $teamClass::getTeam($teamID);
+            $team = $teamClass::getById($teamID);
             $teams[$team->getActivityID()][$teamID] = $team;
         }
         //instantiate AssemblyLines from IDs
@@ -187,7 +187,7 @@ class IndustryModifier
         foreach ($assemblyLineTypeIDs as $activity => $activityAssemblyLineTypeIDs)
             foreach ($activityAssemblyLineTypeIDs as $assemblyLineTypeID)
                 $assemblyLines[$activity][$assemblyLineTypeID]
-                    = $assemblyLineClass::getAssemblyLine($assemblyLineTypeID);
+                    = $assemblyLineClass::getById($assemblyLineTypeID);
 
         return new static(
             $system,
@@ -498,8 +498,8 @@ class IndustryModifier
         $bestAssemblyLine = $this->getBestAssemblyLineForActivity($activityID, $type);
 
         $modifiers = $bestAssemblyLine->getModifiersForType($type);
-        $modifiers['assemblyLineTypeID'] = $bestAssemblyLine->getAssemblyLineTypeID();
-        $modifiers['solarSystemID'] = $this->getSolarSystem()->getSolarSystemID();
+        $modifiers['assemblyLineTypeID'] = $bestAssemblyLine->getId();
+        $modifiers['solarSystemID'] = $this->getSolarSystem()->getId();
         //get initial cost factor as system industry index and tax
         $modifiers['c'] = $modifiers['c'] 
             * $this->getSolarSystem()->getIndustryIndexForActivity($activityID) * $this->getTaxFactor();
@@ -511,7 +511,7 @@ class IndustryModifier
             foreach ($bestTeam->getModifiersForGroupID($type->getGroupID()) as $modType => $modValue)
                 $modifiers[$modType] = $modifiers[$modType] * $modValue;
 
-            $modifiers['teamID'] = $bestTeam->getTeamID();
+            $modifiers['teamID'] = $bestTeam->getId();
         }
 
         //factor in skill time modifiers if available

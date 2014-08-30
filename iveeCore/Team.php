@@ -16,6 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing industry teams
+ * Inheritance: Team -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -24,17 +25,18 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Team.php
  *
  */
-class Team
+class Team extends SdeTypeCommon
 {
     /**
-     * @var \iveeCore\InstancePool $instancePool (internal cache) for instantiated Team objects
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) Team objects
      */
-    private static $instancePool;
+    protected static $instancePool;
 
     /**
-     * @var int $teamID ID of the Team
+     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
      */
-    protected $teamID;
+    protected static $classNick = 'Team';
 
     /**
      * @var int $solarSystemID ID of the SolarSystem the Team is in
@@ -55,11 +57,6 @@ class Team
      * @var int $activityID ID of the activity the Team gives bonuses for
      */
     protected $activityID;
-
-    /**
-     * @var string $teamName name of the Team
-     */
-    protected $teamName;
 
     /**
      * @var float $costModifier the salary of the Team expressed as cost factor (> 1.0)
@@ -88,56 +85,29 @@ class Team
     protected $workerSpecialities;
 
     /**
-     * Initializes static InstancePool
+     * Method blocked as there is no safe way to get a Team by name
+     *
+     * @param string $name of requested Team
      *
      * @return void
+     * @throws \iveeCore\Exceptions\IveeCoreException
      */
-    private static function init()
+    public static function getIdByName($name)
     {
-        if (!isset(self::$instancePool)) {
-            $ipoolClass = Config::getIveeClassName('InstancePool');
-            self::$instancePool = new $ipoolClass('team_');
-        }
+        static::throwException('IveeCoreException', 'GetByName methods not implemented for Team');
     }
 
     /**
-     * Gets Team objects. Tries caches and instantiates new objects if necessary.
+     * Constructor. Use \iveeCore\Team::getById() to instantiate Team objects instead.
      *
-     * @param int $teamID of requested Team
-     *
-     * @return \iveeCore\Team
-     * @throws \iveeCore\Exceptions\TeamIdNotFoundException if the $teamID is not found
-     */
-    public static function getTeam($teamID)
-    {
-        if (!isset(self::$instancePool))
-            self::init();
-        
-        $teamID = (int) $teamID;
-        try {
-            return self::$instancePool->getObjById($teamID);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
-            //go to DB
-            $teamClass = Config::getIveeClassName('Team');
-            $team = new $teamClass($teamID);
-            //store Team object in instance pool (and cache if configured)
-            self::$instancePool->setIdObj($teamID, $team);
-            
-            return $team;
-        }
-    }
-
-    /**
-     * Constructor. Use \iveeCore\Team::getType() to instantiate Team objects instead.
-     *
-     * @param int $teamID of the Team
+     * @param int $id of the Team
      *
      * @return \iveeCore\Team
      * @throws \iveeCore\Exceptions\TeamIdNotFoundException if teamID is not found
      */
-    protected function __construct($teamID)
+    protected function __construct($id)
     {
-        $this->teamID = (int) $teamID;
+        $this->id = (int) $id;
 
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
@@ -146,20 +116,18 @@ class Team
             "SELECT solarSystemID, UNIX_TIMESTAMP(expiryTime) as expiryTime, UNIX_TIMESTAMP(creationTime) as
             creationTime, activityID, teamName, costModifier, specID, w0BonusID, w0BonusValue, w0SpecID, w1BonusID,
             w1BonusValue, w1SpecID, w2BonusID, w2BonusValue, w2SpecID, w3BonusID, w3BonusValue, w3SpecID
-            FROM iveeTeams WHERE teamID = " .  $this->teamID . ";"
+            FROM iveeTeams WHERE teamID = " .  $this->id . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('TeamIdNotFoundException');
-            throw new $exceptionClass("teamID ". $this->teamID . " not found");
-        }
+        if (empty($row))
+            static::throwException('TeamIdNotFoundException', "teamID ". $this->id . " not found");
 
         //set data to attributes
         $this->solarSystemID = (int) $row['solarSystemID'];
         $this->expiryTime    = (int) $row['expiryTime'];
         $this->creationTime  = (int) $row['creationTime'];
         $this->activityID    = (int) $row['activityID'];
-        $this->teamName      = $row['teamName'];
+        $this->name          = $row['teamName'];
         $this->costModifier  = 1.0 + $row['costModifier'] / 100; //convert percent to factor
         $this->specialityID  = (int) $row['specID'];
 
@@ -179,21 +147,11 @@ class Team
 
         $specialityClass = Config::getIveeClassName('Speciality');
         $this->workerSpecialities = array(
-            $specialityClass::getSpeciality((int) $row['w0SpecID']),
-            $specialityClass::getSpeciality((int) $row['w1SpecID']),
-            $specialityClass::getSpeciality((int) $row['w2SpecID']),
-            $specialityClass::getSpeciality((int) $row['w3SpecID'])
+            $specialityClass::getById((int) $row['w0SpecID']),
+            $specialityClass::getById((int) $row['w1SpecID']),
+            $specialityClass::getById((int) $row['w2SpecID']),
+            $specialityClass::getById((int) $row['w3SpecID'])
         );
-    }
-
-    /**
-     * Gets the ID of the Team
-     * 
-     * @return int
-     */
-    public function getTeamID()
-    {
-        return $this->teamID;
     }
 
     /**
@@ -234,16 +192,6 @@ class Team
     public function getActivityID()
     {
         return $this->activityID;
-    }
-
-    /**
-     * Gets the name of the Team
-     * 
-     * @return string
-     */
-    public function getTeamName()
-    {
-        return $this->teamName;
     }
 
     /**
@@ -361,10 +309,11 @@ class Team
                 $mods['t'] = $mods['t'] * (100 + $this->bonusValues[$workerID]) / 100;
             elseif ($this->bonusIDs[$workerID] == 1) //ME bonus
                 $mods['m'] = $mods['m'] * (100 + $this->bonusValues[$workerID]) / 100;
-            else{
-                $exceptionClass = Config::getIveeClassName('UnexpectedDataException');
-                throw new $exceptionClass("Unknown bonusID given for workedID=" . $workerID . " in teamID="
-                    . $this->getTeamID());
+            else {
+                static::throwException(
+                    'UnexpectedDataException',
+                    "Unknown bonus ID given for worked ID=" . $workerID . " in Team ID=" . $this->id
+                );
             }
         }
         return $mods;

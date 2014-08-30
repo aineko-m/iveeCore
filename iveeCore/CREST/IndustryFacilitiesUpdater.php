@@ -77,10 +77,7 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
      */
     protected function invalidateCaches()
     {
-        $cachePrefix = \iveeCore\Config::getCachePrefix();
-        $cacheClass  = \iveeCore\Config::getIveeClassName('Cache');
-        $cache = $cacheClass::instance();
-        foreach ($this->updatedIDs as $stationID)
-            $cache->deleteItem($cachePrefix . 'station_' . $stationID);
+        $assemblyLineClass  = \iveeCore\Config::getIveeClassName('AssemblyLine');
+        $assemblyLineClass::getInstancePool()->deleteFromCache($this->updatedIDs);
     }
 }

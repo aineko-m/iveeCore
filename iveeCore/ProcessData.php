@@ -203,7 +203,7 @@ class ProcessData
             throw new $exceptionClass("This process results in no new item");
         } else {
             $typeClass = Config::getIveeClassName('Type');
-            return $typeClass::getType($this->producesTypeID);
+            return $typeClass::getById($this->producesTypeID);
         }
     }
 
@@ -522,7 +522,7 @@ class ProcessData
 
         //iterate over materials
         foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount)
-            echo $amount . 'x ' . $typeClass::getType($typeID)->getName() . PHP_EOL;
+            echo $amount . 'x ' . $typeClass::getById($typeID)->getName() . PHP_EOL;
 
         echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost()) . "ISK" . PHP_EOL;
         echo "Slot cost: "     . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;

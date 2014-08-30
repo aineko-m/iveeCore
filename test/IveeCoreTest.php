@@ -48,9 +48,9 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 
     public function testBasicTypeMethods()
     {
-        $type = \iveeCore\Type::getType(22);
+        $type = \iveeCore\Type::getById(22);
         $this->assertTrue($type instanceof \iveeCore\Sellable);
-        $this->assertTrue($type->getTypeID() == 22);
+        $this->assertTrue($type->getId() == 22);
         $this->assertTrue($type->getGroupID() == 450);
         $this->assertTrue($type->getCategoryID() == 25);
         $this->assertTrue($type->getName() == 'Arkonor');
@@ -58,7 +58,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($type->getPortionSize() == 100);
         $this->assertTrue($type->getBasePrice() == 2174386.0);
         $this->assertTrue($type->isReprocessable());
-        $this->assertTrue(is_array($type->getTypeMaterials()));
+        $this->assertTrue(is_array($type->getMaterials()));
     }
     
     public function testGetTypeAndCache()
@@ -71,15 +71,15 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         \iveeCore\MemcachedWrapper::instance()->deleteItem('type_' . 645);
         
         //get type
-        $type = \iveeCore\Type::getType(645);
+        $type = \iveeCore\Type::getById(645);
         $this->assertTrue($type instanceof \iveeCore\Manufacturable);
         $this->assertTrue($type == \iveeCore\MemcachedWrapper::instance()->getItem('type_' . 645));
-        $this->assertTrue($type == \iveeCore\Type::getTypeByName('Dominix'));
+        $this->assertTrue($type == \iveeCore\Type::getByName('Dominix'));
     }
     
     public function testBasicBlueprintMethods()
     {
-        $type = \iveeCore\Type::getType(2047); //DC I Blueprint
+        $type = \iveeCore\Type::getById(2047); //DC I Blueprint
         $this->assertTrue($type instanceof \iveeCore\Blueprint);
         //stubs
         $type->getProduct();
@@ -94,7 +94,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $type->researchME($iMod, 0, 10);
         $type->researchTE($iMod, 0, 20);
         
-        $type = \iveeCore\Type::getType(22431); //Sin Blueprint
+        $type = \iveeCore\Type::getById(22431); //Sin Blueprint
         $type->copyInventManufacture($iMod);
 
     }
@@ -102,13 +102,13 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
     public function testAssemblyLine()
     {
         //test supercap modifiers on supercap assembly array
-        $assLine = \iveeCore\AssemblyLine::getAssemblyLine(10);
-        $type = \iveeCore\Type::getType(23919);
+        $assLine = \iveeCore\AssemblyLine::getById(10);
+        $type = \iveeCore\Type::getById(23919);
         $this->assertTrue(array('t' => 1, 'm' => 1, 'c' => 1) == $assLine->getModifiersForType($type));
 
         //test battleship modifiers on large ship assembly array
-        $type = \iveeCore\Type::getType(645);
-        $assLine = \iveeCore\AssemblyLine::getAssemblyLine(155);
+        $type = \iveeCore\Type::getById(645);
+        $assLine = \iveeCore\AssemblyLine::getById(155);
         $this->assertTrue(array('t' => 0.75, 'm' => 0.98, 'c' => 1) == $assLine->getModifiersForType($type));
     }
 
@@ -118,16 +118,16 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
      */
     public function testAssemblyLineException()
     {
-        $assLine = \iveeCore\AssemblyLine::getAssemblyLine(21);
-        $type = \iveeCore\Type::getType(23919);
+        $assLine = \iveeCore\AssemblyLine::getById(21);
+        $type = \iveeCore\Type::getById(23919);
         $assLine->getModifiersForType($type);
     }
 
 public function testManufacturing()
     {
 //        //Dominix - Test if extra materials are handled correctly when PE skill level < 5
-//        $mpd = \iveeCore\Type::getType(645)->getBlueprint()->manufacture(1, 10, 5, false, 4);
-//        $this->assertTrue($mpd->getProducedType()->getTypeID() == 645);
+//        $mpd = \iveeCore\Type::getById(645)->getBlueprint()->manufacture(1, 10, 5, false, 4);
+//        $this->assertTrue($mpd->getProducedType()->getId() == 645);
 //        $this->assertTrue($mpd->getTime() == 12000);
 //        $materialTarget = new \iveeCore\MaterialMap;
 //        $materialTarget->addMaterial(34, 10967499);
@@ -140,7 +140,7 @@ public function testManufacturing()
 //        $this->assertTrue($mpd->getMaterialMap() == $materialTarget);
 //
 //        //Improved Cloaking Device II - Tests if materials with recycle flag are handled correctly
-//        $mpd = \iveeCore\SDE::instance()->getTypeByName('Improved Cloaking Device II')->getBlueprint()->manufacture(1, -4, 0, false, 4);
+//        $mpd = \iveeCore\SDE::instance()->getByName('Improved Cloaking Device II')->getBlueprint()->manufacture(1, -4, 0, false, 4);
 //        $materialTarget = new \iveeCore\MaterialMap;
 //        $materialTarget->addMaterial(9840, 10);
 //        $materialTarget->addMaterial(9842, 5);
@@ -153,8 +153,8 @@ public function testManufacturing()
 //
 //        //test recursive building and adding ManufactureProcessData objects to ProcessData objects as sub-processes
 //        $pd = new \iveeCore\ProcessData();
-//        $pd->addSubProcessData(\iveeCore\SDE::instance()->getTypeByName('Archon')->getBlueprint()->manufacture(1, 2, 1, true, 5));
-//        $pd->addSubProcessData(\iveeCore\SDE::instance()->getTypeByName('Rhea')->getBlueprint()->manufacture(1, -2, 1, true, 5));
+//        $pd->addSubProcessData(\iveeCore\SDE::instance()->getByName('Archon')->getBlueprint()->manufacture(1, 2, 1, true, 5));
+//        $pd->addSubProcessData(\iveeCore\SDE::instance()->getByName('Rhea')->getBlueprint()->manufacture(1, -2, 1, true, 5));
 //        $materialTarget = new \iveeCore\MaterialMap;
 //        $materialTarget->addMaterial(34, 173107652);
 //        $materialTarget->addMaterial(35, 28768725);
@@ -191,7 +191,7 @@ public function testManufacturing()
     
     public function testReprocessing()
     {
-        $rmap = \iveeCore\Type::getTypeByName('Arkonor')->getReprocessingMaterialMap(100, 0.5, 0.95, 1.01);
+        $rmap = \iveeCore\Type::getByName('Arkonor')->getReprocessingMaterialMap(100, 0.5, 0.95, 1.01);
         $materialTarget = new \iveeCore\MaterialMap;
         $materialTarget->addMaterial(34, 4610);
         $materialTarget->addMaterial(36, 853);
@@ -199,7 +199,7 @@ public function testManufacturing()
         $materialTarget->addMaterial(40, 154);
         $this->assertTrue($rmap == $materialTarget);
 
-        $rmap = \iveeCore\Type::getTypeByName('Ark')->getReprocessingMaterialMap(1, 0.5, 1.0, 1.0);
+        $rmap = \iveeCore\Type::getByName('Ark')->getReprocessingMaterialMap(1, 0.5, 1.0, 1.0);
         $materialTarget = new \iveeCore\MaterialMap;
         $materialTarget->addMaterial(3828, 1238);
         $materialTarget->addMaterial(11399, 2063);
@@ -221,7 +221,7 @@ public function testManufacturing()
     public function testCopying()
     {
 //        //test copying of BPs that consume materials
-//        $cpd = SDE::instance()->getTypeByName('Prototype Cloaking Device I')->getBlueprint()->copy(3, 'max', true);
+//        $cpd = SDE::instance()->getByName('Prototype Cloaking Device I')->getBlueprint()->copy(3, 'max', true);
 //        $materialTarget = new \iveeCore\MaterialMap;
 //        $materialTarget->addMaterial(3812, 6000);
 //        $materialTarget->addMaterial(36, 24000);
@@ -233,7 +233,7 @@ public function testManufacturing()
 
     public function testInventing()
     {
-//        $ipd = SDE::instance()->getTypeByName('Ishtar Blueprint')->invent(23185);
+//        $ipd = SDE::instance()->getByName('Ishtar Blueprint')->invent(23185);
 //        $this->assertTrue($ipd->getProbability() == 0.312);
 //        $materialTarget = new \iveeCore\MaterialMap;
 //        $materialTarget->addMaterial(23185, 1);
@@ -245,7 +245,7 @@ public function testManufacturing()
 
     public function testCopyInventManufacture()
     {
-//        $cimpd = SDE::instance()->getTypeByName('Ishtar Blueprint')->copyInventManufacture(23185);
+//        $cimpd = SDE::instance()->getByName('Ishtar Blueprint')->copyInventManufacture(23185);
 //        $materialTarget = new \iveeCore\MaterialMap;
 //        $materialTarget->addMaterial(38, 9320.4);
 //        $materialTarget->addMaterial(3828, 420);
@@ -281,13 +281,13 @@ public function testManufacturing()
     
     public function testReaction()
     {
-        $reactionProduct = \iveeCore\Type::getTypeByName('Platinum Technite');
+        $reactionProduct = \iveeCore\Type::getByName('Platinum Technite');
         $this->assertTrue($reactionProduct instanceof \iveeCore\ReactionProduct);
         //test correct handling of reaction products that can result from alchemy + refining
         $this->assertTrue($reactionProduct->getReactionIDs() == array(17952, 32831));
 
         //test handling of alchemy reactions with refining + feedback
-        $rpd = \iveeCore\Type::getTypeByName('Unrefined Platinum Technite Reaction')->react(24 * 30, true, true, 0.5, 1);
+        $rpd = \iveeCore\Type::getByName('Unrefined Platinum Technite Reaction')->react(24 * 30, true, true, 0.5, 1);
         $inTarget = new \iveeCore\MaterialMap;
         $inTarget->addMaterial(16640, 72000);
         $inTarget->addMaterial(16644, 7200);

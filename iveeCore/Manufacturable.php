@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for all Types that can be manufactured
- * Inheritance: Manufacturable -> Sellable -> Type.
+ * Inheritance: Manufacturable -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -60,16 +60,16 @@ class Manufacturable extends Sellable
                 SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
                 averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
                 FROM iveeCrestPrices
-                WHERE typeID = " . (int) $this->typeID . "
+                WHERE typeID = " . $this->id . "
                 ORDER BY date DESC LIMIT 1
             ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND iap.activityID = 1
-            AND it.typeID = " . (int) $this->typeID . ";"
+            AND it.typeID = " . $this->id . ";"
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException ('TypeIdNotFoundException', "typeID " . (int) $this->typeID . " not found");
+            self::throwException ('TypeIdNotFoundException', "typeID " . $this->id . " not found");
 
         return $row;
     }
@@ -96,6 +96,6 @@ class Manufacturable extends Sellable
     public function getBlueprint()
     {
         $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getType($this->producedFromBlueprintID);
+        return $typeClass::getById($this->producedFromBlueprintID);
     }
 }

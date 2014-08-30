@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for all items that can be sold on the market.
- * Inheritance: Sellable -> Type.
+ * Inheritance: Sellable -> Type -> SdeTypeCommon
  *
  * Note that item objects from child classes are not necessarily sellable on the market.
  *
@@ -102,59 +102,59 @@ class Sellable extends Type
     protected $avg;
 
     /**
-     * Use \iveeCore\Type::getType() instead
+     * Use \iveeCore\Type::getById() instead
      *
-     * @param int $typeID of requested Type
+     * @param int $id of requested Type
      *
      * @return void
      * @throws \iveeCore\Exceptions\IveeCoreException always
      */
-    public static final function getType($typeID)
+    public static final function getById($id)
     {
         self::throwException(
             'IveeCoreException', 
-            "Use \iveeCore\Type::getType() to instantiate objects from Type and it's children"
+            "Use \iveeCore\Type::getById() to instantiate objects from Type and it's children"
         );
     }
 
     /**
-     * Use \iveeCore\Type::getTypeIdByName() instead
+     * Use \iveeCore\Type::getIdByName() instead
      *
-     * @param string $typeName of requested Type
-     *
-     * @return void
-     * @throws \iveeCore\Exceptions\IveeCoreException always
-     */
-    public static final function getTypeIdByName($typeName)
-    {
-        self::throwException('IveeCoreException', "Use \iveeCore\Type::getTypeIdByName() instead");
-    }
-
-    /**
-     * Use \iveeCore\Type::getTypeByName() instead
-     *
-     * @param string $typeName of requested Type
+     * @param string $name of requested Type
      *
      * @return void
      * @throws \iveeCore\Exceptions\IveeCoreException always
      */
-    public static final function getTypeByName($typeName)
+    public static final function getIdByName($name)
     {
-        self::throwException('IveeCoreException', "Use \iveeCore\Type::getTypeByName() instead");
+        self::throwException('IveeCoreException', "Use \iveeCore\Type::getIdByName() instead");
     }
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate Sellable objects instead.
+     * Use \iveeCore\Type::getByName() instead
+     *
+     * @param string $name of requested Type
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\IveeCoreException always
+     */
+    public static final function getByName($name)
+    {
+        self::throwException('IveeCoreException', "Use \iveeCore\Type::getByName() instead");
+    }
+
+    /**
+     * Constructor. Use \iveeCore\Type::getById() to instantiate Sellable objects instead.
      * 
-     * @param int $typeID of the Sellable object
+     * @param int $id of the Sellable object
      * 
      * @return \iveeCore\Sellable
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
         //call parent constructor
-        parent::__construct($typeID);
+        parent::__construct($id);
 
         $sdeClass      = Config::getIveeClassName('SDE');
         $sde           = $sdeClass::instance();
@@ -181,7 +181,7 @@ class Sellable extends Type
             FROM iveeTrackedPrices
             LEFT JOIN iveePrices AS ah ON iveeTrackedPrices.newestHistData = ah.id
             LEFT JOIN iveePrices AS ap ON iveeTrackedPrices.newestPriceData = ap.id
-            WHERE iveeTrackedPrices.typeID = " . (int) $this->typeID . "
+            WHERE iveeTrackedPrices.typeID = " . $this->id . "
             AND iveeTrackedPrices.regionID = " . (int) $defaults->getDefaultRegionID() . ";"
         )->fetch_assoc();
 
@@ -243,21 +243,21 @@ class Sellable extends Type
                 SELECT typeID, valueInt
                 FROM dgmTypeAttributes
                 WHERE attributeID = 790
-                AND typeID = " . (int) $this->typeID . "
+                AND typeID = " . $this->id . "
             ) as reproc ON reproc.typeID = it.typeID
             LEFT JOIN (
                 SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
                 averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
                 FROM iveeCrestPrices
-                WHERE typeID = " . (int) $this->typeID . "
+                WHERE typeID = " . $this->id . "
                 ORDER BY date DESC LIMIT 1
             ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
-            AND it.typeID = " . (int) $this->typeID . ";"
+            AND it.typeID = " . $this->id . ";"
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('TypeIdNotFoundException', "typeID ". (int) $this->typeID . " not found");
+            self::throwException('TypeIdNotFoundException', "typeID ". $this->id . " not found");
 
         return $row;
     }
@@ -313,9 +313,9 @@ class Sellable extends Type
         if (is_null($this->marketGroupID)) 
             $this->throwNotOnMarketException();
         elseif (is_null($this->buyPrice)) 
-            self::throwException('NoPriceDataAvailableException', "No buy price available for " . $this->typeName);
+            self::throwException('NoPriceDataAvailableException', "No buy price available for " . $this->name);
         elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
-            self::throwException('PriceDataTooOldException', 'Price data for ' . $this->typeName . ' is too old');
+            self::throwException('PriceDataTooOldException', 'Price data for ' . $this->name . ' is too old');
 
         return $this->buyPrice;
     }
@@ -336,9 +336,9 @@ class Sellable extends Type
         if (is_null($this->marketGroupID))
             $this->throwNotOnMarketException();
         elseif (is_null($this->sellPrice))
-            self::throwException('NoPriceDataAvailableException', "No sell price available for " . $this->typeName);
+            self::throwException('NoPriceDataAvailableException', "No sell price available for " . $this->name);
         elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
-            self::throwException('PriceDataTooOldException', 'Price data for ' . $this->typeName . ' is too old');
+            self::throwException('PriceDataTooOldException', 'Price data for ' . $this->name . ' is too old');
 
         return $this->sellPrice;
     }
@@ -383,7 +383,7 @@ class Sellable extends Type
             $toDateTS = (int) $toDateTS;
         
         if($fromDateTS > $toDateTS)
-            $this->throwException ('InvalidParameterValueException', "From-date is more recent than to-date");
+            static::throwException ('InvalidParameterValueException', "From-date is more recent than to-date");
 
         $res = $sde->query(
             "SELECT
@@ -400,7 +400,7 @@ class Sellable extends Type
             avgSell5OrderAge,
             avgBuy5OrderAge
             FROM iveePrices
-            WHERE typeID = " . (int) $this->typeID . "
+            WHERE typeID = " . $this->id . "
             AND regionID = " . (int) $regionID . "
             AND date > '" . date('Y-m-d', $fromDateTS) . "'
             AND date <= '" . date('Y-m-d', $toDateTS) . "';"
@@ -566,6 +566,6 @@ class Sellable extends Type
     protected function throwNotOnMarketException()
     {
         $exceptionClass = Config::getIveeClassName('NotOnMarketException');
-        throw new $exceptionClass($this->typeName . ' cannot be bought or sold on the market');
+        throw new $exceptionClass($this->name . ' cannot be bought or sold on the market');
     }
 }
