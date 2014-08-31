@@ -41,7 +41,7 @@ class SkillMap
      */
     public static function sanityCheckSkillLevel($skillLevel)
     {
-        if ($skillLevel < 0 OR $skillLevel > 5 OR $skillLevel%1 > 0) {
+        if ($skillLevel < 0 OR $skillLevel > 5 OR !is_int($skillLevel)) {
             $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
             throw new $exceptionClass("Skill level needs to be an integer between 0 and 5");
         }
