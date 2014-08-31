@@ -17,7 +17,7 @@ namespace iveeCore;
 /**
  * REBlueprint represents blueprints that can be reverse engineered from Relics.
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: REBlueprint ->Blueprint -> Sellable -> Type.
+ * Inheritance: REBlueprint -> Blueprint -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -50,17 +50,17 @@ class REBlueprint extends Blueprint
     protected $reverseEngineeringDecryptorID;
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate REBlueprint objects instead.
+     * Constructor. Use \iveeCore\Type::getById() to instantiate REBlueprint objects instead.
      *
-     * @param int $typeID of the REBlueprint object
+     * @param int $id of the REBlueprint object
      *
      * @return \iveeCore\REBlueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
         //call parent constructor
-        parent::__construct($typeID);
+        parent::__construct($id);
 
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
@@ -70,13 +70,13 @@ class REBlueprint extends Blueprint
             "SELECT typeID
             FROM industryActivityProducts
             WHERE activityID = 7
-            AND productTypeID = " . (int) $this->typeID . ';'
+            AND productTypeID = " . $this->id . ';'
         );
 
         if ($res->num_rows < 1)
             self::throwException(
                 'TypeIdNotFoundException', 
-                "Reverse Engineering data for REBlueprint ID=" . (int) $this->typeID ." not found"
+                "Reverse Engineering data for REBlueprint ID=" . $this->id ." not found"
             );
 
         while ($row = $res->fetch_assoc())
@@ -86,13 +86,13 @@ class REBlueprint extends Blueprint
         $res = $sde->query(
             "SELECT raceID
             FROM invTypes
-            WHERE typeID = " . (int) $this->productTypeID . ';'
+            WHERE typeID = " . $this->productId . ';'
         );
 
         if ($res->num_rows < 1)
             self::throwException(
                 'TypeIdNotFoundException', 
-                "Reverse Engineering data for REBlueprint ID=" . (int) $this->typeID ." not found"
+                "Reverse Engineering data for REBlueprint ID=" . $this->id ." not found"
             );
 
         //lookup decryptor based on race
@@ -128,7 +128,7 @@ class REBlueprint extends Blueprint
     public function getReverseEngineeringDecryptor()
     {
         $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getType($this->getReverseEngineeringDecryptorID());
+        return $typeClass::getById($this->getReverseEngineeringDecryptorID());
     }
 
     /**

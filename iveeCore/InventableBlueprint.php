@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for blueprints that can be invented.
- * Inheritance: InventableBlueprint -> Blueprint -> Sellable -> Type.
+ * Inheritance: InventableBlueprint -> Blueprint -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -61,11 +61,11 @@ class InventableBlueprint extends Blueprint
             WHERE it.published = 1
             AND prod.activityID = 1
             AND inv.activityID = 8
-            AND it.typeID = " . (int) $this->typeID . ";"
+            AND it.typeID = " . $this->id . ";"
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('TypeIdNotFoundException', "typeID ". (int) $this->typeID . " not found");
+            self::throwException('TypeIdNotFoundException', "typeID ". $this->id . " not found");
         
         return $row;
     }
@@ -85,6 +85,16 @@ class InventableBlueprint extends Blueprint
     }
 
     /**
+     * Returns the inventor blueprint ID
+     *
+     * @return int
+     */
+    public function getInventorBlueprintId()
+    {
+        return $this->inventedFromBlueprintID;
+    }
+
+    /**
      * Returns the inventor blueprint
      * 
      * @return InventorBlueprint
@@ -92,7 +102,7 @@ class InventableBlueprint extends Blueprint
     public function getInventorBlueprint()
     {
         $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getType($this->inventedFromBlueprintID);
+        return $typeClass::getById($this->getInventorBlueprintId());
     }
 
     /**
@@ -132,7 +142,7 @@ class InventableBlueprint extends Blueprint
      */
     public function invent(IndustryModifier $iMod, $decryptorID = null, $recursive = true)
     {
-        return $this->getInventorBlueprint()->invent($iMod, $this->typeID, $decryptorID, $recursive);
+        return $this->getInventorBlueprint()->invent($iMod, $this->id, $decryptorID, $recursive);
     }
 
     /**
@@ -147,6 +157,6 @@ class InventableBlueprint extends Blueprint
      */
     public function copyInventManufacture(IndustryModifier $iMod, $decryptorID = null, $recursive = true)
     {
-        return $this->getInventorBlueprint()->copyInventManufacture($iMod, $this->typeID, $decryptorID, $recursive);
+        return $this->getInventorBlueprint()->copyInventManufacture($iMod, $this->id, $decryptorID, $recursive);
     }
 }

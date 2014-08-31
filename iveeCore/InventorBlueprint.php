@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for blueprints that can be used for inventing.
- * Inheritance: InventorBlueprint -> Blueprint -> Sellable -> Type.
+ * Inheritance: InventorBlueprint -> Blueprint -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -53,16 +53,16 @@ class InventorBlueprint extends Blueprint
     protected $datacoreSkillIDs;
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate InventorBlueprint objects instead.
+     * Constructor. Use \iveeCore\Type::getById() to instantiate InventorBlueprint objects instead.
      * 
-     * @param int $typeID of the InventorBlueprint object
+     * @param int $id of the InventorBlueprint object
      * 
      * @return \iveeCore\InventorBlueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
-        parent::__construct($typeID);
+        parent::__construct($id);
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
@@ -75,13 +75,13 @@ class InventorBlueprint extends Blueprint
             WHERE attributeID = 1115
             AND iam.activityID = 8
             AND iap.activityID = 8
-            AND iam.typeID = " . (int) $this->typeID . ';'
+            AND iam.typeID = " . $this->id . ';'
         );
 
         if ($res->num_rows < 1)
             self::throwException(
                 'TypeIdNotFoundException', 
-                "Inventor data for blueprintID=" . (int) $this->typeID ." not found"
+                "Inventor data for blueprintID=" . $this->id ." not found"
             );
 
         while ($row = $res->fetch_assoc()) {
@@ -142,7 +142,7 @@ class InventorBlueprint extends Blueprint
             );
 
         //get invented BP
-        $inventedBp = $typeClass::getType($inventedBpID);
+        $inventedBp = $typeClass::getById($inventedBpID);
 
         //get modifiers and test if inventing is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_INVENTING, $inventedBp->getProduct());
@@ -150,13 +150,13 @@ class InventorBlueprint extends Blueprint
         //calculate base cost, its the average of all possible invented BP's product base cost
         $baseCost = 0;
         foreach ($inventableBpIDs as $inventableBpID)
-            $baseCost += $typeClass::getType($inventableBpID)->getProductBaseCost();
+            $baseCost += $typeClass::getById($inventableBpID)->getProductBaseCost();
         $baseCost = $baseCost / count($inventableBpIDs);
 
         //with decryptor
         if ($decryptorID > 0) {
             $decryptor = $this->getAndCheckDecryptor($decryptorID);
-            $id = new $inventionDataClass(
+            $idata = new $inventionDataClass(
                 $inventedBpID,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
@@ -168,9 +168,9 @@ class InventorBlueprint extends Blueprint
                 $modifier['assemblyLineTypeID'],
                 isset($modifier['teamID']) ? $modifier['teamID'] : null
             );
-            $id->addMaterial($decryptorID, 1);
+            $idata->addMaterial($decryptorID, 1);
         } else { //without decryptor
-            $id = new $inventionDataClass(
+            $idata = new $inventionDataClass(
                 $inventedBpID,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
@@ -183,28 +183,17 @@ class InventorBlueprint extends Blueprint
                 isset($modifier['teamID']) ? $modifier['teamID'] : null
             );
         }
-        $id->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING));
+        $idata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING));
 
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_INVENTING) as $matID => $matData) {
-            $mat = $typeClass::getType($matID);
-
-            //calculate total quantity needed, applying all modifiers
-            $totalNeeded = ceil($matData['q'] * $modifier['m']);
-
-            //if consume flag is set to 0, add to needed mats with quantity 0
-            if (isset($matData['c']) and $matData['c'] == 0) {
-                $id->addMaterial($matID, 0);
-                continue;
-            }
-
-            //if using recursive building and material is manufacturable, recurse!
-            if ($recursive AND $mat instanceof Manufacturable) {
-                $id->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
-            } else {
-                $id->addMaterial($matID, $totalNeeded);
-            }
-        }
-        return $id;
+        $this->addActivityMaterials(
+            $iMod,
+            $idata,
+            ProcessData::ACTIVITY_INVENTING,
+            $modifier['m'],
+            1,
+            $recursive
+        );
+        return $idata;
     }
 
     /**
@@ -219,7 +208,7 @@ class InventorBlueprint extends Blueprint
     protected function getAndCheckDecryptor($decryptorID)
     {
         $typeClass = Config::getIveeClassName('Type');
-        $decryptor = $typeClass::getType($decryptorID);
+        $decryptor = $typeClass::getById($decryptorID);
 
         //check if decryptorID is actually a decryptor
         if (!($decryptor instanceof Decryptor))
@@ -283,6 +272,20 @@ class InventorBlueprint extends Blueprint
     public function getInventableBlueprintIDs()
     {
         return array_keys($this->inventsBlueprintIDs);
+    }
+
+    /**
+     * Returns an array with the inventable blueprint instances
+     *
+     * @return array
+     */
+    public function getInventableBlueprints()
+    {
+        $ret = array();
+        $typeClass = Config::getIveeClassName('Type');
+        foreach($this->getInventableBlueprintIDs() as $bpId)
+            $ret[$bpId] = $typeClass::getById($bpId);
+        return $ret;
     }
 
     /**

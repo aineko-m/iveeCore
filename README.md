@@ -139,10 +139,10 @@ Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.
 require_once('/path/to/iveeCore/iveeCoreInit.php');
 
 //show the object for 'Damage Control I'
-print_r(\iveeCore\Type::getType(2046));
+print_r(\iveeCore\Type::getById(2046));
 
 //it's also possible to instantiate type objects by name
-$type = \iveeCore\Type::getTypeByName('Damage Control I');
+$type = \iveeCore\Type::getByName('Damage Control I');
 
 //Now lets looks at industry activities.
 //First we need to get an IndustryModifier object, which aggregates all the things
@@ -161,14 +161,13 @@ $manuData->printData();
 //get the data for making Damage Control I blueprint copy, inventing from it with a
 //decryptor and building from the resulting T2 BPC, recursively building the necessary
 //components
-$processData = \iveeCore\Type::getTypeByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 21583, true);
+$processData = \iveeCore\Type::getByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 21583, true);
 
 //get the raw profit for running an Unrefined Hyperflurite Reaction for 30 days,
 //taking into account the refining and material feedback steps,
 //using defaults for refinery efficiency and skills
-$reactionProcessData = \iveeCore\Type::getTypeByName('Unrefined Hyperflurite Reaction')->react(24 * 30, true, true);
+$reactionProcessData = \iveeCore\Type::getByName('Unrefined Hyperflurite Reaction')->react(24 * 30, true, true);
 echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit() . PHP_EOL;
-?>
 ```
 The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the library are Type and its child classes, ProcessData and its child classes and IndustryModifier.
 
@@ -179,7 +178,7 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
 - While the class model is a decent match for EvE's items, it is by no means perfect. For instance, you'll find Manufacturable and Blueprint objects which can't be sold on the market although they inherit from Sellable.
 - The EMDR client does some basic filtering on the incoming market data, but there is no measure against malicious clients uploading fake data. This isn't known to have caused any problems, but should be considered.
-- When automatically picking Teams and and AssemblyLines for use in industry actitivies, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
+- When automatically picking Teams and and AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
 - (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see Extending iveeCore below.
 
 Generals notes:

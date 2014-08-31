@@ -30,7 +30,7 @@
       <Entity type="Class">
         <Name>Util</Name>
         <Access>Public</Access>
-        <Location left="1049" top="312" />
+        <Location left="1137" top="368" />
         <Size width="233" height="121" />
         <Collapsed>False</Collapsed>
         <Member type="Method">public static string quantitiesToReadable(int val)</Member>
@@ -66,13 +66,13 @@
       </Entity>
       <Entity type="Comment">
         <Text>Exception classes omitted.</Text>
-        <Location left="805" top="372" />
+        <Location left="1540" top="1021" />
         <Size width="110" height="50" />
       </Entity>
       <Entity type="Class">
         <Name>Defaults</Name>
         <Access>Public</Access>
-        <Location left="1372" top="36" />
+        <Location left="1479" top="308" />
         <Size width="234" height="332" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static Defaults instance</Member>
@@ -94,13 +94,13 @@
       </Entity>
       <Entity type="Comment">
         <Text>trivial getters ommited.</Text>
-        <Location left="1623" top="391" />
+        <Location left="1730" top="663" />
         <Size width="91" height="50" />
       </Entity>
       <Entity type="Class">
         <Name>MyDefaults</Name>
         <Access>Public</Access>
-        <Location left="1399" top="418" />
+        <Location left="1506" top="690" />
         <Size width="179" height="77" />
         <Collapsed>False</Collapsed>
         <Modifier>None</Modifier>
@@ -172,13 +172,13 @@
       </Entity>
       <Entity type="Comment">
         <Text>For user implementation. Also serves as example for the intended way of extending iveeCore</Text>
-        <Location left="1416" top="547" />
+        <Location left="1523" top="819" />
         <Size width="144" height="81" />
       </Entity>
       <Entity type="Class">
         <Name>MemcachedWrapper</Name>
         <Access>Public</Access>
-        <Location left="764" top="36" />
+        <Location left="1137" top="36" />
         <Size width="203" height="247" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static MemcachedWrapper instance</Member>
@@ -196,7 +196,7 @@
       <Entity type="Interface">
         <Name>ICache</Name>
         <Access>Public</Access>
-        <Location left="1018" top="36" />
+        <Location left="1391" top="36" />
         <Size width="295" height="179" />
         <Collapsed>False</Collapsed>
         <Member type="Method">public static ICache instance()</Member>
@@ -280,12 +280,33 @@
       <Entity type="Class">
         <Name>FitParser</Name>
         <Access>Public</Access>
-        <Location left="1018" top="498" />
+        <Location left="1089" top="556" />
         <Size width="312" height="131" />
         <Collapsed>False</Collapsed>
         <Member type="Method">public static MaterialParseResult parseEftFit(string eftFit)</Member>
         <Member type="Method">public static MaterialParseResult parseXmlFit(DOMDocument fitDom)</Member>
         <Member type="Method">public static MaterialParseResult parseScanResult(string scanResult)</Member>
+        <Modifier>None</Modifier>
+      </Entity>
+      <Entity type="Class">
+        <Name>InstancePool</Name>
+        <Access>Public</Access>
+        <Location left="764" top="36" />
+        <Size width="315" height="298" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">protected string classNick</Member>
+        <Member type="Field">protected ICache cache</Member>
+        <Member type="Field">protected array idToObj</Member>
+        <Member type="Field">protected array nameToId</Member>
+        <Member type="Field">protected int poolHits</Member>
+        <Member type="Method">public InstancePool __construct(string cachePrefix, string namesCacheKey)</Member>
+        <Member type="Method">public void setObj(SdeTypeCommon obj)</Member>
+        <Member type="Method">public void setNamesToIds(array namesToIds)</Member>
+        <Member type="Method">public object getObjById(int id)</Member>
+        <Member type="Method">public int getIdByName(string name)</Member>
+        <Member type="Method">public void deleteFromCache(array ids)</Member>
+        <Member type="Method">public int getPoolHits()</Member>
+        <Member type="Method">public int getPooledTypeCount()</Member>
         <Modifier>None</Modifier>
       </Entity>
     </Entities>
@@ -302,12 +323,12 @@
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>1683</X>
-          <Y>366</Y>
+          <X>1790</X>
+          <Y>638</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>1642</X>
-          <Y>332</Y>
+          <X>1749</X>
+          <Y>604</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="7" second="5">
@@ -350,6 +371,15 @@
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
+      <Relationship type="Association" first="22" second="12">
+        <Label>
+        </Label>
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+        <Direction>Unidirectional</Direction>
+        <AssociationType>Aggregation</AssociationType>
+        <EndMultiplicity>0..1</EndMultiplicity>
+      </Relationship>
     </Relationships>
   </ProjectItem>
   <ProjectItem type="NClass.DiagramEditor.ClassDiagram.Diagram" assembly="NClass.DiagramEditor, Version=2.4.1823.0, Culture=neutral, PublicKeyToken=null">
@@ -359,7 +389,7 @@
       <Entity type="Class">
         <Name>Reaction</Name>
         <Access>Public</Access>
-        <Location left="144" top="1791" />
+        <Location left="99" top="1354" />
         <Size width="278" height="216" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array cycleInputMaterial</Member>
@@ -375,7 +405,7 @@
       <Entity type="Class">
         <Name>Relic</Name>
         <Access>Public</Access>
-        <Location left="1023" top="1597" />
+        <Location left="975" top="1148" />
         <Size width="339" height="434" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array activityMaterials</Member>
@@ -404,19 +434,20 @@
       <Entity type="Class">
         <Name>Manufacturable</Name>
         <Access>Public</Access>
-        <Location left="58" top="1597" />
-        <Size width="180" height="145" />
+        <Location left="10" top="1148" />
+        <Size width="180" height="162" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int producedFromBlueprintID</Member>
         <Member type="Method">protected array queryAttributes()</Member>
         <Member type="Method">protected void setAttributes(array row)</Member>
+        <Member type="Method">public int getBlueprintId()</Member>
         <Member type="Method">public Blueprint getBlueprint()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>ReactionProduct</Name>
         <Access>Public</Access>
-        <Location left="342" top="1597" />
+        <Location left="294" top="1148" />
         <Size width="235" height="145" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array productOfReactionIDs</Member>
@@ -428,7 +459,7 @@
       <Entity type="Class">
         <Name>Decryptor</Name>
         <Access>Public</Access>
-        <Location left="1408" top="1597" />
+        <Location left="1360" top="1148" />
         <Size width="219" height="281" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int teModifier</Member>
@@ -448,43 +479,36 @@
       <Entity type="Class">
         <Name>Type</Name>
         <Access>Public</Access>
-        <Location left="632" top="43" />
-        <Size width="339" height="757" />
+        <Location left="1027" top="100" />
+        <Size width="339" height="638" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">private static array _types</Member>
-        <Member type="Field">private static array _typeNames</Member>
-        <Member type="Field">private static int _internalCacheHit</Member>
-        <Member type="Field">protected int typeID</Member>
+        <Member type="Field">protected static InstancePool instancePool</Member>
+        <Member type="Field">protected static string classNick</Member>
         <Member type="Field">protected int groupID</Member>
         <Member type="Field">protected int categoryID</Member>
-        <Member type="Field">protected String typeName</Member>
         <Member type="Field">protected float volume</Member>
         <Member type="Field">protected int portionSize</Member>
         <Member type="Field">protected int basePrice</Member>
-        <Member type="Field">protected array typeMaterials</Member>
+        <Member type="Field">protected array materials</Member>
         <Member type="Field">protected int reprocessingSkillID</Member>
         <Member type="Field">protected float crestAveragePrice</Member>
         <Member type="Field">protected float crestAdjustedPrice</Member>
         <Member type="Field">protected int crestPriceDate</Member>
-        <Member type="Method">public static Type getType(int typeID)</Member>
-        <Member type="Method">public static int getTypeIdByName(string typeName)</Member>
-        <Member type="Method">protected static void loadTypeNames()</Member>
-        <Member type="Method">public static bool deleteTypesFromCache(array typeIDs)</Member>
-        <Member type="Method">public static Type factory(int typeID, array subtypeInfo)</Member>
-        <Member type="Method">protected static array getSubtypeInfo(int typeID)</Member>
-        <Member type="Method">protected static String decideType(array subtypeInfo)</Member>
+        <Member type="Method">public static Type getById(int id)</Member>
+        <Member type="Method">protected static void loadNames()</Member>
+        <Member type="Method">private static Type factory(int typeID, array subtypeInfo)</Member>
+        <Member type="Method">private static array getSubtypeInfo(int typeID)</Member>
+        <Member type="Method">private static String decideType(array subtypeInfo)</Member>
         <Member type="Method">protected Type __construct(int typeID)</Member>
         <Member type="Method">protected array queryAttributes()</Member>
         <Member type="Method">protected void setAttributes(array row)</Member>
-        <Member type="Method">public int getTypeID()</Member>
         <Member type="Method">public int getGroupID()</Member>
         <Member type="Method">public int getCategoryID()</Member>
-        <Member type="Method">public String getName()</Member>
         <Member type="Method">public float getVolume()</Member>
         <Member type="Method">public int getPortionSize()</Member>
         <Member type="Method">public int getBasePrice()</Member>
         <Member type="Method">public bool isReprocessable()</Member>
-        <Member type="Method">public array getTypeMaterials()</Member>
+        <Member type="Method">public array getMaterials()</Member>
         <Member type="Method">public int getReprocessingSkillID()</Member>
         <Member type="Method">public int getCrestPriceDate()</Member>
         <Member type="Method">public float getCrestAveragePrice(int maxPriceDataAge)</Member>
@@ -496,8 +520,8 @@
       <Entity type="Class">
         <Name>Sellable</Name>
         <Access>Public</Access>
-        <Location left="632" top="860" />
-        <Size width="339" height="655" />
+        <Location left="584" top="361" />
+        <Size width="339" height="706" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int marketGroupID</Member>
         <Member type="Field">protected int priceDate</Member>
@@ -513,6 +537,9 @@
         <Member type="Field">protected float low</Member>
         <Member type="Field">protected float high</Member>
         <Member type="Field">protected float avg</Member>
+        <Member type="Method">public static final void getType(int id)</Member>
+        <Member type="Method">public static final void getTypeIdByName(string name)</Member>
+        <Member type="Method">public static final void getTypeByName(string name)</Member>
         <Member type="Method">protected Sellable __construct(int typeID)</Member>
         <Member type="Method">protected array queryAttributes()</Member>
         <Member type="Method">protected void setAttributes(array row)</Member>
@@ -538,10 +565,10 @@
       <Entity type="Class">
         <Name>Blueprint</Name>
         <Access>Public</Access>
-        <Location left="632" top="1597" />
-        <Size width="339" height="553" />
+        <Location left="584" top="1148" />
+        <Size width="339" height="570" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">protected int productTypeID</Member>
+        <Member type="Field">protected int productId</Member>
         <Member type="Field">protected int maxProductionLimit</Member>
         <Member type="Field">protected int rank</Member>
         <Member type="Field">protected array activityMaterials</Member>
@@ -558,9 +585,10 @@
         <Member type="Method">public CopyData copy(IndustryModifier iMod, int copies, int runs, bool recursive)</Member>
         <Member type="Method">public ResearchMEProcessData researchME(IndustryModifier iMod, int startME, int endME, bool recursive)</Member>
         <Member type="Method">public ResearchTEProcessData researchTE(IndustryModifier iMod, int startTE, int endTE, bool recursive)</Member>
+        <Member type="Method">protected void addActivityMaterials(IndustryModifier iMod, ProcessData pd, int activityId, float materialFactor, float numPortions, bool recursive)</Member>
         <Member type="Method">public array getMaterials()</Member>
         <Member type="Method">public array getMaterialsForActivity(int activityID)</Member>
-        <Member type="Method">public int getProductTypeID()</Member>
+        <Member type="Method">public int getProductId()</Member>
         <Member type="Method">public Manufacturable getProduct()</Member>
         <Member type="Method">public SkillMap getSkillMapForActivity(int activityID)</Member>
         <Member type="Method">public int getBaseTimeForActivity(int activityID)</Member>
@@ -574,8 +602,8 @@
       <Entity type="Class">
         <Name>InventorBlueprint</Name>
         <Access>Public</Access>
-        <Location left="632" top="2228" />
-        <Size width="339" height="264" />
+        <Location left="584" top="1805" />
+        <Size width="339" height="281" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array inventsBlueprintIDsChance</Member>
         <Member type="Field">protected int decryptorGroupID</Member>
@@ -586,6 +614,7 @@
         <Member type="Method">protected Decryptor getAndCheckDecryptor(int decryptorID)</Member>
         <Member type="Method">public ManufactureData copyInventManufacture(IndustryModifier iMod, int inventedBpID, int decryptorID, bool recursive)</Member>
         <Member type="Method">protected array getInventableBlueprintIDs()</Member>
+        <Member type="Method">protected array getInventableBlueprints()</Member>
         <Member type="Method">public array getDecryptorIDs()</Member>
         <Member type="Method">public float calcInventionChance(int inventedBpID, int metaLevel)</Member>
         <Modifier>None</Modifier>
@@ -593,12 +622,13 @@
       <Entity type="Class">
         <Name>InventableBlueprint</Name>
         <Access>Public</Access>
-        <Location left="247" top="2228" />
-        <Size width="339" height="216" />
+        <Location left="199" top="1805" />
+        <Size width="339" height="230" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int inventedFromBlueprintID</Member>
         <Member type="Method">protected array queryAttributes()</Member>
         <Member type="Method">protected void setAttributes(array row)</Member>
+        <Member type="Method">public int getInventorBlueprintId()</Member>
         <Member type="Method">public InventableBlueprint getInventorBlueprint()</Member>
         <Member type="Method">public void getBuyPrice(int maxPriceDataAge)</Member>
         <Member type="Method">public void getSellPrice(int maxPriceDataAge)</Member>
@@ -609,7 +639,7 @@
       <Entity type="Class">
         <Name>REBlueprint</Name>
         <Access>Public</Access>
-        <Location left="1023" top="2228" />
+        <Location left="975" top="1805" />
         <Size width="230" height="216" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static array raceDecryptor</Member>
@@ -620,12 +650,27 @@
         <Member type="Method">public int getReverseEngineeringDecryptorID()</Member>
         <Modifier>None</Modifier>
       </Entity>
+      <Entity type="Class">
+        <Name>SdeTypeCommon</Name>
+        <Access>Public</Access>
+        <Location left="584" top="10" />
+        <Size width="339" height="264" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">protected int id</Member>
+        <Member type="Field">protected string name</Member>
+        <Member type="Method">protected static void init()</Member>
+        <Member type="Method">protected static SdeTypeCommon getById(int id)</Member>
+        <Member type="Method">protected static int getIdByName(string name)</Member>
+        <Member type="Method">protected static SdeTypeCommon getByName(string name)</Member>
+        <Member type="Method">protected static void loadNames()</Member>
+        <Member type="Method">protected static InstancePool getInstancePool()</Member>
+        <Member type="Method">protected static void throwException(string exceptionName, string message, int code, Exception previous)</Member>
+        <Member type="Method">public int getId()</Member>
+        <Member type="Method">public string getName()</Member>
+        <Modifier>None</Modifier>
+      </Entity>
     </Entities>
     <Relationships>
-      <Relationship type="Generalization" first="6" second="5">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-      </Relationship>
       <Relationship type="Generalization" first="7" second="6">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
@@ -658,16 +703,20 @@
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
+      <Relationship type="Generalization" first="6" second="5">
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+      </Relationship>
+      <Relationship type="Generalization" first="5" second="11">
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+      </Relationship>
       <Relationship type="Generalization" first="0" second="6">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>291</X>
-          <Y>1556</Y>
-        </BendPoint>
-        <BendPoint relativeToStartShape="False">
-          <X>801</X>
-          <Y>1556</Y>
+          <X>245</X>
+          <Y>1123</Y>
         </BendPoint>
       </Relationship>
     </Relationships>
@@ -908,13 +957,11 @@
       <Entity type="Class">
         <Name>AssemblyLine</Name>
         <Access>Public</Access>
-        <Location left="821" top="42" />
-        <Size width="333" height="485" />
+        <Location left="833" top="146" />
+        <Size width="333" height="434" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">private static array _assemblyLines</Member>
-        <Member type="Field">private static int _internalCacheHit</Member>
-        <Member type="Field">protected int assemblyLineTypeID</Member>
-        <Member type="Field">protected string assemblyLineTypeName</Member>
+        <Member type="Field">protected static InstancePool instancePool</Member>
+        <Member type="Field">protected static string classNick</Member>
         <Member type="Field">protected float baseTimeMultiplier</Member>
         <Member type="Field">protected float baseMaterialMultiplier</Member>
         <Member type="Field">protected float baseCostMultiplier</Member>
@@ -924,9 +971,8 @@
         <Member type="Method">public static AssemblyLine getAssemblyLine(int assemblyLineTypeID)</Member>
         <Member type="Method">public static array getBestPosAssemblyLineTypeIDs(float systemSecurity)</Member>
         <Member type="Method">public static array getHisecStationAssemblyLineTypeIDs()</Member>
-        <Member type="Method">protected AssemblyLine __construct(int assemblyLineTypeID)</Member>
-        <Member type="Method">public int getAssemblyLineTypeID()</Member>
-        <Member type="Method">public string getAssemblyTypeName()</Member>
+        <Member type="Method">public static void getIdByName()</Member>
+        <Member type="Method">protected AssemblyLine __construct(int id)</Member>
         <Member type="Method">public float getBaseTimeMultiplier()</Member>
         <Member type="Method">public float getBaseMaterialMultiplier()</Member>
         <Member type="Method">public float getBaseCostMultiplier()</Member>
@@ -980,13 +1026,10 @@
         <Name>SolarSystem</Name>
         <Access>Public</Access>
         <Location left="371" top="705" />
-        <Size width="384" height="604" />
+        <Size width="384" height="519" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">private static array _systems</Member>
-        <Member type="Field">private static array _systemNames</Member>
-        <Member type="Field">private static int _internalCacheHit</Member>
-        <Member type="Field">protected int solarSystemID</Member>
-        <Member type="Field">protected string systemName</Member>
+        <Member type="Field">protected static InstancePool instancePool</Member>
+        <Member type="Field">protected static string classNick</Member>
         <Member type="Field">protected int regionID</Member>
         <Member type="Field">protected int constellationID</Member>
         <Member type="Field">protected float security</Member>
@@ -994,12 +1037,8 @@
         <Member type="Field">protected array industryIndices</Member>
         <Member type="Field">protected array stationIDs</Member>
         <Member type="Field">protected array teamIDs</Member>
-        <Member type="Method">public static SolarSystem getSolarSystem(int solarSystemID)</Member>
-        <Member type="Method">public static int getSolarSystemIdByName(string solarSystemName)</Member>
-        <Member type="Method">public static SolarSystem getSolarSystemByName(string solarSystemName)</Member>
-        <Member type="Method">protected static void loadSolarSystemNames()</Member>
-        <Member type="Method">public static bool deleteSolarSystemsFromCache(array solarSystemIDs)</Member>
-        <Member type="Method">protected SolarSystem __construct(int solarSystemID)</Member>
+        <Member type="Method">protected static void loadNames()</Member>
+        <Member type="Method">protected SolarSystem __construct(int id)</Member>
         <Member type="Method">public int getSolarSystemID()</Member>
         <Member type="Method">public string getSolarSystemName()</Member>
         <Member type="Method">public int getRegionID()</Member>
@@ -1013,18 +1052,18 @@
         <Member type="Method">public array getIndustryIndices(int maxIndexDataAge)</Member>
         <Member type="Method">public float getIndustryIndexForActivity(int activityID, int maxIndexDataAge)</Member>
         <Member type="Method">public void setIndustryIndices(array indices)</Member>
+        <Member type="Method">public static IndustryModifier getIndustryModifierForPos(float tax)</Member>
+        <Member type="Method">public static IndustryModifier getIndustryModifierForAllNpcStations()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>Station</Name>
         <Access>Public</Access>
         <Location left="833" top="705" />
-        <Size width="310" height="485" />
+        <Size width="310" height="417" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">private static array _stations</Member>
-        <Member type="Field">private static int _internalCacheHit</Member>
-        <Member type="Field">protected int stationID</Member>
-        <Member type="Field">protected string stationName</Member>
+        <Member type="Field">protected static InstancePool instancePool</Member>
+        <Member type="Field">protected static string classNick</Member>
         <Member type="Field">protected int solarSystemID</Member>
         <Member type="Field">protected int operationID</Member>
         <Member type="Field">protected int stationTypeID</Member>
@@ -1032,11 +1071,8 @@
         <Member type="Field">protected float reprocessingEfficiency</Member>
         <Member type="Field">protected float tax</Member>
         <Member type="Field">protected array assemblyLineTypeIDs</Member>
-        <Member type="Method">public static Station getStation(int stationID)</Member>
-        <Member type="Method">public static bool deleteStationsFromCache(array stationIDs)</Member>
-        <Member type="Method">protected Station __construct(int stationID)</Member>
-        <Member type="Method">public int getStationID()</Member>
-        <Member type="Method">public string getStationName()</Member>
+        <Member type="Method">protected static void loadNames()</Member>
+        <Member type="Method">protected Station __construct(int id)</Member>
         <Member type="Method">public int getSolarSystemID()</Member>
         <Member type="Method">public SolarSystem getSolarSystem()</Member>
         <Member type="Method">public int getOperationID()</Member>
@@ -1045,35 +1081,32 @@
         <Member type="Method">public float getTax()</Member>
         <Member type="Method">public array getAssemblyLineTypeIDs()</Member>
         <Member type="Method">public array getAssemblyLineTypeIDsForActivity(int activityID)</Member>
+        <Member type="Method">public IndustryModifier getIndustryModifier()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>Team</Name>
         <Access>Public</Access>
-        <Location left="48" top="297" />
-        <Size width="256" height="587" />
+        <Location left="44" top="330" />
+        <Size width="256" height="519" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">private static array _teams</Member>
-        <Member type="Field">private static int _internalCacheHit</Member>
-        <Member type="Field">protected int teamID</Member>
+        <Member type="Field">protected static InstancePool instancePool</Member>
+        <Member type="Field">protected static string classNick</Member>
         <Member type="Field">protected int solarSystemID</Member>
         <Member type="Field">protected int creationTime</Member>
         <Member type="Field">protected int expiryTime</Member>
         <Member type="Field">protected int activityID</Member>
-        <Member type="Field">protected string teamName</Member>
         <Member type="Field">protected float costModifier</Member>
         <Member type="Field">protected int specialityID</Member>
         <Member type="Field">protected array bonusIDs</Member>
         <Member type="Field">protected array bonusValues</Member>
         <Member type="Field">protected array workerSpecialities</Member>
-        <Member type="Method">public static Team getTeam(int teamID)</Member>
-        <Member type="Method">protected Team __construct(int teamID)</Member>
-        <Member type="Method">public int getTeamID()</Member>
+        <Member type="Method">protected static void getIdByName()</Member>
+        <Member type="Method">protected Team __construct(int id)</Member>
         <Member type="Method">public int getSolarSystemID()</Member>
         <Member type="Method">public int getCreationTime()</Member>
         <Member type="Method">public int getExpiryTime()</Member>
         <Member type="Method">public int getActivityID()</Member>
-        <Member type="Method">public string getTeamName()</Member>
         <Member type="Method">public float getCostModifier()</Member>
         <Member type="Method">public int getSpecialityID()</Member>
         <Member type="Method">public array getBonusIDs()</Member>
@@ -1088,20 +1121,22 @@
       <Entity type="Class">
         <Name>Speciality</Name>
         <Access>Public</Access>
-        <Location left="59" top="952" />
-        <Size width="230" height="247" />
+        <Location left="56" top="914" />
+        <Size width="230" height="196" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">private static array _specialities</Member>
-        <Member type="Field">private static int _internalCacheHit</Member>
-        <Member type="Field">protected int specialityID</Member>
-        <Member type="Field">protected string specialityName</Member>
+        <Member type="Field">protected static InstancePool instancePool</Member>
+        <Member type="Field">protected static string classNick</Member>
         <Member type="Field">protected array specialityGroupIDs</Member>
-        <Member type="Method">public static Speciality getSpeciality(int specialityID)</Member>
-        <Member type="Method">protected Speciality __construct(int specialityID)</Member>
-        <Member type="Method">public int getSpecialityID()</Member>
+        <Member type="Method">protected static void getIdByName()</Member>
+        <Member type="Method">protected Speciality __construct(int id)</Member>
         <Member type="Method">public array getSpecialityGroupIDs()</Member>
         <Member type="Method">public bool appliesToGroupID(int groupID)</Member>
         <Modifier>None</Modifier>
+      </Entity>
+      <Entity type="Comment">
+        <Text>All these classes except IndustryModifier inherit from SdeTypeCommon, omitted for readibility</Text>
+        <Location left="97" top="121" />
+        <Size width="143" height="84" />
       </Entity>
     </Entities>
     <Relationships>
@@ -1113,24 +1148,6 @@
         <BendPoint relativeToStartShape="True">
           <X>780</X>
           <Y>784</Y>
-        </BendPoint>
-        <Direction>Unidirectional</Direction>
-        <AssociationType>Aggregation</AssociationType>
-        <StartMultiplicity>1</StartMultiplicity>
-        <EndMultiplicity>0..*</EndMultiplicity>
-      </Relationship>
-      <Relationship type="Association" first="2" second="4">
-        <Label>
-        </Label>
-        <StartOrientation>Horizontal</StartOrientation>
-        <EndOrientation>Horizontal</EndOrientation>
-        <BendPoint relativeToStartShape="True">
-          <X>329</X>
-          <Y>782</Y>
-        </BendPoint>
-        <BendPoint relativeToStartShape="False">
-          <X>345</X>
-          <Y>782</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
@@ -1179,6 +1196,27 @@
         <Direction>Unidirectional</Direction>
         <AssociationType>Composition</AssociationType>
         <EndMultiplicity>1..*</EndMultiplicity>
+      </Relationship>
+      <Relationship type="Association" first="4" second="5">
+        <Label>
+        </Label>
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
+        <Direction>Unidirectional</Direction>
+        <AssociationType>Composition</AssociationType>
+        <EndMultiplicity>5</EndMultiplicity>
+      </Relationship>
+      <Relationship type="Association" first="2" second="4">
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+        <BendPoint relativeToStartShape="True">
+          <X>346</X>
+          <Y>780</Y>
+        </BendPoint>
+        <Direction>Unidirectional</Direction>
+        <AssociationType>Aggregation</AssociationType>
+        <StartMultiplicity>1</StartMultiplicity>
+        <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
     </Relationships>
   </ProjectItem>

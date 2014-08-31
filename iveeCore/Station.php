@@ -16,6 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing stations
+ * Inheritance: Station -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -24,27 +25,18 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Station.php
  *
  */
-class Station
+class Station extends SdeTypeCommon
 {
     /**
-     * @var array $_stations acts as internal Station object cache, stationID => Station.
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) Station objects
      */
-    private static $_stations;
-
+    protected static $instancePool;
+    
     /**
-     * @var int $_internalCacheHit counter for the internal Station cache hits
+     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
      */
-    private static $_internalCacheHit = 0;
-
-    /**
-     * @var int $stationID the ID of this Station.
-     */
-    protected $stationID;
-
-    /**
-     * @var string $stationName the name of this Station.
-     */
-    protected $stationName;
+    protected static $classNick = 'Station';
 
     /**
      * @var int $solarSystemID the ID of SolarSystem this Station is in.
@@ -83,101 +75,60 @@ class Station
     protected $assemblyLineTypeIDs = array();
 
     /**
-     * Main function for getting Station objects. Tries caches and instantiates new objects if necessary.
+     * Loads all Station names from DB to PHP
      *
-     * @param int $stationID of requested Station
-     *
-     * @return \iveeCore\Station
-     * @throws \iveeCore\Exceptions\StationIdNotFoundException if the stationID is not found
+     * @return void
      */
-    public static function getStation($stationID)
+    protected static function loadNames()
     {
-        $stationID = (int) $stationID;
-        //try php array first
-        if (isset(self::$_stations[$stationID])) {
-            //count internal cache hit
-            self::$_internalCacheHit++;
-            return self::$_stations[$stationID];
-        } else {
-            $stationClass = Config::getIveeClassName('Station');
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    $station = $cache->getItem('station_' . $stationID);
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //go to DB
-                    $station = new $stationClass($stationID);
-                    //store object in cache
-                    $cache->setItem($station, 'station_' . $stationID);
-                }
-            } else
-                //not using memcached, go to DB
-                $station = new $stationClass($stationID);
+        //lookup SDE class
+        $sdeClass = Config::getIveeClassName('SDE');
 
-            //store object in internal cache
-            self::$_stations[$stationID] = $station;
-            return $station;
-        }
-    }
+        $res = $sdeClass::instance()->query(
+            "SELECT stationID, stationName 
+            FROM staStations;"
+        );
 
-    /**
-     * Removes all stationIDs given in array from cache. 
-     * If using memcached, requires php5-memcached version >= 2.0.0
-     *
-     * @param array &$stationIDs with all the IDs to be removed from cache
-     *
-     * @return bool on success
-     */
-    public static function deleteStationsFromCache(&$stationIDs)
-    {
-        $cacheKeysToDelete = array();
-        $cachePrefix = Config::getCachePrefix();
-        foreach ($stationIDs as $stationID)
-            $cacheKeysToDelete[] = $cachePrefix . 'station_' . $stationID;
-
-        $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
-        return $cacheClass::instance()->deleteMulti($cacheKeysToDelete);
+        $namesToIds = array();
+        while ($row = $res->fetch_assoc())
+            $namesToIds[$row['stationName']] = (int) $row['stationID'];
+        
+        static::$instancePool->setNamesToIds($namesToIds);
     }
 
     /**
      * Constructor. Use \iveeCore\Station::getStation() to instantiate Station objects instead.
      *
-     * @param int $stationID of the Station
+     * @param int $id of the Station
      *
      * @return \iveeCore\Station
      * @throws \iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
      * @throws \iveeCore\Exceptions\IveeCoreException if trying to instantiate a player built outpost
      */
-    protected function __construct($stationID)
+    protected function __construct($id)
     {
-        $this->stationID = (int) $stationID;
-        if ($this->stationID >= 61000000) {
-            $exceptionClass = Config::getIveeClassName('IveeCoreException');
-            throw new $exceptionClass("iveeCore currently can't handle player built outposts.");
-        }
+        $this->id = (int) $id;
+        if ($this->id >= 61000000)
+            static::throwException('IveeCoreException', "iveeCore currently can't handle player built outposts.");
+
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
         $row = $sde->query(
             "SELECT operationID, stationTypeID, corporationID, solarSystemID, stationName, reprocessingEfficiency
             FROM staStations
-            WHERE stationID = " . $this->stationID . ';'
+            WHERE stationID = " . $this->id . ';'
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('StationIdNotFoundException');
-            throw new $exceptionClass("stationID ". $this->stationID . " not found");
-        }
+        if (empty($row))
+            static::throwException('StationIdNotFoundException', "Station ID=". $this->id . " not found");
 
         //set data to attributes
         $this->operationID   = (int) $row['operationID'];
         $this->stationTypeID = (int) $row['stationTypeID'];
         $this->corporationID = (int) $row['corporationID'];
         $this->solarSystemID = (int) $row['solarSystemID'];
-        $this->stationName   = $row['stationName'];
+        $this->name          = $row['stationName'];
         $this->reprocessingEfficiency   = (float) $row['reprocessingEfficiency'];
 
         //get assembly lines in station
@@ -185,32 +136,12 @@ class Station
             "SELECT rals.assemblyLineTypeID, ralt.activityID
             FROM ramAssemblyLineStations as rals
             JOIN ramAssemblyLineTypes as ralt ON ralt.assemblyLineTypeID = rals.assemblyLineTypeID
-            WHERE stationID = " . $this->stationID . ';'
+            WHERE stationID = " . $this->id . ';'
         );
 
         while ($row = $res->fetch_assoc()) {
             $this->assemblyLineTypeIDs[$row['activityID']][] = $row['assemblyLineTypeID'];
         }
-    }
-
-    /**
-     * Gets stationID
-     * 
-     * @return int
-     */
-    public function getStationID()
-    {
-        return $this->stationID;
-    }
-
-    /**
-     * Gets station name
-     * 
-     * @return string
-     */
-    public function getStationName()
-    {
-        return $this->stationName;
     }
 
     /**
@@ -282,7 +213,7 @@ class Station
      */
     public function getTax()
     {
-        if ($this->stationID >= 61000000) {
+        if ($this->id >= 61000000) {
             $exceptionClass = Config::getIveeClassName('IveeCoreException');
             throw new $exceptionClass("iveeCore currently can't handle player built outposts.");
         }
@@ -301,12 +232,12 @@ class Station
     {
         return $this->assemblyLineTypeIDs;
     }
-    
+
     /**
      * Gets a stations assemblyLineTypeIDs
-     * 
+     *
      * @param int $activityID to get assemblyLineTypeIDs for
-     * 
+     *
      * @return array in the form array(id1, id2...)
      */
     public function getAssemblyLineTypeIDsForActivity($activityID)
@@ -315,5 +246,16 @@ class Station
             return $this->assemblyLineTypeIDs[$activityID];
         else
             return array();
+    }
+
+    /**
+     * Returns an IndustryModifier object for this station
+     *
+     * @return \iveeCore\IndustryModifier
+     */
+    public function getIndustryModifier()
+    {
+        $industryModifierClass = Config::getIveeClassName('IndustryModifier');
+        return $industryModifierClass::getByNpcStationID($this->id);
     }
 }

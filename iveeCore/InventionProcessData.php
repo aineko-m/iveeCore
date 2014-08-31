@@ -293,7 +293,7 @@ class InventionProcessData extends ProcessData
 
         echo "Average total success materials:" . PHP_EOL;
         foreach ($this->getTotalSuccessMaterialMap()->getMaterials() as $typeID => $amount) {
-            echo $amount . 'x ' . $typeClass::getType($typeID)->getName() . PHP_EOL;
+            echo $amount . 'x ' . $typeClass::getById($typeID)->getName() . PHP_EOL;
         }
 
         echo "Total average success material cost: " 

@@ -170,7 +170,7 @@ class MaterialMap
     ) {
         $typeClass = Config::getIveeClassName('Type');
         foreach ($this->materials as $typeID => $quantity) {
-            $type = $typeClass::getType($typeID);
+            $type = $typeClass::getById($typeID);
             if ($type->isReprocessable()) {
                 unset($this->materials[$typeID]);
                 $this->addMaterialMap(
@@ -195,7 +195,7 @@ class MaterialMap
         $typeClass = Config::getIveeClassName('Type');
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $quantity)
-            $sum += $typeClass::getType($typeID)->getVolume() * $quantity;
+            $sum += $typeClass::getById($typeID)->getVolume() * $quantity;
 
         return $sum;
     }
@@ -215,7 +215,7 @@ class MaterialMap
 
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $amount) {
-            $type = $typeClass::getType($typeID);
+            $type = $typeClass::getById($typeID);
             if (!($type instanceof Sellable) OR !$type->onMarket())
                 continue;
             if ($amount > 0)
@@ -240,7 +240,7 @@ class MaterialMap
 
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $amount) {
-            $type = $typeClass::getType($typeID);
+            $type = $typeClass::getById($typeID);
             if (!($type instanceof Sellable) OR !$type->onMarket())
                 continue;
             if ($amount > 0)

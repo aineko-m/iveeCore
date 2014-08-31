@@ -29,7 +29,7 @@ namespace iveeCore;
 class Defaults
 {
     /**
-     * @var \iveeCore\Defaults $_instance holds the singleton
+     * @var \iveeCore\Defaults $instance holds the singleton
      */
     protected static $instance;
 
@@ -199,7 +199,7 @@ class Defaults
     /**
      * Returns Defaults instance.
      * 
-     * @return \iveCore\Defaults
+     * @return \iveeCore\Defaults
      */
     public static function instance()
     {

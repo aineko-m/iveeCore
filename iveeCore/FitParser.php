@@ -48,7 +48,7 @@ class FitParser
 
         //add the ship to the MaterialParseResult MaterialMap
         try {
-            $pr->addMaterial($typeClass::getTypeIdByName($shipName), 1);
+            $pr->addMaterial($typeClass::getIdByName($shipName), 1);
         } catch (Exceptions\TypeNameNotFoundException $e) {
             $pr->addUnparseable($shipName);
         }
@@ -71,10 +71,10 @@ class FitParser
                 try {
                     //if regex split happened
                     if (count($lineFrag) > 1)
-                        $pr->addMaterial($typeClass::getTypeIdByName($lineFrag[0]), (int) substr($lineFrag[1], 2));
+                        $pr->addMaterial($typeClass::getIdByName($lineFrag[0]), (int) substr($lineFrag[1], 2));
                     //if no quantity specified
                     else
-                        $pr->addMaterial($typeClass::getTypeIdByName($lineFrag[0]), 1);
+                        $pr->addMaterial($typeClass::getIdByName($lineFrag[0]), 1);
                 } catch (Exceptions\TypeNameNotFoundException $e) {
                     $pr->addUnparseable(implode('', $lineFrag));
                 }
@@ -100,7 +100,7 @@ class FitParser
         foreach ($fitDom->getElementsByTagName('shipType') as $shipNode) {
             if ($shipNode->hasAttribute('value')) {
                 try {
-                    $pr->addMaterial($typeClass::getTypeIdByName($shipNode->getAttribute('value')), 1);
+                    $pr->addMaterial($typeClass::getIdByName($shipNode->getAttribute('value')), 1);
                 } catch (Exceptions\TypeNameNotFoundException $e) {
                     $pr->addUnparseable($shipNode->getAttribute('value'));
                 }
@@ -116,7 +116,7 @@ class FitParser
             else
                 $qty = 1;
             try {
-                $pr->addMaterial($typeClass::getTypeIdByName($hardwareNode->getAttribute('type')), $qty);
+                $pr->addMaterial($typeClass::getIdByName($hardwareNode->getAttribute('type')), $qty);
             } catch (Exceptions\TypeNameNotFoundException $e) {
                 $pr->addUnparseable("Can't parse line " . $hardwareNode->getLineNo());
             }
@@ -147,9 +147,9 @@ class FitParser
 
             try {
                 if (count($lineFrag) == 1) {
-                    $pr->addMaterial($typeClass::getTypeIdByName($lineFrag[0]), 1);
+                    $pr->addMaterial($typeClass::getIdByName($lineFrag[0]), 1);
                 } elseif (count($lineFrag) == 3) {
-                    $pr->addMaterial($typeClass::getTypeIdByName($lineFrag[2]), (int) $lineFrag[1]);
+                    $pr->addMaterial($typeClass::getIdByName($lineFrag[2]), (int) $lineFrag[1]);
                 } else {
                     $pr->addUnparseable($line);
                 }

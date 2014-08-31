@@ -17,7 +17,7 @@ namespace iveeCore;
 /**
  * Blueprint base class.
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: Blueprint -> Sellable -> Type.
+ * Inheritance: Blueprint -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -29,9 +29,9 @@ namespace iveeCore;
 class Blueprint extends Sellable
 {
     /**
-     * @var int $productTypeID typeID of produced item.
+     * @var int $productId ID of produced item.
      */
-    protected $productTypeID;
+    protected $productId;
 
     /**
      * @var int $maxProductionLimit defines the maximum production batch size.
@@ -75,17 +75,17 @@ class Blueprint extends Sellable
     );
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate Blueprint objects instead.
+     * Constructor. Use \iveeCore\Type::getById() to instantiate Blueprint objects instead.
      * 
-     * @param int $typeID of the Blueprint object
+     * @param int $id of the Blueprint object
      * 
      * @return \iveeCore\Blueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
         //call parent constructor
-        parent::__construct($typeID);
+        parent::__construct($id);
 
         //lookup SDE class
         $sdeClass = Config::getIveeClassName('SDE');
@@ -95,7 +95,7 @@ class Blueprint extends Sellable
         $res = $sde->query(
             'SELECT activityID, materialTypeID, quantity, consume
             FROM industryActivityMaterials
-            WHERE typeID = ' . (int) $this->typeID .';'
+            WHERE typeID = ' . $this->id .';'
         );
         //add materials to the array
         if ($res->num_rows > 0) {
@@ -113,7 +113,7 @@ class Blueprint extends Sellable
         $res = $sde->query(
             'SELECT activityID, skillID, level
             FROM industryActivitySkills
-            WHERE typeID = ' . (int) $this->typeID .';'
+            WHERE typeID = ' . $this->id .';'
         );
         //set skill data to array
         while ($row = $res->fetch_assoc()) {
@@ -128,7 +128,7 @@ class Blueprint extends Sellable
         $res = $sde->query(
             'SELECT activityID, time
             FROM industryActivity
-            WHERE typeID = ' . (int) $this->typeID .';'
+            WHERE typeID = ' . $this->id .';'
         );
         //set time data to array
         while ($row = $res->fetch_assoc())
@@ -168,16 +168,16 @@ class Blueprint extends Sellable
                 SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
                 averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
                 FROM iveeCrestPrices
-                WHERE typeID = " . (int) $this->typeID . "
+                WHERE typeID = " . $this->id . "
                 ORDER BY date DESC LIMIT 1
             ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND prod.activityID = 1
-            AND it.typeID = " . (int) $this->typeID . ";"
+            AND it.typeID = " . $this->id . ";"
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('TypeIdNotFoundException', "typeID " . (int) $this->typeID . " not found");
+            self::throwException('TypeIdNotFoundException', "Blueprint ID=" . $this->id . " not found");
 
         return $row;
     }
@@ -192,7 +192,7 @@ class Blueprint extends Sellable
     protected function setAttributes(array $row)
     {
         parent::setAttributes($row);
-        $this->productTypeID      = (int) $row['productTypeID'];
+        $this->productId      = (int) $row['productTypeID'];
         $this->maxProductionLimit = (int) $row['maxProductionLimit'];
     }
 
@@ -257,7 +257,7 @@ class Blueprint extends Sellable
         foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matID => $matData) {
             if (isset($matData['c'])) 
                 continue;
-            $baseCost += $typeClass::getType($matID)->getCrestAdjustedPrice($maxPriceDataAge) * $matData['q'];
+            $baseCost += $typeClass::getById($matID)->getCrestAdjustedPrice($maxPriceDataAge) * $matData['q'];
         }
         return $baseCost;
     }
@@ -284,33 +284,32 @@ class Blueprint extends Sellable
         //get modifiers and test if manufacturing the product is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_MANUFACTURING, $product);
 
-        //lookup Manufacture Data class name
+        //get required class FQDNs
         $manufactureDataClass = Config::getIveeClassName('ManufactureProcessData');
-        //lookup Type class
-        $typeClass = Config::getIveeClassName('Type');
-        $defaultsClass = Config::getIveeClassName('Defaults');
+        $defaultsClass        = Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
 
         //Some items are manufactured in atomic batches (charges, for instance).
         //We need to normalize quantities and times to the equivalent needed for 1 unit * requested units.
-        $runFactor = $units / $product->getPortionSize();
+        $numPortions = $units / $product->getPortionSize();
 
-        //get baseCost
-        $baseCost = $this->getProductBaseCost();
-
+        //lookup ME & TE levels if not set
         if (is_null($bpME))
-            $bpME = $defaults->getBpMeLevel($this->typeID);
+            $bpME = $defaults->getBpMeLevel($this->id);
         if (is_null($bpTE))
-            $bpTE = $defaults->getBpTeLevel($this->typeID);
-        $meFactor = static::convertBpLevelToFactor($bpME);
-        $teFactor = static::convertBpLevelToFactor($bpTE);
+            $bpTE = $defaults->getBpTeLevel($this->id);
 
         //instantiate manu data object
-        $md = new $manufactureDataClass(
-            $this->getProductTypeID(),
+        $mdata = new $manufactureDataClass(
+            $this->getProductId(),
             $units,
-            ceil($runFactor * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_MANUFACTURING) * $teFactor * $modifier['t']),
-            $baseCost * $runFactor * $modifier['c'],
+            ceil(
+                $numPortions
+                * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_MANUFACTURING)
+                * static::convertBpLevelToFactor($bpTE)
+                * $modifier['t']
+            ),
+            $this->getProductBaseCost() * $numPortions * $modifier['c'],
             $bpME,
             $bpTE,
             $modifier['solarSystemID'],
@@ -318,25 +317,19 @@ class Blueprint extends Sellable
             isset($modifier['teamID']) ? $modifier['teamID'] : null
         );
 
-        $md->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_MANUFACTURING));
+        //add skills
+        $mdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_MANUFACTURING));
 
-        //iterate over all materials
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matID => $matData) {
-            $mat = $typeClass::getType($matID);
-
-            //calculate total quantity needed, applying all modifiers
-            $totalNeeded = ceil($matData['q'] * $meFactor * $modifier['m'] * $runFactor);
-
-            //at least one unit of material is required per output unit
-            if ($totalNeeded < $units) $totalNeeded = $units;
-
-            //if using recursive building and material is manufacturable, recurse!
-            if ($recursive AND $mat instanceof Manufacturable)
-                $md->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
-            else
-                $md->addMaterial($matID, $totalNeeded);
-        }
-        return $md;
+        //add required materials
+        $this->addActivityMaterials(
+            $iMod, 
+            $mdata, 
+            ProcessData::ACTIVITY_MANUFACTURING, 
+            static::convertBpLevelToFactor($bpME) * $modifier['m'], 
+            $numPortions, 
+            $recursive
+        );
+        return $mdata;
     }
 
     /**
@@ -361,11 +354,10 @@ class Blueprint extends Sellable
         $totalRuns = $copies * $runs;
 
         $copyDataClass = Config::getIveeClassName('CopyProcessData');
-        $typeClass = Config::getIveeClassName('Type');
 
         //instantiate copy data class with required parameters
-        $cd = new $copyDataClass(
-            $this->typeID,
+        $cdata = new $copyDataClass(
+            $this->id,
             $copies,
             $runs,
             ceil($this->getBaseTimeForActivity(ProcessData::ACTIVITY_COPYING) * $totalRuns * $modifier['t']),
@@ -375,27 +367,17 @@ class Blueprint extends Sellable
             isset($modifier['teamID']) ? $modifier['teamID'] : null
         );
 
-        $cd->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_COPYING));
+        $cdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_COPYING));
 
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_COPYING) as $matID => $matData) {
-            $mat = $typeClass::getType($matID);
-
-            //calculate total quantity needed, applying all modifiers
-            $totalNeeded = ceil($matData['q'] * $modifier['m'] * $totalRuns);
-
-            //if consume flag is set to 0, add to needed mats with quantity 0
-            if (isset($matData['c']) and $matData['c'] == 0) {
-                $cd->addMaterial($matID, 0);
-                continue;
-            }
-
-            //if using recursive building and material is manufacturable, recurse!
-            if ($recursive AND $mat instanceof Manufacturable)
-                $cd->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
-            else
-                $cd->addMaterial($matID, $totalNeeded);
-        }
-        return $cd;
+        $this->addActivityMaterials(
+            $iMod, 
+            $cdata, 
+            ProcessData::ACTIVITY_COPYING, 
+            $modifier['m'] * $totalRuns, 
+            $copies, 
+            $recursive
+        );
+        return $cdata;
     }
 
     /**
@@ -420,14 +402,17 @@ class Blueprint extends Sellable
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_ME, $this);
 
         $researchMEDataClass = Config::getIveeClassName('ResearchMEProcessData');
-        $typeClass = Config::getIveeClassName('Type');
         
-        $scaleModifier = static::calcResearchMultiplier($startME, $endME);
+        $researchMultiplier = static::calcResearchMultiplier($startME, $endME);
 
-        $rmd = new $researchMEDataClass(
-            $this->typeID,
-            ceil($scaleModifier * $modifier['t'] * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_ME)),
-            $scaleModifier * $modifier['c'] * $this->getProductBaseCost() * 0.02,
+        $rmdata = new $researchMEDataClass(
+            $this->id,
+            ceil(
+                $researchMultiplier
+                * $modifier['t']
+                * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_ME)
+            ),
+            $researchMultiplier * $modifier['c'] * $this->getProductBaseCost() * 0.02,
             - $startME,
             - $endME,
             $modifier['solarSystemID'],
@@ -435,27 +420,17 @@ class Blueprint extends Sellable
             isset($modifier['teamID']) ? $modifier['teamID'] : null
         );
 
-        $rmd->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_ME));
+        $rmdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_ME));
 
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_RESEARCH_ME) as $matID => $matData) {
-            $mat = $typeClass::getType($matID);
-
-            //calculate total quantity needed, applying all modifiers
-            $totalNeeded = ceil($matData['q'] * $modifier['m'] * ($endME - $startME));
-
-            //if consume flag is set to 0, add to needed mats with quantity 0
-            if (isset($matData['c']) and $matData['c'] == 0) {
-                $rmd->addMaterial($matID, 0);
-                continue;
-            }
-
-            //if using recursive building and material is manufacturable, recurse!
-            if ($recursive AND $mat instanceof Manufacturable)
-                $rmd->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
-            else
-                $rmd->addMaterial($matID, $totalNeeded);
-        }
-        return $rmd;
+        $this->addActivityMaterials(
+            $iMod, 
+            $rmdata, 
+            ProcessData::ACTIVITY_RESEARCH_ME, 
+            $modifier['m'], 
+            ($endME - $startME), 
+            $recursive
+        );
+        return $rmdata;
     }
 
     /**
@@ -479,13 +454,11 @@ class Blueprint extends Sellable
         //get modifiers and test if TE research is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_TE, $this);
 
-        $researchTEDataClass = Config::getIveeClassName('ResearchTEProcessData');
-        $typeClass = Config::getIveeClassName('Type');
-        
         $scaleModifier = static::calcResearchMultiplier($startTE / 2, $endTE / 2);
 
-        $rtd = new $researchTEDataClass(
-            $this->typeID,
+        $researchTEDataClass = Config::getIveeClassName('ResearchTEProcessData');
+        $rtdata = new $researchTEDataClass(
+            $this->id,
             ceil($scaleModifier * $modifier['t'] * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_TE)),
             $scaleModifier * $modifier['c'] * $this->getProductBaseCost() * 0.02,
             - $startTE,
@@ -495,27 +468,63 @@ class Blueprint extends Sellable
             isset($modifier['teamID']) ? $modifier['teamID'] : null
         );
 
-        $rtd->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_TE));
+        $rtdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_TE));
 
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_RESEARCH_TE) as $matID => $matData) {
-            $mat = $typeClass::getType($matID);
+        $this->addActivityMaterials(
+            $iMod, 
+            $rtdata, 
+            ProcessData::ACTIVITY_RESEARCH_TE, 
+            $modifier['m'], 
+            ($endTE - $startTE) / 2, 
+            $recursive
+        );
+        return $rtdata;
+    }
 
-            //calculate total quantity needed, applying all modifiers
-            $totalNeeded = ceil($matData['q'] * $modifier['m'] * ($endTE - $startTE) / 2);
-
+    /**
+     * Computes and adds the material requirements for a process to a ProcessData object.
+     * 
+     * 
+     * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
+     * indices, teams, tax and assemblyLines
+     * @param ProcessData $pdata to which materials shall be added
+     * @param int $activityId of the activity
+     * @param float $materialFactor the IndustryModifier and Blueprint ME level dependant ME bonus factor
+     * @param float $numPortions the number of portions being built or researched. Note that passing a fraction will
+     * make the method not use the rounding for the resulting required amounts.
+     * @param bool $recursive defines if used materials should be manufactured recursively
+     * 
+     * @return void
+     */
+    protected function addActivityMaterials(IndustryModifier $iMod, ProcessData $pdata, $activityId, $materialFactor, 
+        $numPortions, $recursive
+    ) {
+        foreach ($this->getMaterialsForActivity($activityId) as $matID => $matData) {
             //if consume flag is set to 0, add to needed mats with quantity 0
             if (isset($matData['c']) and $matData['c'] == 0) {
-                $rtd->addMaterial($matID, 0);
+                $pdata->addMaterial($matID, 0);
                 continue;
             }
 
+            $mat = Type::getById($matID);
+
+            //calculate total quantity needed, applying all modifiers
+            //if number of portions is a fraction, don't ceil() amounts
+            if (fmod($numPortions, 1.0) > 0.0)
+                $totalNeeded = $matData['q'] * $materialFactor * $numPortions;
+            else
+                $totalNeeded = ceil($matData['q'] * $materialFactor * $numPortions);
+
+            //at least one unit of material is required per portion
+            if ($totalNeeded < $numPortions)
+                $totalNeeded = $numPortions;
+
             //if using recursive building and material is manufacturable, recurse!
             if ($recursive AND $mat instanceof Manufacturable)
-                $rtd->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
+                $pdata->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
             else
-                $rtd->addMaterial($matID, $totalNeeded);
+                $pdata->addMaterial($matID, $totalNeeded);
         }
-        return $rtd;
     }
 
     /**
@@ -523,7 +532,7 @@ class Blueprint extends Sellable
      * 
      * @return array with the requirements in the form activityID => materialID => array ('q' => ... , 'c' => ...)
      */
-    protected function getMaterials()
+    protected function getActivityMaterials()
     {
         return $this->activityMaterials;
     }
@@ -548,9 +557,9 @@ class Blueprint extends Sellable
      * 
      * @return int
      */
-    public function getProductTypeID()
+    public function getProductId()
     {
-        return $this->productTypeID;
+        return $this->productId;
     }
 
     /**
@@ -562,7 +571,7 @@ class Blueprint extends Sellable
     {
         //lookup Type class
         $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getType($this->getProductTypeID());
+        return $typeClass::getById($this->getProductId());
     }
 
     /**

@@ -1,5 +1,6 @@
-ALTER TABLE `industryActivityProducts`
-	ADD INDEX `productTypeID` (`productTypeID`);
+-- add index invTypeReactions typeID
+ALTER TABLE `invTypeReactions`
+	ADD INDEX `typeID` (`typeID`);
 
 CREATE TABLE `iveeCrestPrices` (
 	`typeID` INT(11) NOT NULL,

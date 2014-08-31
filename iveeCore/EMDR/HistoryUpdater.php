@@ -64,9 +64,9 @@ class HistoryUpdater
             throw new $exceptionClass("0 relevant history rows to process");
         }
 
-        $this->typeID      = $typeID;
-        $this->regionID    = $regionID;
-        $this->generatedAt = $generatedAt;
+        $this->typeID      = (int) $typeID;
+        $this->regionID    = (int) $regionID;
+        $this->generatedAt = (int) $generatedAt;
         $this->rows        = $rows;
     }
 

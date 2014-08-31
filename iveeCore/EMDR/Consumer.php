@@ -59,7 +59,7 @@ class Consumer
     protected $sde;
     
     /**
-     * @var ICache $cache holds a cache instance, if cacje use is configured
+     * @var ICache $cache holds a cache instance, if cache use is configured
      */
     protected $cache;
 
@@ -321,7 +321,7 @@ class Consumer
 
             //invalidate the type cache for the item that was updated if its the default region
             if ($regionID == $this->defaultRegionID)
-                $this->cache->deleteItem('type_' . $typeID);
+                $this->cache->deleteItem('Type_' . $typeID);
         }
     }
 

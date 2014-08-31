@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Base class for all inventory Type subclasses.
- * Where applicable, attribute names are the same as SDE database column names.
+ * Inheritance: Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,27 +25,18 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Type.php
  *
  */
-class Type
+class Type extends SdeTypeCommon
 {
     /**
-     * @var array $_types acts as internal Type object cache, typeID => Type.
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) Type and child objects
      */
-    private static $_types;
-
+    protected static $instancePool;
+    
     /**
-     * @var array $_typeNames acts as a lazyloaded typeName to ID lookup table, typeName => typeID.
+     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
      */
-    private static $_typeNames;
-
-    /**
-     * @var int $_internalCacheHit stores the number of hits on the internal Type cache.
-     */
-    private static $_internalCacheHit = 0;
-
-    /**
-     * @var int $typeID the typeID of this Type.
-     */
-    protected $typeID;
+    protected static $classNick = 'Type';
 
     /**
      * @var int $groupID the groupID of this Type.
@@ -56,11 +47,6 @@ class Type
      * @var int $categoryID the categoryID of this Type.
      */
     protected $categoryID;
-
-    /**
-     * @var string $typeName the name of this Type.
-     */
-    protected $typeName;
 
     /**
      * @var float $volume the space the item occupies
@@ -78,9 +64,9 @@ class Type
     protected $basePrice;
 
     /**
-     * @var array $typeMaterials holds data from invTypeMaterials, which is used in reprocessing only
+     * @var array $materials holds data from invTypeMaterials, which is used in reprocessing only
      */
-    protected $typeMaterials;
+    protected $materials;
 
     /**
      * @var int $reprocessingSkillID holds the ID of the specialized reprocessing skill if Type is an ore or ice
@@ -109,95 +95,28 @@ class Type
     /**
      * Main function for getting Type objects. Tries caches and instantiates new objects if necessary.
      *
-     * @param int $typeID of requested Type
+     * @param int $id of requested Type
      *
      * @return \iveeCore\Type the requested Type or subclass object
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
-    public static function getType($typeID)
+    public static function getById($id)
     {
-        $typeID = (int) $typeID;
-        //try php Type array first
-        if (isset(self::$_types[$typeID])) {
-            //count internal cache hit
-            self::$_internalCacheHit++;
-            return self::$_types[$typeID];
-        } else {
-            //try memcached
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    $type = $cache->getItem('type_' . $typeID);
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //go to DB
-                    $type = self::factory($typeID);
-                    //store type object in cache
-                    $cache->setItem($type, 'type_' . $typeID);
-                }
-            } else
-                //not using cache, go to DB
-                $type = self::factory($typeID);
+        if (!isset(static::$instancePool))
+            static::init();
 
-            //store type object in internal cache
-            self::$_types[$typeID] = $type;
+        $id = (int) $id;
 
+        try {
+            return static::$instancePool->getObjById($id);
+        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+            //go to DB
+            $type = self::factory($id);
+            //store SdeTypeCommon object in instance pool (and cache if configured)
+            static::$instancePool->setObj($type);
+            
             return $type;
         }
-    }
-
-    /**
-     * Returns Type ID for a TypeName
-     * Loads all type names from DB or memached to PHP when first used.
-     * Note that populating the name => id array takes time and uses a few MBs of RAM
-     *
-     * @param string $typeName of requested Type
-     *
-     * @return int the ID of the requested Type
-     * @throws \iveeCore\Exceptions\TypeNameNotFoundException if type name is not found
-     */
-    public static function getTypeIdByName($typeName)
-    {
-        //check if names have been loaded yet
-        if (empty(self::$_typeNames)) {
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    self::$_typeNames = $cache->getItem('typeNames');
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //load names from DB
-                    self::loadTypeNames();
-                    //store in cache
-                    $cache->setItem(self::$_typeNames, 'typeNames');
-                }
-            } else
-                //load names from DB
-                self::loadTypeNames();
-        }
-
-        $typeName = trim($typeName);
-        //return ID if type exists
-        if (isset(self::$_typeNames[$typeName]))
-            return self::$_typeNames[$typeName];
-        else 
-            self::throwException('TypeNameNotFoundException', 'type name not found');
-    }
-
-    /**
-     * Returns Type object by name.
-     *
-     * @param string $typeName of requested Type
-     *
-     * @return \iveeCore\Type the requested Typeobject
-     * @throws \iveeCore\Exceptions\TypeNameNotFoundException if type name is not found
-     */
-    public static function getTypeByName($typeName)
-    {
-        return self::getType(self::getTypeIdByName($typeName));
     }
 
     /**
@@ -205,7 +124,7 @@ class Type
      *
      * @return void
      */
-    private static function loadTypeNames()
+    protected static function loadNames()
     {
         //lookup SDE class
         $sdeClass = Config::getIveeClassName('SDE');
@@ -215,44 +134,17 @@ class Type
             FROM invTypes
             WHERE published = 1;"
         );
-
-        while ($row = $res->fetch_assoc()) {
-            self::$_typeNames[$row['typeName']] = (int) $row['typeID'];
-        }
-    }
-
-    /**
-     * Removes all typeIDs given in array from cache. 
-     * If using memcached, requires php5-memcached version >= 2.0.0
-     *
-     * @param array &$typeIDs with all the IDs to be removed from cache
-     *
-     * @return bool on success
-     */
-    public static function deleteTypesFromCache(&$typeIDs)
-    {
-        $cacheKeysToDelete = array();
-        $cachePrefix = Config::getCachePrefix();
-        foreach ($typeIDs as $typeID)
-            $cacheKeysToDelete[] = $cachePrefix . 'type_' . $typeID;
-
-        $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
-        return $cacheClass::instance()->deleteMulti($cacheKeysToDelete);
-    }
-
-    /**
-     * Returns the number of types in internal cache
-     *
-     * @return int count
-     */
-    public static function getCachedTypeCount()
-    {
-        return count(self::$_types);
+        
+        $namesToIds = array();
+        while ($row = $res->fetch_assoc())
+            $namesToIds[$row['typeName']] = (int) $row['typeID'];
+        
+        self::$instancePool->setNamesToIds($namesToIds);
     }
 
     /**
      * Instantiates type objects without caching logic.
-     * This method shouldn't be called directly. Use Type::getType() instead.
+     * This method shouldn't be called directly. Use Type::getById() instead.
      *
      * @param int   $typeID of the Type object
      * @param array $subtypeInfo optional parameter with the DB data used to decide Type subclass
@@ -374,33 +266,16 @@ class Type
     }
 
     /**
-     * Convenience method for throwing iveeCore Exceptions
+     * Constructor. Use \iveeCore\Type::getById() to instantiate Type objects instead.
      *
-     * @param string $exceptionName nickname of the exception as configured in Config
-     * @param string $message to be passed to the exception
-     * @param int $code the exception code
-     * @param Exception $previous the previous exception used for chaining
+     * @param int $id of the Type
      *
      * @return \iveeCore\Type
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
-    protected static function throwException($exceptionName, $message = "", $code = 0, $previous = null)
+    protected function __construct($id)
     {
-        $exceptionClass = Config::getIveeClassName($exceptionName);
-        throw new $exceptionClass($message, $code, $previous);
-    }
-
-    /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate Type objects instead.
-     *
-     * @param int $typeID of the Type
-     *
-     * @return \iveeCore\Type
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
-     */
-    protected function __construct($typeID)
-    {
-        $this->typeID = (int) $typeID;
+        $this->id = (int) $id;
 
         //get data from SQL
         $row = $this->queryAttributes();
@@ -416,13 +291,13 @@ class Type
             materialTypeID,
             quantity
             FROM invTypeMaterials
-            WHERE typeID = ' . (int) $this->typeID . ';'
+            WHERE typeID = ' . (int) $this->id . ';'
         );
         if ($res->num_rows > 0) {
-            $this->typeMaterials = array();
+            $this->materials = array();
             //add materials to the array
             while ($row = $res->fetch_assoc())
-                $this->typeMaterials[(int) $row['materialTypeID']] = (int) $row['quantity'];
+                $this->materials[(int) $row['materialTypeID']] = (int) $row['quantity'];
         }
     }
 
@@ -455,21 +330,21 @@ class Type
                 SELECT typeID, valueInt
                 FROM dgmTypeAttributes
                 WHERE attributeID = 790
-                AND typeID = " . (int) $this->typeID . "
+                AND typeID = " . (int) $this->id . "
             ) as reproc ON reproc.typeID = it.typeID
             LEFT JOIN (
                 SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
                 averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
                 FROM iveeCrestPrices
-                WHERE typeID = " . (int) $this->typeID . "
+                WHERE typeID = " . (int) $this->id . "
                 ORDER BY date DESC LIMIT 1
             ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
-            AND it.typeID = " . (int) $this->typeID . ';'
+            AND it.typeID = " . (int) $this->id . ';'
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('TypeIdNotFoundException', "typeID " . $this->typeID . " not found");
+            self::throwException('TypeIdNotFoundException', "typeID " . $this->id . " not found");
 
         return $row;
     }
@@ -485,7 +360,7 @@ class Type
     {
         $this->groupID     = (int) $row['groupID'];
         $this->categoryID  = (int) $row['categoryID'];
-        $this->typeName    = $row['typeName'];
+        $this->name        = $row['typeName'];
         $this->volume      = (float) $row['volume'];
         $this->portionSize = (int) $row['portionSize'];
         $this->basePrice   = (int) $row['basePrice'];
@@ -497,16 +372,6 @@ class Type
             $this->crestAveragePrice  = (float) $row['crestAveragePrice'];
         if (isset($row['crestAdjustedPrice']))
             $this->crestAdjustedPrice = (float) $row['crestAdjustedPrice'];
-    }
-
-    /**
-     * Gets the ID of the Type
-     * 
-     * @return int
-     */
-    public function getTypeID()
-    {
-        return $this->typeID;
     }
 
     /**
@@ -527,16 +392,6 @@ class Type
     public function getCategoryID()
     {
         return $this->categoryID;
-    }
-
-    /**
-     * Gets the name of the Type
-     * 
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->typeName;
     }
 
     /**
@@ -577,7 +432,7 @@ class Type
      */
     public function isReprocessable()
     {
-        return !empty($this->typeMaterials);
+        return !empty($this->materials);
     }
 
     /**
@@ -585,12 +440,12 @@ class Type
      * 
      * @return array typeID => quantity
      */
-    public function getTypeMaterials()
+    public function getMaterials()
     {
-        if (empty($this->typeMaterials))
+        if (empty($this->materials))
             return array();
         else
-            return $this->typeMaterials;
+            return $this->materials;
     }
 
     /**
@@ -614,7 +469,7 @@ class Type
         if ($this->crestPriceDate > 0)
             return $this->crestPriceDate;
         else 
-            self::throwException('NoPriceDataAvailableException', "No CREST price available for " . $this->typeName);
+            self::throwException('NoPriceDataAvailableException', "No CREST price available for " . $this->name);
     }
 
     /**
@@ -632,12 +487,12 @@ class Type
         if (is_null($this->crestAveragePrice))
             self::throwException(
                 'NoPriceDataAvailableException', 
-                "No crestAveragePrice available for " . $this->typeName
+                "No crestAveragePrice available for " . $this->name
             );
         elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time())
             self::throwException(
                 'PriceDataTooOldException', 
-                'crestAveragePrice data for ' . $this->typeName . ' is too old'
+                'crestAveragePrice data for ' . $this->name . ' is too old'
             );
 
         return $this->crestAveragePrice;
@@ -658,12 +513,12 @@ class Type
         if (is_null($this->crestAdjustedPrice))
             self::throwException(
                 'NoPriceDataAvailableException', 
-                "No crestAdjustedPrice available for " . $this->typeName
+                "No crestAdjustedPrice available for " . $this->name
             );
         elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time())
             self::throwException(
                 'PriceDataTooOldException', 
-                'crestAdjustedPrice data for ' . $this->typeName . ' is too old'
+                'crestAdjustedPrice data for ' . $this->name . ' is too old'
             );
         return $this->crestAdjustedPrice;
     }
@@ -685,7 +540,7 @@ class Type
         $implantBonusFactor = 1.0
     ) {
         if (!$this->isReprocessable())
-            self::throwException('NotReprocessableException', $this->typeName . ' is not reprocessable');
+            self::throwException('NotReprocessableException', $this->name . ' is not reprocessable');
 
         $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
         $defaultsClass = Config::getIveeClassName('Defaults');
@@ -716,7 +571,7 @@ class Type
         $rmat = new $materialsClass;
 
         $numPortions = $batchSize / $this->portionSize;
-        foreach ($this->getTypeMaterials() as $typeID => $quantity)
+        foreach ($this->getMaterials() as $typeID => $quantity)
             $rmat->addMaterial($typeID, round($quantity * $yield * $numPortions * $taxFactor));
         return $rmat;
     }

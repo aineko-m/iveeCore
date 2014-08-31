@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for invention decryptors.
- * Inheritance: Decryptor -> Sellable -> Type.
+ * Inheritance: Decryptor -> Sellable -> Type -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -53,17 +53,17 @@ class Decryptor extends Sellable
     protected static $decryptorGroups = array();
 
     /**
-     * Constructor. Use \iveeCore\Type::getType() to instantiate Decryptor objects instead.
+     * Constructor. Use \iveeCore\Type::getById() to instantiate Decryptor objects instead.
      * 
-     * @param int $typeID of the Decryptor object
+     * @param int $id of the Decryptor object
      * 
      * @return \iveeCore\Decryptor
      * @throws \iveeCore\Exceptions\UnexpectedDataException when loading Decryptor data fails
      */
-    protected function __construct($typeID)
+    protected function __construct($id)
     {
         //call parent constructor
-        parent::__construct($typeID);
+        parent::__construct($id);
 
         //lookup SDE class
         $sdeClass = Config::getIveeClassName('SDE');
@@ -75,7 +75,7 @@ class Decryptor extends Sellable
             valueFloat
             FROM dgmTypeAttributes
             WHERE
-            typeID = " . (int) $this->typeID . "
+            typeID = " . $this->id . "
             AND attributeID IN (1112, 1113, 1114, 1124);"
         );
 
@@ -95,7 +95,7 @@ class Decryptor extends Sellable
                 $this->runModifier = (int) $row['valueFloat'];
                 break;
             default:
-                self::throwException('UnexpectedDataException', "Error loading Decryptor data.");
+                self::throwException('UnexpectedDataException', "Error loading data for Decryptor ID=" . $this->id);
             }
         }
     }

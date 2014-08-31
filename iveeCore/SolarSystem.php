@@ -16,6 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing solar systems
+ * Inheritance: SolarSystem -> SdeTypeCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -24,32 +25,18 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SolarSystem.php
  *
  */
-class SolarSystem
+class SolarSystem extends SdeTypeCommon
 {
     /**
-     * @var array $_systems acts as internal Station object cache, solarSystemID => SolarSystem.
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) SolarSystem objects
      */
-    private static $_systems;
-    
-    /**
-     * @var array $_systemNames acts as a lazyloaded systemName to ID lookup table, systemName => systemID.
-     */
-    private static $_systemNames;
+    protected static $instancePool;
 
     /**
-     * @var int $_internalCacheHit counter for the internal SolarSystem cache hits
+     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
      */
-    private static $_internalCacheHit = 0;
-
-    /**
-     * @var int $solarSystemID the ID of this SolarSystem.
-     */
-    protected $solarSystemID;
-
-    /**
-     * @var string $systemName the name of this SolarSystem.
-     */
-    protected $systemName;
+    protected static $classNick = 'SolarSystem';
 
     /**
      * @var int $regionID the ID of region of this SolarSystem.
@@ -85,110 +72,13 @@ class SolarSystem
      * @var array $teamIDs the IDs of Teams active in this SolarSystem
      */
     protected $teamIDs = array();
-
-    /**
-     * Main function for getting SolarSystem objects. Tries caches and instantiates new objects if necessary.
-     *
-     * @param int $solarSystemID of requested SolarSystem
-     *
-     * @return \iveeCore\SolarSystem
-     * @throws \iveeCore\Exceptions\SolarSystemIdNotFoundException if the solarSystemID is not found
-     */
-    public static function getSolarSystem($solarSystemID)
-    {
-        $solarSystemID = (int) $solarSystemID;
-        //try php array first
-        if (isset(self::$_systems[$solarSystemID])) {
-            //count internal cache hit
-            self::$_internalCacheHit++;
-            return self::$_systems[$solarSystemID];
-        } else {
-            $solarSystemClass = Config::getIveeClassName('SolarSystem');
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    $system = $cache->getItem('system_' . $solarSystemID);
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //go to DB
-                    $system = new $solarSystemClass($solarSystemID);
-                    //store object in cache
-                    $cache->setItem($system, 'system_' . $solarSystemID);
-                }
-            } else
-                //not using cache, go to DB
-                $system = new $solarSystemClass($solarSystemID);
-
-            //store object in internal cache
-            self::$_systems[$solarSystemID] = $system;
-            return $system;
-        }
-    }
-
-    /**
-     * Returns SolarSystem ID for a given system name
-     * Loads all system names from DB or cache to PHP when first used.
-     * Note that populating the name => id array takes time and uses a few MBs of RAM
-     *
-     * @param string $solarSystemName of requested SolarSysten
-     *
-     * @return int the ID of the requested system
-     * @throws \iveeCore\Exceptions\SystemNameNotFoundException if system name is not found
-     */
-    public static function getSolarSystemIdByName($solarSystemName)
-    {
-        //check if names have been loaded yet
-        if (empty(self::$_systemNames)) {
-            //try cache
-            if (Config::getUseCache()) {
-                //lookup Cache class
-                $cacheClass = Config::getIveeClassName('Cache');
-                $cache = $cacheClass::instance();
-                try {
-                    self::$_systemNames = $cache->getItem('solarSystemNames');
-                } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                    //load names from DB
-                    self::loadSolarSystemNames();
-                    //store in cache
-                    $cache->setItem(self::$_systemNames, 'solarSystemNames');
-                }
-            } else
-                //load names from DB
-                self::loadSolarSystemNames();
-        }
-
-        $solarSystemName = trim($solarSystemName);
-        //return ID if system name exists
-        if (isset(self::$_systemNames[$solarSystemName]))
-            return self::$_systemNames[$solarSystemName];
-        else {
-            $exceptionClass = Config::getIveeClassName('SystemNameNotFoundException');
-            throw new $exceptionClass("SolarSystem name not found");
-        }
-    }
-
-    /**
-     * Returns SolarSystem object by name.
-     *
-     * @param string $solarSystenName of requested SolarSystem
-     *
-     * @return \iveeCore\SolarSystem the requested SolarSystem object
-     * @throws \iveeCore\Exceptions\SystemNameNotFoundException if system name is not found
-     */
-    public static function getSolarSystemByName($solarSystenName)
-    {
-        $solarSystemClass = Config::getIveeClassName("SolarSystem");
-        return $solarSystemClass::getSolarSystem($solarSystemClass::getSolarSystemIdByName($solarSystenName));
-    }
-    
+  
     /**
      * Loads all SolarSystem names from DB to PHP
      *
      * @return void
      */
-    private static function loadSolarSystemNames()
+    protected static function loadNames()
     {
         //lookup SDE class
         $sdeClass = Config::getIveeClassName('SDE');
@@ -198,41 +88,24 @@ class SolarSystem
             FROM mapSolarSystems;"
         );
 
-        while ($row = $res->fetch_assoc()) {
-            self::$_systemNames[$row['solarSystemName']] = (int) $row['solarSystemID'];
-        }
-    }
-
-    /**
-     * Removes all solarSystemIDs given in array from cache. 
-     * If using memcached, requires php5-memcached version >= 2.0.0
-     *
-     * @param array &$solarSystemIDs with all the IDs to be removed from cache
-     *
-     * @return bool on success
-     */
-    public static function deleteSolarSystemsFromCache(&$solarSystemIDs)
-    {
-        $cacheKeysToDelete = array();
-        $cachePrefix = Config::getCachePrefix();
-        foreach ($solarSystemIDs as $systemID)
-            $cacheKeysToDelete[] = $cachePrefix . 'system_' . $systemID;
-
-        $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
-        return $cacheClass::instance()->deleteMulti($cacheKeysToDelete);
+        $namesToIds = array();
+        while ($row = $res->fetch_assoc())
+            $namesToIds[$row['solarSystemName']] = (int) $row['solarSystemID'];
+        
+        static::$instancePool->setNamesToIds($namesToIds);
     }
 
     /**
      * Constructor. Use \iveeCore\SolarSystem::getSolarSystem() to instantiate SolarSystem objects instead.
      *
-     * @param int $solarSystemID of the SolarSystem
+     * @param int $id of the SolarSystem
      *
      * @return \iveeCore\SolarSystem
      * @throws \iveeCore\Exceptions\SolarSystemIdNotFoundException if solarSystemID is not found
      */
-    protected function __construct($solarSystemID)
+    protected function __construct($id)
     {
-        $this->solarSystemID = (int) $solarSystemID;
+        $this->id = (int) $id;
         $sdeClass = Config::getIveeClassName('SDE');
 
         $row = $sdeClass::instance()->query(
@@ -243,21 +116,19 @@ class SolarSystem
                 SELECT systemID, UNIX_TIMESTAMP(date) as crestIndexDate, manufacturingIndex, teResearchIndex,
                 meResearchIndex, copyIndex, reverseIndex, inventionIndex
                 FROM iveeIndustrySystems
-                WHERE systemID = " . $this->solarSystemID . "
+                WHERE systemID = " . $this->id . "
                 ORDER BY date DESC LIMIT 1
             ) as iis ON iis.systemID = solarSystemID
-            WHERE solarSystemID = " . $this->solarSystemID . ";"
+            WHERE solarSystemID = " . $this->id . ";"
         )->fetch_assoc();
 
-        if (empty($row)) {
-            $exceptionClass = Config::getIveeClassName('SystemIdNotFoundException');
-            throw new $exceptionClass("systemID ". $this->solarSystemID . " not found");
-        }
+        if (empty($row))
+            static::throwException('SystemIdNotFoundException', "SolarSystem ID=". $this->id . " not found" );
 
         //set data to attributes
         $this->regionID        = (int) $row['regionID'];
         $this->constellationID = (int) $row['constellationID'];
-        $this->systemName      = $row['solarSystemName'];
+        $this->name            = $row['solarSystemName'];
         $this->security        = (float) $row['security'];
         if (isset($row['crestIndexDate']))
             $this->industryIndexDate = (int) $row['crestIndexDate'];
@@ -278,7 +149,7 @@ class SolarSystem
         $res = $sdeClass::instance()->query(
             "SELECT stationID
             FROM staStations
-            WHERE solarSystemID = " . $this->solarSystemID . ';'
+            WHERE solarSystemID = " . $this->id . ';'
         );
 
         //get stations in system
@@ -291,32 +162,12 @@ class SolarSystem
             "SELECT teamID
             FROM iveeTeams
             WHERE solarSystemID = " 
-            . $this->solarSystemID . " AND expiryTime > '" . date('Y-m-d H:i:s', time()) . "';"
+            . $this->id . " AND expiryTime > '" . date('Y-m-d H:i:s', time()) . "';"
         );
 
         while ($row = $res->fetch_assoc()) {
             $this->teamIDs[] = $row['teamID'];
         }
-    }
-
-    /**
-     * Gets SolarSystem ID
-     * 
-     * @return int
-     */
-    public function getSolarSystemID()
-    {
-        return $this->solarSystemID;
-    }
-
-    /**
-     * Gets SolarSystem name
-     * 
-     * @return string
-     */
-    public function getSolarSystemName()
-    {
-        return $this->systemName;
     }
 
     /**
@@ -407,8 +258,10 @@ class SolarSystem
         if ($this->industryIndexDate > 0) {
             return $this->industryIndexDate;
         } else {
-            $exceptionClass = Config::getIveeClassName('NoSystemDataAvailableException');
-            throw new $exceptionClass('No CREST system data available for systemID=' . $this->solarSystemID);
+            static::throwException(
+                'NoSystemDataAvailableException', 
+                'No CREST system data available for SolarSystem ID=' . $this->id
+            );
         }
     }
 
@@ -422,10 +275,9 @@ class SolarSystem
      */
     public function getIndustryIndices($maxIndexDataAge = null)
     {
-        if ($maxIndexDataAge > 0 AND ($this->industryIndexDate + $maxIndexDataAge) < time()) {
-            $exceptionClass = Config::getIveeClassName('CrestDataTooOldException');
-            throw new $exceptionClass('Index data for ' . $this->systemName . ' is too old');
-        }
+        if ($maxIndexDataAge > 0 AND ($this->industryIndexDate + $maxIndexDataAge) < time())
+            static::throwException('CrestDataTooOldException', 'Index data for ' . $this->getName() . ' is too old');
+
         return $this->industryIndices;
     }
 
@@ -441,14 +293,14 @@ class SolarSystem
     public function getIndustryIndexForActivity($activityID, $maxIndexDataAge = null)
     {
         if (isset($this->industryIndices[$activityID])) {
-            if ($maxIndexDataAge > 0 AND ($this->industryIndexDate + $maxIndexDataAge) < time()) {
-                $exceptionClass = Config::getIveeClassName('CrestDataTooOldException');
-                throw new $exceptionClass('Index data for ' . $this->systemName . ' is too old');
-            }
+            if ($maxIndexDataAge > 0 AND ($this->industryIndexDate + $maxIndexDataAge) < time())
+                static::throwException('CrestDataTooOldException', 'Index data for ' . $this->getName() . ' is too old');
             return $this->industryIndices[$activityID];
         } else {
-            $exceptionClass = Config::getIveeClassName('ActivityIdNotFoundException');
-            throw new $exceptionClass('No industry index data found for activityID=' . (int) $activityID);
+            static::throwException(
+                'ActivityIdNotFoundException', 
+                'No industry index data found for activity ID=' . (int) $activityID
+            );
         }
     }
 
@@ -463,5 +315,29 @@ class SolarSystem
     {
         $this->industryIndexDate = time();
         $this->industryIndices = $indices;
+    }
+
+    /**
+     * Returns an IndustryModifier object for a POS in this system
+     *
+     * @param float $tax set on the POS
+     *
+     * @return \iveeCore\IndustryModifier
+     */
+    public function getIndustryModifierForPos($tax)
+    {
+        $industryModifierClass = Config::getIveeClassName('IndustryModifier');
+        return $industryModifierClass::getBySystemIdForPos($this->id, $tax);
+    }
+
+    /**
+     * Returns an IndustryModifier object for all NPC stations in this system
+     *
+     * @return \iveeCore\IndustryModifier
+     */
+    public function getIndustryModifierForAllNpcStations()
+    {
+        $industryModifierClass = Config::getIveeClassName('IndustryModifier');
+        return $industryModifierClass::getBySystemIdForAllNpcStations($this->id);
     }
 }

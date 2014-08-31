@@ -71,7 +71,7 @@ class MemcachedWrapper implements ICache
     /**
      * Returns MemcachedWrapper instance.
      * 
-     * @return \iveCore\MemcachedWrapper
+     * @return \iveeCore\MemcachedWrapper
      */
     public static function instance()
     {

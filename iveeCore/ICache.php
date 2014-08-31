@@ -29,7 +29,7 @@ interface ICache
     /**
      * Returns ICache instance.
      * 
-     * @return \iveCore\ICache
+     * @return \iveeCore\ICache
      */
     public static function instance();
     
