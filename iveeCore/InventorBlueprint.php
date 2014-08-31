@@ -156,7 +156,7 @@ class InventorBlueprint extends Blueprint
         //with decryptor
         if ($decryptorID > 0) {
             $decryptor = $this->getAndCheckDecryptor($decryptorID);
-            $id = new $inventionDataClass(
+            $idata = new $inventionDataClass(
                 $inventedBpID,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
@@ -168,9 +168,9 @@ class InventorBlueprint extends Blueprint
                 $modifier['assemblyLineTypeID'],
                 isset($modifier['teamID']) ? $modifier['teamID'] : null
             );
-            $id->addMaterial($decryptorID, 1);
+            $idata->addMaterial($decryptorID, 1);
         } else { //without decryptor
-            $id = new $inventionDataClass(
+            $idata = new $inventionDataClass(
                 $inventedBpID,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
@@ -183,28 +183,17 @@ class InventorBlueprint extends Blueprint
                 isset($modifier['teamID']) ? $modifier['teamID'] : null
             );
         }
-        $id->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING));
+        $idata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING));
 
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_INVENTING) as $matID => $matData) {
-            $mat = $typeClass::getById($matID);
-
-            //calculate total quantity needed, applying all modifiers
-            $totalNeeded = ceil($matData['q'] * $modifier['m']);
-
-            //if consume flag is set to 0, add to needed mats with quantity 0
-            if (isset($matData['c']) and $matData['c'] == 0) {
-                $id->addMaterial($matID, 0);
-                continue;
-            }
-
-            //if using recursive building and material is manufacturable, recurse!
-            if ($recursive AND $mat instanceof Manufacturable) {
-                $id->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
-            } else {
-                $id->addMaterial($matID, $totalNeeded);
-            }
-        }
-        return $id;
+        $this->addActivityMaterials(
+            $iMod,
+            $idata,
+            ProcessData::ACTIVITY_INVENTING,
+            $modifier['m'],
+            1,
+            $recursive
+        );
+        return $idata;
     }
 
     /**

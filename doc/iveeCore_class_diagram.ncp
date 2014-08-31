@@ -566,7 +566,7 @@
         <Name>Blueprint</Name>
         <Access>Public</Access>
         <Location left="584" top="1148" />
-        <Size width="339" height="553" />
+        <Size width="339" height="570" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int productId</Member>
         <Member type="Field">protected int maxProductionLimit</Member>
@@ -585,6 +585,7 @@
         <Member type="Method">public CopyData copy(IndustryModifier iMod, int copies, int runs, bool recursive)</Member>
         <Member type="Method">public ResearchMEProcessData researchME(IndustryModifier iMod, int startME, int endME, bool recursive)</Member>
         <Member type="Method">public ResearchTEProcessData researchTE(IndustryModifier iMod, int startTE, int endTE, bool recursive)</Member>
+        <Member type="Method">protected void addActivityMaterials(IndustryModifier iMod, ProcessData pd, int activityId, float materialFactor, float numPortions, bool recursive)</Member>
         <Member type="Method">public array getMaterials()</Member>
         <Member type="Method">public array getMaterialsForActivity(int activityID)</Member>
         <Member type="Method">public int getProductId()</Member>
@@ -601,7 +602,7 @@
       <Entity type="Class">
         <Name>InventorBlueprint</Name>
         <Access>Public</Access>
-        <Location left="584" top="1779" />
+        <Location left="584" top="1805" />
         <Size width="339" height="281" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array inventsBlueprintIDsChance</Member>
@@ -621,7 +622,7 @@
       <Entity type="Class">
         <Name>InventableBlueprint</Name>
         <Access>Public</Access>
-        <Location left="199" top="1779" />
+        <Location left="199" top="1805" />
         <Size width="339" height="230" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int inventedFromBlueprintID</Member>
@@ -638,7 +639,7 @@
       <Entity type="Class">
         <Name>REBlueprint</Name>
         <Access>Public</Access>
-        <Location left="975" top="1779" />
+        <Location left="975" top="1805" />
         <Size width="230" height="216" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static array raceDecryptor</Member>
