@@ -140,11 +140,13 @@ class Reaction extends Sellable
         $omm->addMaterials($this->getCycleOutputMaterials());
 
         //if refine flag set, replace the refinable output materials by their refined materials
-        if ($reprocess) $omm->reprocessMaterials($equipmentYield, $reprocessingTaxFactor, 1);
+        if ($reprocess)
+            $omm->reprocessMaterials($equipmentYield, $reprocessingTaxFactor, 1);
 
         //if feedback flag set, subtract materials occurring in both input and output from each other, respecting
         //quantities. This gives the effective required and resulting materials.
-        if ($feedback) $materialsClass::symmetricDifference($imm, $omm);
+        if ($feedback)
+            $materialsClass::symmetricDifference($imm, $omm);
 
         $reactionProcessDataClass = Config::getIveeClassName('ReactionProcessData');
 

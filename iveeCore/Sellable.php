@@ -109,7 +109,7 @@ class Sellable extends Type
      * @return void
      * @throws \iveeCore\Exceptions\IveeCoreException always
      */
-    public static final function getById($id)
+    final public static function getById($id)
     {
         self::throwException(
             'IveeCoreException', 
@@ -125,7 +125,7 @@ class Sellable extends Type
      * @return void
      * @throws \iveeCore\Exceptions\IveeCoreException always
      */
-    public static final function getIdByName($name)
+    final public static function getIdByName($name)
     {
         self::throwException('IveeCoreException', "Use \iveeCore\Type::getIdByName() instead");
     }
@@ -138,7 +138,7 @@ class Sellable extends Type
      * @return void
      * @throws \iveeCore\Exceptions\IveeCoreException always
      */
-    public static final function getByName($name)
+    final public static function getByName($name)
     {
         self::throwException('IveeCoreException', "Use \iveeCore\Type::getByName() instead");
     }

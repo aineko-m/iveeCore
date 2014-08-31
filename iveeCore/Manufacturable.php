@@ -89,6 +89,16 @@ class Manufacturable extends Sellable
     }
 
     /**
+     * Returns blueprint ID that can manufacture this item
+     * 
+     * @return int
+     */
+    public function getBlueprintId()
+    {
+        return $this->producedFromBlueprintID;
+    }
+
+    /**
      * Returns blueprint object that can manufacture this item
      * 
      * @return Blueprint
