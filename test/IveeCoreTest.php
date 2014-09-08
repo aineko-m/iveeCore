@@ -123,7 +123,33 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $assLine->getModifiersForType($type);
     }
 
-public function testManufacturing()
+    public function testCapManufacturingWithTeam()
+    {
+        $im = \iveeCore\IndustryModifier::getBySystemIdForAllNpcStations(30000163); //Akora
+        //override any set team
+        $im->setTeamsForActivity(array(3854 => \iveeCore\Team::getById(3854)), 1);
+        
+        //with quantity=2 this also tests requirements being rounded down
+        $mpd = \iveeCore\Type::getByName('Rorqual Blueprint')->manufacture($im, 2, -9, -10, false);
+        $materialTarget = new \iveeCore\MaterialMap;
+        $materialTarget->addMaterial(21009, 17);
+        $materialTarget->addMaterial(21013, 17);
+        $materialTarget->addMaterial(21017, 13);
+        $materialTarget->addMaterial(21019, 20);
+        $materialTarget->addMaterial(21021, 20);
+        $materialTarget->addMaterial(21023, 17);
+        $materialTarget->addMaterial(21025, 20);
+        $materialTarget->addMaterial(21027, 40);
+        $materialTarget->addMaterial(21029, 11);
+        $materialTarget->addMaterial(21035, 59);
+        $materialTarget->addMaterial(21037, 79);
+        $materialTarget->addMaterial(24547, 59);
+        $materialTarget->addMaterial(24558, 59);
+        $materialTarget->addMaterial(24560, 31);
+        $this->assertTrue($mpd->getMaterialMap() == $materialTarget);
+    }
+
+    public function testManufacturing()
     {
 //        //Dominix - Test if extra materials are handled correctly when PE skill level < 5
 //        $mpd = \iveeCore\Type::getById(645)->getBlueprint()->manufacture(1, 10, 5, false, 4);
