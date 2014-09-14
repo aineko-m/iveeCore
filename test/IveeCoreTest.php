@@ -68,15 +68,18 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
             return;
         
         //empty cache entry for type
-        \iveeCore\MemcachedWrapper::instance()->deleteItem('type_' . 645);
+        \iveeCore\MemcachedWrapper::instance()->deleteItem('Type_' . 645);
         
         //get type
         $type = \iveeCore\Type::getById(645);
         $this->assertTrue($type instanceof \iveeCore\Manufacturable);
-        $this->assertTrue($type == \iveeCore\MemcachedWrapper::instance()->getItem('type_' . 645));
+        $this->assertTrue($type == \iveeCore\MemcachedWrapper::instance()->getItem('Type_' . 645));
         $this->assertTrue($type == \iveeCore\Type::getByName('Dominix'));
     }
     
+    /**
+     * Tests for error-free execution, not correctness
+     */
     public function testBasicBlueprintMethods()
     {
         $type = \iveeCore\Type::getById(2047); //DC I Blueprint
@@ -87,16 +90,13 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $type->getProductBaseCost(0);
         $this->assertTrue($type->calcResearchMultiplier(0, 2) * 105 == 250);
         
+        //IndustryModifier for Itamo
         $iMod = \iveeCore\IndustryModifier::getBySystemIdForPos(30000119);
         $type->manufacture($iMod);
         $type->copy($iMod);
         $type->invent($iMod);
         $type->researchME($iMod, 0, 10);
         $type->researchTE($iMod, 0, 20);
-        
-        $type = \iveeCore\Type::getById(22431); //Sin Blueprint
-        $type->copyInventManufacture($iMod);
-
     }
 
     public function testAssemblyLine()
@@ -123,7 +123,33 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $assLine->getModifiersForType($type);
     }
 
-public function testManufacturing()
+    public function testCapManufacturingWithTeam()
+    {
+        $im = \iveeCore\IndustryModifier::getBySystemIdForAllNpcStations(30000163); //Akora
+        //override any set team
+        $im->setTeamsForActivity(array(3854 => \iveeCore\Team::getById(3854)), 1);
+        
+        //with quantity=2 this also tests requirements being rounded down
+        $mpd = \iveeCore\Type::getByName('Rorqual Blueprint')->manufacture($im, 2, -9, -10, false);
+        $materialTarget = new \iveeCore\MaterialMap;
+        $materialTarget->addMaterial(21009, 17);
+        $materialTarget->addMaterial(21013, 17);
+        $materialTarget->addMaterial(21017, 13);
+        $materialTarget->addMaterial(21019, 20);
+        $materialTarget->addMaterial(21021, 20);
+        $materialTarget->addMaterial(21023, 17);
+        $materialTarget->addMaterial(21025, 20);
+        $materialTarget->addMaterial(21027, 40);
+        $materialTarget->addMaterial(21029, 11);
+        $materialTarget->addMaterial(21035, 59);
+        $materialTarget->addMaterial(21037, 79);
+        $materialTarget->addMaterial(24547, 59);
+        $materialTarget->addMaterial(24558, 59);
+        $materialTarget->addMaterial(24560, 31);
+        $this->assertTrue($mpd->getMaterialMap() == $materialTarget);
+    }
+
+    public function testManufacturing()
     {
 //        //Dominix - Test if extra materials are handled correctly when PE skill level < 5
 //        $mpd = \iveeCore\Type::getById(645)->getBlueprint()->manufacture(1, 10, 5, false, 4);
@@ -233,50 +259,35 @@ public function testManufacturing()
 
     public function testInventing()
     {
-//        $ipd = SDE::instance()->getByName('Ishtar Blueprint')->invent(23185);
-//        $this->assertTrue($ipd->getProbability() == 0.312);
-//        $materialTarget = new \iveeCore\MaterialMap;
-//        $materialTarget->addMaterial(23185, 1);
-//        $materialTarget->addMaterial(20410, 8);
-//        $materialTarget->addMaterial(20424, 8);
-//        $materialTarget->addMaterial(25855, 0);
-//        $this->assertTrue($ipd->getTotalMaterialMap() == $materialTarget);
-    }
+        //IndustryModifier for Veisto
+        $iMod = \iveeCore\IndustryModifier::getBySystemIdForAllNpcStations(30001363);
+        //reset any Teams there might be
+        $iMod->setTeams(array());
+        $cimpd = \iveeCore\Type::getByName('Eagle Blueprint')->copyInventManufacture($iMod, 21575, false);
+        $materialTarget = new \iveeCore\MaterialMap;
+        $materialTarget->addMaterial(623, 3);
+        $materialTarget->addMaterial(3828, 548);
+        $materialTarget->addMaterial(11399, 437);
+        $materialTarget->addMaterial(11478, 53);
+        $materialTarget->addMaterial(11533, 219);
+        $materialTarget->addMaterial(11534, 481);
+        $materialTarget->addMaterial(11540, 3929);
+        $materialTarget->addMaterial(11544, 16369);
+        $materialTarget->addMaterial(11550, 131);
+        $materialTarget->addMaterial(11552, 1746);
+        $materialTarget->addMaterial(11558, 1310);
+        $materialTarget->addMaterial(21575, 3.2);
+        $materialTarget->addMaterial(20424, 25.6);
+        $materialTarget->addMaterial(25853, 0);
+        $materialTarget->addMaterial(25887, 25.6);
 
-    public function testCopyInventManufacture()
-    {
-//        $cimpd = SDE::instance()->getByName('Ishtar Blueprint')->copyInventManufacture(23185);
-//        $materialTarget = new \iveeCore\MaterialMap;
-//        $materialTarget->addMaterial(38, 9320.4);
-//        $materialTarget->addMaterial(3828, 420);
-//        $materialTarget->addMaterial(11399, 420);
-//        $materialTarget->addMaterial(16670, 767760);
-//        $materialTarget->addMaterial(16680, 19530);
-//        $materialTarget->addMaterial(16683, 1470);
-//        $materialTarget->addMaterial(16681, 9933);
-//        $materialTarget->addMaterial(16682, 2226);
-//        $materialTarget->addMaterial(33359, 10080);
-//        $materialTarget->addMaterial(16678, 167580);
-//        $materialTarget->addMaterial(17317, 210);
-//        $materialTarget->addMaterial(16679, 12600);
-//        $materialTarget->addMaterial(34, 1697862);
-//        $materialTarget->addMaterial(35, 373872);
-//        $materialTarget->addMaterial(36, 117906);
-//        $materialTarget->addMaterial(37, 29842.8);
-//        $materialTarget->addMaterial(39, 1770);
-//        $materialTarget->addMaterial(40, 480);
-//        $materialTarget->addMaterial(23185, 3.2051282051282);
-//        $materialTarget->addMaterial(20410, 25.641025641026);
-//        $materialTarget->addMaterial(20424, 25.641025641026);
-//        $materialTarget->addMaterial(25855, 0);
-//
-//        //use array_diff to compare, as otherwise the floats never match
-//        $this->assertTrue(
-//            array_diff(
-//                $cimpd->getTotalMaterialMap()->getMaterials(),
-//                $materialTarget->getMaterials()
-//            ) == array()
-//        );
+        //use array_diff to compare, as otherwise the floats never match
+        $this->assertTrue(
+            array_diff(
+                $cimpd->getTotalMaterialMap()->getMaterials(),
+                $materialTarget->getMaterials()
+            ) == array()
+        );
     }
     
     public function testReaction()

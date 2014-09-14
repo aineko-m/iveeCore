@@ -37,15 +37,16 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
     protected static $representationName = 'vnd.ccp.eve.IndustryFacilityCollection-v1';
 
     /**
-     * Processes data objects to SQL
+     * Processes data for facilities (stations and player built outposts)
      * 
      * @param \stdClass $item to be processed
      *
-     * @return string the SQL queries
+     * @return string the UPSERT SQL queries
      */
     protected function processDataItemToSQL(\stdClass $item)
     {
         $exceptionClass = \iveeCore\Config::getIveeClassName('CrestException');
+        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
 
         $update = array();
 
@@ -57,17 +58,23 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
             throw new $exceptionClass("owner missing from facilities CREST data");
         $update['owner'] = (int) $item->owner->id;
 
-        if (isset($item->tax))
-            $update['tax'] = (float) $item->tax;
+        //branch depending if player built outpost or regular stations
+        if ($facilityID >= 61000000) {
+            $update['solarSystemID'] = (int) $item->solarSystem->id;
+            $update['stationName']   = $item->name;
+            $update['stationTypeID'] = (int) $item->type->id;
+            $table = 'iveeOutposts';
+        } else {
+            if (isset($item->tax))
+                $update['tax'] = (float) $item->tax;
+            $table = 'iveeFacilities';
+        }
 
         $insert = $update;
         $insert['facilityID'] = $facilityID;
-
         $this->updatedIDs[] = $facilityID;
 
-        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
-
-        return $sdeClass::makeUpsertQuery('iveeFacilities', $insert, $update);
+        return $sdeClass::makeUpsertQuery($table, $insert, $update);
     }
 
     /**

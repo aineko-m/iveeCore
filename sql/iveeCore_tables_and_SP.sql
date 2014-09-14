@@ -191,3 +191,17 @@ CREATE TABLE `iveeTeams` (
 COMMENT='BonusID = 0 : time bonus, = 1 : material bonus'
 COLLATE='ascii_general_ci'
 ENGINE=InnoDB;
+
+CREATE TABLE `iveeOutposts` (
+	`facilityID` INT(11) NOT NULL,
+	`solarSystemID` INT(11) NULL DEFAULT NULL,
+	`owner` INT(11) NOT NULL,
+	`stationTypeID` INT(11) NOT NULL,
+	`stationName` VARCHAR(50) NOT NULL,
+	PRIMARY KEY (`facilityID`),
+	INDEX `owner` (`owner`),
+	INDEX `solarSystemID` (`solarSystemID`),
+	INDEX `stationTypeID` (`stationTypeID`)
+)
+COLLATE='ascii_general_ci'
+ENGINE=InnoDB;

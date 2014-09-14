@@ -285,7 +285,6 @@ class InventionProcessData extends ProcessData
      */
     public function printData()
     {
-        $typeClass = Config::getIveeClassName('Type');
         $utilClass = Config::getIveeClassName('Util');
 
         echo "Average total success times:" . PHP_EOL;
@@ -293,7 +292,7 @@ class InventionProcessData extends ProcessData
 
         echo "Average total success materials:" . PHP_EOL;
         foreach ($this->getTotalSuccessMaterialMap()->getMaterials() as $typeID => $amount) {
-            echo $amount . 'x ' . $typeClass::getById($typeID)->getName() . PHP_EOL;
+            echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
         }
 
         echo "Total average success material cost: " 

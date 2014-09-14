@@ -113,9 +113,8 @@ class ManufactureProcessData extends ProcessData
     public function getTotalProfit($maxPriceDataAge = null)
     {
         $defaultsClass = Config::getIveeClassName('Defaults');
-        $typeClass = Config::getIveeClassName('Type');
 
-        return ($typeClass::getById($this->producesTypeID)->getSellPrice($maxPriceDataAge)
+        return (Type::getById($this->producesTypeID)->getSellPrice($maxPriceDataAge)
             * $this->producesQuantity * $defaultsClass::instance()->getDefaultSellTaxFactor())
                 - ($this->getTotalCost($maxPriceDataAge));
     }
@@ -128,15 +127,14 @@ class ManufactureProcessData extends ProcessData
     public function printData()
     {
         $utilClass = Config::getIveeClassName('Util');
-        $typeClass = Config::getIveeClassName('Type');
 
         echo "Total Slot Time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
         echo "Total Materials for " . $this->producesQuantity . "x "
-            . $typeClass::getById($this->producesTypeID)->getName() . ":" . PHP_EOL;
+            . Type::getById($this->producesTypeID)->getName() . ":" . PHP_EOL;
 
         //iterate over materials
         foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount)
-            echo $amount . 'x ' . $typeClass::getById($typeID)->getName() . PHP_EOL;
+            echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
 
         echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost())
             . "ISK" . PHP_EOL;

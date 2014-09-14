@@ -105,7 +105,6 @@ class Manufacturable extends Sellable
      */
     public function getBlueprint()
     {
-        $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getById($this->producedFromBlueprintID);
+        return Type::getById($this->producedFromBlueprintID);
     }
 }

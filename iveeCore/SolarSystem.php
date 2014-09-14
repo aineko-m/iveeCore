@@ -107,8 +107,9 @@ class SolarSystem extends SdeTypeCommon
     {
         $this->id = (int) $id;
         $sdeClass = Config::getIveeClassName('SDE');
+        $sde = $sdeClass::instance();
 
-        $row = $sdeClass::instance()->query(
+        $row = $sde->query(
             "SELECT regionID, constellationID, solarSystemName, security, crestIndexDate, manufacturingIndex,
                 teResearchIndex, meResearchIndex, copyIndex, reverseIndex, inventionIndex
             FROM mapSolarSystems
@@ -145,29 +146,49 @@ class SolarSystem extends SdeTypeCommon
         if (isset($row['inventionIndex']))
             $this->industryIndices[8] = (float) $row['inventionIndex'];
 
-        //get stations in system
-        $res = $sdeClass::instance()->query(
+        $this->loadStations($sde);
+        $this->loadTeams($sde);
+    }
+
+    /**
+     * Loads stationIDs in system
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadStations(SDE $sde)
+    {
+        $res = $sde->query(
             "SELECT stationID
             FROM staStations
             WHERE solarSystemID = " . $this->id . ';'
         );
 
-        //get stations in system
         while ($row = $res->fetch_assoc()) {
             $this->stationIDs[] = $row['stationID'];
         }
+    }
 
+    /**
+     * Loads teamIDs in system
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadTeams(SDE $sde)
+    {
         //get teams in system
-        $res = $sdeClass::instance()->query(
+        $res = $sde->query(
             "SELECT teamID
             FROM iveeTeams
             WHERE solarSystemID = " 
             . $this->id . " AND expiryTime > '" . date('Y-m-d H:i:s', time()) . "';"
         );
 
-        while ($row = $res->fetch_assoc()) {
+        while ($row = $res->fetch_assoc())
             $this->teamIDs[] = $row['teamID'];
-        }
     }
 
     /**

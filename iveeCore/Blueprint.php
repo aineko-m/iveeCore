@@ -245,9 +245,6 @@ class Blueprint extends Sellable
      */
     public function getProductBaseCost($maxPriceDataAge = null)
     {
-        //lookup Type class
-        $typeClass = Config::getIveeClassName('Type');
-
         if (is_null($maxPriceDataAge)) {
             $defaultsClass = Config::getIveeClassName('Defaults');
             $maxPriceDataAge = $defaultsClass::instance()->getMaxPriceDataAge();
@@ -257,7 +254,7 @@ class Blueprint extends Sellable
         foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matID => $matData) {
             if (isset($matData['c'])) 
                 continue;
-            $baseCost += $typeClass::getById($matID)->getCrestAdjustedPrice($maxPriceDataAge) * $matData['q'];
+            $baseCost += Type::getById($matID)->getCrestAdjustedPrice($maxPriceDataAge) * $matData['q'];
         }
         return $baseCost;
     }
@@ -569,9 +566,7 @@ class Blueprint extends Sellable
      */
     public function getProduct()
     {
-        //lookup Type class
-        $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getById($this->getProductId());
+        return Type::getById($this->getProductId());
     }
 
     /**

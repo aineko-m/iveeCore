@@ -168,9 +168,8 @@ class MaterialMap
     public function reprocessMaterials($equipmentYield = 0.5, $reprocessingTaxFactor = 0.95, 
         $implantBonusFactor = 1.0
     ) {
-        $typeClass = Config::getIveeClassName('Type');
         foreach ($this->materials as $typeID => $quantity) {
-            $type = $typeClass::getById($typeID);
+            $type = Type::getById($typeID);
             if ($type->isReprocessable()) {
                 unset($this->materials[$typeID]);
                 $this->addMaterialMap(
@@ -192,10 +191,9 @@ class MaterialMap
      */
     public function getMaterialVolume()
     {
-        $typeClass = Config::getIveeClassName('Type');
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $quantity)
-            $sum += $typeClass::getById($typeID)->getVolume() * $quantity;
+            $sum += Type::getById($typeID)->getVolume() * $quantity;
 
         return $sum;
     }
@@ -210,12 +208,11 @@ class MaterialMap
      */
     public function getMaterialBuyCost($maxPriceDataAge = null)
     {
-        $typeClass = Config::getIveeClassName('Type');
         $defaultsClass = Config::getIveeClassName('Defaults');
 
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $amount) {
-            $type = $typeClass::getById($typeID);
+            $type = Type::getById($typeID);
             if (!($type instanceof Sellable) OR !$type->onMarket())
                 continue;
             if ($amount > 0)
@@ -235,12 +232,11 @@ class MaterialMap
      */
     public function getMaterialSellValue($maxPriceDataAge = null)
     {
-        $typeClass = Config::getIveeClassName('Type');
         $defaultsClass = Config::getIveeClassName('Defaults');
 
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $amount) {
-            $type = $typeClass::getById($typeID);
+            $type = Type::getById($typeID);
             if (!($type instanceof Sellable) OR !$type->onMarket())
                 continue;
             if ($amount > 0)

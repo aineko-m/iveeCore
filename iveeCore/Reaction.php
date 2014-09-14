@@ -61,7 +61,6 @@ class Reaction extends Sellable
         $this->setAttributes($row);
 
         $sdeClass  = Config::getIveeClassName('SDE');
-        $typeClass = Config::getIveeClassName('Type');
 
         //get reaction materials
         $res = $sdeClass::instance()->query(
@@ -81,7 +80,7 @@ class Reaction extends Sellable
                 $this->cycleInputMaterials[$row['typeID']] = $row['quantity'];
             else {
                 $this->cycleOutputMaterials[$row['typeID']] = $row['quantity'];
-                if ($typeClass::getById($row['typeID'])->isReprocessable())
+                if (Type::getById($row['typeID'])->isReprocessable())
                     $this->isAlchemy = true;
             }
         }

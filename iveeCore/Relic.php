@@ -101,7 +101,23 @@ class Relic extends Sellable
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
-        //get activity material requirements, if any
+        //load all required data from the DB
+        $this->loadActivityMaterials($sde);
+        $this->loadActivitySkills($sde);
+        $this->loadActivityTimes($sde);
+        $this->loadReStats($sde);
+        $this->loadSkillToDatacoreInterface($sde); 
+    }
+
+    /**
+     * Loads activity material requirements, if any
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadActivityMaterials(SDE $sde)
+    {
         $res = $sde->query(
             'SELECT activityID, materialTypeID, quantity, consume
             FROM industryActivityMaterials
@@ -118,8 +134,17 @@ class Relic extends Sellable
                         = (int) $row['consume'];
             }
         }
+    }
 
-        //get activity skills
+    /**
+     * Loads activity skill requirements, if any
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadActivitySkills(SDE $sde)
+    {
         $res = $sde->query(
             'SELECT activityID, skillID, level
             FROM industryActivitySkills
@@ -133,7 +158,17 @@ class Relic extends Sellable
             }
             $this->activitySkills[(int) $row['activityID']]->addSkill((int) $row['skillID'], (int) $row['level']);
         }
+    }
 
+    /**
+     * Loads activity times
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadActivityTimes(SDE $sde)
+    {
         //get activity times
         $res = $sde->query(
             'SELECT activityID, time
@@ -143,7 +178,19 @@ class Relic extends Sellable
         //set time data to array
         while ($row = $res->fetch_assoc())
             $this->activityTimes[(int) $row['activityID']] = (int) $row['time'];
+    }
 
+    /**
+     * Loads REBlueprint that can be reverse-engineered from this Relic, probabilities, result runs, decryptorGroupID
+     * and t3 product raceID
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeID
+     */
+    protected function loadReStats(SDE $sde)
+    {
         //get REBlueprint that can be reverse-engineered from this Relic, probabilities, result runs, decryptorGroupID
         //and t3 product raceID
         $res = $sde->query(
@@ -176,8 +223,17 @@ class Relic extends Sellable
             $this->decryptorGroupID             = (int) $row['decryptorGroupID'];
             $this->reverseEngineerOutputRuns    = (int) $row['quantity'];
         }
+    }
 
-        //get the mapping for skills to datacore or interface
+    /**
+     * Loads the mapping for skills to datacore or interface
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadSkillToDatacoreInterface(SDE $sde)
+    {
         $res = $sde->query(
             "SELECT COALESCE(valueInt, valueFloat) as skillID, it.groupID
             FROM dgmTypeAttributes as dta
@@ -218,7 +274,6 @@ class Relic extends Sellable
     public function reverseEngineer(IndustryModifier $iMod, $reverseEngineeredBpID, $recursive = true)
     {
         $reverseEngineeringDataClass = Config::getIveeClassName('ReverseEngineerProcessData');
-        $typeClass = Config::getIveeClassName('Type');
 
         if (!isset($this->reverseEngineersBlueprintIDs[$reverseEngineeredBpID]))
             self::throwException(
@@ -227,7 +282,7 @@ class Relic extends Sellable
             );
 
         //get reverse engineered BP
-        $reBP = $typeClass::getById($reverseEngineeredBpID);
+        $reBP = Type::getById($reverseEngineeredBpID);
         $decryptor = $reBP->getReverseEngineeringDecryptor();
 
         //get modifiers and test if reverse engineering is possible with the given assemblyLines
@@ -250,29 +305,54 @@ class Relic extends Sellable
 
         $red->addMaterial($decryptor->getId(), 1);
         $red->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_REVERSE_ENGINEERING));
-
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_REVERSE_ENGINEERING) as $matID => $matData) {
-            $mat = $typeClass::getById($matID);
-
-            //calculate total quantity needed, applying all modifiers
-            $totalNeeded = ceil($matData['q'] * $modifier['m']);
-
-            //if consume flag is set to 0, add to needed mats with quantity 0
-            if (isset($matData['c']) and $matData['c'] == 0) {
-                $red->addMaterial($matID, 0);
-                continue;
-            }
-
-            //if using recursive building and material is manufacturable, recurse!
-            if ($recursive AND $mat instanceof Manufacturable)
-                $red->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
-            else
-                $red->addMaterial($matID, $totalNeeded);
-        }
-
+        $this->addActivityMaterials(
+            $iMod,
+            $red, 
+            ProcessData::ACTIVITY_REVERSE_ENGINEERING,
+            $modifier['m'],
+            $recursive
+        );
+ 
         return $red;
     }
 
+    /**
+     * Computes and adds the material requirements for a process to a ProcessData object.
+     * 
+     * 
+     * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
+     * indices, teams, tax and assemblyLines
+     * @param ProcessData $pdata to which materials shall be added
+     * @param int $activityId of the activity
+     * @param float $materialFactor the IndustryModifier and Blueprint ME level dependant ME bonus factor
+     * @param float $numPortions the number of portions being built or researched. Note that passing a fraction will
+     * make the method not use the rounding for the resulting required amounts.
+     * @param bool $recursive defines if used materials should be manufactured recursively
+     * 
+     * @return void
+     */
+    protected function addActivityMaterials(IndustryModifier $iMod, ProcessData $pdata, $activityId, $materialFactor, 
+        $recursive
+    ) {
+        foreach ($this->getMaterialsForActivity($activityId) as $matID => $matData) {
+            //if consume flag is set to 0, add to needed mats with quantity 0
+            if (isset($matData['c']) and $matData['c'] == 0) {
+                $pdata->addMaterial($matID, 0);
+                continue;
+            }
+
+            $mat = Type::getById($matID);
+
+            //calculate total quantity needed, applying all modifiers
+            $totalNeeded = ceil($matData['q'] * $materialFactor);
+
+            //if using recursive building and material is manufacturable, recurse!
+            if ($recursive AND $mat instanceof Manufacturable)
+                $pdata->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
+            else
+                $pdata->addMaterial($matID, $totalNeeded);
+        }
+    }
     /**
      * This method exists to better model the fact that in reverse engineering, it is only possible to chose the race of
      * the output item by definig the decryptor to be used. This method thus returns a ProcessData object with sub

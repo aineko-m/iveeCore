@@ -107,7 +107,7 @@ class Decryptor extends Sellable
      */
     public function getMEModifier()
     {
-        return $this->teModifier;
+        return $this->meModifier;
     }
 
     /**

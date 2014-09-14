@@ -101,8 +101,7 @@ class InventableBlueprint extends Blueprint
      */
     public function getInventorBlueprint()
     {
-        $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getById($this->getInventorBlueprintId());
+        return Type::getById($this->getInventorBlueprintId());
     }
 
     /**

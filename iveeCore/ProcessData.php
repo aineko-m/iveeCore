@@ -202,8 +202,7 @@ class ProcessData
             $exceptionClass = Config::getIveeClassName('NoOutputItemException');
             throw new $exceptionClass("This process results in no new item");
         } else {
-            $typeClass = Config::getIveeClassName('Type');
-            return $typeClass::getById($this->producesTypeID);
+            return Type::getById($this->producesTypeID);
         }
     }
 
@@ -516,13 +515,12 @@ class ProcessData
      */
     public function printData()
     {
-        $typeClass = Config::getIveeClassName('Type');
         $utilClass = Config::getIveeClassName('Util');
         echo "Total slot time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
 
         //iterate over materials
         foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount)
-            echo $amount . 'x ' . $typeClass::getById($typeID)->getName() . PHP_EOL;
+            echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
 
         echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost()) . "ISK" . PHP_EOL;
         echo "Slot cost: "     . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;
