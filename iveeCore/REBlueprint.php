@@ -127,8 +127,7 @@ class REBlueprint extends Blueprint
      */
     public function getReverseEngineeringDecryptor()
     {
-        $typeClass = Config::getIveeClassName('Type');
-        return $typeClass::getById($this->getReverseEngineeringDecryptorID());
+        return Type::getById($this->getReverseEngineeringDecryptorID());
     }
 
     /**

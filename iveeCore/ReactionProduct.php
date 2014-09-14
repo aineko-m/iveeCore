@@ -78,10 +78,9 @@ class ReactionProduct extends Sellable
      */
     public function getReactions()
     {
-        $typeClass = Config::getIveeClassName('Type');
         $ret = array();
         foreach ($this->productOfReactionIDs as $reactionID)
-            $ret[$reactionID] = $typeClass::getById($reactionID);
+            $ret[$reactionID] = Type::getById($reactionID);
         
         return $ret;
     }

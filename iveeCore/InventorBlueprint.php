@@ -127,7 +127,6 @@ class InventorBlueprint extends Blueprint
     public function invent(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null, $recursive = true)
     {
         $inventionDataClass = Config::getIveeClassName('InventionProcessData');
-        $typeClass = Config::getIveeClassName('Type');
         $inventableBpIDs = $this->getInventableBlueprintIDs();
 
         //if no inventedBpID given, set to first inventable BP ID
@@ -142,7 +141,7 @@ class InventorBlueprint extends Blueprint
             );
 
         //get invented BP
-        $inventedBp = $typeClass::getById($inventedBpID);
+        $inventedBp = Type::getById($inventedBpID);
 
         //get modifiers and test if inventing is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_INVENTING, $inventedBp->getProduct());
@@ -150,7 +149,7 @@ class InventorBlueprint extends Blueprint
         //calculate base cost, its the average of all possible invented BP's product base cost
         $baseCost = 0;
         foreach ($inventableBpIDs as $inventableBpID)
-            $baseCost += $typeClass::getById($inventableBpID)->getProductBaseCost();
+            $baseCost += Type::getById($inventableBpID)->getProductBaseCost();
         $baseCost = $baseCost / count($inventableBpIDs);
 
         //with decryptor
@@ -207,8 +206,7 @@ class InventorBlueprint extends Blueprint
      */
     protected function getAndCheckDecryptor($decryptorID)
     {
-        $typeClass = Config::getIveeClassName('Type');
-        $decryptor = $typeClass::getById($decryptorID);
+        $decryptor = Type::getById($decryptorID);
 
         //check if decryptorID is actually a decryptor
         if (!($decryptor instanceof Decryptor))
@@ -282,9 +280,8 @@ class InventorBlueprint extends Blueprint
     public function getInventableBlueprints()
     {
         $ret = array();
-        $typeClass = Config::getIveeClassName('Type');
         foreach($this->getInventableBlueprintIDs() as $bpId)
-            $ret[$bpId] = $typeClass::getById($bpId);
+            $ret[$bpId] = Type::getById($bpId);
         return $ret;
     }
 
