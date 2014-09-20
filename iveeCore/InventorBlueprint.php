@@ -66,7 +66,20 @@ class InventorBlueprint extends Blueprint
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
-        //query for inventable blueprints, probability and decryptorGroupID
+        $this->loadInventionStats($sde);
+        $this->loadSkillToDatacoreInterface($sde);
+    }
+
+    /**
+     * Load inventable blueprints, probability and decryptorGroupID
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeID
+     */
+    protected function loadInventionStats(SDE $sde)
+    {
         $res = $sde->query(
             "SELECT iap.productTypeID, iap.probability, COALESCE(valueInt, valueFloat) as decryptorGroupID
             FROM dgmTypeAttributes as dta
@@ -89,8 +102,17 @@ class InventorBlueprint extends Blueprint
             $this->inventionProbability = (float) $row['probability'];
             $this->decryptorGroupID = (int) $row['decryptorGroupID'];
         }
+    }
 
-        //get the mapping for skills to datacore or interface
+    /**
+     * Loads the mapping for skills to datacore or interface
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadSkillToDatacoreInterface(SDE $sde)
+    {
         $res = $sde->query(
             "SELECT COALESCE(valueInt, valueFloat) as skillID, it.groupID
             FROM dgmTypeAttributes as dta

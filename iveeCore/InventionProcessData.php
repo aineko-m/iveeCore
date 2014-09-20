@@ -62,7 +62,7 @@ class InventionProcessData extends ProcessData
      * @param int $inventedBpID typeID of the invented blueprint
      * @param int $inventTime the invention takes in seconds
      * @param float $processCost the cost of performing this reseach process
-     * @param float $inventionChance  chance of success for invention
+     * @param float $probability  chance of success for invention
      * @param int $resultRuns the number of runs on the resulting T2 BPC if invention is successful
      * @param int $resultME the ME level on the resulting T2 BPC if invention is successful
      * @param int $resultTE the TE level on the resulting T2 BPC if invention is successful
@@ -72,11 +72,11 @@ class InventionProcessData extends ProcessData
      * 
      * @return InventionProcessData
      */
-    public function __construct($inventedBpID, $inventTime, $processCost, $inventionChance, $resultRuns,
+    public function __construct($inventedBpID, $inventTime, $processCost, $probability, $resultRuns,
         $resultME, $resultTE, $solarSystemID, $assemblyLineID, $teamID = null
     ) {
         parent::__construct($inventedBpID, 1, $inventTime, $processCost);
-        $this->probability = (float) $inventionChance;
+        $this->probability     = (float) $probability;
         $this->resultRuns      = (int) $resultRuns;
         $this->resultME        = (int) $resultME;
         $this->resultTE        = (int) $resultTE;

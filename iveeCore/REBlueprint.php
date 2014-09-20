@@ -65,7 +65,20 @@ class REBlueprint extends Blueprint
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
-        //get Relics this REBlueprint can be reverse-engineered from
+        $this->loadOriginatingRelics($sde);
+        $this->loadProductRace($sde);
+    }
+
+    /**
+     * Load Relics this REBlueprint can be reverse-engineered from
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeID
+     */
+    protected function loadOriginatingRelics(SDE $sde)
+    {
         $res = $sde->query(
             "SELECT typeID
             FROM industryActivityProducts
@@ -81,8 +94,18 @@ class REBlueprint extends Blueprint
 
         while ($row = $res->fetch_assoc())
             $this->reverseEngineeredFromRelicIDs[] = (int) $row['typeID'];
+    }
 
-        //get the raceID of the product
+    /**
+     * Load the raceID of the product
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeID
+     */
+    protected function loadProductRace(SDE $sde)
+    {
         $res = $sde->query(
             "SELECT raceID
             FROM invTypes
