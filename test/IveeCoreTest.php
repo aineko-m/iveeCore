@@ -148,72 +148,6 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $materialTarget->addMaterial(24560, 31);
         $this->assertTrue($mpd->getMaterialMap() == $materialTarget);
     }
-
-    public function testManufacturing()
-    {
-//        //Dominix - Test if extra materials are handled correctly when PE skill level < 5
-//        $mpd = \iveeCore\Type::getById(645)->getBlueprint()->manufacture(1, 10, 5, false, 4);
-//        $this->assertTrue($mpd->getProducedType()->getId() == 645);
-//        $this->assertTrue($mpd->getTime() == 12000);
-//        $materialTarget = new \iveeCore\MaterialMap;
-//        $materialTarget->addMaterial(34, 10967499);
-//        $materialTarget->addMaterial(35, 2743561);
-//        $materialTarget->addMaterial(36, 690738);
-//        $materialTarget->addMaterial(37, 171858);
-//        $materialTarget->addMaterial(38, 42804);
-//        $materialTarget->addMaterial(39, 9789);
-//        $materialTarget->addMaterial(40, 3583);
-//        $this->assertTrue($mpd->getMaterialMap() == $materialTarget);
-//
-//        //Improved Cloaking Device II - Tests if materials with recycle flag are handled correctly
-//        $mpd = \iveeCore\SDE::instance()->getByName('Improved Cloaking Device II')->getBlueprint()->manufacture(1, -4, 0, false, 4);
-//        $materialTarget = new \iveeCore\MaterialMap;
-//        $materialTarget->addMaterial(9840, 10);
-//        $materialTarget->addMaterial(9842, 5);
-//        $materialTarget->addMaterial(11370, 1);
-//        $materialTarget->addMaterial(11483, 0.15);
-//        $materialTarget->addMaterial(11541, 10);
-//        $materialTarget->addMaterial(11693, 10);
-//        $materialTarget->addMaterial(11399, 16);
-//        $this->assertTrue($mpd->getMaterialMap() == $materialTarget);
-//
-//        //test recursive building and adding ManufactureProcessData objects to ProcessData objects as sub-processes
-//        $pd = new \iveeCore\ProcessData();
-//        $pd->addSubProcessData(\iveeCore\SDE::instance()->getByName('Archon')->getBlueprint()->manufacture(1, 2, 1, true, 5));
-//        $pd->addSubProcessData(\iveeCore\SDE::instance()->getByName('Rhea')->getBlueprint()->manufacture(1, -2, 1, true, 5));
-//        $materialTarget = new \iveeCore\MaterialMap;
-//        $materialTarget->addMaterial(34, 173107652);
-//        $materialTarget->addMaterial(35, 28768725);
-//        $materialTarget->addMaterial(36, 10581008);
-//        $materialTarget->addMaterial(37, 1620852);
-//        $materialTarget->addMaterial(38, 461986);
-//        $materialTarget->addMaterial(39, 79255);
-//        $materialTarget->addMaterial(40, 31920);
-//        $materialTarget->addMaterial(3828, 1950);
-//        $materialTarget->addMaterial(11399, 3250);
-//        $materialTarget->addMaterial(16671, 9362621);
-//        $materialTarget->addMaterial(16681, 33210);
-//        $materialTarget->addMaterial(16682, 11520);
-//        $materialTarget->addMaterial(17317, 13460);
-//        $materialTarget->addMaterial(16680, 62220);
-//        $materialTarget->addMaterial(16683, 11330);
-//        $materialTarget->addMaterial(33362, 36600);
-//        $materialTarget->addMaterial(16679, 915915);
-//        $materialTarget->addMaterial(16678, 2444601);
-//        $this->assertTrue($pd->getTotalMaterialMap() == $materialTarget);
-//        //check skill handling
-//        $skillTarget = new \iveeCore\MaterialMap;
-//        $skillTarget->addSkill(22242, 4);
-//        $skillTarget->addSkill(3380, 5);
-//        $skillTarget->addSkill(11452, 4);
-//        $skillTarget->addSkill(11454, 4);
-//        $skillTarget->addSkill(11453, 4);
-//        $skillTarget->addSkill(11446, 4);
-//        $skillTarget->addSkill(11448, 4);
-//        $skillTarget->addSkill(11443, 4);
-//        $skillTarget->addSkill(11529, 4);
-//        $this->assertTrue($pd->getTotalSkillMap() == $skillTarget);
-    }
     
     public function testReprocessing()
     {
@@ -243,21 +177,8 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $materialTarget->addMaterial(29109, 836);
         $this->assertTrue($rmap == $materialTarget);
     }
-    
-    public function testCopying()
-    {
-//        //test copying of BPs that consume materials
-//        $cpd = SDE::instance()->getByName('Prototype Cloaking Device I')->getBlueprint()->copy(3, 'max', true);
-//        $materialTarget = new \iveeCore\MaterialMap;
-//        $materialTarget->addMaterial(3812, 6000);
-//        $materialTarget->addMaterial(36, 24000);
-//        $materialTarget->addMaterial(37, 45000);
-//        $materialTarget->addMaterial(38, 21600);
-//        $this->assertTrue($cpd->getTotalMaterialMap() == $materialTarget);
-//        $this->assertTrue($cpd->getTotalTime() == 2830800);
-    }
 
-    public function testInventing()
+    public function testCopyInventManufacture()
     {
         //IndustryModifier for Veisto
         $iMod = \iveeCore\IndustryModifier::getBySystemIdForAllNpcStations(30001363);
@@ -289,7 +210,22 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
             ) == array()
         );
     }
-    
+
+    public function testReverseEngineering()
+    {
+        $relic = \iveeCore\Type::getByName('Intact Hull Section');
+        $iMod = \iveeCore\IndustryModifier::getBySystemIdForPos(30000119);
+        $red = $relic->reverseEngineer($iMod, 29985);
+        
+        $materialTarget = new \iveeCore\MaterialMap;
+        $materialTarget->addMaterial(30383, 1);
+        $materialTarget->addMaterial(20412, 3);
+        $materialTarget->addMaterial(20424, 3);
+        $materialTarget->addMaterial(30386, 1);
+        $this->assertTrue($red->getTotalMaterialMap() == $materialTarget);
+        $this->assertTrue($red->getProbability() == 0.82);
+    }
+
     public function testReaction()
     {
         $reactionProduct = \iveeCore\Type::getByName('Platinum Technite');
