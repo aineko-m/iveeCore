@@ -11,7 +11,7 @@ See the file LICENSE included with the distribution.
 
 
 ## Purpose and target audience
-The goal of this project is to provide its users with a simple but powerful API to get information about industrial activities such as bill of materials, cost and profit or skill requirements. By hiding the complexities of EvE's static data export, iveeCore helps developers to quickly prototype scripts or develop full blown (web) applications.
+The goal of this project is to provide its users with a simple but powerful API to get information about industrial activities in EVE Online such as bill of materials, activity cost and profit or skill requirements. By hiding the complexities of EvE's static data export, iveeCore helps developers to quickly prototype scripts or develop full blown (web) applications.
 
 iveeCore will likely be most useful for developers with at least basic PHP knowledge wanting to create their own industry related tools.
 

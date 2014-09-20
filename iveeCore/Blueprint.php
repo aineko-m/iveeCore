@@ -91,7 +91,20 @@ class Blueprint extends Sellable
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
-        //get activity material requirements, if any
+        $this->loadActivityMaterials($sde);
+        $this->loadActivitySkills($sde);
+        $this->loadActivityTimes($sde);
+    }
+
+    /**
+     * Loads activity material requirements, if any
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadActivityMaterials(SDE $sde)
+    {
         $res = $sde->query(
             'SELECT activityID, materialTypeID, quantity, consume
             FROM industryActivityMaterials
@@ -108,8 +121,17 @@ class Blueprint extends Sellable
                         = (int) $row['consume'];
             }
         }
+    }
 
-        //get activity skills
+    /**
+     * Loads activity skill requirements, if any
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadActivitySkills(SDE $sde)
+    {
         $res = $sde->query(
             'SELECT activityID, skillID, level
             FROM industryActivitySkills
@@ -123,8 +145,17 @@ class Blueprint extends Sellable
             }
             $this->activitySkills[(int) $row['activityID']]->addSkill((int) $row['skillID'], (int) $row['level']);
         }
+    }
 
-        //get activity times
+    /**
+     * Loads activity times
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
+     * @return void
+     */
+    protected function loadActivityTimes(SDE $sde)
+    {
         $res = $sde->query(
             'SELECT activityID, time
             FROM industryActivity
