@@ -73,9 +73,9 @@ If everything went well, you should see a line with the libzmq version.
 ### Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to  helpful 3rd party developers like Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&m=4828809#post4828809](https://forums.eveonline.com/default.aspx?g=posts&m=4828809#post4828809)
+[https://forums.eveonline.com/default.aspx?g=posts&m=5056095#post5056095](https://forums.eveonline.com/default.aspx?g=posts&m=5056095#post5056095)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_hyp10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_oce10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 
 ### Setup iveeCore
 

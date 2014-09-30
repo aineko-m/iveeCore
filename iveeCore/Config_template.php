@@ -37,7 +37,7 @@ class Config
     protected static $dbPort = 3306;
     protected static $dbUser = 'eve_sde';
     protected static $dbPw   = 'eve_sde_pw';
-    protected static $dbName = 'eve_sde_hyp10';
+    protected static $dbName = 'eve_sde_oce10';
 
     //Cache config
     protected static $useCache    = true;
