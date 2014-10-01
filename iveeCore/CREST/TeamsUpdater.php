@@ -84,7 +84,7 @@ class TeamsUpdater extends CrestDataUpdater
         $insert = $update;
         $insert['teamID'] = $teamID;
 
-        $this->updatedIDs[$update['solarSystemID']] = 1;
+        $this->updatedIDs[] = $update['solarSystemID'];
 
         return $sdeClass::makeUpsertQuery('iveeTeams', $insert, $update);
     }
