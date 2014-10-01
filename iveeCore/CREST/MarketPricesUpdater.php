@@ -76,6 +76,6 @@ class MarketPricesUpdater extends CrestDataUpdater
      */
     protected function invalidateCaches()
     {
-        Type::getInstancePool()->deleteFromCache($this->updatedIDs);
+        \iveeCore\Type::getInstancePool()->deleteFromCache($this->updatedIDs);
     }
 }
