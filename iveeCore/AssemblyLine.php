@@ -216,6 +216,17 @@ class AssemblyLine extends SdeTypeCommon
                 'm' => (float) $row['materialMultiplier'],
                 't' => (float) $row['timeMultiplier']
             );
+        
+        //This is a hack to deal with Phoebe SDE missing assemblyLine compatibility data for Blueprints (categoryID=9).
+        //Some assembly lines have cost bonuses attached to them for research, copying and invention activities. 
+        //These bonuses can't/won't be considered until the missing data is reinserted into the SDE.
+        if(in_array($this->activityID, array(3, 4, 5, 8))){
+            $this->categoryModifiers[9] = array(
+                't' => 1,
+                'm' => 1,
+                'c' => 1
+            );
+        }
     }
 
     /**

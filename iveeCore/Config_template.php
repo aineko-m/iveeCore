@@ -37,7 +37,7 @@ class Config
     protected static $dbPort = 3306;
     protected static $dbUser = 'eve_sde';
     protected static $dbPw   = 'eve_sde_pw';
-    protected static $dbName = 'eve_sde_oce10';
+    protected static $dbName = 'eve_sde_pho10';
 
     //Cache config
     protected static $useCache    = true;
@@ -83,8 +83,6 @@ class Config
         'Relic'                  => '\iveeCore\Relic',
         'ResearchMEProcessData'  => '\iveeCore\ResearchMEProcessData',
         'ResearchTEProcessData'  => '\iveeCore\ResearchTEProcessData',
-        'ReverseEngineerProcessData' => '\iveeCore\ReverseEngineerProcessData',
-        'REBlueprint'            => '\iveeCore\REBlueprint',
         'SDE'                    => '\iveeCore\SDE',
         'SdeTypeCommon'          => '\iveeCore\SdeTypeCommon',
         'Sellable'               => '\iveeCore\Sellable',
@@ -92,6 +90,7 @@ class Config
         'SolarSystem'            => '\iveeCore\SolarSystem',
         'Speciality'             => '\iveeCore\Speciality',
         'Station'                => '\iveeCore\Station',
+        'T3Blueprint'            => '\iveeCore\T3Blueprint',
         'Team'                   => '\iveeCore\Team',
         'Type'                   => '\iveeCore\Type',
         'Util'                   => '\iveeCore\Util',

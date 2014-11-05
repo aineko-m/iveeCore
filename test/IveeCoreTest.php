@@ -184,7 +184,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $iMod = \iveeCore\IndustryModifier::getBySystemIdForAllNpcStations(30001363);
         //reset any Teams there might be
         $iMod->setTeams(array());
-        $cimpd = \iveeCore\Type::getByName('Eagle Blueprint')->copyInventManufacture($iMod, 21575, false);
+        $cimpd = \iveeCore\Type::getByName('Eagle Blueprint')->copyInventManufacture($iMod, 34206, false);
         $materialTarget = new \iveeCore\MaterialMap;
         $materialTarget->addMaterial(623, 3);
         $materialTarget->addMaterial(3828, 548);
@@ -197,10 +197,9 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $materialTarget->addMaterial(11550, 131);
         $materialTarget->addMaterial(11552, 1746);
         $materialTarget->addMaterial(11558, 1310);
-        $materialTarget->addMaterial(21575, 3.2);
-        $materialTarget->addMaterial(20424, 25.6);
-        $materialTarget->addMaterial(25853, 0);
-        $materialTarget->addMaterial(25887, 25.6);
+        $materialTarget->addMaterial(34206, 2.6373626373626);
+        $materialTarget->addMaterial(20424, 21.098901098901);
+        $materialTarget->addMaterial(25887, 21.098901098901);
 
         //use array_diff to compare, as otherwise the floats never match
         $this->assertTrue(
@@ -215,15 +214,15 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
     {
         $relic = \iveeCore\Type::getByName('Intact Hull Section');
         $iMod = \iveeCore\IndustryModifier::getBySystemIdForPos(30000119);
-        $red = $relic->reverseEngineer($iMod, 29985);
-        
+        $iMod->setTeams(array());
+        $red = $relic->invent($iMod, 29985);
+
         $materialTarget = new \iveeCore\MaterialMap;
-        $materialTarget->addMaterial(30383, 1);
         $materialTarget->addMaterial(20412, 3);
         $materialTarget->addMaterial(20424, 3);
-        $materialTarget->addMaterial(30386, 1);
+        $materialTarget->addMaterial(30752, 1);
         $this->assertTrue($red->getTotalMaterialMap() == $materialTarget);
-        $this->assertTrue($red->getProbability() == 0.82);
+        $this->assertTrue(abs($red->getProbability() - 0.49583333333333) < 0.00000000001);
     }
 
     public function testReaction()

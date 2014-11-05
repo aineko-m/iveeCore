@@ -1,5 +1,22 @@
 This file lists major changes in iveeCore versions.
 
+Version 2.1 - November 8th, 2014
+--------------------------------
+- Adapt to Phoebe release
+-> Rename REBlueprint to T3Blueprint
+-> Refactor reverse engineering as it has been merged into invention, also changing the class hierarchy for Relic and 
+T3Blueprint
+-> Adapt invention to changes
+-> The SDE is missing assembly line compatibility data for blueprints, which made a hack necessary to make it still 
+work. However, the calculated cost of research, copying and invention will not take into account cost bonuses for
+assembly lines that have them in-game.
+- Existing users will have to remake the configuration file based on the new template
+
+Version 2.0.1 - October 1st, 2014
+---------------------------------
+- Adapt to Oceanus release
+- Small bugfixes to CREST updater
+
 Version 2.0 - September 20th, 2014
 ----------------------------------
 
