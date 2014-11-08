@@ -36,7 +36,6 @@ class ProcessData
     const ACTIVITY_RESEARCH_TE   = 3;
     const ACTIVITY_RESEARCH_ME   = 4;
     const ACTIVITY_COPYING       = 5;
-    const ACTIVITY_REVERSE_ENGINEERING = 7;
     const ACTIVITY_INVENTING     = 8;
 
     /**
@@ -471,7 +470,6 @@ class ProcessData
             static::ACTIVITY_RESEARCH_TE => 0,
             static::ACTIVITY_RESEARCH_ME => 0,
             static::ACTIVITY_COPYING => 0,
-            static::ACTIVITY_REVERSE_ENGINEERING => 0,
             static::ACTIVITY_INVENTING => 0
         );
 

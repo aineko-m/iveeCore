@@ -372,6 +372,8 @@
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="22" second="12">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -387,7 +389,7 @@
       <Entity type="Class">
         <Name>Reaction</Name>
         <Access>Public</Access>
-        <Location left="99" top="1354" />
+        <Location left="240" top="1352" />
         <Size width="278" height="216" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array cycleInputMaterial</Member>
@@ -403,41 +405,18 @@
       <Entity type="Class">
         <Name>Relic</Name>
         <Access>Public</Access>
-        <Location left="975" top="1148" />
-        <Size width="339" height="519" />
+        <Location left="795" top="2336" />
+        <Size width="339" height="128" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">protected array activityMaterials</Member>
-        <Member type="Field">protected array activitySkills</Member>
-        <Member type="Field">protected array activityTimes</Member>
-        <Member type="Field">protected array reverseEngineersBlueprintIDs</Member>
-        <Member type="Field">protected array reverseEngineersBlueprintIDsByRaceID</Member>
-        <Member type="Field">protected int decryptorGroupID</Member>
-        <Member type="Field">protected float reverseEngineerProbability</Member>
-        <Member type="Field">protected int reverseEngineerOutputRuns</Member>
-        <Member type="Field">protected int encryptionSkillID</Member>
-        <Member type="Field">protected array datacoreSkillIDs</Member>
-        <Member type="Method">protected Relic __constructor(int typeID)</Member>
-        <Member type="Method">protected void loadActivityMaterials(SDE sde)</Member>
-        <Member type="Method">protected void loadActivitySkills(SDE sde)</Member>
-        <Member type="Method">protected void loadActivityTimes(SDE sde)</Member>
-        <Member type="Method">protected void loadReStats(SDE sde)</Member>
-        <Member type="Method">protected void loadSkillToDatacoreInterface(SDE sde)</Member>
-        <Member type="Method">public reverseEngineerProcessData reverseEngineer(IndustryModifier iMod, int reverseEngineerBpID, bool recursive)</Member>
-        <Member type="Method">public ProcessData reverseEngineerByRaceID(IndustryModifier iMod, int raceID, bool recursive)</Member>
-        <Member type="Method">public array getReverseEngineerBlueprintIDs()</Member>
-        <Member type="Method">public array getReverseEngineerBlueprintIDsByRaceID(int raceID)</Member>
-        <Member type="Method">public int getReverseEngineerOutputRuns()</Member>
-        <Member type="Method">public float getReverseEngineeringProbability()</Member>
-        <Member type="Method">public array getMaterialsForActivity(int activityID)</Member>
-        <Member type="Method">public SkillMap getSkillMapForActivity(int activityID)</Member>
-        <Member type="Method">public int getBaseTimeForActivity(int activityID)</Member>
-        <Member type="Method">public float calcReverseEngineeringProbability()</Member>
+        <Member type="Method">protected array queryAttributes()</Member>
+        <Member type="Method">public InventionData invent(IndustryModifier iMod, int inventedBpID, int decryptorID, bool recursive)</Member>
+        <Member type="Method">public InventionData inventManufacture(IndustryModifier iMod, int inventedBpID, int decryptorID, bool recursive)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>Manufacturable</Name>
         <Access>Public</Access>
-        <Location left="10" top="1148" />
+        <Location left="984" top="1148" />
         <Size width="180" height="162" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int producedFromBlueprintID</Member>
@@ -450,7 +429,7 @@
       <Entity type="Class">
         <Name>ReactionProduct</Name>
         <Access>Public</Access>
-        <Location left="294" top="1148" />
+        <Location left="143" top="1148" />
         <Size width="235" height="145" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array productOfReactionIDs</Member>
@@ -462,7 +441,7 @@
       <Entity type="Class">
         <Name>Decryptor</Name>
         <Access>Public</Access>
-        <Location left="1360" top="1148" />
+        <Location left="1233" top="1148" />
         <Size width="219" height="281" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int teModifier</Member>
@@ -482,7 +461,7 @@
       <Entity type="Class">
         <Name>Type</Name>
         <Access>Public</Access>
-        <Location left="1027" top="100" />
+        <Location left="1027" top="121" />
         <Size width="339" height="638" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static InstancePool instancePool</Member>
@@ -608,10 +587,13 @@
       <Entity type="Class">
         <Name>InventorBlueprint</Name>
         <Access>Public</Access>
-        <Location left="584" top="1840" />
-        <Size width="339" height="315" />
+        <Location left="795" top="1850" />
+        <Size width="339" height="434" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">protected array inventsBlueprintIDsChance</Member>
+        <Member type="Field">protected array inventsBlueprintIDs</Member>
+        <Member type="Field">protected array inventsBlueprintIDsByRaceID</Member>
+        <Member type="Field">protected float inventionProbability</Member>
+        <Member type="Field">protected int inventionOutputRuns</Member>
         <Member type="Field">protected int decryptorGroupID</Member>
         <Member type="Field">protected int encryptionSkillID</Member>
         <Member type="Field">protected array datacoreSkillIDs</Member>
@@ -623,19 +605,23 @@
         <Member type="Method">public ManufactureData copyInventManufacture(IndustryModifier iMod, int inventedBpID, int decryptorID, bool recursive)</Member>
         <Member type="Method">protected array getInventableBlueprintIDs()</Member>
         <Member type="Method">protected array getInventableBlueprints()</Member>
+        <Member type="Method">protected float getInventionProbability()</Member>
+        <Member type="Method">protected array getInventableBlueprintIDsByRaceId(int race)</Member>
+        <Member type="Method">protected int getInventionOutputRuns()</Member>
+        <Member type="Method">public ing getDecryptorGroupID()</Member>
         <Member type="Method">public array getDecryptorIDs()</Member>
-        <Member type="Method">public float calcInventionChance(int inventedBpID, int metaLevel)</Member>
+        <Member type="Method">public float calcInventionProbability()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>InventableBlueprint</Name>
         <Access>Public</Access>
-        <Location left="199" top="1840" />
+        <Location left="367" top="1850" />
         <Size width="339" height="230" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">protected int inventedFromBlueprintID</Member>
-        <Member type="Method">protected array queryAttributes()</Member>
-        <Member type="Method">protected void setAttributes(array row)</Member>
+        <Member type="Field">protected int inventedFrom</Member>
+        <Member type="Method">protected InventableBlueprint __construct(int typeID)</Member>
+        <Member type="Method">protected void loadOriginatingBlueprints(SDE sde)</Member>
         <Member type="Method">public int getInventorBlueprintId()</Member>
         <Member type="Method">public InventableBlueprint getInventorBlueprint()</Member>
         <Member type="Method">public void getBuyPrice(int maxPriceDataAge)</Member>
@@ -645,25 +631,23 @@
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
-        <Name>REBlueprint</Name>
+        <Name>T3Blueprint</Name>
         <Access>Public</Access>
-        <Location left="975" top="1840" />
-        <Size width="230" height="216" />
+        <Location left="395" top="2135" />
+        <Size width="282" height="179" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">protected static array raceDecryptor</Member>
-        <Member type="Field">protected array reverseEngineeredFromRelicIDs</Member>
-        <Member type="Field">protected array reverseEngineeringDecryptorID</Member>
-        <Member type="Method">protected REBlueprint __construct(int typeID)</Member>
-        <Member type="Method">protected void loadOriginatingRelics(SDE sde)</Member>
-        <Member type="Method">protected void loadProductRace(SDE sde)</Member>
-        <Member type="Method">public array getReverseEngineeringRelicIDs()</Member>
-        <Member type="Method">public int getReverseEngineeringDecryptorID()</Member>
+        <Member type="Field">protected array inventedFrom</Member>
+        <Member type="Method">protected void loadOriginatingBlueprints(SDE sde)</Member>
+        <Member type="Method">protected array getInventionRelicIDs()</Member>
+        <Member type="Method">protected array getInventionRelics()</Member>
+        <Member type="Method">public InventionData inventFromRelic(IndustryModifier iMod, int relicId, int decryptorID, bool recursive)</Member>
+        <Member type="Method">public InventionData inventManufacture(IndustryModifier iMod, int relicId, int decryptorID, bool recursive)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>SdeTypeCommon</Name>
         <Access>Public</Access>
-        <Location left="584" top="10" />
+        <Location left="584" top="26" />
         <Size width="339" height="264" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int id</Member>
@@ -679,6 +663,12 @@
         <Member type="Method">public string getName()</Member>
         <Modifier>None</Modifier>
       </Entity>
+      <Entity type="Comment">
+        <Text>Blocked methods
+omitted</Text>
+        <Location left="551" top="2388" />
+        <Size width="106" height="54" />
+      </Entity>
     </Entities>
     <Relationships>
       <Relationship type="Generalization" first="7" second="6">
@@ -690,14 +680,6 @@
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Generalization" first="9" second="7">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-      </Relationship>
-      <Relationship type="Generalization" first="10" second="7">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-      </Relationship>
-      <Relationship type="Generalization" first="1" second="6">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
@@ -725,9 +707,25 @@
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>245</X>
-          <Y>1123</Y>
+          <X>462</X>
+          <Y>1122</Y>
         </BendPoint>
+      </Relationship>
+      <Relationship type="Generalization" first="10" second="9">
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
+      </Relationship>
+      <Relationship type="Generalization" first="1" second="8">
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
+      </Relationship>
+      <Relationship type="Comment" first="12" second="1">
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+      </Relationship>
+      <Relationship type="Comment" first="12" second="10">
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
       </Relationship>
     </Relationships>
   </ProjectItem>
@@ -890,15 +888,6 @@
         <Member type="Method">public float getProfit(int maxPriceDataAge)</Member>
         <Modifier>None</Modifier>
       </Entity>
-      <Entity type="Class">
-        <Name>ReverseEngineerProcessData</Name>
-        <Access>Public</Access>
-        <Location left="447" top="1437" />
-        <Size width="270" height="94" />
-        <Collapsed>False</Collapsed>
-        <Member type="Method">public ReverseEngineerProcessData __construct(int reverseEngineerBpID, int reverseEngineeringTime, float processCost, float reverseEngineeringProbability, int resultRuns, int solarSystemID, int assemblyLineID, int teamID)</Member>
-        <Modifier>None</Modifier>
-      </Entity>
     </Entities>
     <Relationships>
       <Relationship type="Generalization" first="0" second="3">
@@ -938,6 +927,8 @@
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="3" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -951,10 +942,6 @@
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
         <EndMultiplicity>0..*</EndMultiplicity>
-      </Relationship>
-      <Relationship type="Generalization" first="7" second="1">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
       </Relationship>
     </Relationships>
   </ProjectItem>
@@ -1149,6 +1136,8 @@
     </Entities>
     <Relationships>
       <Relationship type="Association" first="2" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1161,6 +1150,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1176,6 +1167,8 @@
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="4">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1187,6 +1180,8 @@
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="0">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1198,6 +1193,8 @@
         <EndMultiplicity>1..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="4" second="5">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1205,8 +1202,6 @@
         <EndMultiplicity>5</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="2" second="4">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">

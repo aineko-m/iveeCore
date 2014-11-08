@@ -28,60 +28,52 @@ namespace iveeCore;
 class InventableBlueprint extends Blueprint
 {
     /**
-     * @var int $inventedFromBlueprintID ID for the Blueprint which this can be invented from
+     * @var int $inventedFrom ID of the InventorBlueprint from which this InventableBlueprint can be invented from
      */
-    protected $inventedFromBlueprintID;
-
+    protected $inventedFrom;
+    
     /**
-     * Gets all necessary data from SQL
-     * 
-     * @return array
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
+     * Constructor. Use \iveeCore\Type::getById() to instantiate InventableBlueprint objects instead.
+     *
+     * @param int $id of the InventableBlueprint object
+     *
+     * @return \iveeCore\InventableBlueprint
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
-    protected function queryAttributes()
+    protected function __construct($id)
     {
+        //call parent constructor
+        parent::__construct($id);
+
         $sdeClass = Config::getIveeClassName('SDE');
-        $row = $sdeClass::instance()->query(
-            "SELECT
-            it.groupID,
-            ig.categoryID,
-            it.typeName,
-            it.volume,
-            it.portionSize,
-            it.basePrice,
-            it.marketGroupID,
-            prod.productTypeID,
-            maxprod.maxProductionLimit,
-            inv.typeID as t1BpID
-            FROM invTypes AS it
-            JOIN invGroups AS ig ON it.groupID = ig.groupID
-            JOIN industryActivityProducts as prod ON prod.typeID = it.typeID
-            JOIN industryBlueprints as maxprod ON maxprod.typeID = it.typeID
-            JOIN industryActivityProducts as inv ON inv.productTypeID = it.typeID
-            WHERE it.published = 1
-            AND prod.activityID = 1
-            AND inv.activityID = 8
-            AND it.typeID = " . $this->id . ";"
-        )->fetch_assoc();
-
-        if (empty($row))
-            self::throwException('TypeIdNotFoundException', "typeID ". $this->id . " not found");
-        
-        return $row;
+        $this->loadOriginatingBlueprints($sdeClass::instance());
     }
-
+    
     /**
-     * Sets attributes from SQL result row to object
-     * 
-     * @param array $row data from DB
-     * 
+     * Load Blueprint this InventableBlueprint can be invented from
+     *
+     * @param \iveeCore\SDE $sde the SDE object
+     *
      * @return void
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeID
      */
-    protected function setAttributes(array $row)
+    protected function loadOriginatingBlueprints(SDE $sde)
     {
-        parent::setAttributes($row);
-        if (isset($row['t1BpID']))
-            $this->inventedFromBlueprintID = (int) $row['t1BpID'];
+        $res = $sde->query(
+            "SELECT typeID
+            FROM industryActivityProducts
+            WHERE activityID = 8
+            AND productTypeID = " . $this->id . ';'
+        );
+
+        if ($res->num_rows < 1)
+            self::throwException(
+                'TypeIdNotFoundException', 
+                "Originating Blueprint data for InventableBlueprint ID=" . $this->id ." not found"
+            );
+
+        while ($row = $res->fetch_assoc())
+            $this->inventedFrom = (int) $row['typeID'];
     }
 
     /**
@@ -91,7 +83,7 @@ class InventableBlueprint extends Blueprint
      */
     public function getInventorBlueprintId()
     {
-        return $this->inventedFromBlueprintID;
+        return $this->inventedFrom;
     }
 
     /**

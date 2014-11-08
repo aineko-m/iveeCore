@@ -31,16 +31,26 @@ class InventorBlueprint extends Blueprint
      * @var array $inventsBlueprintID holds the inventable blueprint ID(s)
      */
     protected $inventsBlueprintIDs = array();
+    
+    /**
+     * @var array $inventsBlueprintIDsByRaceID raceID => Blueprint IDs
+     */
+    protected $inventsBlueprintIDsByRaceID = array();
 
     /**
      * @var float $inventionProbability the base invention chance
      */
     protected $inventionProbability;
+    
+    /**
+     * @var int $inventionOutputRuns the base number of runs on the invented blueprint
+     */
+    protected $inventionOutputRuns;
 
     /**
      * @var int $decryptorGroupID groupID of compatible decryptors
      */
-    protected $decryptorGroupID;
+    protected $decryptorGroupID = 1304;
 
     /**
      * @var int $encryptionSkillID the relevant decryptor skillID
@@ -71,7 +81,7 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Load inventable blueprints, probability and decryptorGroupID
+     * Load inventable blueprints, blueprints by race, probability, and invention output runs.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -81,31 +91,33 @@ class InventorBlueprint extends Blueprint
     protected function loadInventionStats(SDE $sde)
     {
         $res = $sde->query(
-            "SELECT iap.productTypeID, iap.probability, COALESCE(valueInt, valueFloat) as decryptorGroupID
-            FROM dgmTypeAttributes as dta
-            JOIN industryActivityMaterials as iam ON iam.materialTypeID = dta.typeID
-            JOIN industryActivityProbabilities as iap ON iap.typeID = iam.typeID
-            WHERE attributeID = 1115
-            AND iam.activityID = 8
-            AND iap.activityID = 8
-            AND iam.typeID = " . $this->id . ';'
+            "SELECT inventorProd.productTypeID as resultBpID, proba.probability, inventorProd.quantity, product.raceID
+            FROM industryActivityProbabilities as proba 
+            JOIN industryActivityProducts as inventorProd ON inventorProd.productTypeID = proba.productTypeID
+            JOIN industryActivityProducts as inventableProd ON inventableProd.typeID = inventorProd.productTypeID
+            JOIN invTypes as product ON product.typeID = inventableProd.productTypeID
+            WHERE proba.activityID = 8
+            AND inventableProd.activityID = 1
+            AND proba.typeID = " . $this->id . "
+            AND inventorProd.typeID = " . $this->id . ";"
         );
 
         if ($res->num_rows < 1)
             self::throwException(
                 'TypeIdNotFoundException', 
-                "Inventor data for blueprintID=" . $this->id ." not found"
+                "Inventor data for Type ID=" . $this->id ." not found"
             );
 
         while ($row = $res->fetch_assoc()) {
-            $this->inventsBlueprintIDs[(int) $row['productTypeID']] = 1;
+            $this->inventsBlueprintIDs[(int) $row['resultBpID']] = 1;
+            $this->inventsBlueprintIDsByRaceID[(int) $row['raceID']][] = $row['resultBpID'];
             $this->inventionProbability = (float) $row['probability'];
-            $this->decryptorGroupID = (int) $row['decryptorGroupID'];
+            $this->inventionOutputRuns  = (int) $row['quantity'];
         }
     }
 
     /**
-     * Loads the mapping for skills to datacore or interface
+     * Loads the mapping for skills to datacore or interface.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -182,7 +194,7 @@ class InventorBlueprint extends Blueprint
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
                 $this->calcInventionProbability() * $decryptor->getProbabilityModifier(),
-                $inventedBp->getMaxProductionLimit() + $decryptor->getRunModifier(),
+                $this->inventionOutputRuns + $decryptor->getRunModifier(),
                 -2 - $decryptor->getMEModifier(),
                 -4 - $decryptor->getTEModifier(),
                 $modifier['solarSystemID'],
@@ -196,7 +208,7 @@ class InventorBlueprint extends Blueprint
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
                 $this->calcInventionProbability(),
-                $inventedBp->getMaxProductionLimit(),
+                $this->inventionOutputRuns,
                 -2,
                 -4,
                 $modifier['solarSystemID'],
@@ -218,7 +230,7 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * For a given typeID, checks if its a compatible decryptor and returns a Decryptor object
+     * For a given typeID, checks if its a compatible decryptor and returns a Decryptor object.
      * 
      * @param int $decryptorID the decryptorID to be checked
      * 
@@ -242,7 +254,7 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Copy, invent T2 blueprint and manufacture from it in one go
+     * Copy, invent T2 blueprint and manufacture from it in one go.
      * 
      * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $inventedBpID the ID of the blueprint to be invented. If left null it will default to the first 
@@ -285,7 +297,7 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Returns an array with the IDs of inventable blueprints
+     * Returns an array with the IDs of inventable blueprints.
      *
      * @return array
      */
@@ -295,7 +307,7 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Returns an array with the inventable blueprint instances
+     * Returns an array with the inventable blueprint instances.
      *
      * @return array
      */
@@ -308,7 +320,7 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Returns the base invention chance
+     * Returns the base invention chance.
      *
      * @return float
      */
@@ -316,9 +328,33 @@ class InventorBlueprint extends Blueprint
     {
         return $this->inventionProbability;
     }
+    
+    /**
+     * Returns the inventable BPC IDs of a given race
+     *
+     * @param int $raceID the race for which the blueprints should be looked up. See table chrRaces for IDs.
+     *
+     * @return array
+     */
+    public function getInventableBlueprintIDsByRaceID($raceID)
+    {
+        if (!isset($this->inventsBlueprintIDsByRaceID[$raceID]))
+            return array();
+        return $this->inventsBlueprintIDsByRaceID[$raceID];
+    }
 
     /**
-     * Returns the groupID of compatible Decryptors
+     * Returns the base number of runs on the output BPC.
+     *
+     * @return int
+     */
+    public function getInventionOutputRuns()
+    {
+        return $this->inventionOutputRuns;
+    }
+
+    /**
+     * Returns the groupID of compatible Decryptors.
      *
      * @return int
      */
@@ -328,7 +364,7 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Returns an array with the IDs of compatible decryptors
+     * Returns an array with the IDs of compatible decryptors.
      * 
      * @return array
      */
@@ -338,22 +374,19 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Calculates the invention chance considering skills and optional meta level item
-     * 
-     * @param int $metaLevel the metalevel of the optional input item
+     * Calculates the invention chance considering skills.
      * 
      * @return float
      */
-    public function calcInventionProbability($metaLevel = null)
+    public function calcInventionProbability()
     {
         $defaultsClass = Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
 
-        return $this->getInventionProbability()
-            * (1 + 0.01 * $defaults->getSkillLevel($this->encryptionSkillID)
-                + 0.02 * ($defaults->getSkillLevel($this->datacoreSkillIDs[0])
-                    + $defaults->getSkillLevel($this->datacoreSkillIDs[1]))
-            )
-            * (isset($metaLevel) ? (1 + 0.5 / (5 - $metaLevel)) : 1);
+        return $this->getInventionProbability() * (1 + 
+            ($defaults->getSkillLevel($this->datacoreSkillIDs[0]) 
+                + $defaults->getSkillLevel($this->datacoreSkillIDs[1])) / 30
+            + $defaults->getSkillLevel($this->encryptionSkillID) / 40
+        );
     }
 }

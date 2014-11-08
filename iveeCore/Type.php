@@ -243,11 +243,11 @@ class Type extends SdeTypeCommon
             $subtype = 'Reaction';
         elseif (!empty($subtypeInfo['reactionProduct']))
             $subtype = 'ReactionProduct';
-        elseif ($subtypeInfo['inventable'] == 7)
-            $subtype = 'REBlueprint';
+        elseif ($subtypeInfo['groupID'] == 973 OR $subtypeInfo['groupID'] == 996)
+            $subtype = 'T3Blueprint';
         elseif (!empty($subtypeInfo['inventable']))
             $subtype = 'InventableBlueprint';
-        elseif ($subtypeInfo['inventor'] == 7)
+        elseif ($subtypeInfo['categoryID'] == 34)
             $subtype = 'Relic';
         elseif (!empty($subtypeInfo['inventor']))
             $subtype = 'InventorBlueprint';

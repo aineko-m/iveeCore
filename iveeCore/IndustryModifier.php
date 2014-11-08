@@ -84,7 +84,7 @@ class IndustryModifier
     {
         $stationClass = Config::getIveeClassName('Station');
         //instantiate station from ID
-        $station = $stationClass::getStation($stationID);
+        $station = $stationClass::getById($stationID);
 
         return static::getBySystemIdWithAssembly(
             $station->getSolarSystemID(),
@@ -490,8 +490,8 @@ class IndustryModifier
         $activityID = (int) $activityID;
         if (!$this->isActivityPossible($activityID, $type)) {
             $exceptionClass = Config::getIveeClassName('TypeNotCompatibleException');
-            throw new $exceptionClass("activityID=" . $activityID . " cannot be performed for "
-                . $type->getName() . " with the given IndustryModifier object");
+            throw new $exceptionClass("No compatible assemblyLine for activityID=" . $activityID . " with "
+                . $type->getName() . " found in the given IndustryModifier object");
         }
 
         //get the compatible assembly line with the best bonuses. Where ME > TE > cost bonus.

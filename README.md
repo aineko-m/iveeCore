@@ -19,7 +19,7 @@ iveeCore will likely be most useful for developers with at least basic PHP knowl
 ## Features
 - Object oriented API to the SDE DB, no manual SQL required
 - Object oriented model for inventory items
-- Classes for representing manufacturing, copying, T2 invention, research, reverse engineering and reaction activities, with recursive component building
+- Classes for representing manufacturing, copying, T2 & T3 invention, research and reaction activities, with recursive component building
 - Market data gathering via EMDR with realistic price estimation and profit calculation
 - CREST data fetcher handling system industry indices, market prices, facilities, teams and specialities
 - Parsers for EFT-style and EvE XML ship fittings descriptions as well as cargo and ship scanning results
@@ -72,10 +72,10 @@ If everything went well, you should see a line with the libzmq version.
 
 ### Setting up the Static Data Export DB in MySQL
 
-The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to  helpful 3rd party developers like Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&m=5056095#post5056095](https://forums.eveonline.com/default.aspx?g=posts&m=5056095#post5056095)
+The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to helpful 3rd party developer Steve Ronuken. At the time of this writing the latest conversion can be found here:
+[https://forums.eveonline.com/default.aspx?g=posts&m=5167814#post5167814](https://forums.eveonline.com/default.aspx?g=posts&m=5167814#post5167814)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_oce10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_pho10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 
 ### Setup iveeCore
 
@@ -161,7 +161,7 @@ $manuData->printData();
 //get the data for making Damage Control I blueprint copy, inventing from it with a
 //decryptor and building from the resulting T2 BPC, recursively building the necessary
 //components
-$processData = \iveeCore\Type::getByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 21583, true);
+$processData = \iveeCore\Type::getByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 34203, true);
 
 //get the raw profit for running an Unrefined Hyperflurite Reaction for 30 days,
 //taking into account the refining and material feedback steps,
@@ -194,7 +194,7 @@ You can modify iveeCore directly, however, you'll need to comply with the LGPL a
 
 
 ## Future Plans
-The multi-region market price support needs to be extended. Something for calculating ore compression would be nice. While reverse engineering is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
+The multi-region market price support needs to be extended. Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
 I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
 
 
