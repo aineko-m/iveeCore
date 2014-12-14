@@ -120,7 +120,7 @@ class GlobalPriceData extends CacheableCommon
 
         if (empty($row))
             self::throwException('NoPriceDataAvailableException', "No global price data for "
-                . Type::getById($this->id)->getName() . " (typeID=" . $this->id . ") found");
+                . $this->getType()->getName() . " (typeID=" . $this->id . ") found");
 
         return $row;
     }
@@ -140,6 +140,16 @@ class GlobalPriceData extends CacheableCommon
     }
 
     /**
+     * Returns the type object this market data refers to
+     *
+     * @return \iv eCore\Type
+     */
+    public function getType()
+    {
+        return Type::getById($this->getId());
+    }
+
+    /**
      * Gets the unix timestamp of the date of the last CREST price data update (day granularity)
      *
      * @return int
@@ -151,7 +161,7 @@ class GlobalPriceData extends CacheableCommon
             return $this->priceDate;
         else
             self::throwException('NoPriceDataAvailableException', "No CREST price available for "
-                . Type::getById($this->getId ())->getName());
+                . $this->getType()->getName());
     }
 
     /**
@@ -169,12 +179,12 @@ class GlobalPriceData extends CacheableCommon
         if (is_null($this->averagePrice))
             self::throwException(
                 'NoPriceDataAvailableException',
-                "No averagePrice available for " . $this->name
+                "No averagePrice available for " . $this->getType()->getName()
             );
         elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
             self::throwException(
                 'PriceDataTooOldException',
-                'averagePrice data for ' . $this->name . ' is too old'
+                'averagePrice data for ' . $this->getType()->getName() . ' is too old'
             );
 
         return $this->averagePrice;
@@ -195,12 +205,12 @@ class GlobalPriceData extends CacheableCommon
         if (is_null($this->adjustedPrice))
             self::throwException(
                 'NoPriceDataAvailableException',
-                "No adjustedPrice available for " . $this->name
+                "No adjustedPrice available for " . $this->getType()->getName()
             );
         elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
             self::throwException(
                 'PriceDataTooOldException',
-                'adjustedPrice data for ' . $this->name . ' is too old'
+                'adjustedPrice data for ' . $this->getType()->getName() . ' is too old'
             );
         return $this->adjustedPrice;
     }
