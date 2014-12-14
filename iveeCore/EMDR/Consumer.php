@@ -44,11 +44,6 @@ class Consumer
     protected $trackedMarketRegionIDs = array();
 
     /**
-     * @var int $defaultRegionID the default regionID
-     */
-    protected $defaultRegionID;
-
-    /**
      * @var array $regions regionID => regionName
      */
     protected $regions;
@@ -57,7 +52,7 @@ class Consumer
      * @var SDE $sde holds the SDE instance, for convenience
      */
     protected $sde;
-    
+
     /**
      * @var ICache $cache holds a cache instance, if cache use is configured
      */
@@ -75,7 +70,7 @@ class Consumer
 
     /**
      * Returns singleton instance
-     * 
+     *
      * @return \iveeCore\EMDR\Consumer
      */
     public static function instance()
@@ -87,7 +82,7 @@ class Consumer
 
     /**
      * Constructor
-     * 
+     *
      * @return EmdrConsumer
      */
     protected function __construct()
@@ -97,8 +92,10 @@ class Consumer
 
         $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
         $this->sde = $sdeClass::instance();
+
         $defaultsClass = \iveeCore\Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
+
         if (\iveeCore\Config::getUseCache()) {
             $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
             $this->cache = $cacheClass::instance();
@@ -114,7 +111,7 @@ class Consumer
         while ($tmp = $res->fetch_array(MYSQL_NUM))
             $this->trackedTypeIDs[(int) $tmp[0]] = $tmp[1];
 
-        if (VERBOSE) 
+        if (VERBOSE)
             echo count($this->trackedTypeIDs)." found." . PHP_EOL;
 
         //load regionIDs
@@ -126,7 +123,6 @@ class Consumer
             $this->regions[(int) $tmp[0]] = $tmp[1];
 
         $this->trackedMarketRegionIDs = $defaults->getTrackedMarketRegionIDs();
-        $this->defaultRegionID        = $defaults->getDefaultRegionID();
         $this->emdrPriceUpdateClass   = \iveeCore\Config::getIveeClassName('EmdrPriceUpdater');
         $this->emdrHistoryUpdateClass = \iveeCore\Config::getIveeClassName('EmdrHistoryUpdater');
     }
@@ -135,12 +131,12 @@ class Consumer
      * Main work method.
      * Loops indefinitely unless interrupted. Note that the MySQL connection might time out if no relevant data is
      * received over longer periods, EvE downtimes, for instance.
-     * 
+     *
      * @return void
      */
     public function run()
     {
-        if (VERBOSE) 
+        if (VERBOSE)
             echo "Starting EMDR data stream" . PHP_EOL;
 
         //init ZMQ
@@ -153,7 +149,7 @@ class Consumer
         // Disable filtering.
         $subscriber->setSockOpt(\ZMQ::SOCKOPT_SUBSCRIBE, "");
 
-        if (VERBOSE) 
+        if (VERBOSE)
             echo "Processing EMDR data" . PHP_EOL;
 
         //main loop
@@ -164,9 +160,9 @@ class Consumer
 
     /**
      * Processes the received EMDR object.
-     * 
+     *
      * @param \stdClass $marketData the market data object received from EMDR
-     * 
+     *
      * @return void
      */
     protected function handleMarketData(\stdClass $marketData)
@@ -208,25 +204,25 @@ class Consumer
 
     /**
      * Filters incoming data by type, region and generation date
-     * 
+     *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
      * @param int $generatedAt UNIX timestamp of the data generation date
-     * 
+     *
      * @return bool false if dataset is to be filtered
      */
     protected function filterData($typeID, $regionID, $generatedAt)
     {
         //skip data for non-tracked market regions
         if (!isset($this->trackedMarketRegionIDs[$regionID])) {
-            if (VERBOSE > 2) 
+            if (VERBOSE > 2)
                 echo '- skipping regionID=' . $regionID.', typeID=' . $typeID . PHP_EOL;
             return false;
         }
 
         //skip non-tracked items
         if (!isset($this->trackedTypeIDs[$typeID])) {
-            if (VERBOSE > 2) 
+            if (VERBOSE > 2)
                 echo '- skipping untracked typeID=' . $typeID . PHP_EOL;
             return false;
         }
@@ -252,10 +248,10 @@ class Consumer
     /**
      * Gets timestamps for latest price data generation, history data generation and most recent date with history data.
      * Queries cache first if available and goes to the DB as fallback.
-     * 
+     *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
-     * 
+     *
      * @return \ArrayObject with two elements, carrying the UNIX timestamps
      */
     protected function getTimestamps($typeID, $regionID)
@@ -275,10 +271,10 @@ class Consumer
     /**
      * Gets timestamps for latest price data generation, history data generation and most recent date with history data
      * from the DB.
-     * 
+     *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
-     * 
+     *
      * @return \ArrayObject with two elements, carrying the UNIX timestamps
      */
     protected function getTimestampsDB($typeID, $regionID)
@@ -289,7 +285,7 @@ class Consumer
             "SELECT
             UNIX_TIMESTAMP(atp.lastPriceUpdate) as lastPriceDataTS,
             UNIX_TIMESTAMP(atp.lastHistUpdate) as lastHistDataTS
-            FROM iveeTrackedPrices as atp
+            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTrackedPrices as atp
             WHERE atp.typeID = " . (int) $typeID . " AND atp.regionID = " . (int) $regionID . ";"
         );
 
@@ -306,11 +302,11 @@ class Consumer
 
     /**
      * Updates or invalidates cache entries after market data update
-     * 
+     *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
      * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
-     * 
+     *
      * @return void
      */
     protected function updateCaches($typeID, $regionID, \ArrayObject $timestamps)
@@ -319,21 +315,21 @@ class Consumer
             //update timestamps cache
             $this->cache->setItem($timestamps, 'emdrts_' . $regionID . '_' . $typeID);
 
-            //invalidate the type cache for the item that was updated if its the default region
-            if ($regionID == $this->defaultRegionID)
-                $this->cache->deleteItem('Type_' . $typeID);
+            //invalidate RegionMarketData cache
+            $regionMarketDataClass = \iveeCore\Config::getIveeClassName('RegionMarketData');
+            $regionMarketDataClass::deleteFromCache(array($regionID . '_' . $typeID));
         }
     }
 
     /**
      * Handles the processing and DB insertion of order data
-     * 
+     *
      * @param int $typeID of the item the data refers to
      * @param int $regionID of the region the data refers to
      * @param int $generatedAt the unix timestamp of the moment the data set was generated at an uploader client
      * @param \stdClass $rowset the raw market data
      * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
-     * 
+     *
      * @return void
      */
     protected function handleOrderData($typeID, $regionID, $generatedAt, \stdClass $rowset, \ArrayObject $timestamps)
@@ -362,13 +358,13 @@ class Consumer
 
     /**
      * Handles the processing and DB insertion of history data
-     * 
+     *
      * @param int $typeID of the item the data refers to
      * @param int $regionID of the region the data refers to
      * @param int $generatedAt the unix timestamp of the moment the data set was generated at an uploader client
      * @param \stdClass $rowset the raw market data
      * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
-     * 
+     *
      * @return void
      * @throws NoRelevantDataException if no relevant data rows are given
      */
@@ -399,11 +395,11 @@ class Consumer
 
     /**
      * Gets the typeName for a market tracked TypeID
-     * 
+     *
      * @param int $typeID of the item to get the name for
-     * 
+     *
      * @return string
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the requested typeID is not found among the tracked 
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the requested typeID is not found among the tracked
      * typeIDs
      */
     public function getTypeNameById($typeID)
@@ -418,10 +414,10 @@ class Consumer
 
     /**
      * Gets the regionName for a regionID
-     * 
+     *
      * @param int $regionID of the region to get the name for
-     * 
-     * @return string 
+     *
+     * @return string
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the requested regionID is not found
      */
     public function getRegionNameById($regionID)

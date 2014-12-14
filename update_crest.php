@@ -1,11 +1,11 @@
 <?php
 /**
  * CREST for IVEE client file.
- * 
+ *
  * PHP version 5.3
  *
- * This command line PHP script pulls industry related data from EVE's CREST API and stored it to iveeCore's DB tables. 
- * You should set it up to run every few hours (as a cronjob, for instance) to have updated system industry indices, 
+ * This command line PHP script pulls industry related data from EVE's CREST API and stored it to iveeCore's DB tables.
+ * You should set it up to run every few hours (as a cronjob, for instance) to have updated system industry indices,
  * teams and adjustedPrice data available at all times.
  *
  * @category IveeCore

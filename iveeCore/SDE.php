@@ -27,7 +27,6 @@ namespace iveeCore;
  */
 class SDE
 {
-
     /**
      * @var SDE $instance holds the singleton SDE object.
      */
@@ -70,13 +69,7 @@ class SDE
     protected function __construct(\mysqli $db = null)
     {
         if (!isset($db)) {
-            $db = new \mysqli(
-                Config::getDbHost(),
-                Config::getDbUser(),
-                Config::getDbPw(),
-                Config::getDbName(),
-                Config::getDbPort()
-            );
+            $db = $this->connectDb();
             if ($db->connect_error)
                 exit('Fatal Error: ' . $db->connect_error . PHP_EOL);
         } elseif (!($db instanceof \mysqli))
@@ -88,6 +81,22 @@ class SDE
 
         //eve runs on UTC time
         $this->db->query("SET time_zone='+0:00';");
+    }
+
+    /**
+     * Returns a new mysqli connection object
+     *
+     * @return \mysqli
+     */
+    protected function connectDb()
+    {
+        return new \mysqli(
+            Config::getSdeDbHost(),
+            Config::getSdeDbUser(),
+            Config::getSdeDbPw(),
+            Config::getSdeDbName(),
+            Config::getSdeDbPort()
+        );
     }
 
     /**
@@ -200,23 +209,23 @@ class SDE
             'mysqlStats'      => $this->db->get_connection_stats()
         );
     }
-    
+
     /**
      * Makes "INSERT .. ON DUPLICATE KEY UPDATE" SQL query string
-     * 
+     *
      * @param string $table the name of the SQL table to be used
-     * @param array $insert the data to be inserted in the form column => value, where value is an int, float or 
+     * @param array $insert the data to be inserted in the form column => value, where value is an int, float or
      * string. Strings are automatically sanitized and enquoted.
-     * @param array $update the data to be updated as column => value, optional. If not given, a regular insert is 
+     * @param array $update the data to be updated as column => value, optional. If not given, a regular insert is
      * created.
-     * 
+     *
      * @return string the SQL query
      * @throws \iveeCore\Exceptions\InvalidArgumentException if unsuported value types are passed
      */
     public static function makeUpsertQuery($table, array $insert, array $update = null)
     {
         $exceptionClass = Config::getIveeClassName('InvalidArgumentException');
-        
+   
         //prepare columns and values list
         $icols   = "";
         $ivalues = "";
@@ -250,12 +259,12 @@ class SDE
 
     /**
      * Makes simple "UPDATE" SQL query string
-     * 
+     *
      * @param string $table the name of the SQL table to be used
-     * @param array $update the data to be updated as column => value. Values need to be already escaped, if required 
+     * @param array $update the data to be updated as column => value. Values need to be already escaped, if required
      * by type.
      * @param array $where the conditions for the update as column => value. Conditions are linked via 'AND'.
-     * 
+     *
      * @return string the SQL query
      * @throws \iveeCore\Exceptions\InvalidArgumentException if unsuported value types are passed
      */
@@ -281,27 +290,27 @@ class SDE
             $condition[] = $col . "=" . $val;
         }
 
-        return "UPDATE " . $table . " SET " . implode(', ', $data) 
+        return "UPDATE " . $table . " SET " . implode(', ', $data)
             . " WHERE " . implode(' AND ', $condition) . ';' . PHP_EOL;
     }
-    
+
     /**
      * Sanitizes string. Unallowed characters are replaced by whitespaces.
-     * 
+     *
      * @param string $string to be sanitized
-     * 
+     *
      * @return string
      */
     public static function sanitizeString($string)
     {
         return preg_replace(Config::SANITIZE_STRING_PATTERN, ' ', $string);
     }
-    
+
     /**
      * Sanitizes and double-enquotes string for use in SQL queries. Unallowed characters are replaced by whitespaces.
-     * 
+     *
      * @param string $string to be sanitized
-     * 
+     *
      * @return string
      */
     public static function sanitizeAndEnquoteString($string)

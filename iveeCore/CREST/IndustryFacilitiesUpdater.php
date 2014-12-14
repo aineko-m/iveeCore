@@ -30,7 +30,7 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
      * @var string $path holds the CREST path
      */
     protected static $path = 'industry/facilities/';
-    
+
     /**
      * @var string $representationName holds the expected representation name returned by CREST
      */
@@ -38,7 +38,7 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
 
     /**
      * Processes data for facilities (stations and player built outposts)
-     * 
+     *
      * @param \stdClass $item to be processed
      *
      * @return string the UPSERT SQL queries
@@ -63,11 +63,11 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
             $update['solarSystemID'] = (int) $item->solarSystem->id;
             $update['stationName']   = $item->name;
             $update['stationTypeID'] = (int) $item->type->id;
-            $table = 'iveeOutposts';
+            $table = \iveeCore\Config::getIveeDbName() . '.iveeOutposts';
         } else {
             if (isset($item->tax))
                 $update['tax'] = (float) $item->tax;
-            $table = 'iveeFacilities';
+            $table = \iveeCore\Config::getIveeDbName() . '.iveeFacilities';
         }
 
         $insert = $update;
@@ -85,6 +85,6 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
     protected function invalidateCaches()
     {
         $assemblyLineClass  = \iveeCore\Config::getIveeClassName('AssemblyLine');
-        $assemblyLineClass::getInstancePool()->deleteFromCache($this->updatedIDs);
+        $assemblyLineClass::deleteFromCache($this->updatedIDs);
     }
 }

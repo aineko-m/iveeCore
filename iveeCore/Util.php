@@ -28,9 +28,9 @@ class Util
 {
     /**
      * Converts long numbers to nice readable representation with appended unit: K, M or G
-     * 
+     *
      * @param int|float $val the number to be formatted
-     * 
+     *
      * @return string the formated number
      */
     public static function quantitiesToReadable($val)
@@ -55,9 +55,9 @@ class Util
 
     /**
      * Convenience function for converting large second values into a 1d2h33m44s representation
-     * 
+     *
      * @param int $fseconds the seconds to be formatted
-     * 
+     *
      * @return string the formated time
      */
     public static function secondsToReadable($fseconds)

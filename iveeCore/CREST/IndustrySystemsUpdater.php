@@ -30,7 +30,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
      * @var string $path holds the CREST path
      */
     protected static $path = 'industry/systems/';
-    
+
     /**
      * @var string $representationName holds the expected representation name returned by CREST
      */
@@ -38,7 +38,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
 
     /**
      * Processes data objects to SQL
-     * 
+     *
      * @param \stdClass $item to be processed
      *
      * @return string the SQL queries
@@ -93,7 +93,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
 
         $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
 
-        return $sdeClass::makeUpsertQuery('iveeIndustrySystems', $insert, $update);
+        return $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveeIndustrySystems', $insert, $update);
     }
 
     /**
@@ -104,6 +104,6 @@ class IndustrySystemsUpdater extends CrestDataUpdater
     protected function invalidateCaches()
     {
         $assemblyLineClass  = \iveeCore\Config::getIveeClassName('SolarSystem');
-        $assemblyLineClass::getInstancePool()->deleteFromCache($this->updatedIDs);
+        $assemblyLineClass::deleteFromCache($this->updatedIDs);
     }
 }

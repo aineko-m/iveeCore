@@ -17,7 +17,7 @@ namespace iveeCore;
 /**
  * AssemblyLines represent the industry "slot" of a station or POS assembly array or lab. Although slots are not used in
  * EVE anymore since Crius, the restrictions or bonuses they confer still apply.
- * Inheritance: AssemblyLine -> SdeTypeCommon
+ * Inheritance: AssemblyLine -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -26,7 +26,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/AssemblyLine.php
  *
  */
-class AssemblyLine extends SdeTypeCommon
+class AssemblyLine extends SdeType
 {
     /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) AssemblyLine objects
@@ -35,10 +35,10 @@ class AssemblyLine extends SdeTypeCommon
 
     /**
      * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
+     * (for dynamic subclassing)
      */
     protected static $classNick = 'AssemblyLine';
-    
+
     /**
      * @var float $baseTimeMultiplier the base time multiplier
      */
@@ -66,7 +66,7 @@ class AssemblyLine extends SdeTypeCommon
     protected $groupModifiers;
 
     /**
-     * @var array $categoryModifiers defines which categoryIDs can be used with this AssemblyLine and also stores 
+     * @var array $categoryModifiers defines which categoryIDs can be used with this AssemblyLine and also stores
      * additional multipliers.
      */
     protected $categoryModifiers;
@@ -75,9 +75,9 @@ class AssemblyLine extends SdeTypeCommon
      * Gets the assemblyLineTypeIDs for the best installable labs and assembly arrays for POSes depending on system
      * security. These IDs are hardcoded as currently the SDE lacks the necessary information to map from labs and
      * assembly arrays to assemblyLineTypeIDs.
-     * 
+     *
      * @param float $systemSecurity defining the system security status
-     * 
+     *
      * @return array in the form activityID => assemblyLineTypeIDs[]
      */
     public static function getBestPosAssemblyLineTypeIDs($systemSecurity = 1.0)
@@ -127,7 +127,7 @@ class AssemblyLine extends SdeTypeCommon
 
     /**
      * Gets the assemblyLineTypeIDs for the generic hisec station.
-     * 
+     *
      * @return array in the form activityID => assemblyLineTypeIDs[]
      */
     public static function getHisecStationAssemlyLineTypeIDs()
@@ -176,7 +176,7 @@ class AssemblyLine extends SdeTypeCommon
 
         if (empty($row))
             static::throwException(
-                'AssemblyLineTypeIdNotFoundException', 
+                'AssemblyLineTypeIdNotFoundException',
                 "assemblyLine TypeID=". $this->id . " not found"
             );
 
@@ -216,22 +216,11 @@ class AssemblyLine extends SdeTypeCommon
                 'm' => (float) $row['materialMultiplier'],
                 't' => (float) $row['timeMultiplier']
             );
-        
-        //This is a hack to deal with Phoebe SDE missing assemblyLine compatibility data for Blueprints (categoryID=9).
-        //Some assembly lines have cost bonuses attached to them for research, copying and invention activities. 
-        //These bonuses can't/won't be considered until the missing data is reinserted into the SDE.
-        if(in_array($this->activityID, array(3, 4, 5, 8))){
-            $this->categoryModifiers[9] = array(
-                't' => 1,
-                'm' => 1,
-                'c' => 1
-            );
-        }
     }
 
     /**
      * Gets the base time multiplier of the AssemblyLine
-     * 
+     *
      * @return float
      */
     public function getBaseTimeMultiplier()
@@ -241,7 +230,7 @@ class AssemblyLine extends SdeTypeCommon
 
     /**
      * Gets the base material multiplier of the AssemblyLine
-     * 
+     *
      * @return float
      */
     public function getBaseMaterialMultiplier()
@@ -251,7 +240,7 @@ class AssemblyLine extends SdeTypeCommon
 
     /**
      * Gets the base cost multiplier of the AssemblyLine
-     * 
+     *
      * @return float
      */
     public function getBaseCostMultiplier()
@@ -261,7 +250,7 @@ class AssemblyLine extends SdeTypeCommon
 
     /**
      * Gets the ID of the activity that can be performed with the AssemblyLine
-     * 
+     *
      * @return int
      */
     public function getActivityID()
@@ -271,7 +260,7 @@ class AssemblyLine extends SdeTypeCommon
 
     /**
      * Returns the group modifier array
-     * 
+     *
      * @return array
      */
     public function getGroupModifiers()
@@ -281,7 +270,7 @@ class AssemblyLine extends SdeTypeCommon
 
     /**
      * Returns the category modifier array
-     * 
+     *
      * @return array
      */
     public function getCategoryModifiers()
@@ -290,12 +279,12 @@ class AssemblyLine extends SdeTypeCommon
     }
 
     /**
-     * Returns the modifiers specific to a given Type. The passed Type should be the final product of the process. This 
-     * means that for manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it 
+     * Returns the modifiers specific to a given Type. The passed Type should be the final product of the process. This
+     * means that for manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it
      * is the product of the invented blueprint.
-     * 
+     *
      * @param Type $type the item to get the modifiers for
-     * 
+     *
      * @return array in the form ('c' => float, 'm' => float, 't' => float)
      * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the given Type is not compatible
      */
@@ -304,7 +293,7 @@ class AssemblyLine extends SdeTypeCommon
         //check if type can actually be handled in this assembly line
         if (!$this->isTypeCompatible($type))
             static::throwException(
-                'TypeNotCompatibleException', 
+                'TypeNotCompatibleException',
                 $type->getName() . " is not compatible with " . $this->getName()
             );
 
@@ -331,12 +320,12 @@ class AssemblyLine extends SdeTypeCommon
     }
 
     /**
-     * Checks if a Type is compatible with the AssemblyLine. The passed Type should be the final product of the process. 
-     * This means that for manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention 
+     * Checks if a Type is compatible with the AssemblyLine. The passed Type should be the final product of the process.
+     * This means that for manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention
      * it is the product of the invented blueprint.
-     * 
+     *
      * @param Type $type the item to be checked
-     * 
+     *
      * @return bool
      */
     public function isTypeCompatible(Type $type)

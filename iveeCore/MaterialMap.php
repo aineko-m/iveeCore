@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * MaterialMap is used for holding data about materials and quantities, typically in a bill-of-materials role
- * 
+ *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
@@ -34,10 +34,10 @@ class MaterialMap
 
     /**
      * Add required material and amount to total material array
-     * 
+     *
      * @param int $typeID of the material
      * @param int $quantity of the material
-     * 
+     *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException
      */
@@ -56,9 +56,9 @@ class MaterialMap
 
     /**
      * Add required materials and amounts to total material array
-     * 
+     *
      * @param array $materials in the form $typeID => $quantity
-     * 
+     *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException
      */
@@ -70,10 +70,10 @@ class MaterialMap
 
     /**
      * Subtracts materials from the total material array
-     * 
+     *
      * @param int $typeID of the material
      * @param int $quantity of the material
-     * 
+     *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException
      */
@@ -88,17 +88,17 @@ class MaterialMap
             . " from MaterialMap than is available");
 
         $this->materials[$typeID] -= $quantity;
-        if ($this->materials[$typeID] == 0) 
+        if ($this->materials[$typeID] == 0)
             unset($this->materials[$typeID]);
     }
 
     /**
      * Given two MaterialMap objects, creates the symmetric difference between the two. That is, whichever quantities
      * of the same type appear in both are subtracted from both
-     * 
+     *
      * @param MaterialMap $m1 first MaterialMap
      * @param MaterialMap $m2 second MaterialMap
-     * 
+     *
      * @return void
      */
     public static function symmetricDifference(MaterialMap $m1, MaterialMap $m2)
@@ -118,9 +118,9 @@ class MaterialMap
 
     /**
      * Sums the materials of another Materials object to this
-     * 
+     *
      * @param MaterialMap $materials to add materials from
-     * 
+     *
      * @return void
      */
     public function addMaterialMap(MaterialMap $materials)
@@ -131,7 +131,7 @@ class MaterialMap
 
     /**
      * Returns the materials as array $typeID => $quantity
-     * 
+     *
      * @return array
      */
     public function getMaterials()
@@ -141,9 +141,9 @@ class MaterialMap
 
     /**
      * Returns a new materialMap object with quantities multiplied by given factor
-     * 
+     *
      * @param float|int $factor for the multiplication
-     * 
+     *
      * @return MaterialMap
      */
     public function getMultipliedMaterialMap($factor)
@@ -158,14 +158,14 @@ class MaterialMap
 
     /**
      * Replaces every reprocessable in the map with its reprocessed materials
-     * 
+     *
      * @param float $equipmentYield station dependant reprocessing yield (<1.0)
      * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor (0.95 for 5% tax)
      * @param float $implantBonusFactor reprocessing bonus factor from implant (>=1.0)
-     * 
+     *
      * @return void
      */
-    public function reprocessMaterials($equipmentYield = 0.5, $reprocessingTaxFactor = 0.95, 
+    public function reprocessMaterials($equipmentYield = 0.5, $reprocessingTaxFactor = 0.95,
         $implantBonusFactor = 1.0
     ) {
         foreach ($this->materials as $typeID => $quantity) {
@@ -174,9 +174,9 @@ class MaterialMap
                 unset($this->materials[$typeID]);
                 $this->addMaterialMap(
                     $type->getReprocessingMaterialMap(
-                        $quantity, 
-                        $equipmentYield, 
-                        $reprocessingTaxFactor, 
+                        $quantity,
+                        $equipmentYield,
+                        $reprocessingTaxFactor,
                         $implantBonusFactor
                     )
                 );
@@ -186,7 +186,7 @@ class MaterialMap
 
     /**
      * Returns the volume of the materials
-     * 
+     *
      * @return float
      */
     public function getMaterialVolume()
@@ -200,48 +200,52 @@ class MaterialMap
 
     /**
      * Returns material buy cost, considering taxes
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getMaterialBuyCost($maxPriceDataAge = null)
+    public function getMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
     {
         $defaultsClass = Config::getIveeClassName('Defaults');
+        $defaults = $defaultsClass::instance();
 
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $amount) {
             $type = Type::getById($typeID);
-            if (!($type instanceof Sellable) OR !$type->onMarket())
+            if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getBuyPrice($maxPriceDataAge) * $amount
-                    * $defaultsClass::instance()->getDefaultBuyTaxFactor();
+                $sum += $type->getRegionMarketData($regionId)->getBuyPrice($maxPriceDataAge) * $amount
+                    * $defaults->getDefaultBuyTaxFactor();
         }
         return $sum;
     }
 
     /**
      * Returns material sell value, cosnidering taxes
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionID of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getMaterialSellValue($maxPriceDataAge = null)
+    public function getMaterialSellValue($maxPriceDataAge = null, $regionID = null)
     {
         $defaultsClass = Config::getIveeClassName('Defaults');
+        $defaults = $defaultsClass::instance();
 
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $amount) {
             $type = Type::getById($typeID);
-            if (!($type instanceof Sellable) OR !$type->onMarket())
+            if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getSellPrice($maxPriceDataAge) * $amount
-                    * $defaultsClass::instance()->getDefaultSellTaxFactor();
+                $sum += $type->getRegionMarketData($regionID)->getSellPrice($maxPriceDataAge) * $amount
+                    * $defaults->getDefaultSellTaxFactor();
         }
         return $sum;
     }

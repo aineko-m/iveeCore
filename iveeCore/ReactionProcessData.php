@@ -53,13 +53,13 @@ class ReactionProcessData
 
     /**
      * Constructor
-     * 
+     *
      * @param MaterialMap $inputMaterialMap for the reaction input materials
      * @param MaterialMap $outputMaterialMap for the reaction output materials
      * @param int $cycles defines the number of cycles the object covers
      * @param bool $withReprocessing defines if the process includes a reprocessing step, which can happen for alchemy
      * @param bool $withFeedback defines if the process includes a material feedback loop, which can happen for alchemy
-     * 
+     *
      * @return ReactionProcessData
      */
     public function __construct(MaterialMap $inputMaterialMap, MaterialMap $outputMaterialMap, $cycles = 1,
@@ -74,7 +74,7 @@ class ReactionProcessData
 
     /**
      * Returns the MaterialMap representing the consumed materials of the reaction
-     * 
+     *
      * @return MaterialMap
      */
     public function getInputMaterialMap()
@@ -84,7 +84,7 @@ class ReactionProcessData
 
     /**
      * Returns the MaterialMap representing the output materials of the reaction
-     * 
+     *
      * @return MaterialMap
      */
     public function getOutputMaterialMap()
@@ -94,7 +94,7 @@ class ReactionProcessData
 
     /**
      * Returns the number of cycles of reactions
-     * 
+     *
      * @return int|float
      */
     public function getCycles()
@@ -104,7 +104,7 @@ class ReactionProcessData
 
     /**
      * Returns the seconds of reaction
-     * 
+     *
      * @return int|float
      */
     public function getTime()
@@ -114,7 +114,7 @@ class ReactionProcessData
 
     /**
      * Returns a boolean defining if this reaction process includes a reprocessing step (alchemy).
-     * 
+     *
      * @return bool
      */
     public function withReprocessing()
@@ -124,7 +124,7 @@ class ReactionProcessData
 
     /**
      * Returns a boolean defining if this reaction process includes a feedback step (alchemy).
-     * 
+     *
      * @return bool
      */
     public function withFeedback()
@@ -134,9 +134,9 @@ class ReactionProcessData
 
     /**
      * Convenience function for getting the buy cost of the input materials
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     *
      * @return float
      * @throws PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
@@ -147,9 +147,9 @@ class ReactionProcessData
 
     /**
      * Convenience function for getting the sell value of the input materials
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     *
      * @return float
      * @throws PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
@@ -160,9 +160,9 @@ class ReactionProcessData
 
     /**
      * Convenience function for getting the profit from this reaction process
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     *
      * @return float
      * @throws PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */

@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing stations
- * Inheritance: Station -> SdeTypeCommon
+ * Inheritance: Station -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,16 +25,16 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Station.php
  *
  */
-class Station extends SdeTypeCommon
+class Station extends SdeType
 {
     /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) Station objects
      */
     protected static $instancePool;
-    
+
     /**
      * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
+     * (for dynamic subclassing)
      */
     protected static $classNick = 'Station';
 
@@ -85,19 +85,19 @@ class Station extends SdeTypeCommon
         $sdeClass = Config::getIveeClassName('SDE');
 
         $res = $sdeClass::instance()->query(
-            "SELECT stationID, stationName 
+            "SELECT stationID, stationName
             FROM staStations;"
         );
 
         $namesToIds = array();
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['stationName']] = (int) $row['stationID'];
-        
-        static::$instancePool->setNamesToIds($namesToIds);
+
+        static::$instancePool->setNamesToKeys($namesToIds);
     }
 
     /**
-     * Constructor. Use \iveeCore\Station::getStation() to instantiate Station objects instead.
+     * Constructor. Use \iveeCore\Station::getById() to instantiate Station objects instead.
      *
      * @param int $id of the Station
      *
@@ -146,7 +146,7 @@ class Station extends SdeTypeCommon
 
     /**
      * Gets solarSystemID
-     * 
+     *
      * @return int
      */
     public function getSolarSystemID()
@@ -156,7 +156,7 @@ class Station extends SdeTypeCommon
 
     /**
      * Gets SolarSystem
-     * 
+     *
      * @return \iveeCore\SolarSystem
      */
     public function getSolarSystem()
@@ -167,7 +167,7 @@ class Station extends SdeTypeCommon
 
     /**
      * Gets oprationID
-     * 
+     *
      * @return int
      */
     public function getOperationID()
@@ -177,7 +177,7 @@ class Station extends SdeTypeCommon
 
     /**
      * Gets stationTypeID
-     * 
+     *
      * @return int
      */
     public function getStationTypeID()
@@ -187,7 +187,7 @@ class Station extends SdeTypeCommon
 
     /**
      * Gets owning corporationID
-     * 
+     *
      * @return int
      */
     public function getCorporationID()
@@ -197,7 +197,7 @@ class Station extends SdeTypeCommon
 
     /**
      * Gets station reprocessing efficiency
-     * 
+     *
      * @return float
      */
     public function getReprocessingEfficiency()
@@ -207,7 +207,7 @@ class Station extends SdeTypeCommon
 
     /**
      * Gets station tax
-     * 
+     *
      * @return float
      * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost
      */
@@ -225,7 +225,7 @@ class Station extends SdeTypeCommon
 
     /**
      * Gets a stations assemblyLineTypeIDs
-     * 
+     *
      * @return array $activityID => array(id1, id2...)
      */
     public function getAssemblyLineTypeIDs()

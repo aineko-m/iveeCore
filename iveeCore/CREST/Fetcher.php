@@ -30,7 +30,7 @@ class Fetcher
      * @var string $baseUrl holds the base CREST url
      */
     protected $baseUrl;
-    
+
     /**
      * @var string $userAgent holds the user agent to be used by CURL when accessing CREST
      */
@@ -46,10 +46,10 @@ class Fetcher
         $this->baseUrl   = \iveeCore\Config::getCrestBaseUrl();
         $this->userAgent = \iveeCore\Config::getUserAgent();
     }
-    
+
     /**
      * Get data from CREST and check returned representation name
-     * 
+     *
      * @param string $path the path to the specific CREST endpoint
      * @param string $representationName the expected representantion name embedded in resonse content type
      *
@@ -69,9 +69,9 @@ class Fetcher
 
     /**
      * Executes a HTTP get request and tries to return the response as decoded JSON data
-     * 
+     *
      * @param string $url the complete URL to call
-     * 
+     *
      * @return \stdClass with $obj->content being the decoded JSON data and $obj->info being the CURL info
      * @throws \iveeCore\Exceptions\CurlException if some HTTP error occurs
      */
@@ -108,9 +108,9 @@ class Fetcher
 
     /**
      * Parse a CREST response content-type to a representation name
-     * 
+     *
      * @param string $contentType to parse
-     * 
+     *
      * @return string
      * @throws \iveeCore\Exceptions\CrestException when parsing is not successful
      */

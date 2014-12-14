@@ -70,7 +70,7 @@ class ResearchMEProcessData extends ProcessData
 
     /**
      * Returns the initial ME level of the Blueprint
-     * 
+     *
      * @return int
      */
     public function getStartMELevel()
@@ -80,7 +80,7 @@ class ResearchMEProcessData extends ProcessData
 
     /**
      * Returns the ME level of the Blueprint after the research
-     * 
+     *
      * @return int
      */
     public function getEndMELevel()

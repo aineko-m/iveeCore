@@ -16,7 +16,7 @@ namespace iveeCore\EMDR;
 
 /**
  * EmdrPriceUpdate handles price/order data updates from EMDR
- * 
+ *
  * @category IveeCore
  * @package  IveeCoreEmdr
  * @author   Aineko Macx <ai@sknop.net>
@@ -78,12 +78,12 @@ class PriceUpdater
 
     /**
      * Constructor
-     * 
+     *
      * @param int $typeID ID of item this price data is from
      * @param int $regionID ID of the region this price data is from
      * @param int $generatedAt unix timestamp of the data generation
      * @param array &$orders the order data rows
-     * 
+     *
      * @return void
      */
     public function __construct($typeID, $regionID, $generatedAt, array &$orders)
@@ -116,7 +116,7 @@ class PriceUpdater
 
     /**
      * Loads the weekle averages for transaction count and volume for the current item/region
-     * 
+     *
      * @return void
      */
     protected function loadWeekAverages()
@@ -129,7 +129,7 @@ class PriceUpdater
             "SELECT
             atp.avgVol,
             atp.avgTx
-            FROM iveeTrackedPrices as atp
+            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTrackedPrices as atp
             WHERE atp.regionID = " . $this->regionID . "
             AND atp.typeID = " . $this->typeID . ";"
         );
@@ -148,9 +148,9 @@ class PriceUpdater
 
     /**
      * Estimates a realistic sell price and the supply within 5% of this price
-     * 
+     *
      * @param array &$sdata sell orders
-     * 
+     *
      * @return void
      */
     protected function estimateSellStats(array &$sdata)
@@ -158,7 +158,7 @@ class PriceUpdater
         $sellStats = static::getPriceStats($sdata, $this->averages, $this->generatedAt);
         $this->sell = $sellStats['avgOrderPrice'];
         $this->avgSell5OrderAge = $sellStats['avgOrderAge'];
-        
+
         //get supply within 5% of calculated price
         if (isset($this->sell)) {
             $this->supplyIn5 = 0;
@@ -173,9 +173,9 @@ class PriceUpdater
 
     /**
      * Estimates a realistic buy price and the demand within 5% of this price
-     * 
+     *
      * @param array &$bdata buy orders
-     * 
+     *
      * @return void
      */
     public function estimateBuyStats(array &$bdata)
@@ -198,14 +198,14 @@ class PriceUpdater
             }
         }
     }
-            
+
     /**
      * Method for sorting arrays via usort() based on the 0th element in the arrays.
      * Used as helper function for sorting market orders based on price.
-     * 
+     *
      * @param array $a first array for comparison
      * @param array $b second array for comparison
-     * 
+     *
      * @return int +1 if $a[0] is bigger, -1 if $b[0] is bigger, 0 if they are equal
      */
     protected static function cmp(array $a, array $b)
@@ -217,7 +217,7 @@ class PriceUpdater
 
     /**
      * Inserts price data into the DB
-     * 
+     *
      * @return void
      */
     public function insertIntoDB()
@@ -227,7 +227,8 @@ class PriceUpdater
 
             //check if row already exists
             $res = $sdeClass::instance()->query(
-                "SELECT regionID FROM iveePrices
+                "SELECT regionID
+                FROM " . \iveeCore\Config::getIveeDbName() . ".iveePrices
                 WHERE regionID = " . $this->regionID . "
                 AND typeID = " . $this->typeID . "
                 AND date = '" . date('Y-m-d', $this->generatedAt) . "';"
@@ -245,7 +246,8 @@ class PriceUpdater
                 );
 
                 //build update query
-                $sql = $sdeClass::makeUpdateQuery('iveePrices', $updatetData, $where);
+                $sql = $sdeClass::makeUpdateQuery(\iveeCore\Config::getIveeDbName() . '.iveePrices', $updatetData,
+                    $where);
             } else { //insert data
                 $insertData = $this->getOptionalPriceDataArray();
                 $insertData['typeID']   = $this->typeID;
@@ -253,11 +255,11 @@ class PriceUpdater
                 $insertData['date']     = date('Y-m-d', $this->generatedAt);
 
                 //build insert query
-                $sql = $sdeClass::makeUpsertQuery('iveePrices', $insertData);
+                $sql = $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveePrices', $insertData);
             }
 
             //add stored procedure call to complete the update
-            $sql .= "CALL iveeCompletePriceUpdate("
+            $sql .= "CALL " . \iveeCore\Config::getIveeDbName() . ".iveeCompletePriceUpdate("
                 . $this->typeID . ", "
                 . $this->regionID . ", '"
                 . date('Y-m-d H:i:s', $this->generatedAt)
@@ -277,39 +279,39 @@ class PriceUpdater
 
     /**
      * Returns an array with the available price set; used for DB updates / inserts
-     * 
+     *
      * @return array
      */
     protected function getOptionalPriceDataArray()
     {
         $data = array();
-        if (isset($this->sell)) 
+        if (isset($this->sell))
             $data['sell'] = $this->sell;
-        if (isset($this->buy))  
+        if (isset($this->buy))
             $data['buy']  = $this->buy;
-        if (isset($this->avgSell5OrderAge)) 
+        if (isset($this->avgSell5OrderAge))
             $data['avgSell5OrderAge'] = $this->avgSell5OrderAge;
-        if (isset($this->avgBuy5OrderAge))  
+        if (isset($this->avgBuy5OrderAge))
             $data['avgBuy5OrderAge']  = $this->avgBuy5OrderAge;
-        if (isset($this->demandIn5)) 
+        if (isset($this->demandIn5))
             $data['demandIn5'] = $this->demandIn5;
-        if (isset($this->supplyIn5)) 
+        if (isset($this->supplyIn5))
             $data['supplyIn5'] = $this->supplyIn5;
         return $data;
     }
 
     /**
      * Estimate realistic prices by calculating weighted average of orders equivalent to 5% of daily volume
-     * 
+     *
      * @param array $odata the orders (buy or sell)
      * @param array $averages with averages for volume and transactions
      * @param int $generatedAt the timestamp of data generation
-     * 
+     *
      * @return array with estimated price and average order age
      */
     protected static function getPriceStats(array $odata, array $averages, $generatedAt)
     {
-        if (count($odata) < 1) 
+        if (count($odata) < 1)
             return null;
 
         $volcumula   = 0;
@@ -318,7 +320,7 @@ class PriceUpdater
 
         foreach ($odata as $order) {
             //skip orders with ludicrous minimum volume
-            if ($order[5] > $averages['avgVol']) 
+            if ($order[5] > $averages['avgVol'])
                 continue;
 
             //accumulate volume for weighted averages
@@ -329,7 +331,7 @@ class PriceUpdater
             $tscumula    += $order[1] * ($generatedAt - strtotime($order[7]));
 
             // if 5% cut-off reached, break
-            if ($volcumula >= $averages['avgVol']*0.05) 
+            if ($volcumula >= $averages['avgVol']*0.05)
                 break;
         }
 

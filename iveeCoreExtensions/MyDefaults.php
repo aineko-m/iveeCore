@@ -17,10 +17,10 @@ namespace iveeCoreExtensions;
 /**
  * This file is intended for customizing the defaults provided by \IveeCore\Defaults. It also serves as an example of
  * the intended way of extending iveeCore with custom classes.
- * 
+ *
  * Overwrite attributes and methods as required by your application or eve industrial setup.
  * This could even be extended to make the values completely dynamic, if the application demands it.
- * 
+ *
  * This file is intentionally not put under the LGPL so users can freely modify it.
  *
  * @category IveeCore

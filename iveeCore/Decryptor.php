@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for invention decryptors.
- * Inheritance: Decryptor -> Sellable -> Type -> SdeTypeCommon
+ * Inheritance: Decryptor -> Type -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,7 +25,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Decryptor.php
  *
  */
-class Decryptor extends Sellable
+class Decryptor extends Type
 {
     /**
      * @var int the material efficiency modifier
@@ -54,9 +54,9 @@ class Decryptor extends Sellable
 
     /**
      * Constructor. Use \iveeCore\Type::getById() to instantiate Decryptor objects instead.
-     * 
+     *
      * @param int $id of the Decryptor object
-     * 
+     *
      * @return \iveeCore\Decryptor
      * @throws \iveeCore\Exceptions\UnexpectedDataException when loading Decryptor data fails
      */
@@ -102,7 +102,7 @@ class Decryptor extends Sellable
 
     /**
      * Returns the ME modifier
-     * 
+     *
      * @return int the material efficiency modifier
      */
     public function getMEModifier()
@@ -112,7 +112,7 @@ class Decryptor extends Sellable
 
     /**
      * Returns the TE modifier
-     * 
+     *
      * @return int the time efficiency modifier
      */
     public function getTEModifier()
@@ -122,7 +122,7 @@ class Decryptor extends Sellable
 
     /**
      * Returns the run modifier
-     * 
+     *
      * @return int the production run modifier
      */
     public function getRunModifier()
@@ -132,7 +132,7 @@ class Decryptor extends Sellable
 
     /**
      * Returns the invention chance modifier
-     * 
+     *
      * @return float the invention chance factor
      */
     public function getProbabilityModifier()
@@ -142,9 +142,9 @@ class Decryptor extends Sellable
 
     /**
      * Returns the compatible decryptor IDs for a given groupID
-     * 
+     *
      * @param int $groupID specifies the decryptor group to return
-     * 
+     *
      * @return array with the decryptor IDs
      * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if decryptor group is not found
      */
@@ -166,13 +166,13 @@ class Decryptor extends Sellable
 
         if (!isset(static::$decryptorGroups[$groupID]))
             self::throwException('InvalidDecryptorGroupException', "Decryptor group " . (int) $groupID . " not found");
-        
+
         return static::$decryptorGroups[$groupID];
     }
 
     /**
      * Returns whether this Type is reprocessable
-     * 
+     *
      * @return bool if the item is reprocessable. Decryptors never are.
      */
     public function isReprocessable()

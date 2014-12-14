@@ -33,9 +33,9 @@ class SkillMap
 
     /**
      * Sanity checks a skill level (verify it's an integer between 0 and 5)
-     * 
+     *
      * @param int $skillLevel the value to be checked
-     * 
+     *
      * @return bool true on success
      * @throws \iveeCore\Exceptions\InvalidParameterValueException if $skillLevel is not a valid skill level
      */
@@ -50,12 +50,12 @@ class SkillMap
 
     /**
      * Add required skill to the total skill array
-     * 
+     *
      * @param int $skillID of the skill
      * @param int $level of the skill
-     * 
+     *
      * @return void
-     * @throws \iveeCore\Exception\InvalidParameterValueException if the skill level is not a valid integer between 0 
+     * @throws \iveeCore\Exception\InvalidParameterValueException if the skill level is not a valid integer between 0
      * and 5
      */
     public function addSkill($skillID, $level)
@@ -71,9 +71,9 @@ class SkillMap
 
     /**
      * Sums the skills of another SkillMap object to this
-     * 
+     *
      * @param SkillMap $skillMap of skills to be added
-     * 
+     *
      * @return void
      */
     public function addSkillMap(SkillMap $skillMap)
@@ -84,7 +84,7 @@ class SkillMap
 
     /**
      * Returns the skills as array $skillID => $level
-     * 
+     *
      * @return array
      */
     public function getSkills()

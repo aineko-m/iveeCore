@@ -30,7 +30,7 @@ class SpecialitiesUpdater extends CrestDataUpdater
      * @var string $path holds the CREST path
      */
     protected static $path = 'industry/specialities/';
-    
+
     /**
      * @var string $representationName holds the expected representation name returned by CREST
      */
@@ -48,7 +48,8 @@ class SpecialitiesUpdater extends CrestDataUpdater
         $sde = $sdeClass::instance();
 
         //clear existing data
-        $sql = 'DELETE FROM iveeSpecialityGroups; DELETE FROM iveeSpecialities;';
+        $sql = 'DELETE FROM ' . \iveeCore\Config::getIveeDbName() . '.iveeSpecialityGroups;'
+                . 'DELETE FROM ' . \iveeCore\Config::getIveeDbName() . '.iveeSpecialities;';
 
         foreach ($this->data->items as $item)
             $sql .= $this->processDataItemToSQL($item);
@@ -58,7 +59,7 @@ class SpecialitiesUpdater extends CrestDataUpdater
 
     /**
      * Processes data objects to SQL
-     * 
+     *
      * @param \stdClass $item to be processed
      *
      * @return string the SQL queries
@@ -73,7 +74,7 @@ class SpecialitiesUpdater extends CrestDataUpdater
         if (!isset($item->id))
             throw new $exceptionClass("specialityID missing from specialities CREST data");
         $specialityID = (int) $item->id;
-        
+
         if (!isset($item->name))
             throw new $exceptionClass("name missing from specialities CREST data");
         $update['specialityName'] = $item->name;
@@ -81,7 +82,7 @@ class SpecialitiesUpdater extends CrestDataUpdater
         $insert = $update;
         $insert['specialityID'] = $specialityID;
 
-        $sql = $sdeClass::makeUpsertQuery('iveeSpecialities', $insert, $update);
+        $sql = $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveeSpecialities', $insert, $update);
 
         if (!isset($item->groups))
             throw new $exceptionClass("groups missing from specialities CREST data");
@@ -92,7 +93,8 @@ class SpecialitiesUpdater extends CrestDataUpdater
             $update = array('groupID' => (int) $group->id);
             $insert = $update;
             $insert['specialityID'] = $specialityID;
-            $sql .= $sdeClass::makeUpsertQuery('iveeSpecialityGroups', $insert, $update);
+            $sql .= $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveeSpecialityGroups', $insert,
+                $update);
         }
         return $sql;
     }

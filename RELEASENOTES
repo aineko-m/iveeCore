@@ -1,21 +1,41 @@
-This file lists major changes in iveeCore versions.
+This file lists major changes in iveeCore releases.
+
+Version 2.2 - December 14th, 2014
+---------------------------------
+- Adapt to Rhea release.
+- Extracted market data from the Type class hierarchy to separate classes, RegionMarketData and GlobalPriceData.
+(averagePrice and adjustedPrice as returned by the CREST API and needed for industry calculations). This provides better
+separation of concerns and removes some inconsistencies for types that inherited from Sellable, but were not actually on
+the market. Trying to get the market objects from these types will throw an exception instead.
+- Removed Sellable class.
+- Split iveeCore tables to their own DB schema, separate from SDE DB. This improves handling of the DB during SDE
+upgrades, as the iveeCore tables don't have to be copied, which can potentially become multiple GB in size.
+- Refactored base Type classes and caching, the new hierarchy being CacheableCommon <- SdeType <- Type.
+- Removed assembly line compatibility hack for blueprints, provided missing database rows instead (data missing in the
+SDE since Phoebe).
+- Fixed bugs in class loader and EMDR cache invalidation.
+- Existing users will have to remake the configuration file based on the new template.
+
+Upcoming changes:
+- With the introduction of market data API endpoints to authenticated CREST, it is time to replace EMDR.
+- The last industry teams in game will expire on January 11th, so the functionality will then be removed from iveeCore.
 
 Version 2.1 - November 8th, 2014
 --------------------------------
 - Adapt to Phoebe release
--> Rename REBlueprint to T3Blueprint
--> Refactor reverse engineering as it has been merged into invention, also changing the class hierarchy for Relic and 
-T3Blueprint
--> Adapt invention to changes
--> The SDE is missing assembly line compatibility data for blueprints, which made a hack necessary to make it still 
+-> Rename REBlueprint to T3Blueprint.
+-> Refactor reverse engineering as it has been merged into invention, also changing the class hierarchy for Relic and
+T3Blueprint.
+-> Adapt invention to changes.
+-> The SDE is missing assembly line compatibility data for blueprints, which made a hack necessary to make it still
 work. However, the calculated cost of research, copying and invention will not take into account cost bonuses for
 assembly lines that have them in-game.
-- Existing users will have to remake the configuration file based on the new template
+- Existing users will have to remake the configuration file based on the new template.
 
 Version 2.0.1 - October 1st, 2014
 ---------------------------------
-- Adapt to Oceanus release
-- Small bugfixes to CREST updater
+- Adapt to Oceanus release.
+- Small bugfixes to CREST updater.
 
 Version 2.0 - September 20th, 2014
 ----------------------------------
@@ -52,9 +72,9 @@ Version 1.3.1 - June 8, 2014
 Version 1.3 - March 29, 2014
 ----------------------------
 - Added parsers for EFT-style and EvE's XML fitting descriptions as well as cargo and ship scanning results.
-- Reworked how configuration & defaults and utility methods are organized, for cleaner separation and better 
-consistency. Defaults now reside in IveeCoreDefaults.php and customization is done in the subclass/file 
-MyIveeCoreDefaults.php. As a consequence, iveeCoreConfig_template.php also changed a lot, therefore configuration files 
+- Reworked how configuration & defaults and utility methods are organized, for cleaner separation and better
+consistency. Defaults now reside in IveeCoreDefaults.php and customization is done in the subclass/file
+MyIveeCoreDefaults.php. As a consequence, iveeCoreConfig_template.php also changed a lot, therefore configuration files
 will have to be redone.
 - Adapted README to Rubicon 1.3 release
 - More bugfixes and unit tests
@@ -68,14 +88,14 @@ Version 1.2.1 - February 16, 2014
 Version 1.2 - February 8, 2014
 ------------------------------
 - Added reaction calculations
-- Rewrote type materials and requirements handling. This fixed reprocessing calculations and most off-by-1 errors. The 
-memory use of the type array was reduced by up to 30%. The stored procedure iveeGetRequirements() is obsoleted by this 
+- Rewrote type materials and requirements handling. This fixed reprocessing calculations and most off-by-1 errors. The
+memory use of the type array was reduced by up to 30%. The stored procedure iveeGetRequirements() is obsoleted by this
 change, which makes for more maintainable code.
-- Bug fixes and more convenience functions
-- Renamed MaterialSet to MaterialMap and SkillSet to SkillMap as it better describes the classes purpose
-- Renamed CopyData to CopyProcessData, InventionData to InventionProcessData and ManufactureData to 
-ManufactureProcessData for consistency
-- Added some PHPUnit test cases covering different parts of iveeCore
+- Bug fixes and more convenience functions.
+- Renamed MaterialSet to MaterialMap and SkillSet to SkillMap as it better describes the classes purpose.
+- Renamed CopyData to CopyProcessData, InventionData to InventionProcessData and ManufactureData to
+ManufactureProcessData for consistency.
+- Added some PHPUnit test cases covering different parts of iveeCore.
 - Note that the file iveeCoreConfig_template.php changed, thus adaptation of the configuration file is required
 
 Version 1.1 - November 10, 2013

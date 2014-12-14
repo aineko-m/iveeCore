@@ -1,11 +1,3 @@
--- add index invMetaTypes parentTypeID
-ALTER TABLE `invMetaTypes`
-	ADD INDEX `parentTypeID` (`parentTypeID`);
-
--- add index invTypeReactions typeID
-ALTER TABLE `invTypeReactions`
-	ADD INDEX `typeID` (`typeID`);
-	
 CREATE TABLE IF NOT EXISTS `iveePrices` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `typeID` int(11) NOT NULL,
@@ -59,24 +51,24 @@ BEGIN
 	DECLARE c_avgTx FLOAT;
 	
 	# get id of newest history row
-	SELECT id, date INTO newestHistId, newestHistDate 
-	FROM iveePrices 
-	WHERE regionID = IN_regionID 
-	AND typeID = IN_typeID 
+	SELECT id, date INTO newestHistId, newestHistDate
+	FROM iveePrices
+	WHERE regionID = IN_regionID
+	AND typeID = IN_typeID
 	AND (avg IS NOT NULL OR vol IS NOT NULL)
 	ORDER BY date DESC
 	LIMIT 1;
 	
 	# get average volume and transactions for last week
-	SELECT AVG(COALESCE(vol, 0)), AVG(COALESCE(tx, 0)) INTO c_avgVol, c_avgTx 
+	SELECT AVG(COALESCE(vol, 0)), AVG(COALESCE(tx, 0)) INTO c_avgVol, c_avgTx
 	FROM iveePrices
-	WHERE regionID = IN_regionID 
+	WHERE regionID = IN_regionID
 	AND typeID = IN_typeID
-	AND date < newestHistDate 
+	AND date < newestHistDate
 	AND date > DATE_SUB(newestHistDate, INTERVAL 8 DAY);
 	
 	# upsert tracked prices
-	INSERT INTO iveeTrackedPrices (regionID, typeID, newestHistData, lastHistUpdate, avgVol, avgTx) 
+	INSERT INTO iveeTrackedPrices (regionID, typeID, newestHistData, lastHistUpdate, avgVol, avgTx)
 	VALUES (IN_regionID, IN_typeId, newestHistId, IN_generatedAt, c_avgVol, c_avgTx)
 	ON DUPLICATE KEY UPDATE newestHistData = newestHistId, lastHistUpdate = IN_generatedAt, avgVol = c_avgVol, avgTx = c_avgTx;
 END//
@@ -93,10 +85,10 @@ BEGIN
 	DECLARE newestPriceId INT;
 	
 	# get the newest id
-	SELECT id INTO newestPriceId 
-	FROM iveePrices 
-	WHERE regionID = IN_regionID 
-	AND typeID = IN_typeID 
+	SELECT id INTO newestPriceId
+	FROM iveePrices
+	WHERE regionID = IN_regionID
+	AND typeID = IN_typeID
 	AND (sell IS NOT NULL OR buy IS NOT NULL)
 	ORDER BY date DESC
 	LIMIT 1;

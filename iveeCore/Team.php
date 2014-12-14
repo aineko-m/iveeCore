@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing industry teams
- * Inheritance: Team -> SdeTypeCommon
+ * Inheritance: Team -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,7 +25,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Team.php
  *
  */
-class Team extends SdeTypeCommon
+class Team extends SdeType
 {
     /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) Team objects
@@ -34,7 +34,7 @@ class Team extends SdeTypeCommon
 
     /**
      * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
+     * (for dynamic subclassing)
      */
     protected static $classNick = 'Team';
 
@@ -64,7 +64,7 @@ class Team extends SdeTypeCommon
     protected $costModifier;
 
     /**
-     * @var int $specialityID ID of the speciality of the team. Note that no actual bonuses are available for the 
+     * @var int $specialityID ID of the speciality of the team. Note that no actual bonuses are available for the
      * referenced specialityIDs 0-6.
      */
     protected $specialityID;
@@ -116,7 +116,7 @@ class Team extends SdeTypeCommon
             "SELECT solarSystemID, UNIX_TIMESTAMP(expiryTime) as expiryTime, UNIX_TIMESTAMP(creationTime) as
             creationTime, activityID, teamName, costModifier, specID, w0BonusID, w0BonusValue, w0SpecID, w1BonusID,
             w1BonusValue, w1SpecID, w2BonusID, w2BonusValue, w2SpecID, w3BonusID, w3BonusValue, w3SpecID
-            FROM iveeTeams WHERE teamID = " .  $this->id . ";"
+            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTeams WHERE teamID = " .  $this->id . ";"
         )->fetch_assoc();
 
         if (empty($row))
@@ -156,7 +156,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the ID of the SolarSystem the Team is in
-     * 
+     *
      * @return int
      */
     public function getSolarSystemID()
@@ -166,7 +166,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the unix timestmap of the creation date of the Team
-     * 
+     *
      * @return int
      */
     public function getCreationTime()
@@ -176,7 +176,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the unix timestamp of the expiry of the Team
-     * 
+     *
      * @return int
      */
     public function getExpiryTime()
@@ -186,7 +186,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the activityID the Team gives bonuses for
-     * 
+     *
      * @return int
      */
     public function getActivityID()
@@ -196,7 +196,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the cost modifier for using the Team as factor (>1.0)
-     * 
+     *
      * @return float
      */
     public function getCostModifier()
@@ -206,7 +206,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the ID of the Speciality of the Team
-     * 
+     *
      * @return int
      */
     public function getSpecialityID()
@@ -216,7 +216,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the IDs of type of bonus for workers 0-3, where bonusID=0 is a time bonus and bonusID=1 is a material bonus
-     * 
+     *
      * @return array
      */
     public function getBonusIDs()
@@ -226,7 +226,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the values of the bonuses for workers 0-3, as negative percentages
-     * 
+     *
      * @return array
      */
     public function getBonusValues()
@@ -236,7 +236,7 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the Speciality's for workers 0-3
-     * 
+     *
      * @return array worker => Speciality
      */
     public function getWorkerSpecialities()
@@ -246,9 +246,9 @@ class Team extends SdeTypeCommon
 
     /**
      * Checks if the Team gives bonus to given Type
-     * 
+     *
      * @param \iveeCore\Type $type to be checked
-     * 
+     *
      * @return bool
      */
     public function isTypeCompatible(Type $type)
@@ -258,9 +258,9 @@ class Team extends SdeTypeCommon
 
     /**
      * Checks if the Team gives bonus to given groupID
-     * 
+     *
      * @param int $groupID to be checked
-     * 
+     *
      * @return bool
      */
     public function isGroupIDCompatible($groupID)
@@ -275,9 +275,9 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the IDs of the workers that give bonuses to given groupID
-     * 
+     *
      * @param int $groupID to get worker IDs for
-     * 
+     *
      * @return array
      */
     public function getWorkerIDsForGroupID($groupID)
@@ -292,9 +292,9 @@ class Team extends SdeTypeCommon
 
     /**
      * Gets the modifiers for a given groupID
-     * 
+     *
      * @param int $groupID to get modifiers for
-     * 
+     *
      * @return array 'c' => costFactor, 'm' => materialFactor, 't' => timeFactor
      */
     public function getModifiersForGroupID($groupID)

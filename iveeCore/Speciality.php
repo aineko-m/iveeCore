@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing industry team specialities
- * Inheritance: Speciality -> SdeTypeCommon
+ * Inheritance: Speciality -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,7 +25,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Speciality.php
  *
  */
-class Speciality extends SdeTypeCommon
+class Speciality extends SdeType
 {
     /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) Speciality objects
@@ -34,7 +34,7 @@ class Speciality extends SdeTypeCommon
 
     /**
      * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
+     * (for dynamic subclassing)
      */
     protected static $classNick = 'Speciality';
 
@@ -72,7 +72,7 @@ class Speciality extends SdeTypeCommon
 
         $row = $sde->query(
             "SELECT specialityName
-            FROM iveeSpecialities
+            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeSpecialities
             WHERE specialityID = " . $this->id . ';'
         )->fetch_assoc();
 
@@ -84,7 +84,7 @@ class Speciality extends SdeTypeCommon
 
         $res = $sde->query(
             "SELECT groupID
-            FROM iveeSpecialityGroups
+            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeSpecialityGroups
             WHERE specialityID = " . $this->id . ';'
         );
 
@@ -94,7 +94,7 @@ class Speciality extends SdeTypeCommon
 
     /**
      * Gets groupIDs of Types bonused by this Speciality
-     * 
+     *
      * @return array
      */
     public function getSpecialtyGroupIDs()
@@ -104,9 +104,9 @@ class Speciality extends SdeTypeCommon
 
     /**
      * Returns if a Speciality applies bonuses to a given groupID
-     * 
+     *
      * @param int $groupID the groupID to test
-     * 
+     *
      * @return bool
      */
     public function appliesToGroupID($groupID)

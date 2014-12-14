@@ -15,18 +15,18 @@
 namespace iveeCore;
 
 /**
- * IndustryModifier objects are used to aggregate objects and factors that modify the cost, time and material 
- * requirements of performing industrial activities (manufacturing, TE research, ME research, copying, reverse 
- * engineering and invention). Namely, these are solar system industry indices, assembly lines (of stations or POSes), 
+ * IndustryModifier objects are used to aggregate objects and factors that modify the cost, time and material
+ * requirements of performing industrial activities (manufacturing, TE research, ME research, copying, reverse
+ * engineering and invention). Namely, these are solar system industry indices, assembly lines (of stations or POSes),
  * teams, station taxes, skills affecting time and implants affecting time.
- * 
+ *
  * A number of convenience functions are provided that help in instantiating IndustryModifier objects, automatically
  * passing the required arguments based on a specific NPC station, a POS in a system, all NPC stations in a system or
  * a system plus manual assembly line type definition (necessary for player built outposts and wormholes).
- * 
+ *
  * IndustryModifier objects are passed as argument to the Blueprint methods calculating the industrial activity. They
  * can be reused.
- * 
+ *
  * For a given industry activityID and Type object, IndustryModifier objects can calculate the cost, material and time
  * factors, considering all of the modifiers.
  *
@@ -60,19 +60,19 @@ class IndustryModifier
     protected $teams;
 
     /**
-     * @var array $skillTimeModifiers the skill-dependent time modifiers in the form $activityID => 0.75 (meaning 25% 
+     * @var array $skillTimeModifiers the skill-dependent time modifiers in the form $activityID => 0.75 (meaning 25%
      * bonus). These are looked up in Defaults for each skillID.
      */
     protected $skillTimeModifiers;
 
     /**
-     * @var array $implantTimeModifiers the implant-dependent time modifiers in the form $activityID => 0.98 (meaning 2% 
+     * @var array $implantTimeModifiers the implant-dependent time modifiers in the form $activityID => 0.98 (meaning 2%
      * bonus). These are looked up in Defaults but can be overriden.
      */
     protected $implantTimeModifiers;
 
     /**
-     * Returns a IndustryModifier object for a specific NPC station. This method can't be used for player built 
+     * Returns a IndustryModifier object for a specific NPC station. This method can't be used for player built
      * outsposts as they aren't in the SDE. You need to use getBySystemIdWithAssembly(...) in that case.
      *
      * @param int $stationID of Station to use to get all the data
@@ -95,7 +95,7 @@ class IndustryModifier
 
     /**
      * Returns a IndustryModifier object for a POS in a specific system. The AssemblyLines for the best available POS
-     * assembly arrays (i.e. AssemblyLines) will be set, respecting system security limits, for instance, no capital 
+     * assembly arrays (i.e. AssemblyLines) will be set, respecting system security limits, for instance, no capital
      * manufacturing in hisec.
      *
      * @param int $solarSystemID of the SolarSystem to get data for
@@ -244,7 +244,7 @@ class IndustryModifier
     {
         return $this->assemblyLines;
     }
-    
+
     /**
      * Returns all available AssemblyLines for a given activityID
      *
@@ -289,7 +289,7 @@ class IndustryModifier
     {
         return 1.0 + $this->tax;
     }
-    
+
     /**
      * Returns the implant dependent industry activity time modifiers
      *
@@ -297,12 +297,12 @@ class IndustryModifier
      */
     public function getImplantTimeModifiers()
     {
-        return $this->implantTimeModifiers;   
+        return $this->implantTimeModifiers;
     }
 
     /**
      * Returns the implant dependent industry activity time modifiers
-     * 
+     *
      * @param int $activityID optional
      *
      * @return float the specific factor in the form "0.95" for 5% bonus
@@ -317,10 +317,10 @@ class IndustryModifier
 
     /**
      * Allows setting the implant time modifiers, overriding the defaults looked up during instantiation
-     * 
+     *
      * @param float $modifier the time factor, in the form 0.95 for 5% bonus
      * @param int $activityID the ID of the activity this time bonus is for
-     * 
+     *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException if $modifier is not sane
      */
@@ -333,12 +333,12 @@ class IndustryModifier
             throw new $exceptionClass("Invalid modifier given");
         }
     }
-    
+
     /**
      * Allows setting the implant time modifiers, overriding the defaults looked up during instantiation
-     * 
-     * @param array $modifiers in the form activityID => float 
-     * 
+     *
+     * @param array $modifiers in the form activityID => float
+     *
      * @return void
      */
     public function setImplantTimeModifiers(array $modifiers)
@@ -358,7 +358,7 @@ class IndustryModifier
 
     /**
      * Returns the skill dependent industry activity time modifier
-     * 
+     *
      * @param int $activityID the ID of the activity
      *
      * @return float
@@ -373,7 +373,7 @@ class IndustryModifier
 
     /**
      * Allows setting the skill dependent time modifiers, overriding the defaults looked up during instantiation
-     * 
+     *
      * @param array $modifiers in the form activityID => 0.98 (for 2% bonus)
      *
      * @return void
@@ -385,7 +385,7 @@ class IndustryModifier
 
     /**
      * Allows setting the skill dependent time modifiers, overriding the defaults looked up during instantiation
-     * 
+     *
      * @param float $modifier in the form 0.98 for 2% bonus
      * @param int $activityID the ID of the activity
      *
@@ -414,7 +414,7 @@ class IndustryModifier
 
     /**
      * Returns the Teams
-     * 
+     *
      * @param int $activityID the ID of the activity to get Teams for
      *
      * @return array in the form teamID => Teams
@@ -429,7 +429,7 @@ class IndustryModifier
 
     /**
      * Allows setting the Teams, overriding the ones given in IndustryModifier instantiation
-     * 
+     *
      * @param array $teams in the form activityID => teamID => Team
      *
      * @return void
@@ -438,10 +438,10 @@ class IndustryModifier
     {
         $this->teams = $teams;
     }
-    
+
     /**
      * Allows setting the Teams, overriding the ones given in IndustryModifier instantiation
-     * 
+     *
      * @param array $teams in the form teamID => Team
      * @param int $activityID the ID of the activity to set Teams for
      *
@@ -454,9 +454,9 @@ class IndustryModifier
 
     /**
      * Test if a certain activity can be performed with a certain Type with the current IndustryModifier object.
-     * It's always the final output item that needs to be checked. This means that for manufacturing, its the Blueprint 
+     * It's always the final output item that needs to be checked. This means that for manufacturing, its the Blueprint
      * product; for copying its the Blueprint itself; for invention it is the product of the invented blueprint.
-     * 
+     *
      * @param int $activityID the activity to check
      * @param Type $type the item to check
      *
@@ -477,10 +477,10 @@ class IndustryModifier
     /**
      * Gets the total combined modifiers for cost, materials and time for a given activity and Type considering all the
      * variables.
-     * 
+     *
      * @param int $activityID ID of the activity to get modifiers for
      * @param Type $type It's the final output item that needs to be given for checking. This means that for
-     * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product 
+     * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product
      * of the invented blueprint. Only for reverse engineering the input Relic must be checked.
      *
      * @return array
@@ -501,7 +501,7 @@ class IndustryModifier
         $modifiers['assemblyLineTypeID'] = $bestAssemblyLine->getId();
         $modifiers['solarSystemID'] = $this->getSolarSystem()->getId();
         //get initial cost factor as system industry index and tax
-        $modifiers['c'] = $modifiers['c'] 
+        $modifiers['c'] = $modifiers['c']
             * $this->getSolarSystem()->getIndustryIndexForActivity($activityID) * $this->getTaxFactor();
 
         //get the compatible team with the best bonuses. Where ME > TE > cost bonus.
@@ -526,12 +526,12 @@ class IndustryModifier
     }
 
     /**
-     * Gets the best compatible assemblyLine for the activity and Type. 
+     * Gets the best compatible assemblyLine for the activity and Type.
      * Bonuses are ranked as material bonus > time bonus > cost bonus
-     * 
+     *
      * @param int $activityID the ID of the activity to get AssemblyLines for
-     * @param Type $type It's always the final output item that needs to be given. This means that for manufacturing, 
-     * its the Blueprint product; for copying its the Blueprint itself; for invention it is the product of the 
+     * @param Type $type It's always the final output item that needs to be given. This means that for manufacturing,
+     * its the Blueprint product; for copying its the Blueprint itself; for invention it is the product of the
      * invented blueprint.
      *
      * @return AssemblyLine|null
@@ -575,12 +575,12 @@ class IndustryModifier
     }
 
     /**
-     * Gets the best compatible Team for the activity and Type. 
+     * Gets the best compatible Team for the activity and Type.
      * Bonuses are ranked as material bonus > time bonus > cost bonus
-     * 
+     *
      * @param int $activityID the ID of the activity to get Team for
-     * @param Type $type It's always the final output item that needs to be given. This means that for manufacturing, 
-     * its the Blueprint product; for copying its the Blueprint itself; for invention it is the product of the 
+     * @param Type $type It's always the final output item that needs to be given. This means that for manufacturing,
+     * its the Blueprint product; for copying its the Blueprint itself; for invention it is the product of the
      * invented blueprint.
      *
      * @return Team|null

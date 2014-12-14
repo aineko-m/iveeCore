@@ -15,7 +15,7 @@
 namespace iveeCore;
 
 /**
- * MaterialParseResult objects are used to return material parsing results. They are implemented as simple extension of 
+ * MaterialParseResult objects are used to return material parsing results. They are implemented as simple extension of
  * MaterialMap with an additonal array attribute for unparseables.
  * Inheritance: MaterialParseResult -> MaterialMap
  *
@@ -35,9 +35,9 @@ class MaterialParseResult extends MaterialMap
 
     /**
      * Add an unparseable string or error description. Strings are sanitized for security.
-     * 
+     *
      * @param string $unparseable the string that couldn't be parsed to an item
-     * 
+     *
      * @return void
      */
     public function addUnparseable($unparseable)
@@ -48,7 +48,7 @@ class MaterialParseResult extends MaterialMap
 
     /**
      * Returns the array with the unparseables.
-     * 
+     *
      * @return array
      */
     public function getUnparseables()

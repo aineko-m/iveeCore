@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This is the single include file required for using iveeCore in web applications or command line scripts. All other 
+ * This is the single include file required for using iveeCore in web applications or command line scripts. All other
  * required classes are loaded via autoloader.
  *
  * PHP version 5.3
@@ -32,11 +32,11 @@ date_default_timezone_set('UTC');
 spl_autoload_register('iveeClassLoader');
 
 /**
- * Auto class loader
- * 
+ * Auto class loader. Improved from http://www.php-fig.org/psr/psr-0/
+ *
  * @param string $className the fully qualified class name. The loader relies on PSR compliant namespacing and class
  * file directory structuring to find and load the required files.
- * 
+ *
  * @return void
  */
 function iveeClassLoader($className)
@@ -50,6 +50,6 @@ function iveeClassLoader($className)
         $fileName  .= str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
     }
     $fileName .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
-
-    include_once $fileName;
+    if(file_exists($fileName))
+        require_once $fileName;
 }

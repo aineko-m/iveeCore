@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * This file defines a number of default values for use within iveeCore.
- * To adapt them, don't edit this file directly, instead  modify \iveeCoreExtensions\MyIveeCoreDefaults.php, which is 
+ * To adapt them, don't edit this file directly, instead  modify \iveeCoreExtensions\MyIveeCoreDefaults.php, which is
  * intended precisely for this, overwriting attributes and methods as you require.
  *
  * @category IveeCore
@@ -39,7 +39,7 @@ class Defaults
     protected $defaultRegionID  = 10000002; //The Forge
 
     /**
-     * @var array $TRACKED_MARKET_REGION_IDS defines the regions for which market data should by gathered by the EMDR 
+     * @var array $TRACKED_MARKET_REGION_IDS defines the regions for which market data should by gathered by the EMDR
      * client
      */
     protected $trackedMarketRegionIDs = array(
@@ -116,7 +116,7 @@ class Defaults
      * @var float $DefaultBuyTaxFactor defines the tax factor used for cost calculations
      */
     protected $defaultBuyTaxFactor = 1.015;  // = 100% + 0.75% broker fee + 0.75% transaction tax
-    
+
     /**
      * @var float $DefaultSellTaxFactor defines the tax factor used for profit calculations
      */
@@ -127,7 +127,7 @@ class Defaults
      * in $bpMeLevels
      */
     protected $defaultBpoMe = -10;
-    
+
     /**
      * @var int $defaultBpoTe defines the default BPO TE level to be used when explicit values have not been defined
      * in $bpTeLevels
@@ -198,7 +198,7 @@ class Defaults
 
     /**
      * Returns Defaults instance.
-     * 
+     *
      * @return \iveeCore\Defaults
      */
     public static function instance()
@@ -209,13 +209,13 @@ class Defaults
     }
 
     /**
-     * The following getters are not implemented as magic __get method for cleaner access control and overwriting in 
+     * The following getters are not implemented as magic __get method for cleaner access control and overwriting in
      * subclasses
      */
-    
+
     /**
      * Returns the default market region ID
-     * 
+     *
      * @return int
      */
     public function getDefaultRegionID()
@@ -225,7 +225,7 @@ class Defaults
 
     /**
      * Returns the tracked market regionIDs
-     * 
+     *
      * @return array with the regionIDs as keys
      */
     public function getTrackedMarketRegionIDs()
@@ -235,17 +235,17 @@ class Defaults
 
     /**
      * Returns the default buy tax factor in the form 1.015 for 1.5% total tax
-     * 
+     *
      * @return float
      */
     public function getDefaultBuyTaxFactor()
     {
         return $this->defaultBuyTaxFactor;
     }
-    
+
     /**
      * Returns the default sell tax factor in the form 0.985 for 1.5% total tax
-     * 
+     *
      * @return float
      */
     public function getDefaultSellTaxFactor()
@@ -255,7 +255,7 @@ class Defaults
 
     /**
      * Returns the default BPO ME level
-     * 
+     *
      * @return int
      */
     public function getDefaultBpoMe()
@@ -265,7 +265,7 @@ class Defaults
 
     /**
      * Returns the default BPO TE level
-     * 
+     *
      * @return int
      */
     public function getDefaultBpoTe()
@@ -275,7 +275,7 @@ class Defaults
 
     /**
      * Returns the maximum price data age in seconds
-     * 
+     *
      * @return int
      */
     public function getMaxPriceDataAge()
@@ -285,9 +285,9 @@ class Defaults
 
     /**
      * Returns the skill level for a certain skill. This is a stub implementation.
-     * 
+     *
      * @param int $skillID the ID of the skill being looked up
-     * 
+     *
      * @return int skill level
      */
     public function getSkillLevel($skillID)
@@ -297,7 +297,7 @@ class Defaults
 
     /**
      * Returns the implant dependent time modifiers for industry activities
-     * 
+     *
      * @return array in the form activityID => float (0.98 for 2% bonus)
      */
     public function getIndustryImplantTimeModifiers()
@@ -312,9 +312,9 @@ class Defaults
 
     /**
      * Returns the default ME level for a specific blueprint
-     * 
+     *
      * @param int $bpID the ID of the blueprint being looked up
-     * 
+     *
      * @return int blueprint ME level
      */
     public function getBpMeLevel($bpID)
@@ -327,10 +327,10 @@ class Defaults
 
     /**
      * Sets a default ME level for a blueprint
-     * 
+     *
      * @param int $bpID the ID of the blueprint
      * @param int $meLevel blueprint ME level to be set
-     * 
+     *
      * @return void
      */
     public function setBpMeLevel($bpID, $meLevel)
@@ -340,9 +340,9 @@ class Defaults
 
     /**
      * Returns the default TE level for a specific blueprint
-     * 
+     *
      * @param int $bpID the ID of the blueprint being looked up
-     * 
+     *
      * @return int blueprint TE level
      */
     public function getBpTeLevel($bpID)
@@ -355,10 +355,10 @@ class Defaults
 
     /**
      * Sets a default TE level for a blueprint
-     * 
+     *
      * @param int $bpID the ID of the blueprint
      * @param int $teLevel blueprint TE level to be set
-     * 
+     *
      * @return void
      */
     public function setBpTeLevel($bpID, $teLevel)
