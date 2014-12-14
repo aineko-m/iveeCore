@@ -44,7 +44,7 @@ class ManufactureProcessData extends ProcessData
 
     /**
      * Constructor.
-     * 
+     *
      * @param int $producesTypeID typeID of the item manufactured in this process
      * @param int $producesQuantity the number of produces items
      * @param int $processTime the time this process takes in seconds
@@ -54,7 +54,7 @@ class ManufactureProcessData extends ProcessData
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
      * @param int $teamID the ID of the Team being used, if at all
-     * 
+     *
      * @return ProcessData
      */
     public function __construct($producesTypeID, $producesQuantity, $processTime, $processCost, $bpMeLevel,
@@ -70,8 +70,8 @@ class ManufactureProcessData extends ProcessData
     }
 
     /**
-     * Returns the ME level of the blueprint used in this process
-     * 
+     * Returns the ME level of the blueprint used in this process.
+     *
      * @return int
      */
     public function getMeLevel()
@@ -80,8 +80,8 @@ class ManufactureProcessData extends ProcessData
     }
 
     /**
-     * Returns the PE level of the blueprint used in this process
-     * 
+     * Returns the PE level of the blueprint used in this process.
+     *
      * @return int
      */
     public function getTeLevel()
@@ -90,38 +90,41 @@ class ManufactureProcessData extends ProcessData
     }
 
     /**
-     * Returns the the total cost per single produced unit
-     * 
+     * Returns the the total cost per single produced unit.
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalCostPerUnit($maxPriceDataAge = null)
+    public function getTotalCostPerUnit($maxPriceDataAge = null, $regionId = null)
     {
-        return $this->getTotalCost($maxPriceDataAge) / $this->producesQuantity;
+        return $this->getTotalCost($maxPriceDataAge, $regionId) / $this->producesQuantity;
     }
 
     /**
      * Returns the the total profit for batch. Considers sell tax.
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalProfit($maxPriceDataAge = null)
+    public function getTotalProfit($maxPriceDataAge = null, $regionId = null)
     {
         $defaultsClass = Config::getIveeClassName('Defaults');
+        $defaults = $defaultsClass::instance();
 
-        return (Type::getById($this->producesTypeID)->getSellPrice($maxPriceDataAge)
-            * $this->producesQuantity * $defaultsClass::instance()->getDefaultSellTaxFactor())
-                - ($this->getTotalCost($maxPriceDataAge));
+        return (Type::getById($this->producesTypeID)->getRegionMarketData($regionId)->getSellPrice($maxPriceDataAge)
+            * $this->producesQuantity * $defaults->getDefaultSellTaxFactor())
+            - ($this->getTotalCost($maxPriceDataAge, $regionId));
     }
 
     /**
      * Prints data about this process
-     * 
+     *
      * @return void
      */
     public function printData()

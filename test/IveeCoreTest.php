@@ -40,7 +40,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         if (\iveeCore\Config::getUseCache())
             \iveeCore\MemcachedWrapper::instance()->flushCache();
     }
-    
+
     public function testSde()
     {
         $this->assertTrue(\iveeCore\SDE::instance() instanceof \iveeCore\SDE);
@@ -49,7 +49,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
     public function testBasicTypeMethods()
     {
         $type = \iveeCore\Type::getById(22);
-        $this->assertTrue($type instanceof \iveeCore\Sellable);
+        $this->assertTrue($type->onMarket());
         $this->assertTrue($type->getId() == 22);
         $this->assertTrue($type->getGroupID() == 450);
         $this->assertTrue($type->getCategoryID() == 25);
@@ -60,23 +60,23 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($type->isReprocessable());
         $this->assertTrue(is_array($type->getMaterials()));
     }
-    
+
     public function testGetTypeAndCache()
     {
         //can't test cache with cache disabled
         if (!\iveeCore\Config::getUseCache())
             return;
-        
+
         //empty cache entry for type
         \iveeCore\MemcachedWrapper::instance()->deleteItem('Type_' . 645);
-        
+
         //get type
         $type = \iveeCore\Type::getById(645);
         $this->assertTrue($type instanceof \iveeCore\Manufacturable);
-        $this->assertTrue($type == \iveeCore\MemcachedWrapper::instance()->getItem('Type_' . 645));
+        $this->assertTrue($type == \iveeCore\MemcachedWrapper::instance()->getItem('iveeCore\Type_645'));
         $this->assertTrue($type == \iveeCore\Type::getByName('Dominix'));
     }
-    
+
     /**
      * Tests for error-free execution, not correctness
      */
@@ -89,7 +89,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $type->getMaxProductionLimit();
         $type->getProductBaseCost(0);
         $this->assertTrue($type->calcResearchMultiplier(0, 2) * 105 == 250);
-        
+
         //IndustryModifier for Itamo
         $iMod = \iveeCore\IndustryModifier::getBySystemIdForPos(30000119);
         $type->manufacture($iMod);
@@ -128,7 +128,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $im = \iveeCore\IndustryModifier::getBySystemIdForAllNpcStations(30000163); //Akora
         //override any set team
         $im->setTeamsForActivity(array(3854 => \iveeCore\Team::getById(3854)), 1);
-        
+
         //with quantity=2 this also tests requirements being rounded down
         $mpd = \iveeCore\Type::getByName('Rorqual Blueprint')->manufacture($im, 2, -9, -10, false);
         $materialTarget = new \iveeCore\MaterialMap;
@@ -148,7 +148,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $materialTarget->addMaterial(24560, 31);
         $this->assertTrue($mpd->getMaterialMap() == $materialTarget);
     }
-    
+
     public function testReprocessing()
     {
         $rmap = \iveeCore\Type::getByName('Arkonor')->getReprocessingMaterialMap(100, 0.5, 0.95, 1.01);

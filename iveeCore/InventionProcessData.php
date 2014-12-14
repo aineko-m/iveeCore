@@ -58,7 +58,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Constructor.
-     * 
+     *
      * @param int $inventedBpID typeID of the invented blueprint
      * @param int $inventTime the invention takes in seconds
      * @param float $processCost the cost of performing this reseach process
@@ -69,7 +69,7 @@ class InventionProcessData extends ProcessData
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
      * @param int $teamID the ID of the Team being used, if at all
-     * 
+     *
      * @return InventionProcessData
      */
     public function __construct($inventedBpID, $inventTime, $processCost, $probability, $resultRuns,
@@ -88,7 +88,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns the number of runs on the resulting T2 BPC if invention is successful
-     * 
+     *
      * @return int
      */
     public function getResultRuns()
@@ -98,7 +98,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns the ME level on the resulting T2 BPC if invention is successful
-     * 
+     *
      * @return int
      */
     public function getResultME()
@@ -108,7 +108,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns the TE level on the resulting T2 BPC if invention is successful
-     * 
+     *
      * @return int
      */
     public function getResultTE()
@@ -118,7 +118,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns the chance of success for the invention
-     * 
+     *
      * @return float
      */
     public function getProbability()
@@ -128,7 +128,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns the average time until invention success, without sub-processes
-     * 
+     *
      * @return float
      */
     public function getSuccesTime()
@@ -138,7 +138,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns the average time until invention success, including sub-processes
-     * 
+     *
      * @return float
      */
     public function getTotalSuccessTime()
@@ -148,7 +148,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns array with sum of average time until invention success, grouped by activity, including sub-processes
-     * 
+     *
      * @return array
      */
     public function getTotalSuccessTimes()
@@ -172,7 +172,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns MaterialMap object with average required materials until invention success, without sub-processes
-     * 
+     *
      * @return MaterialMap
      */
     public function getSuccessMaterialMap()
@@ -188,7 +188,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns MaterialMap object with average required materials until invention success, including sub-processes
-     * 
+     *
      * @return MaterialMap
      */
     public function getTotalSuccessMaterialMap()
@@ -203,7 +203,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns volume of average required materials until invention success, without sub-processes
-     * 
+     *
      * @return float volume
      */
     public function getSuccessMaterialVolume()
@@ -213,7 +213,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns volume of average required materials until invention success, including sub-processes
-     * 
+     *
      * @return float volume
      */
     public function getTotalSuccessMaterialVolume()
@@ -223,7 +223,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns average invention slot cost until success, without subprocesses
-     * 
+     *
      * @return float
      */
     public function getSuccessProcessCost()
@@ -233,7 +233,7 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns average total slot cost until success, including subprocesses
-     * 
+     *
      * @return float
      */
     public function getTotalSuccessProcessCost()
@@ -243,43 +243,46 @@ class InventionProcessData extends ProcessData
 
     /**
      * Returns average material cost until success, without subprocesses
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      */
-    public function getSuccessMaterialBuyCost($maxPriceDataAge = null)
+    public function getSuccessMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
     {
-        return $this->getMaterialBuyCost($maxPriceDataAge) / $this->probability;
+        return $this->getMaterialBuyCost($maxPriceDataAge, $regionId) / $this->probability;
     }
 
     /**
      * Returns average material cost until success, including subprocesses
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      */
-    public function getTotalSuccessMaterialBuyCost($maxPriceDataAge = null)
+    public function getTotalSuccessMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
     {
-        return $this->getTotalMaterialBuyCost($maxPriceDataAge) / $this->probability;
+        return $this->getTotalMaterialBuyCost($maxPriceDataAge, $regionId) / $this->probability;
     }
 
     /**
      * Returns total average cost until success, including subprocesses
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      */
-    public function getTotalSuccessCost($maxPriceDataAge = null)
+    public function getTotalSuccessCost($maxPriceDataAge = null, $regionId = null)
     {
-        return $this->getTotalCost($maxPriceDataAge) / $this->probability;
+        return $this->getTotalCost($maxPriceDataAge, $regionId) / $this->probability;
     }
 
     /**
      * Prints data about this process
-     * 
+     *
      * @return void
      */
     public function printData()
@@ -294,13 +297,13 @@ class InventionProcessData extends ProcessData
             echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
         }
 
-        echo "Total average success material cost: " 
+        echo "Total average success material cost: "
         . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialBuyCost()) . "ISK" . PHP_EOL;
-        echo "Total average success slot cost: " 
+        echo "Total average success slot cost: "
         . $utilClass::quantitiesToReadable($this->getTotalSuccessProcessCost()) . "ISK" . PHP_EOL;
-        echo "Total average success cost: " 
+        echo "Total average success cost: "
         . $utilClass::quantitiesToReadable($this->getTotalSuccessCost()) . "ISK" . PHP_EOL;
-        echo "Total profit: " 
+        echo "Total profit: "
         . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
     }
 }

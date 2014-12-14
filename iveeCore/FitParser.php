@@ -28,9 +28,9 @@ class FitParser
 {
     /**
      * Parses EFT-style fits to MaterialParseResult.
-     * 
+     *
      * @param string $eftFit the string to be parsed
-     * 
+     *
      * @return \iveeCore\MaterialParseResult
      */
     public static function parseEftFit($eftFit)
@@ -84,9 +84,9 @@ class FitParser
 
     /**
      * Parses fits in EvE or EFT XML format to MaterialParseResult
-     * 
+     *
      * @param \DOMDocument $fitDom the XML DOM to be parsed
-     * 
+     *
      * @return \iveeCore\MaterialParseResult
      */
     public static function parseXmlFit(\DOMDocument $fitDom)
@@ -124,9 +124,9 @@ class FitParser
 
     /**
      * Parses cargo or ship scan results to MaterialParseResult
-     * 
+     *
      * @param string $scanResult to be parsed
-     * 
+     *
      * @return \iveeCore\MaterialParseResult
      */
     public static function parseScanResult($scanResult)

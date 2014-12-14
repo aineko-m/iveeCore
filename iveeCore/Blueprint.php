@@ -17,7 +17,7 @@ namespace iveeCore;
 /**
  * Blueprint base class.
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: Blueprint -> Sellable -> Type -> SdeTypeCommon
+ * Inheritance: Blueprint -> Type -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -26,7 +26,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Blueprint.php
  *
  */
-class Blueprint extends Sellable
+class Blueprint extends Type
 {
     /**
      * @var int $productId ID of produced item.
@@ -76,9 +76,9 @@ class Blueprint extends Sellable
 
     /**
      * Constructor. Use \iveeCore\Type::getById() to instantiate Blueprint objects instead.
-     * 
+     *
      * @param int $id of the Blueprint object
-     * 
+     *
      * @return \iveeCore\Blueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
@@ -168,7 +168,7 @@ class Blueprint extends Sellable
 
     /**
      * Gets all necessary data from SQL
-     * 
+     *
      * @return array
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
@@ -187,21 +187,11 @@ class Blueprint extends Sellable
             it.basePrice,
             it.marketGroupID,
             prod.productTypeID,
-            maxprod.maxProductionLimit,
-            cp.crestPriceDate,
-            cp.crestAveragePrice,
-            cp.crestAdjustedPrice
+            maxprod.maxProductionLimit
             FROM invTypes AS it
             JOIN invGroups AS ig ON it.groupID = ig.groupID
             JOIN industryActivityProducts as prod ON prod.typeID = it.typeID
             JOIN industryBlueprints as maxprod ON maxprod.typeID = it.typeID
-            LEFT JOIN (
-                SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
-                averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
-                FROM iveeCrestPrices
-                WHERE typeID = " . $this->id . "
-                ORDER BY date DESC LIMIT 1
-            ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND prod.activityID = 1
             AND it.typeID = " . $this->id . ";"
@@ -215,9 +205,9 @@ class Blueprint extends Sellable
 
     /**
      * Sets attributes from SQL result row to object
-     * 
+     *
      * @param array $row data from DB
-     * 
+     *
      * @return void
      */
     protected function setAttributes(array $row)
@@ -228,50 +218,10 @@ class Blueprint extends Sellable
     }
 
     /**
-     * Gets the buy price for this BP
-     * 
-     * @param int $maxPriceDataAge the maximum price data age in seconds
-     * 
-     * @return float the buy price for default region as calculated in EmdrPriceUpdate, or basePrice if the BP cannot
-     * be sold on the market
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no buy price available
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is 
-     * too old
-     */
-    public function getBuyPrice($maxPriceDataAge = null)
-    {
-        //some BPs cannot be sold on the market
-        if (empty($this->marketGroupID))
-            return $this->basePrice;
-        else
-            return parent::getBuyPrice($maxPriceDataAge);
-    }
-
-    /**
-     * Gets the sell price for this BP
-     * 
-     * @param int $maxPriceDataAge the maximum price data age in seconds
-     * 
-     * @return float the sell price for default region as calculated in EmdrPriceUpdate, or basePrice if the BP cannot
-     * be sold on the market
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no buy price available
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is 
-     * too old
-     */
-    public function getSellPrice($maxPriceDataAge = null)
-    {
-        //some BPs cannot be sold on the market
-        if (empty($this->marketGroupID))
-            return $this->basePrice;
-        else
-            return parent::getSellPrice($maxPriceDataAge);
-    }
-
-    /**
      * Gets products base cost based on the adjustedPrice from CREST for each of the input materials
-     * 
+     *
      * @param int $maxPriceDataAge the maximum price data age in seconds
-     * 
+     *
      * @return float
      */
     public function getProductBaseCost($maxPriceDataAge = null)
@@ -283,26 +233,26 @@ class Blueprint extends Sellable
 
         $baseCost = 0;
         foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matID => $matData) {
-            if (isset($matData['c'])) 
+            if (isset($matData['c']))
                 continue;
-            $baseCost += Type::getById($matID)->getCrestAdjustedPrice($maxPriceDataAge) * $matData['q'];
+            $baseCost += Type::getById($matID)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge) * $matData['q'];
         }
         return $baseCost;
     }
 
     /**
      * Manufacture using this BP
-     * 
+     *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
-     * 
+     * indices, teams, tax and assemblyLines.
+     *
      * @param int $units the number of items to produce; defaults to 1.
      * @param int $bpME level of the BP; if left null, it is looked up in defaults class
      * @param int $bpTE level of the BP; if left null, it is looked up in defaults class
      * @param bool $recursive defines if components should be manufactured recursively
-     * 
+     *
      * @return \iveeCore\ManufactureProcessData describing the manufacturing process
-     * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the product cannot be manufactured in any of the 
+     * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the product cannot be manufactured in any of the
      * assemblyLines given in the IndustryModifier object
      */
     public function manufacture(IndustryModifier $iMod, $units = 1, $bpME = null, $bpTE = null, $recursive = true)
@@ -350,25 +300,25 @@ class Blueprint extends Sellable
 
         //add required materials
         $this->addActivityMaterials(
-            $iMod, 
-            $mdata, 
-            ProcessData::ACTIVITY_MANUFACTURING, 
-            static::convertBpLevelToFactor($bpME) * $modifier['m'], 
-            $numPortions, 
+            $iMod,
+            $mdata,
+            ProcessData::ACTIVITY_MANUFACTURING,
+            static::convertBpLevelToFactor($bpME) * $modifier['m'],
+            $numPortions,
             $recursive
         );
         return $mdata;
     }
 
     /**
-     * Make copy using this BP
-     * 
+     * Make copy using this BP.
+     *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
      * indices, teams, tax and assemblyLines
      * @param int $copies the number of copies to produce; defaults to 1.
      * @param int|string $runs the number of runs on each copy. Use 'max' for the maximum possible number of runs.
      * @param bool $recursive defines if used materials should be manufactured recursively
-     * 
+     *
      * @return \iveeCore\CopyProcessData describing the copy process
      */
     public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $recursive = true)
@@ -398,25 +348,25 @@ class Blueprint extends Sellable
         $cdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_COPYING));
 
         $this->addActivityMaterials(
-            $iMod, 
-            $cdata, 
-            ProcessData::ACTIVITY_COPYING, 
-            $modifier['m'] * $totalRuns, 
-            $copies, 
+            $iMod,
+            $cdata,
+            ProcessData::ACTIVITY_COPYING,
+            $modifier['m'] * $totalRuns,
+            $copies,
             $recursive
         );
         return $cdata;
     }
 
     /**
-     * Research ME on this BLueprint
-     * 
+     * Research ME on this BLueprint.
+     *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
      * indices, teams, tax and assemblyLines
      * @param int $startME the initial ME level
      * @param int $endME the ME level after the research
      * @param bool $recursive defines if used materials should be manufactured recursively
-     * 
+     *
      * @return \iveeCore\ResearchMEProcessData describing the research process
      */
     public function researchME(IndustryModifier $iMod, $startME, $endME, $recursive = true)
@@ -430,7 +380,7 @@ class Blueprint extends Sellable
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_ME, $this);
 
         $researchMEDataClass = Config::getIveeClassName('ResearchMEProcessData');
-        
+
         $researchMultiplier = static::calcResearchMultiplier($startME, $endME);
 
         $rmdata = new $researchMEDataClass(
@@ -451,25 +401,25 @@ class Blueprint extends Sellable
         $rmdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_ME));
 
         $this->addActivityMaterials(
-            $iMod, 
-            $rmdata, 
-            ProcessData::ACTIVITY_RESEARCH_ME, 
-            $modifier['m'], 
-            ($endME - $startME), 
+            $iMod,
+            $rmdata,
+            ProcessData::ACTIVITY_RESEARCH_ME,
+            $modifier['m'],
+            ($endME - $startME),
             $recursive
         );
         return $rmdata;
     }
 
     /**
-     * Research TE on this BLueprint
-     * 
+     * Research TE on this BLueprint.
+     *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
      * indices, teams, tax and assemblyLines
      * @param int $startTE the initial TE level
      * @param int $endTE the TE level after the research
      * @param bool $recursive defines if used materials should be manufactured recursively
-     * 
+     *
      * @return \iveeCore\ResearchTEProcessData describing the research process
      */
     public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $recursive = true)
@@ -499,11 +449,11 @@ class Blueprint extends Sellable
         $rtdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_TE));
 
         $this->addActivityMaterials(
-            $iMod, 
-            $rtdata, 
-            ProcessData::ACTIVITY_RESEARCH_TE, 
-            $modifier['m'], 
-            ($endTE - $startTE) / 2, 
+            $iMod,
+            $rtdata,
+            ProcessData::ACTIVITY_RESEARCH_TE,
+            $modifier['m'],
+            ($endTE - $startTE) / 2,
             $recursive
         );
         return $rtdata;
@@ -511,8 +461,7 @@ class Blueprint extends Sellable
 
     /**
      * Computes and adds the material requirements for a process to a ProcessData object.
-     * 
-     * 
+     *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
      * indices, teams, tax and assemblyLines
      * @param ProcessData $pdata to which materials shall be added
@@ -521,10 +470,10 @@ class Blueprint extends Sellable
      * @param float $numPortions the number of portions being built or researched. Note that passing a fraction will
      * make the method not use the rounding for the resulting required amounts.
      * @param bool $recursive defines if used materials should be manufactured recursively
-     * 
+     *
      * @return void
      */
-    protected function addActivityMaterials(IndustryModifier $iMod, ProcessData $pdata, $activityId, $materialFactor, 
+    protected function addActivityMaterials(IndustryModifier $iMod, ProcessData $pdata, $activityId, $materialFactor,
         $numPortions, $recursive
     ) {
         foreach ($this->getMaterialsForActivity($activityId) as $matID => $matData) {
@@ -556,20 +505,20 @@ class Blueprint extends Sellable
     }
 
     /**
-     * Returns raw activity material requirements
-     * 
+     * Returns raw activity material requirements.
+     *
      * @return array with the requirements in the form activityID => materialID => array ('q' => ... , 'c' => ...)
      */
     protected function getActivityMaterials()
     {
         return $this->activityMaterials;
     }
-    
+
     /**
-     * Returns raw activity material requirements for activity
-     * 
+     * Returns raw activity material requirements for activity.
+     *
      * @param int $activityID specifies for which activity the requirements should be returned.
-     * 
+     *
      * @return array in the form materialID => array ('q' => ... , 'c' => ...)
      */
     protected function getMaterialsForActivity($activityID)
@@ -582,7 +531,7 @@ class Blueprint extends Sellable
 
     /**
      * Returns manufacturing product ID
-     * 
+     *
      * @return int
      */
     public function getProductId()
@@ -591,8 +540,8 @@ class Blueprint extends Sellable
     }
 
     /**
-     * Returns an Manufacturable object representing the item produced by this Blueprint
-     * 
+     * Returns an Manufacturable object representing the item produced by this Blueprint.
+     *
      * @return \iveeCore\Manufacturable
      */
     public function getProduct()
@@ -601,10 +550,10 @@ class Blueprint extends Sellable
     }
 
     /**
-     * Returns SkillMap of minimum skill requirements for activity
-     * 
+     * Returns SkillMap of minimum skill requirements for activity.
+     *
      * @param int $activityID of the desired activity. See ProcessData constants.
-     * 
+     *
      * @return \iveeCore\SkillMap
      */
     protected function getSkillMapForActivity($activityID)
@@ -618,10 +567,10 @@ class Blueprint extends Sellable
     }
 
     /**
-     * Returns the base activity time
-     * 
+     * Returns the base activity time.
+     *
      * @param int $activityID of the desired activity. See ProcessData constants.
-     * 
+     *
      * @return int base activity time in seconds
      * @throws \iveeCore\Exceptions\ActivityIdNotFoundException if activity is not possible with Blueprint
      */
@@ -629,13 +578,13 @@ class Blueprint extends Sellable
     {
         if (isset($this->activityTimes[(int) $activityID]))
             return $this->activityTimes[(int) $activityID];
-        else 
+        else
             self::throwException('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
     }
 
     /**
      * Returns Blueprint rank
-     * 
+     *
      * @return int
      */
     public function getRank()
@@ -645,7 +594,7 @@ class Blueprint extends Sellable
 
     /**
      * Returns the maximum batch size
-     * 
+     *
      * @return int
      */
     public function getMaxProductionLimit()
@@ -655,7 +604,7 @@ class Blueprint extends Sellable
 
     /**
      * Checks if this item is reprocesseable. Blueprints never are.
-     * 
+     *
      * @return bool
      */
     public function isReprocessable()
@@ -665,10 +614,10 @@ class Blueprint extends Sellable
 
     /**
      * Converts a Blueprint level to a factor <= 1.0.
-     * 
+     *
      * @param int $bpLevel the ME or TE level to convert. Positive or negative integers are allowed (there are no more positive
      * Blueprint research levels, so they are just adapted)
-     * 
+     *
      * @return float
      */
     public static function convertBpLevelToFactor($bpLevel)
@@ -679,10 +628,10 @@ class Blueprint extends Sellable
     /**
      * Calculates the research multiplier for time and cost scaling depending on start and end ME/TE levels
      * Note: TE levels have to be divided by 2, as they go from 0 to -20 in 10 steps
-     * 
+     *
      * @param int $startLevel the initial ME or TE level
      * @param int $endLevel the end ME or TE level
-     * 
+     *
      * @return float
      */
     public static function calcResearchMultiplier($startLevel, $endLevel)

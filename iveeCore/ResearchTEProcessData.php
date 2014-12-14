@@ -70,7 +70,7 @@ class ResearchTEProcessData extends ProcessData
 
     /**
      * Returns the initial TE level of the Blueprint
-     * 
+     *
      * @return int
      */
     public function getStartTELevel()
@@ -80,7 +80,7 @@ class ResearchTEProcessData extends ProcessData
 
     /**
      * Returns the TE level of the Blueprint after the research
-     * 
+     *
      * @return int
      */
     public function getEndTELevel()

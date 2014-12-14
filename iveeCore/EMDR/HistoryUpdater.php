@@ -48,12 +48,12 @@ class HistoryUpdater
 
     /**
      * Constructor
-     * 
+     *
      * @param int $typeID ID of item this history data is from
      * @param int $regionID ID of the region this history data is from
      * @param int $generatedAt unix timestamp of the data generation
      * @param array $rows the history data rows
-     * 
+     *
      * @return \iveeCore\EMDR\HistoryUpdater
      * @throws NoRelevantDataException if 0 relevant rows are given
      */
@@ -72,7 +72,7 @@ class HistoryUpdater
 
     /**
      * Inserts history data into the DB
-     * 
+     *
      * @return void
      */
     public function insertIntoDB()
@@ -98,7 +98,7 @@ class HistoryUpdater
         //get dates with existing history data
         $res = $sdeClass::instance()->query(
             "SELECT UNIX_TIMESTAMP(date)
-            FROM iveePrices
+            FROM " . \iveeCore\Config::getIveeDbName() . ".iveePrices
             WHERE typeID = " . $this->typeID . "
             AND regionID = " . $this->regionID . "
             AND date <= '" . date('Y-m-d', $latestDate) . "'
@@ -132,7 +132,8 @@ class HistoryUpdater
                 );
 
                 //build update query
-                $combinedSql .= $sdeClass::makeUpdateQuery('iveePrices', $updateData, $where);
+                $combinedSql .= $sdeClass::makeUpdateQuery(\iveeCore\Config::getIveeDbName() . '.iveePrices',
+                    $updateData, $where);
             } else { // do insert for all missing data
                 $insertData = array(
                     'typeID'   => $this->typeID,
@@ -146,13 +147,14 @@ class HistoryUpdater
                 );
 
                 //build insert query
-                $combinedSql .= $sdeClass::makeUpsertQuery('iveePrices', $insertData);
+                $combinedSql .= $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveePrices',
+                    $insertData);
             }
 
         }
         //add stored procedure call to complete the update
-        $combinedSql .= "CALL iveeCompleteHistoryUpdate(" . $this->typeID . ", " . $this->regionID . ", '"
-            . date('Y-m-d H:i:s', $this->generatedAt) . "'); COMMIT;";
+        $combinedSql .= "CALL " . \iveeCore\Config::getIveeDbName() . ".iveeCompleteHistoryUpdate(" . $this->typeID
+            . ", " . $this->regionID . ", '" . date('Y-m-d H:i:s', $this->generatedAt) . "'); COMMIT;";
 
         //run all queries
         $sdeClass::instance()->multiQuery($combinedSql);

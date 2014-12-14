@@ -39,7 +39,7 @@ class CopyProcessData extends ProcessData
 
     /**
      * Constructor
-     * 
+     *
      * @param int $bpCopyID typeID of the blueprint being copied
      * @param int $copyQuantity the number of copies being made
      * @param int $outputRuns the number of runs per copy
@@ -48,7 +48,7 @@ class CopyProcessData extends ProcessData
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
      * @param int $teamID the ID of the Team being used, if at all
-     * 
+     *
      * @return \iveeCore\CopyProcessData
      */
     public function __construct($bpCopyID, $copyQuantity, $outputRuns, $copyTime, $processCost, $solarSystemID,
@@ -64,7 +64,7 @@ class CopyProcessData extends ProcessData
 
     /**
      * Returns the number of runs per copy
-     * 
+     *
      * @return int
      */
     public function getOutputRuns()

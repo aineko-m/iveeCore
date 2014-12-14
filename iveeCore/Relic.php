@@ -16,13 +16,13 @@ namespace iveeCore;
 
 /**
  * Relic class represents items that can be used to invent T3Blueprints
- * 
- * Since Phoebe 1.0, Relic is a subclass of InventorBlueprint, as the distinction between reverse engineering and 
+ *
+ * Since Phoebe 1.0, Relic is a subclass of InventorBlueprint, as the distinction between reverse engineering and
  * invention was mostly eliminated. However, since Relic is not a Blueprint, some of the inherited methods are blocked
  * from use.
  *
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: Relic -> InventorBlueprint -> Blueprint -> Sellable -> Type -> SdeTypeCommon
+ * Inheritance: Relic -> InventorBlueprint -> Blueprint -> Type -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -35,7 +35,7 @@ class Relic extends InventorBlueprint
 {
     /**
      * Gets all necessary data from SQL.
-     * 
+     *
      * @return array
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
@@ -54,19 +54,9 @@ class Relic extends InventorBlueprint
             it.basePrice,
             it.marketGroupID,
             0 as productTypeID,
-            0 as maxProductionLimit,
-            cp.crestPriceDate,
-            cp.crestAveragePrice,
-            cp.crestAdjustedPrice
+            0 as maxProductionLimit
             FROM invTypes AS it
             JOIN invGroups AS ig ON it.groupID = ig.groupID
-            LEFT JOIN (
-                SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
-                averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
-                FROM iveeCrestPrices
-                WHERE typeID = " . $this->id . "
-                ORDER BY date DESC LIMIT 1
-            ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND it.typeID = " . $this->id . ";"
         )->fetch_assoc();
@@ -76,16 +66,16 @@ class Relic extends InventorBlueprint
 
         return $row;
     }
-    
+
     /**
      * Returns an InventionProcessData object describing the invention process.
-     * 
+     *
      * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $inventedBpID the ID if the T3Blueprint to be invented. If left null, it is set to the first 
+     * @param int $inventedBpID the ID if the T3Blueprint to be invented. If left null, it is set to the first
      * inventable blueprint ID
      * @param int $decryptorID the decryptor the be used, if any
      * @param boolean $recursive defines if manufacturables should be build recursively
-     * 
+     *
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if the specified blueprint can't be invented from this
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor
@@ -100,13 +90,13 @@ class Relic extends InventorBlueprint
 
     /**
      * Invent T3Blueprint and manufacture from it in one go
-     * 
+     *
      * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $inventedBpID the ID of the T3Blueprint to be invented. If left null it will default to the first 
+     * @param int $inventedBpID the ID of the T3Blueprint to be invented. If left null it will default to the first
      * blueprint defined in inventsBlueprintID
      * @param int $decryptorID the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
-     * 
+     *
      * @return ManufactureProcessData with cascaded InventionProcessData object
      */
     public function inventManufacture(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null,
@@ -137,10 +127,10 @@ class Relic extends InventorBlueprint
 
     /**
      * The following methods had to be blocked from use as a Relic is not a Blueprint. While not a clean design, it is
-     * preferable to making Relic not inherit from Blueprint / InventorBlueprint and duplicating the shared code. If 
+     * preferable to making Relic not inherit from Blueprint / InventorBlueprint and duplicating the shared code. If
      * iveeCore is ever moved to PHP 5.4, this could be solved via Traits.
      */
-    
+
     public function copyInventManufacture(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null,
         $recursive = true
     ) {
@@ -166,17 +156,17 @@ class Relic extends InventorBlueprint
     {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
-    
+
     public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $recursive = true)
     {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
-    
+
     public function getProductId()
     {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
-    
+
     public function getRank()
     {
         self::throwException('IveeCoreException', "Relics do not support this method");

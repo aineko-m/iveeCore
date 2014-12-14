@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Base class for all inventory Type subclasses.
- * Inheritance: Type -> SdeTypeCommon
+ * Inheritance: Type -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,16 +25,16 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Type.php
  *
  */
-class Type extends SdeTypeCommon
+class Type extends SdeType
 {
     /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) Type and child objects
      */
     protected static $instancePool;
-    
+
     /**
      * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
+     * (for dynamic subclassing)
      */
     protected static $classNick = 'Type';
 
@@ -64,6 +64,11 @@ class Type extends SdeTypeCommon
     protected $basePrice;
 
     /**
+     * @var int $marketGroupID the marketGroupID of this Type
+     */
+    protected $marketGroupID;
+
+    /**
      * @var array $materials holds data from invTypeMaterials, which is used in reprocessing only
      */
     protected $materials;
@@ -72,25 +77,6 @@ class Type extends SdeTypeCommon
      * @var int $reprocessingSkillID holds the ID of the specialized reprocessing skill if Type is an ore or ice
      */
     protected $reprocessingSkillID;
-
-    /**
-     * @var float $crestAveragePrice eve-wide average, as returned by CREST
-     */
-    protected $crestAveragePrice;
-
-    /**
-     * @var float $crestAdjustedPrice eve-wide adjusted price, as returned by CREST, relevant for industry activity
-     * cost calculations. CREST returns price data even for some items that aren't on the market, explaining why this 
-     * attribute already appears on Type and not only Sellable.
-     */
-    protected $crestAdjustedPrice;
-
-    /**
-     * @var int $crestPriceDate unix timstamp for the last update to market prices from CREST (day granularity). CREST 
-     * returns price data even for some items that aren't on the market, explaining why this attribute already appears 
-     * on Type and not only Sellable.
-     */
-    protected $crestPriceDate;
 
     /**
      * Main function for getting Type objects. Tries caches and instantiates new objects if necessary.
@@ -105,16 +91,14 @@ class Type extends SdeTypeCommon
         if (!isset(static::$instancePool))
             static::init();
 
-        $id = (int) $id;
-
         try {
-            return static::$instancePool->getObjById($id);
+            return static::$instancePool->getObjByKey((int)$id);
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
-            $type = self::factory($id);
-            //store SdeTypeCommon object in instance pool (and cache if configured)
+            $type = self::factory((int)$id);
+            //store SdeType object in instance pool (and cache if configured)
             static::$instancePool->setObj($type);
-            
+
             return $type;
         }
     }
@@ -134,12 +118,12 @@ class Type extends SdeTypeCommon
             FROM invTypes
             WHERE published = 1;"
         );
-        
+
         $namesToIds = array();
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['typeName']] = (int) $row['typeID'];
-        
-        self::$instancePool->setNamesToIds($namesToIds);
+
+        self::$instancePool->setNamesToKeys($namesToIds);
     }
 
     /**
@@ -181,7 +165,6 @@ class Type extends SdeTypeCommon
             it.typeID,
             it.groupID,
             ig.categoryID,
-            it.marketGroupID as sellable,
             bpProduct.productTypeID as manufacturable,
             bp.typeID as blueprint,
             inventor.activityID as inventor,
@@ -190,7 +173,8 @@ class Type extends SdeTypeCommon
             FROM invTypes as it
             JOIN invGroups as ig ON it.groupID = ig.groupID
             LEFT JOIN (
-                SELECT productTypeID FROM industryActivityProducts as iap
+                SELECT productTypeID
+                FROM industryActivityProducts as iap
                 JOIN invTypes as it ON it.typeID = iap.typeID
                 WHERE iap.productTypeID = " . (int) $typeID . "
                 AND iap.activityID = 1
@@ -198,23 +182,27 @@ class Type extends SdeTypeCommon
                 LIMIT 1
             ) as bpProduct ON it.typeID = bpProduct.productTypeID
             LEFT JOIN (
-                SELECT typeID FROM industryActivity
+                SELECT typeID
+                FROM industryActivity
                 WHERE typeID = " . (int) $typeID . "
                 AND activityID != 7
                 LIMIT 1
             ) as bp ON it.typeID = bp.typeID
             LEFT JOIN (
-                SELECT activityID, typeID FROM industryActivityProbabilities
+                SELECT activityID, typeID
+                FROM industryActivityProbabilities
                 WHERE typeID = " . (int) $typeID . "
                 LIMIT 1
             ) as inventor ON it.typeID = inventor.typeID
             LEFT JOIN (
-                SELECT productTypeID, activityID FROM industryActivityProbabilities as prob
+                SELECT productTypeID, activityID
+                FROM industryActivityProbabilities as prob
                 WHERE prob.productTypeID = " . (int) $typeID . "
                 LIMIT 1
             ) as inventable ON it.typeID = inventable.productTypeID
             LEFT JOIN (
-                SELECT ir.typeID FROM invTypeReactions as ir
+                SELECT ir.typeID
+                FROM invTypeReactions as ir
                 JOIN invTypes ON ir.reactionTypeID = invTypes.typeID
                 WHERE ir.typeID = " . (int) $typeID . " AND input = 0 AND published = 1
                 LIMIT 1
@@ -243,7 +231,7 @@ class Type extends SdeTypeCommon
             $subtype = 'Reaction';
         elseif (!empty($subtypeInfo['reactionProduct']))
             $subtype = 'ReactionProduct';
-        elseif ($subtypeInfo['groupID'] == 973 OR $subtypeInfo['groupID'] == 996)
+        elseif (in_array($subtypeInfo['groupID'], array(973, 996, 1309)))
             $subtype = 'T3Blueprint';
         elseif (!empty($subtypeInfo['inventable']))
             $subtype = 'InventableBlueprint';
@@ -257,8 +245,6 @@ class Type extends SdeTypeCommon
             $subtype = 'Decryptor';
         elseif (!empty($subtypeInfo['manufacturable']))
             $subtype = 'Manufacturable';
-        elseif (!empty($subtypeInfo['sellable']))
-            $subtype = 'Sellable';
         else
             $subtype = 'Type';
 
@@ -320,10 +306,8 @@ class Type extends SdeTypeCommon
             volume,
             portionSize,
             basePrice,
-            valueInt as reprocessingSkillID,
-            cp.crestPriceDate,
-            cp.crestAveragePrice,
-            cp.crestAdjustedPrice
+            marketGroupID,
+            valueInt as reprocessingSkillID
             FROM invTypes as it
             JOIN invGroups as ig ON it.groupID = ig.groupID
             LEFT JOIN (
@@ -332,13 +316,6 @@ class Type extends SdeTypeCommon
                 WHERE attributeID = 790
                 AND typeID = " . (int) $this->id . "
             ) as reproc ON reproc.typeID = it.typeID
-            LEFT JOIN (
-                SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
-                averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
-                FROM iveeCrestPrices
-                WHERE typeID = " . (int) $this->id . "
-                ORDER BY date DESC LIMIT 1
-            ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND it.typeID = " . (int) $this->id . ';'
         )->fetch_assoc();
@@ -364,19 +341,15 @@ class Type extends SdeTypeCommon
         $this->volume      = (float) $row['volume'];
         $this->portionSize = (int) $row['portionSize'];
         $this->basePrice   = (int) $row['basePrice'];
+        if (isset($row['marketGroupID']))
+            $this->marketGroupID = (int) $row['marketGroupID'];
         if (isset($row['reprocessingSkillID']))
             $this->reprocessingSkillID = (int) $row['reprocessingSkillID'];
-        if (isset($row['crestPriceDate']))
-            $this->crestPriceDate     = (int) $row['crestPriceDate'];
-        if (isset($row['crestAveragePrice']))
-            $this->crestAveragePrice  = (float) $row['crestAveragePrice'];
-        if (isset($row['crestAdjustedPrice']))
-            $this->crestAdjustedPrice = (float) $row['crestAdjustedPrice'];
     }
 
     /**
      * Gets the groupID of the Type
-     * 
+     *
      * @return int
      */
     public function getGroupID()
@@ -386,7 +359,7 @@ class Type extends SdeTypeCommon
 
     /**
      * Gets the categoryID of the Type
-     * 
+     *
      * @return int
      */
     public function getCategoryID()
@@ -396,7 +369,7 @@ class Type extends SdeTypeCommon
 
     /**
      * Gets the volume of the Type
-     * 
+     *
      * @return float
      */
     public function getVolume()
@@ -406,7 +379,7 @@ class Type extends SdeTypeCommon
 
     /**
      * Gets the portion size of the Type (relevant for manufacturing and reprocessing)
-     * 
+     *
      * @return int
      */
     public function getPortionSize()
@@ -417,7 +390,7 @@ class Type extends SdeTypeCommon
     /**
      * Gets the base price.
      * Not to be confused with the base price calculated in industry activities for cost calculation.
-     * 
+     *
      * @return int
      */
     public function getBasePrice()
@@ -426,8 +399,55 @@ class Type extends SdeTypeCommon
     }
 
     /**
+     * Gets marketGroupID
+     *
+     * @return int marketGroupID
+     */
+    public function getMarketGroupID()
+    {
+        return $this->marketGroupID;
+    }
+
+    /**
+     * Returns boolean on whether item can be sold/bought or not
+     *
+     * @return bool
+     */
+    public function onMarket()
+    {
+        return isset($this->marketGroupID);
+    }
+
+    /**
+     * Returns the GlobalPriceData object for this Type
+     *
+     * @return \iveeCore\GlobalPriceData
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for this Type
+     */
+    public function getGlobalPriceData()
+    {
+        $globalPriceDataClass = Config::getIveeClassName('GlobalPriceData');
+        return $globalPriceDataClass::getById($this->id);
+    }
+
+    /**
+     * Returns the RegionMarketData object for this Type
+     *
+     * @param int $regionID of the region to get market data for. If none passed, default is looked up.
+     *
+     * @return \iveeCore\RegionMarketData
+     * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     */
+    public function getRegionMarketData($regionID = null)
+    {
+        $regionMarketDataClass = Config::getIveeClassName('RegionMarketData');
+        return $regionMarketDataClass::getByIdAndRegion($this->id, $regionID);
+    }
+
+    /**
      * Returns whether this Type can be reprocessed or not
-     * 
+     *
      * @return bool
      */
     public function isReprocessable()
@@ -437,7 +457,7 @@ class Type extends SdeTypeCommon
 
     /**
      * Returns the materials for Type. Since Crius this is only relevant for reprocessing.
-     * 
+     *
      * @return array typeID => quantity
      */
     public function getMaterials()
@@ -450,77 +470,12 @@ class Type extends SdeTypeCommon
 
     /**
      * Returns the specific reprocessing skill ID for this Type
-     * 
+     *
      * @return int
      */
     public function getReprocessingSkillID()
     {
         return $this->reprocessingSkillID;
-    }
-
-    /**
-     * Gets the unix timestamp of the date of the last CREST price data update (day granularity)
-     * 
-     * @return int
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
-     */
-    public function getCrestPriceDate()
-    {
-        if ($this->crestPriceDate > 0)
-            return $this->crestPriceDate;
-        else 
-            self::throwException('NoPriceDataAvailableException', "No CREST price available for " . $this->name);
-    }
-
-    /**
-     * Gets eve-wide average, as returned by CREST
-     * 
-     * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
-     * 
-     * @return float
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST 
-     * price data is older
-     */
-    public function getCrestAveragePrice($maxPriceDataAge = null)
-    {
-        if (is_null($this->crestAveragePrice))
-            self::throwException(
-                'NoPriceDataAvailableException', 
-                "No crestAveragePrice available for " . $this->name
-            );
-        elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time())
-            self::throwException(
-                'PriceDataTooOldException', 
-                'crestAveragePrice data for ' . $this->name . ' is too old'
-            );
-
-        return $this->crestAveragePrice;
-    }
-
-    /**
-     * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations
-     * 
-     * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
-     * 
-     * @return float
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST 
-     * price data is older
-     */
-    public function getCrestAdjustedPrice($maxPriceDataAge = null)
-    {
-        if (is_null($this->crestAdjustedPrice))
-            self::throwException(
-                'NoPriceDataAvailableException', 
-                "No crestAdjustedPrice available for " . $this->name
-            );
-        elseif ($maxPriceDataAge > 0 AND ($this->crestPriceDate + $maxPriceDataAge) < time())
-            self::throwException(
-                'PriceDataTooOldException', 
-                'crestAdjustedPrice data for ' . $this->name . ' is too old'
-            );
-        return $this->crestAdjustedPrice;
     }
 
     /**
@@ -533,10 +488,10 @@ class Type extends SdeTypeCommon
      *
      * @return \iveeCore\MaterialMap
      * @throws \iveeCore\Exceptions\NotReprocessableException if item is not reprocessable
-     * @throws \iveeCore\Exceptions\InvalidParameterValueException if batchSize is not multiple of portionSize or if 
+     * @throws \iveeCore\Exceptions\InvalidParameterValueException if batchSize is not multiple of portionSize or if
      * $equipmentYield or $implantBonusPercent is not sane
      */
-    public function getReprocessingMaterialMap($batchSize, $equipmentYield = 0.5, $taxFactor = 0.95, 
+    public function getReprocessingMaterialMap($batchSize, $equipmentYield = 0.5, $taxFactor = 0.95,
         $implantBonusFactor = 1.0
     ) {
         if (!$this->isReprocessable())
@@ -545,7 +500,7 @@ class Type extends SdeTypeCommon
         $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
         $defaultsClass = Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
-        
+
         if ($batchSize % $this->portionSize != 0)
             throw new $exceptionClass('Reprocessing batch size needs to be multiple of ' . $this->portionSize);
         if ($equipmentYield > 1)
@@ -554,15 +509,15 @@ class Type extends SdeTypeCommon
             throw new $exceptionClass('No implants has reprocessing bonus > 4%');
         if ($taxFactor > 1)
             throw new $exceptionClass('Reprocessing tax cannot be lower than 0%');
-        
+
         //if (compressed) ore or ice
         if ($this->getCategoryID() == 25)
             //Reprocessing, Reprocessing Efficiency and specific Processing skills
-            $yield = $equipmentYield 
+            $yield = $equipmentYield
                 * (1 + 0.03 * $defaults->getSkillLevel(3385)) //Reprocessing skill
                 * (1 + 0.02 * $defaults->getSkillLevel(3389)) //Reprocessing Efficiency skill
                 * (1 + 0.02 * $defaults->getSkillLevel($this->getReprocessingSkillID())) // specific skill
-                * $implantBonusFactor; 
+                * $implantBonusFactor;
         //everything else
         else
             $yield = $equipmentYield * (1 + 0.02 * $defaults->getSkillLevel(12196)); //Scrapmetal Processing skills
@@ -575,12 +530,12 @@ class Type extends SdeTypeCommon
             $rmat->addMaterial($typeID, round($quantity * $yield * $numPortions * $taxFactor));
         return $rmat;
     }
-    
+
     /**
      * Calculates the tax factor for reprocessing in stations (5% tax = factor of 0.95)
-     * 
+     *
      * @param float $standings with the corporation of the station you are reprocessing at
-     * 
+     *
      * @return float reprocessing tax factor
      * @throws \iveeCore\InvalidParameterValueException if invalid parameter values are given
      */
@@ -593,7 +548,7 @@ class Type extends SdeTypeCommon
         //calculate tax factor
         $tax = 0.05 - (0.0075 * $standings);
         if($tax < 0) $tax = 0;
-        
+
         return 1 - $tax;
     }
 }

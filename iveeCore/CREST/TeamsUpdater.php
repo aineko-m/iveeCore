@@ -30,15 +30,15 @@ class TeamsUpdater extends CrestDataUpdater
      * @var string $path holds the CREST path
      */
     protected static $path = 'industry/teams/';
-    
+
     /**
      * @var string $representationName holds the expected representation name returned by CREST
      */
     protected static $representationName = 'vnd.ccp.eve.IndustryTeamCollection-v1';
-    
+
     /**
      * Processes data objects to SQL
-     * 
+     *
      * @param \stdClass $item to be processed
      *
      * @return string the SQL queries
@@ -86,7 +86,7 @@ class TeamsUpdater extends CrestDataUpdater
 
         $this->updatedIDs[] = $update['solarSystemID'];
 
-        return $sdeClass::makeUpsertQuery('iveeTeams', $insert, $update);
+        return $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveeTeams', $insert, $update);
     }
 
     /**
@@ -99,6 +99,6 @@ class TeamsUpdater extends CrestDataUpdater
         //Team caches do not need to be invalidated as teams are immutable
         //Delete Systems from cache where teams are
         $assemblyLineClass  = \iveeCore\Config::getIveeClassName('SolarSystem');
-        $assemblyLineClass::getInstancePool()->deleteFromCache($this->updatedIDs);
+        $assemblyLineClass::deleteFromCache($this->updatedIDs);
     }
 }

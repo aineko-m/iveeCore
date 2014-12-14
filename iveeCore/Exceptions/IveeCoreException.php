@@ -24,6 +24,6 @@ namespace iveeCore\Exceptions;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Exceptions/IveeCoreException.php
  *
  */
-abstract class IveeCoreException extends \Exception
+class IveeCoreException extends \Exception
 {
 }

@@ -30,7 +30,7 @@ class MarketPricesUpdater extends CrestDataUpdater
      * @var string $path holds the CREST path
      */
     protected static $path = 'market/prices/';
-    
+
     /**
      * @var string $representationName holds the expected representation name returned by CREST
      */
@@ -38,7 +38,7 @@ class MarketPricesUpdater extends CrestDataUpdater
 
     /**
      * Processes data objects to SQL
-     * 
+     *
      * @param \stdClass $item to be processed
      *
      * @return string the SQL queries
@@ -66,7 +66,7 @@ class MarketPricesUpdater extends CrestDataUpdater
 
         $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
 
-        return $sdeClass::makeUpsertQuery('iveeCrestPrices', $insert, $update);
+        return $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveeCrestPrices', $insert, $update);
     }
 
     /**
@@ -76,6 +76,7 @@ class MarketPricesUpdater extends CrestDataUpdater
      */
     protected function invalidateCaches()
     {
-        \iveeCore\Type::getInstancePool()->deleteFromCache($this->updatedIDs);
+        $globalPriceDataClass = \iveeCore\Config::getIveeClassName('GlobalPriceData');
+        $globalPriceDataClass::deleteFromCache($this->updatedIDs);
     }
 }

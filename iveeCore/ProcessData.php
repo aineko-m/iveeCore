@@ -95,12 +95,12 @@ class ProcessData
 
     /**
      * Constructor.
-     * 
+     *
      * @param int $producesTypeID typeID of the item resulting from this process
      * @param int $producesQuantity the number of produces items
      * @param int $processTime the time this process takes in seconds
      * @param float $processCost the cost of performing this activity (without material cost or subprocesses)
-     * 
+     *
      * @return \iveeCore\ProcessData
      */
     public function __construct($producesTypeID = -1, $producesQuantity = 0, $processTime = 0, $processCost = 0)
@@ -113,10 +113,10 @@ class ProcessData
 
     /**
      * Add required material and amount to total material array.
-     * 
+     *
      * @param int $typeID of the material
      * @param int $amount of the material
-     * 
+     *
      * @return void
      */
     public function addMaterial($typeID, $amount)
@@ -130,12 +130,12 @@ class ProcessData
 
     /**
      * Add required skill to the total skill map
-     * 
+     *
      * @param int $skillID of the skill
      * @param int $level of the skill
-     * 
+     *
      * @return void
-     * @throws \iveeCore\Exceptions\InvalidParameterValueException if the skill level is not a valid integer between 
+     * @throws \iveeCore\Exceptions\InvalidParameterValueException if the skill level is not a valid integer between
      * 0 and 5
      */
     public function addSkill($skillID, $level)
@@ -149,11 +149,11 @@ class ProcessData
 
     /**
      * Add a skillMap to the required skills
-     * 
+     *
      * @param \iveeCore\SkillMap $sm the SkillMap to add
-     * 
+     *
      * @return void
-     * @throws \iveeCore\Exceptions\InvalidParameterValueException if a skill level is not a valid integer between 
+     * @throws \iveeCore\Exceptions\InvalidParameterValueException if a skill level is not a valid integer between
      * 0 and 5
      */
     public function addSkillMap(SkillMap $sm)
@@ -167,21 +167,21 @@ class ProcessData
 
     /**
      * Add sub-ProcessData object. This can be used to make entire build-trees or build batches
-     * 
+     *
      * @param \iveeCore\ProcessData $subProcessData ProcessData object to add as a sub-process
-     * 
+     *
      * @return void
      */
     public function addSubProcessData(ProcessData $subProcessData)
     {
-        if (!isset($this->subProcessData)) 
+        if (!isset($this->subProcessData))
             $this->subProcessData = array();
         $this->subProcessData[] = $subProcessData;
     }
 
     /**
      * Returns the activityID of the process
-     * 
+     *
      * @return int
      */
     public function getActivityID()
@@ -191,7 +191,7 @@ class ProcessData
 
     /**
      * Returns Type resulting from this process
-     * 
+     *
      * @return \iveeCore\Type
      * @throws \iveeCore\Exceptions\NoOutputItemException if process results in no new item
      */
@@ -207,7 +207,7 @@ class ProcessData
 
     /**
      * Returns number of items resulting from this process
-     * 
+     *
      * @return int
      */
     public function getNumProducedUnits()
@@ -217,7 +217,7 @@ class ProcessData
 
     /**
      * Returns all sub process data objects, if any
-     * 
+     *
      * @return array with ProcessData objects
      */
     public function getSubProcesses()
@@ -229,7 +229,7 @@ class ProcessData
 
     /**
      * Returns process cost, without subprocesses
-     * 
+     *
      * @return float
      */
     public function getProcessCost()
@@ -239,7 +239,7 @@ class ProcessData
 
     /**
      * Returns ID of the SolarSystem this process is performed in
-     * 
+     *
      * @return int
      */
     public function getSolarSystemID()
@@ -249,7 +249,7 @@ class ProcessData
 
     /**
      * Returns ID of the AssemblyLine this process is performed in
-     * 
+     *
      * @return int
      */
     public function getAssemblyLineTypeID()
@@ -259,7 +259,7 @@ class ProcessData
 
     /**
      * Returns ID of the Team this process is using, if at all
-     * 
+     *
      * @return int|null
      */
     public function getTeamID()
@@ -269,7 +269,7 @@ class ProcessData
 
     /**
      * Returns process cost (no materials), including subprocesses
-     * 
+     *
      * @return float
      */
     public function getTotalProcessCost()
@@ -286,56 +286,59 @@ class ProcessData
 
     /**
      * Returns material buy cost, without subprocesses
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getMaterialBuyCost($maxPriceDataAge = null)
+    public function getMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
     {
-        if (!isset($this->materials)) 
+        if (!isset($this->materials))
             return 0;
-        return $this->getMaterialMap()->getMaterialBuyCost($maxPriceDataAge);
+        return $this->getMaterialMap()->getMaterialBuyCost($maxPriceDataAge, $regionId);
     }
 
     /**
      * Returns material buy cost, including subprocesses
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalMaterialBuyCost($maxPriceDataAge = null)
+    public function getTotalMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
     {
         $sum = $this->getMaterialBuyCost($maxPriceDataAge);
         foreach ($this->getSubProcesses() as $subProcessData) {
             if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessMaterialBuyCost($maxPriceDataAge);
+                $sum += $subProcessData->getTotalSuccessMaterialBuyCost($maxPriceDataAge, $regionId);
             else
-                $sum += $subProcessData->getTotalMaterialBuyCost($maxPriceDataAge);
+                $sum += $subProcessData->getTotalMaterialBuyCost($maxPriceDataAge, $regionId);
         }
         return $sum;
     }
 
     /**
      * Returns total cost, including subprocesses
-     * 
+     *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalCost($maxPriceDataAge = null)
+    public function getTotalCost($maxPriceDataAge = null, $regionId = null)
     {
-        return $this->getTotalProcessCost() + $this->getTotalMaterialBuyCost($maxPriceDataAge);
+        return $this->getTotalProcessCost() + $this->getTotalMaterialBuyCost($maxPriceDataAge, $regionId);
     }
 
     /**
      * Returns required materials object for this process, WITHOUT sub-processes. Will return an empty new MaterialMap
      * object if this has none.
-     * 
+     *
      * @return \iveeCore\MaterialMap
      */
     public function getMaterialMap()
@@ -352,7 +355,7 @@ class ProcessData
      * Returns a new MaterialMap object containing all required materials, including sub-processes.
      * Note that material quantities might be fractionary, due to invention chance effects or requesting builds of items
      * in numbers that are not multiple of portionSize
-     * 
+     *
      * @return \iveeCore\MaterialMap
      */
     public function getTotalMaterialMap()
@@ -372,7 +375,7 @@ class ProcessData
 
     /**
      * Returns the volume of the process materials, without sub-processes.
-     * 
+     *
      * @return float
      */
     public function getMaterialVolume()
@@ -384,7 +387,7 @@ class ProcessData
 
     /**
      * Returns the volume of the process materials, including sub-processes.
-     * 
+     *
      * @return float
      */
     public function getTotalMaterialVolume()
@@ -401,7 +404,7 @@ class ProcessData
 
     /**
      * Returns object defining the minimum skills required for this process, without sub-processes
-     * 
+     *
      * @return \iveeCore\SkillMap
      */
     public function getSkillMap()
@@ -416,7 +419,7 @@ class ProcessData
 
     /**
      * Returns a new object with all skills required, including sub-processes
-     * 
+     *
      * @return \iveeCore\SkillMap
      */
     public function getTotalSkillMap()
@@ -433,7 +436,7 @@ class ProcessData
 
     /**
      * Returns the time for this process, in seconds, without sub-processes
-     * 
+     *
      * @return int
      */
     public function getTime()
@@ -443,7 +446,7 @@ class ProcessData
 
     /**
      * Returns sum of all times, in seconds, including sub-processes
-     * 
+     *
      * @return int|float
      */
     public function getTotalTime()
@@ -460,7 +463,7 @@ class ProcessData
 
     /**
      * Returns array with process times summed by activity, in seconds, including sub-processes
-     * 
+     *
      * @return array in the form activityID => int
      */
     public function getTotalTimes()
@@ -489,26 +492,27 @@ class ProcessData
 
     /**
      * Returns total profit for this batch (direct child ManufactureProcessData sub-processes)
-     * 
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds
-     * 
+     *
+     * @param int $maxPriceDataAge maximum acceptable price data age in seconds.
+     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     *
      * @return array
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is 
+     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
-    public function getTotalProfit($maxPriceDataAge = null)
+    public function getTotalProfit($maxPriceDataAge = null, $regionId = null)
     {
         $sum = 0;
         foreach ($this->getSubProcesses() as $spd)
             if ($spd instanceof ManufactureProcessData)
-                $sum += $spd->getTotalProfit($maxPriceDataAge);
+                $sum += $spd->getTotalProfit($maxPriceDataAge, $regionId);
 
         return $sum;
     }
 
     /**
      * Prints data about this process
-     * 
+     *
      * @return void
      */
     public function printData()

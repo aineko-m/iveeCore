@@ -32,12 +32,15 @@ class Config
     // Edit below here //
     /////////////////////
 
-    //DB config
-    protected static $dbHost = 'localhost';
-    protected static $dbPort = 3306;
-    protected static $dbUser = 'eve_sde';
-    protected static $dbPw   = 'eve_sde_pw';
-    protected static $dbName = 'eve_sde_pho10';
+    //SDE DB config
+    protected static $sdeDbHost = 'localhost';
+    protected static $sdeDbPort = 3306;
+    protected static $sdeDbUser = 'eve_sde';
+    protected static $sdeDbPw   = 'eve_sde_pw';
+    protected static $sdeDbName = 'eve_sde_rhe10';
+
+    //iveeCore DB config
+    protected static $iveeDbName = 'iveeCore';
 
     //Cache config
     protected static $useCache    = true;
@@ -53,7 +56,7 @@ class Config
     protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
 
     //change the application name in the parenthesis to your application. It is used when accessing the CREST API.
-    protected static $userAgent = 'iveeCore/2.0 (unknown application)';
+    protected static $userAgent = 'iveeCore/2.2 (unknown application)';
 
     //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
     //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
@@ -62,11 +65,14 @@ class Config
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
         'Cache'                  => '\iveeCore\MemcachedWrapper',
+        'CacheableCommon'        => '\iveeCore\CacheableCommon',
         'CopyProcessData'        => '\iveeCore\CopyProcessData',
         'Decryptor'              => '\iveeCore\Decryptor',
         'Defaults'               => '\iveeCoreExtensions\MyDefaults',
         'FitParser'              => '\iveeCore\FitParser',
+        'GlobalPriceData'        => '\iveeCore\GlobalPriceData',
         'ICache'                 => '\iveeCore\ICache',
+        'ICacheable'             => '\iveeCore\ICacheable',
         'IndustryModifier'       => '\iveeCore\IndustryModifier',
         'InstancePool'           => '\iveeCore\InstancePool',
         'InventionProcessData'   => '\iveeCore\InventionProcessData',
@@ -80,12 +86,12 @@ class Config
         'Reaction'               => '\iveeCore\Reaction',
         'ReactionProcessData'    => '\iveeCore\ReactionProcessData',
         'ReactionProduct'        => '\iveeCore\ReactionProduct',
+        'RegionMarketData'       => '\iveeCore\RegionMarketData',
         'Relic'                  => '\iveeCore\Relic',
         'ResearchMEProcessData'  => '\iveeCore\ResearchMEProcessData',
         'ResearchTEProcessData'  => '\iveeCore\ResearchTEProcessData',
         'SDE'                    => '\iveeCore\SDE',
-        'SdeTypeCommon'          => '\iveeCore\SdeTypeCommon',
-        'Sellable'               => '\iveeCore\Sellable',
+        'SdeType'                => '\iveeCore\SdeType',
         'SkillMap'               => '\iveeCore\SkillMap',
         'SolarSystem'            => '\iveeCore\SolarSystem',
         'Speciality'             => '\iveeCore\Speciality',
@@ -154,13 +160,13 @@ class Config
     const DATE_PATTERN     = '/^(([0-9][0-9][0-9][0-9]))-((0[0-9])|(1[0-2]))-((0[0-9])|([12][0-9])|(3[01]))$/';
     const GENERICNUMERIC_PATTERN = '/^[0-9.]*$/';
     const CREST_CONTENT_TYPE_REPRESENTATION_PATTERN = '/^application\/(.*)\+json; charset=utf-8$/im';
-    //when using this pattern for strings in SQL queries, you MUST encase them in double quotes, as single quotes are 
+    //when using this pattern for strings in SQL queries, you MUST encase them in double quotes, as single quotes are
     //allowed!
     const SANITIZE_STRING_PATTERN = "/[^0-9a-zA-Z()_&':-\s]/";
 
     /**
      * Instantiates Config object. Private so this class is only used as static.
-     * 
+     *
      * @return Config
      */
     private function __construct()
@@ -168,88 +174,98 @@ class Config
     }
 
     /**
-     * Returns configured database host
-     * 
+     * Returns configured SDE database host
+     *
      * @return string
      */
-    public static function getDbHost()
+    public static function getSdeDbHost()
     {
-        return static::$dbHost;
+        return static::$sdeDbHost;
     }
-    
+
     /**
-     * Returns configured database port
-     * 
+     * Returns configured SDE database port
+     *
      * @return int
      */
-    public static function getDbPort()
+    public static function getSdeDbPort()
     {
-        return static::$dbPort;
+        return static::$sdeDbPort;
     }
-    
+
     /**
-     * Returns configured database user
-     * 
+     * Returns configured SDE database user
+     *
      * @return string
      */
-    public static function getDbUser()
+    public static function getSdeDbUser()
     {
-        return static::$dbUser;
+        return static::$sdeDbUser;
     }
-    
+
     /**
-     * Returns configured database password
-     * 
+     * Returns configured SDE database password
+     *
      * @return string
      */
-    public static function getDbPw()
+    public static function getSdeDbPw()
     {
-        return static::$dbPw;
+        return static::$sdeDbPw;
     }
-    
+
     /**
-     * Returns configured database name
-     * 
+     * Returns configured SDE database name
+     *
      * @return string
      */
-    public static function getDbName()
+    public static function getSdeDbName()
     {
-        return static::$dbName;
+        return static::$sdeDbName;
+    }
+
+    /**
+     * Returns configured iveeCore database name
+     *
+     * @return string
+     */
+    public static function getIveeDbName()
+    {
+        return static::$iveeDbName;
     }
 
     /**
      * Returns if cache use is configured or not
-     * 
+     *
      * @return bool
      */
     public static function getUseCache()
     {
         return static::$useCache;
     }
-    
+
     /**
      * Returns configured cache host name
-     * 
+     *
      * @return string
      */
     public static function getCacheHost()
     {
         return static::$cacheHost;
     }
-    
+
     /**
      * Returns configured cache port
-     * 
+     *
      * @return int
      */
     public static function getCachePort()
     {
         return static::$cachePort;
     }
-    
+
     /**
      * Returns configured cache prefix for keys stored by iveeCore
-     * 
+     *
      * @return string
      */
     public static function getCachePrefix()
@@ -259,27 +275,27 @@ class Config
 
     /**
      * Returns configured EMDR URL
-     * 
+     *
      * @return string
      */
     public static function getEmdrRelayUrl()
     {
         return static::$emdrRelayUrl;
     }
-    
+
     /**
      * Returns configured CREST base URL
-     * 
+     *
      * @return string
      */
     public static function getCrestBaseUrl()
     {
         return static::$crestBaseUrl;
     }
-    
+
     /**
      * Returns configured user agent to be used by the CREST client
-     * 
+     *
      * @return string
      */
     public static function getUserAgent()
@@ -290,9 +306,9 @@ class Config
     /**
      * Returns the fully qualified name of classes to instantiate for a given class nickname. This is used extensively
      * in iveeCore to allow for configurable class instantiation
-     * 
+     *
      * @param string $classNickname a short name for the class
-     * 
+     *
      * @return string
      */
     public static function getIveeClassName($classNickname)

@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for all Types that can be manufactured
- * Inheritance: Manufacturable -> Sellable -> Type -> SdeTypeCommon
+ * Inheritance: Manufacturable -> Type -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,7 +25,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Manufacturable.php
  *
  */
-class Manufacturable extends Sellable
+class Manufacturable extends Type
 {
     /**
      * @var int $producedFromBlueprintID the of the blueprint this item can be manufactured from
@@ -34,7 +34,7 @@ class Manufacturable extends Sellable
 
     /**
      * Gets all necessary data from SQL
-     * 
+     *
      * @return array
      * @throws \iveCore\Exceptions\TypeIdNotFoundException when a typeID is not found
      */
@@ -49,20 +49,11 @@ class Manufacturable extends Sellable
             it.volume,
             it.portionSize,
             it.basePrice,
-            it.marketGroupID,cp.crestPriceDate,
-            cp.crestAveragePrice,
-            cp.crestAdjustedPrice,
+            it.marketGroupID,
             iap.typeID as blueprintTypeID
             FROM invTypes AS it
             JOIN industryActivityProducts as iap ON iap.productTypeID = it.typeID
             JOIN invGroups AS ig ON it.groupID = ig.groupID
-            LEFT JOIN (
-                SELECT typeID, UNIX_TIMESTAMP(date) as crestPriceDate,
-                averagePrice as crestAveragePrice, adjustedPrice as crestAdjustedPrice
-                FROM iveeCrestPrices
-                WHERE typeID = " . $this->id . "
-                ORDER BY date DESC LIMIT 1
-            ) AS cp ON cp.typeID = it.typeID
             WHERE it.published = 1
             AND iap.activityID = 1
             AND it.typeID = " . $this->id . ";"
@@ -76,9 +67,9 @@ class Manufacturable extends Sellable
 
     /**
      * Sets attributes from SQL result row to object
-     * 
+     *
      * @param array $row data from DB
-     * 
+     *
      * @return void
      */
     protected function setAttributes(array $row)
@@ -90,7 +81,7 @@ class Manufacturable extends Sellable
 
     /**
      * Returns blueprint ID that can manufacture this item
-     * 
+     *
      * @return int
      */
     public function getBlueprintId()
@@ -100,7 +91,7 @@ class Manufacturable extends Sellable
 
     /**
      * Returns blueprint object that can manufacture this item
-     * 
+     *
      * @return Blueprint
      */
     public function getBlueprint()

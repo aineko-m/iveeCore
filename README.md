@@ -73,9 +73,10 @@ If everything went well, you should see a line with the libzmq version.
 ### Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to helpful 3rd party developer Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&m=5167814#post5167814](https://forums.eveonline.com/default.aspx?g=posts&m=5167814#post5167814)
+[https://forums.eveonline.com/default.aspx?g=posts&m=5274308#post5274308](https://forums.eveonline.com/default.aspx?g=posts&m=5274308#post5274308)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_pho10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_rhe10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Then create a second database, naming it "iveeCore" and giving the same user as before full privileges to it.
 
 ### Setup iveeCore
 
@@ -86,7 +87,7 @@ cd /path/to/my/project
 git clone git://github.com/aineko-m/iveeCore.git
 ```
 
-Once you've done this, you'll find the directory 'iveeCore'. Import the file iveeCore/sql/iveeCore_tables_and_SP.sql into the same database you set up for the SDE. This will create the tables iveeCore uses, stored procedures and add some missing indices in the SDE tables to improve performance.
+Once you've done this, you'll find the directory 'iveeCore'. Import the file iveeCore/sql/SDE_additions.sql into the same database you set up for the SDE. This will add a few indices for improved peformance and add some missing data. Then imort the file iveeCore/sql/iveeCore_tables_and_SP into the iveeCore database. This will create the tables iveeCore uses and stored procedures.
 
 Make a copy of the file iveeCore/Config_template.php, naming it Config.php and edit the configuration to match your environment.
 iveeCore comes with a lot of default variables describing an industrial setup in eve, defined in iveeCore/Defaults.php. Once you get comfortable using iveeCore you'll want to customize these defaults, to be done in iveeCoreExtensions/MyDefaults.php, which extends the Defaults class and thus allows you to overwrite whichever aspect is required. The variables are commented or should be self-explanatory to an EvE industrialist or developer.
@@ -114,19 +115,19 @@ This will fetch the newest relevant data from CREST. This script should be run e
 Whenever you want to upgrade to another SDE, the following steps are recommended:
 - Create a new database and set up permissions for it
 - Import the new SDE into this new database
-- Import iveeCore_tables_and_SP.sql into it
-- Stop the EMDR client and anything that causes changes in the database
-- Copy the contents of the tables ivee* from the old database to the new. Example SQL available in sql/SDE_migration.sql
+- Import SDE_additions.sql into it
 - Adapt iveeCore/Config.php to the new database
-- if using memcached, flush it
-- it is good practice to run the provided unit test to check if everything is working as intended
+- If using memcached, flush it
+- It is good practice to run the provided unit test to check if everything is working as intended
+- Possibly an updated iveeCore version is required to become compatible to changes, check the forum thread.
+- Restart the EMDR client and any long running scripts you might have
 
 
 ## Upgrading iveeCore
 Most of the time upgrading to newer versions of iveeCore is as simple as cd-ing into iveeCore's directory and running "git pull".
 When the iveeCore/Config_template.php is extended you'll have to recreate or adapt your own iveeCore/Config.php.
 
-If upgrading from a previous version of iveeCore run the appropriate migration script included under sql/ to adapt the database schema.
+If necessary, iveeCore will provide migration SQL for adapting the DB to new versions.
 
 Again, running the provided unit test to check for problems is a good idea.
 
@@ -176,7 +177,6 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - For profit calculations, it is assumed you buy items using buy orders; you sell your products with sell orders with competitive pricing in the default region configured in (My)Defaults.php
 - The prices of items that can't be sold on the market also can't be determined. This includes BPCs (The _cost_ of copying, inventing or researching a BPC can and is calculated for processes, however).
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
-- While the class model is a decent match for EvE's items, it is by no means perfect. For instance, you'll find Manufacturable and Blueprint objects which can't be sold on the market although they inherit from Sellable.
 - The EMDR client does some basic filtering on the incoming market data, but there is no measure against malicious clients uploading fake data. This isn't known to have caused any problems, but should be considered.
 - When automatically picking Teams and and AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
 - (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see Extending iveeCore below.
@@ -185,7 +185,7 @@ Generals notes:
 - Remember to restart or flush memcached after making changes to type classes or changing the DB. From the terminal you can do so with a command like: ```echo 'flush_all' | nc localhost 11211```
 Alternatively you can run the PHPUnit test, which also clears the cache.
 - iveeCore is under active development so I can't promise the API will be stable.
-- When iveeCore is updated, be sure to read HISTORY for changes that might affect your application or setup
+- When iveeCore is updated, be sure to read RELEASENOTES for changes that might affect your application or setup
 
 
 ## Extending iveeCore
@@ -194,7 +194,7 @@ You can modify iveeCore directly, however, you'll need to comply with the LGPL a
 
 
 ## Future Plans
-The multi-region market price support needs to be extended. Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
+With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; a CREST client will be introduced. Redis support will come. Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
 I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
 
 

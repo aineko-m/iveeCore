@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for blueprints that can be invented.
- * Inheritance: InventableBlueprint -> Blueprint -> Sellable -> Type -> SdeTypeCommon
+ * Inheritance: InventableBlueprint -> Blueprint -> Type -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -31,7 +31,7 @@ class InventableBlueprint extends Blueprint
      * @var int $inventedFrom ID of the InventorBlueprint from which this InventableBlueprint can be invented from
      */
     protected $inventedFrom;
-    
+
     /**
      * Constructor. Use \iveeCore\Type::getById() to instantiate InventableBlueprint objects instead.
      *
@@ -48,7 +48,7 @@ class InventableBlueprint extends Blueprint
         $sdeClass = Config::getIveeClassName('SDE');
         $this->loadOriginatingBlueprints($sdeClass::instance());
     }
-    
+
     /**
      * Load Blueprint this InventableBlueprint can be invented from
      *
@@ -68,7 +68,7 @@ class InventableBlueprint extends Blueprint
 
         if ($res->num_rows < 1)
             self::throwException(
-                'TypeIdNotFoundException', 
+                'TypeIdNotFoundException',
                 "Originating Blueprint data for InventableBlueprint ID=" . $this->id ." not found"
             );
 
@@ -88,7 +88,7 @@ class InventableBlueprint extends Blueprint
 
     /**
      * Returns the inventor blueprint
-     * 
+     *
      * @return InventorBlueprint
      */
     public function getInventorBlueprint()
@@ -97,38 +97,12 @@ class InventableBlueprint extends Blueprint
     }
 
     /**
-     * Invetanble blueprints can't be sold on the market
-     * 
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
-     * @return void
-     * @throws \iveeCore\Exceptions\NotOnMarketException always
-     */
-    public function getBuyPrice($maxPriceDataAge = null)
-    {
-        $this->throwNotOnMarketException();
-    }
-
-    /**
-     * Invetanble blueprints can't be sold on the market
-     * 
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * 
-     * @return void
-     * @throws \iveeCore\Exceptions\NotOnMarketException always
-     */
-    public function getSellPrice($maxPriceDataAge = null)
-    {
-        $this->throwNotOnMarketException();
-    }
-
-    /**
      * Convenience function for inventing starting from the inveted blueprint instead of inventor
-     * 
+     *
      * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $decryptorID the decryptor the be used, if any
      * @param boolean $recursive defines if manufacturables should be build recursively
-     * 
+     *
      * @return \iveeCore\InventionProcessData
      */
     public function invent(IndustryModifier $iMod, $decryptorID = null, $recursive = true)
@@ -138,12 +112,12 @@ class InventableBlueprint extends Blueprint
 
     /**
      * Convenience function to copy, invent T2 blueprint and manufacture from blueprint in one go
-     * 
+     *
      * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $decryptorID the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
-     * 
-     * @return \iveeCore\ManufactureProcessData with cascaded \iveeCore\InventionProcessData and 
+     *
+     * @return \iveeCore\ManufactureProcessData with cascaded \iveeCore\InventionProcessData and
      * \iveeCore\CopyProcessData objects
      */
     public function copyInventManufacture(IndustryModifier $iMod, $decryptorID = null, $recursive = true)

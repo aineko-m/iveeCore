@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for all Reactions
- * Inheritance: Reaction -> Sellable -> Type -> SdeTypeCommon
+ * Inheritance: Reaction -> Type -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,7 +25,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Reaction.php
  *
  */
-class Reaction extends Sellable
+class Reaction extends Type
 {
     /**
      * @var array $cycleInputMaterials contains the consumed materials for one reaction cycle
@@ -44,9 +44,9 @@ class Reaction extends Sellable
 
     /**
      * Constructor. Use \iveeCore\Type::getById() to instantiate Reaction objects.
-     * 
+     *
      * @param int $id of the Reaction object
-     * 
+     *
      * @return Reaction
      * @throws Exception if typeID is not found
      */
@@ -88,7 +88,7 @@ class Reaction extends Sellable
 
     /**
      * Gets the the array of input materials for one reaction cycle
-     * 
+     *
      * @return array
      */
     public function getCycleInputMaterials()
@@ -98,7 +98,7 @@ class Reaction extends Sellable
 
     /**
      * Gets the the array of output materials for one reaction cycle
-     * 
+     *
      * @return array
      */
     public function getCycleOutputMaterials()
@@ -108,7 +108,7 @@ class Reaction extends Sellable
 
     /**
      * Returns whether this reaction is an alchemy reaction or not
-     * 
+     *
      * @return bool
      */
     public function isAlchemy()
@@ -118,18 +118,18 @@ class Reaction extends Sellable
 
     /**
      * Produces an ReactionProcessData object detailing a reaction process
-     * 
+     *
      * @param int|float $cycles defines the number of reaction cycles to be calculated. One cycle takes 1h to complete.
-     * @param bool $reprocess defines reprocessable reaction outputs should be reprocessed in the process. Applies to 
+     * @param bool $reprocess defines reprocessable reaction outputs should be reprocessed in the process. Applies to
      * alchemy reaction.
-     * @param bool $feedback defines if materials occuring in both input and output should be subtracted in the 
+     * @param bool $feedback defines if materials occuring in both input and output should be subtracted in the
      * possible numbers, thus showing the effective input/output materials. Applies to alchemy reactions.
      * @param float $equipmentYield the station dependant reprocessing yield
      * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor
-     * 
+     *
      * @return \iveeCore\ReactionProcessData
      */
-    public function react($cycles = 1, $reprocess = true, $feedback = true, $equipmentYield = 0.5, 
+    public function react($cycles = 1, $reprocess = true, $feedback = true, $equipmentYield = 0.5,
         $reprocessingTaxFactor = 1.0
     ) {
         $materialsClass = Config::getIveeClassName('MaterialMap');

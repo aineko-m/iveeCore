@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for items that can result from reactions.
- * Inheritance: ReactionProduct -> Sellable -> Type -> SdeTypeCommon
+ * Inheritance: ReactionProduct -> Type -> SdeType -> CacheableCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,7 +25,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ReactionProduct.php
  *
  */
-class ReactionProduct extends Sellable
+class ReactionProduct extends Type
 {
     /**
      * @var array $productOfReactionIDs the typeID(s) of the reactions this product can be produced from. Includes
@@ -35,11 +35,11 @@ class ReactionProduct extends Sellable
 
     /**
      * Constructor. Use \iveeCore\Type::getById() to instantiate ReactionProduct objects instead.
-     * 
+     *
      * @param int $id of the ReactionProduct object
-     * 
-     * @return ReactionProduct
-     * @throws Exception if typeID is not found
+     *
+     * @return \iveeCore\ReactionProduct
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($id)
     {
@@ -67,13 +67,16 @@ class ReactionProduct extends Sellable
             AND itr.input = 0);"
         );
 
+        if (empty($res))
+            static::throwException('TypeIdNotFoundException', "ReactionProduct ID=". $this->id . " not found" );
+
         while ($row = $res->fetch_assoc())
             $this->productOfReactionIDs[] = (int) $row['reactionTypeID'];
     }
 
     /**
      * Gets the Reaction object(s) this product can be produced from
-     * 
+     *
      * @return array with Reaction objects(s)
      */
     public function getReactions()
@@ -81,13 +84,13 @@ class ReactionProduct extends Sellable
         $ret = array();
         foreach ($this->productOfReactionIDs as $reactionID)
             $ret[$reactionID] = Type::getById($reactionID);
-        
+
         return $ret;
     }
 
     /**
      * Gets the Reaction ID(s) this product can be produced from
-     * 
+     *
      * @return array with Reaction ID(s)
      */
     public function getReactionIDs()

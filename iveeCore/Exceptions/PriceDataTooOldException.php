@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * PriceDataTooOldException, thrown when market data related methods are called but the maximum market data age has been 
+ * PriceDataTooOldException, thrown when market data related methods are called but the maximum market data age has been
  * exceeded
  *
  * @category IveeCore
