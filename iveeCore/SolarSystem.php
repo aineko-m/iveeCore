@@ -54,6 +54,11 @@ class SolarSystem extends SdeType
     protected $security;
 
     /**
+     * @var int $factionID of the ruling faction in that system.
+     */
+    protected $factionID;
+
+    /**
      * @var int $industryIndexDate unix timstamp for the last update to industry system indices (day granularity)
      */
     protected $industryIndexDate;
@@ -110,7 +115,7 @@ class SolarSystem extends SdeType
         $sde = $sdeClass::instance();
 
         $row = $sde->query(
-            "SELECT regionID, constellationID, solarSystemName, security
+            "SELECT regionID, constellationID, solarSystemName, security, factionID
             FROM mapSolarSystems
             WHERE solarSystemID = " . $this->id . ";"
         )->fetch_assoc();
@@ -123,6 +128,7 @@ class SolarSystem extends SdeType
         $this->constellationID = (int) $row['constellationID'];
         $this->name            = $row['solarSystemName'];
         $this->security        = (float) $row['security'];
+        $this->factionID       = (int) $row['factionID'];
 
         $res = $sde->query(
             "SELECT systemID, UNIX_TIMESTAMP(date) as crestIndexDate, manufacturingIndex, teResearchIndex,
@@ -222,6 +228,16 @@ class SolarSystem extends SdeType
     public function getSecurity()
     {
         return $this->security;
+    }
+
+    /**
+     * Gets the ID of the ruling faction in the system.
+     *
+     * @return int
+     */
+    public function getFactionID()
+    {
+        return $this->factionID;
     }
 
     /**

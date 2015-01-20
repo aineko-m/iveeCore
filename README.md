@@ -1,7 +1,7 @@
 # iveeCore
 a PHP library for calculations of EVE Online industrial activities
 
-Copyright (C)2013-2014 by Aineko Macx
+Copyright (C)2013-2015 by Aineko Macx
 All rights reserved.
 
 
@@ -11,20 +11,32 @@ See the file LICENSE included with the distribution.
 
 
 ## Purpose and target audience
-The goal of this project is to provide its users with a simple but powerful API to get information about industrial activities in EVE Online such as bill of materials, activity cost and profit or skill requirements. By hiding the complexities of EvE's static data export, iveeCore helps developers to quickly prototype scripts or develop full blown (web) applications.
+The goal of this project is to provide its users with a simple but powerful API to get information about industrial activities in EVE Online such as bill of materials, activity cost and profit or skill requirements. By hiding the complexities of EvE's Static Data Export, iveeCore helps developers to quickly prototype scripts or develop full blown (web) applications.
 
 iveeCore will likely be most useful for developers with at least basic PHP knowledge wanting to create their own industry related tools.
 
+These are a few example questions that can be answered with a few lines of code using iveeCore:
+- "What is the profit of buying this item in Jita and selling in Dodixie?"
+- "What do these items reprocess to? And whats the volume of that and it's sell value in Jita?"
+- "What is the job cost for building this item in this system? And when built in a POS in low sec?"
+- "What is the total bill of materials to build these Jump Freighters and the minimum skills?"
+- "Is it more profitable to build the components myself or buy off the market?"
+- "Whats the total profit for copying this BPC, inventing with it, building from the resulting T2 BPC and selling the result?"
+- "How do different Decryptors affects ISK/hour?"
+- "How do Blueprint ME levels impact capital ship manufacturing profits?"
+- "How much is a month of Unrefined Ferrofluid Reaction worth?"
+
 
 ## Features
-- Object oriented API to the SDE DB, no manual SQL required
-- Object oriented model for inventory items
+- An API that strives to be "good", with high power-to-weight ratio
+- Strong object oriented design and class model for inventory types
 - Classes for representing manufacturing, copying, T2 & T3 invention, research and reaction activities, with recursive component building
 - Market data gathering via EMDR with realistic price estimation and profit calculation
 - CREST data fetcher handling system industry indices, market prices, facilities, teams and specialities
 - Parsers for EFT-style and EvE XML ship fittings descriptions as well as cargo and ship scanning results
-- Can use caching provided by Memcached
+- Caching support for Memcached or Redis (via Predis)
 - Extensible via configurable subclassing
+- A well documented and mostly PSR compliant codebase
 
 
 ## Requirements
@@ -33,10 +45,11 @@ For basic usage, iveeCore requires:
 - MySQL >= 5.5 or derivate. [MariaDB 10](https://mariadb.org/) recommended.
 - Steve Ronuken's EVE Static Data Export (SDE) in MySQL format with industry tables
 
-However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calculation capabilities, as it requires the ZMQ PHP bindings. Since ZMQ is a not a standard module you'll need (at least terminal) root access to whatever box you plan on running the EMDR client on. iveeCore can also easily make PHP scripts use more RAM than what is typically configured on shared hosting offers (for instance, for parsing the CREST data PHP 5.3 requires 84MB RAM), so a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
+However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calculation capabilities, as it requires the ZMQ PHP bindings. Since ZMQ is a not a standard module you'll need (at least terminal) root access to whatever box you plan on running the EMDR client on. Note that EMDR is being phased out in favor of CREST in an upcoming release.
 
-For best performance of iveeCore, using Memcached is highly recommended. Also using APC is recommended for faster application startup if using PHP prior to version 5.5.
-Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third compared to 5.3.
+With long running batch scripts iveeCore can consume more RAM than what is typically configured on shared hosting offers for PHP, so a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
+
+For best performance of iveeCore, using caching (Memcached or Redis) is highly recommended. Also using APC is recommended for faster application startup if using PHP prior to version 5.5. Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third compared to 5.3.
 
 With increasing number of tracked regional markets, the database size and load from the EMDR client also increases.
 
@@ -52,7 +65,11 @@ Run the following command with root privileges to install the required packages:
 apt-get install build-essential git mysql-server-5.6 php5-dev php5-cli phpunit php5-mysqlnd php5-curl php5-memcached php5-json libzmq3 libzmq3-dev memcached re2c pkg-config
 ```
 
-If you are using MariaDB or another MySQL derivate, or have a different setup and know what your are doing, adapt the command as required.
+If you are using MariaDB or another MySQL derivate, or have a different setup and know what your are doing, adapt the command as required. If you want to use Redis instead of memcached, replace the memcached packages with 
+```
+redis-server redis-tools php-pear
+```
+and then follow the intructions to install Predis via PEAR channel as described [here](https://github.com/nrk/predis).
 
 ### Compile PHP ZMQ binding
 
@@ -73,9 +90,9 @@ If everything went well, you should see a line with the libzmq version.
 ### Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to helpful 3rd party developer Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&m=5274308#post5274308](https://forums.eveonline.com/default.aspx?g=posts&m=5274308#post5274308)
+[https://forums.eveonline.com/default.aspx?g=posts&t=397875](https://forums.eveonline.com/default.aspx?g=posts&t=397875)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_rhe10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_pro10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 Then create a second database, naming it "iveeCore" and giving the same user as before full privileges to it.
 
 ### Setup iveeCore
@@ -117,7 +134,7 @@ Whenever you want to upgrade to another SDE, the following steps are recommended
 - Import the new SDE into this new database
 - Import SDE_additions.sql into it
 - Adapt iveeCore/Config.php to the new database
-- If using memcached, flush it
+- If using cache, flush it
 - It is good practice to run the provided unit test to check if everything is working as intended
 - Possibly an updated iveeCore version is required to become compatible to changes, check the forum thread.
 - Restart the EMDR client and any long running scripts you might have
@@ -174,7 +191,7 @@ The above are just basic examples of the possibilities you have with iveeCore. R
 
 ## Notes
 Although I tried to make iveeCore as configurable as possible, there are still a number of underlying assumptions made and caveats:
-- For profit calculations, it is assumed you buy items using buy orders; you sell your products with sell orders with competitive pricing in the default region configured in (My)Defaults.php
+- For profit calculations, it is assumed you buy items using buy orders; you sell your products with sell orders with competitive pricing.
 - The prices of items that can't be sold on the market also can't be determined. This includes BPCs (The _cost_ of copying, inventing or researching a BPC can and is calculated for processes, however).
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
 - The EMDR client does some basic filtering on the incoming market data, but there is no measure against malicious clients uploading fake data. This isn't known to have caused any problems, but should be considered.
@@ -182,9 +199,9 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see Extending iveeCore below.
 
 Generals notes:
-- Remember to restart or flush memcached after making changes to type classes or changing the DB. From the terminal you can do so with a command like: ```echo 'flush_all' | nc localhost 11211```
+- Remember to restart or flush the cache after making changes to type classes or changing the DB. For memcache, you can do so with a command like: ```echo 'flush_all' | nc localhost 11211```. For Redis, enter the interactive Redis client using ```redis-cli``` and issue ```FLUSHALL```.
 Alternatively you can run the PHPUnit test, which also clears the cache.
-- iveeCore is under active development so I can't promise the API will be stable.
+- iveeCore is under active development so I can't promise the API will be stable, especially if noone gives input.
 - When iveeCore is updated, be sure to read RELEASENOTES for changes that might affect your application or setup
 
 
@@ -194,7 +211,7 @@ You can modify iveeCore directly, however, you'll need to comply with the LGPL a
 
 
 ## Future Plans
-With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; a CREST client will be introduced. Redis support will come. Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
+With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; a CREST client will be introduced (also as a standalone library). Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
 I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
 
 
@@ -209,11 +226,8 @@ A: I wanted to share something back to the eve developer community. I also see i
 Q: Are you going to release ivee proper?
 A: No.
 
-Q: Why Memcache?
-A: I wanted to use APC first, but APC caches do not persist across CLI PHP program runs, so it was pointless. Memcache is probably the most commonly used cache for PHP and it works with both web-served and CLI scripts. It should be trivial to add other key-value or object stores, though.
-
 Q: Why not use a library like [Perry](https://github.com/3rdpartyeve/perry) for CREST access?
-A: I wanted to avoid more dependencies and the CREST functionality required by iveeCore is very simple, so I made a minimal implementation for it.
+A: I wanted to avoid more dependencies and the CREST functionality required by iveeCore is very simple, so I made a minimal implementation for it. This is going to be superseded by the upcoming iveeCrest.
 
 
 ## Acknowledgements

@@ -37,8 +37,10 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
-        if (\iveeCore\Config::getUseCache())
-            \iveeCore\MemcachedWrapper::instance()->flushCache();
+        if (\iveeCore\Config::getUseCache()){
+            $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
+            $cacheClass::instance()->flushCache();
+        }
     }
 
     public function testSde()
@@ -68,12 +70,14 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
             return;
 
         //empty cache entry for type
-        \iveeCore\MemcachedWrapper::instance()->deleteItem('Type_' . 645);
+        $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
+        $cacheInstance = $cacheClass::instance();
+        $cacheInstance->deleteItem('iveeCore\Type_645');
 
         //get type
         $type = \iveeCore\Type::getById(645);
         $this->assertTrue($type instanceof \iveeCore\Manufacturable);
-        $this->assertTrue($type == \iveeCore\MemcachedWrapper::instance()->getItem('iveeCore\Type_645'));
+        $this->assertTrue($type == $cacheInstance->getItem('iveeCore\Type_645'));
         $this->assertTrue($type == \iveeCore\Type::getByName('Dominix'));
     }
 
@@ -278,7 +282,7 @@ Siege Module II
     {
         $scanResult = "
             10MN Afterburner I
-Inertia Stabilizers II
+Inertial Stabilizers II
 Expanded Cargohold II
 
 1 Improved Cloaking Device II

@@ -1,9 +1,17 @@
 This file lists major changes in iveeCore releases.
 
+Version 2.3 - January 20th, 2015
+--------------------------------
+- Adapted to Proteus release.
+- Added Redis caching support (via Predis).
+- Added Starbase class, with calculation of fuel consumption.
+- I decided not to remove teams yet, as the functionality can still be used to calculate "what-if" scenarios.
+- Existing users will have to remake the configuration file based on the new template.
+
 Version 2.2 - December 14th, 2014
 ---------------------------------
-- Adapt to Rhea release.
-- Extracted market data from the Type class hierarchy to separate classes, RegionMarketData and GlobalPriceData.
+- Adapted to Rhea release.
+- Extracted market data from the Type class hierarchy to separate classes, RegionMarketData and GlobalPriceData
 (averagePrice and adjustedPrice as returned by the CREST API and needed for industry calculations). This provides better
 separation of concerns and removes some inconsistencies for types that inherited from Sellable, but were not actually on
 the market. Trying to get the market objects from these types will throw an exception instead.
@@ -18,7 +26,7 @@ SDE since Phoebe).
 
 Upcoming changes:
 - With the introduction of market data API endpoints to authenticated CREST, it is time to replace EMDR.
-- The last industry teams in game will expire on January 11th, so the functionality will then be removed from iveeCore.
+- The last industry teams in game will expire on January 22th, so the functionality will then be removed from iveeCore.
 
 Version 2.1 - November 8th, 2014
 --------------------------------

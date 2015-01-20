@@ -37,16 +37,21 @@ class Config
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_rhe10';
+    protected static $sdeDbName = 'eve_sde_pro10';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';
 
     //Cache config
     protected static $useCache    = true;
+    protected static $cachePrefix = 'iveeCore_';
+
+    //Memcached specific settings
     protected static $cacheHost   = 'localhost';
-    protected static $cachePort   = 11211;
-    protected static $cachePrefix = 'ivee_';
+    protected static $cachePort   = '11211';
+
+    //(P)Redis specific settings
+    protected static $predisConnectionString = 'tcp://localhost:6379';
 
     //EMDR config
     //https://eve-market-data-relay.readthedocs.org/en/latest/access.html
@@ -56,7 +61,7 @@ class Config
     protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
 
     //change the application name in the parenthesis to your application. It is used when accessing the CREST API.
-    protected static $userAgent = 'iveeCore/2.2 (unknown application)';
+    protected static $userAgent = 'iveeCore/2.3 (unknown application)';
 
     //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
     //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
@@ -65,6 +70,7 @@ class Config
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
         'Cache'                  => '\iveeCore\MemcachedWrapper',
+        //'Cache'                  => '\iveeCore\PredisWrapper',
         'CacheableCommon'        => '\iveeCore\CacheableCommon',
         'CopyProcessData'        => '\iveeCore\CopyProcessData',
         'Decryptor'              => '\iveeCore\Decryptor',
@@ -95,6 +101,7 @@ class Config
         'SkillMap'               => '\iveeCore\SkillMap',
         'SolarSystem'            => '\iveeCore\SolarSystem',
         'Speciality'             => '\iveeCore\Speciality',
+        'Starbase'               => '\iveeCore\Starbase',
         'Station'                => '\iveeCore\Station',
         'T3Blueprint'            => '\iveeCore\T3Blueprint',
         'Team'                   => '\iveeCore\Team',
@@ -244,6 +251,16 @@ class Config
     }
 
     /**
+     * Returns configured cache prefix for keys stored by iveeCore
+     *
+     * @return string
+     */
+    public static function getCachePrefix()
+    {
+        return static::$cachePrefix;
+    }
+
+    /**
      * Returns configured cache host name
      *
      * @return string
@@ -264,13 +281,13 @@ class Config
     }
 
     /**
-     * Returns configured cache prefix for keys stored by iveeCore
+     * Returns configured (P)Redis connection string
      *
      * @return string
      */
-    public static function getCachePrefix()
+    public static function getPredisConnectionString()
     {
-        return static::$cachePrefix;
+        return static::$predisConnectionString;
     }
 
     /**
