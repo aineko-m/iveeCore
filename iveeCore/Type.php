@@ -243,6 +243,8 @@ class Type extends SdeType
             $subtype = 'Blueprint';
         elseif ($subtypeInfo['categoryID'] == 35)
             $subtype = 'Decryptor';
+        elseif($subtypeInfo['groupID'] == 365)
+            $subtype = 'Starbase';
         elseif (!empty($subtypeInfo['manufacturable']))
             $subtype = 'Manufacturable';
         else

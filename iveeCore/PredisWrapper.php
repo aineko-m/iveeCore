@@ -1,6 +1,6 @@
 <?php
 /**
- * MemcachedWrapper class file.
+ * PredisWrapper class file.
  *
  * PHP version 5.3
  *
@@ -8,14 +8,17 @@
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MemcachedWrapper.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/PredisWrapper.php
  *
  */
 
 namespace iveeCore;
 
+require_once 'Predis/Autoloader.php';
+\Predis\Autoloader::register();
+
 /**
- * MemcachedWrapper provides caching functionality for iveeCore based on php5-memcached.
+ * PredisWrapper provides caching functionality for iveeCore based on Redis/Predis: https://github.com/nrk/predis
  *
  * Instantiating iveeCore objects that need to pull data from the SDE DB is a relatively expensive process. This is the
  * case for all Type objects and it's descendants, AssemblyLine, SolarSystem, Speciality, Station and Team. Since these
@@ -31,37 +34,39 @@ namespace iveeCore;
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MemcachedWrapper.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/PredisWrapper.php
  *
  */
-class MemcachedWrapper implements ICache
+class PredisWrapper implements ICache
 {
     /**
-     * @var \iveeCore\MemcachedWrapper $instance holds the singleton MemcachedWrapper object.
+     * @var \iveeCore\PredisWrapper $instance holds the singleton PredisWrapper object.
      */
     protected static $instance;
 
     /**
-     * @var \Memcached $memcached holds the Memcached connections.
+     * @var \Predis\Client $predis holds the Predis connection object.
      */
-    protected $memcached;
+    protected $predis;
 
     /**
-     * @var int $memcachedHit stores the number of hits on memcached.
+     * @var int $hit stores the number of hits on the cache.
      */
-    protected $memcachedHit = 0;
+    protected $hit = 0;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @return \iveeCore\MemcachedWrapper
+     * @return \iveeCore\PredisWrapper
      * @throws \iveeCore\Exceptions\CacheDisabledException if cache use is disabled in configuration
      */
     protected function __construct()
     {
         if (Config::getUseCache()) {
-            $this->memcached = new \Memcached;
-            $this->memcached->addServer(Config::getCacheHost(), Config::getCachePort());
+            $this->predis = new \Predis\Client(
+                Config::getPredisConnectionString(),
+                array('prefix' => Config::getCachePrefix())
+            );
         } else {
             $exceptionClass = Config::getIveeClassName('CacheDisabledException');
             throw new $exceptionClass;
@@ -69,9 +74,9 @@ class MemcachedWrapper implements ICache
     }
 
     /**
-     * Returns MemcachedWrapper instance.
+     * Returns PredisWrapper instance.
      *
-     * @return \iveeCore\MemcachedWrapper
+     * @return \iveeCore\PredisWrapper
      */
     public static function instance()
     {
@@ -93,66 +98,68 @@ class MemcachedWrapper implements ICache
     public function setItem($item, $key, $expiration = 86400)
     {
         if (Config::getUseCache())
-            return $this->memcached->set(Config::getCachePrefix() . $key, $item, $expiration);
+            return $this->predis->transaction()
+                ->set($key, serialize($item))
+                ->expire($key, $expiration)
+                ->execute();
         else {
             $exceptionClass = Config::getIveeClassName('CacheDisabledException');
-            throw new $exceptionClass('Use of Memcached has been disabled in the configuration');
+            throw new $exceptionClass('Use of Predis has been disabled in the configuration');
         }
     }
 
     /**
-     * Gets item from Memcached.
+     * Gets item from Predis.
      *
      * @param string $key under which the item is stored
      *
      * @return mixed
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
-     * @throws \iveeCore\Exceptions\CacheDisabledException if memcached has been disabled
+     * @throws \iveeCore\Exceptions\CacheDisabledException if cache has been disabled
      */
     public function getItem($key)
     {
         if (Config::getUseCache()) {
-            $item = $this->memcached->get(Config::getCachePrefix() . $key);
-            if ($this->memcached->getResultCode() == \Memcached::RES_NOTFOUND) {
-                $exceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
-                throw new $exceptionClass("Key not found in memcached.");
+            $cacheResponse = $this->predis->get($key);
+            if(isset($cacheResponse)){
+                $this->hit++;
+                return unserialize($cacheResponse);
             }
-            //count memcached hit
-            $this->memcachedHit++;
-            return $item;
+
+            $exceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
+                throw new $exceptionClass("Key not found in Predis.");
         } else {
             $exceptionClass = Config::getIveeClassName('CacheDisabledException');
-            throw new $exceptionClass('Use of Memcached has been disabled in the configuration');
+            throw new $exceptionClass('Use of Predis has been disabled in the configuration');
         }
     }
 
     /**
-     * Removes item from Memcached.
+     * Removes item from Predis.
      *
      * @param string $key of object to be removed
      *
-     * @return bool true on success or if memcached has been disabled
+     * @return bool true on success or if cache has been disabled
      */
     public function deleteItem($key)
     {
         if (Config::getUseCache())
-            return $this->memcached->delete(Config::getCachePrefix() . $key);
+            return $this->predis->del($key);
         else
             return true;
     }
 
     /**
-     * Removes multiple items from Memcached.
-     * If using memcached, this method requires php5-memcached package version >=2.0!
+     * Removes multiple items from Predis.
      *
      * @param array $keys of items to be removed
      *
-     * @return bool true on success, also if memcached has been disabled
+     * @return bool true on success, also if cache has been disabled
      */
     public function deleteMulti(array $keys)
     {
         if (Config::getUseCache())
-            return $this->memcached->deleteMulti($keys);
+            return $this->predis->del($keys);
         else
             return true;
     }
@@ -165,7 +172,7 @@ class MemcachedWrapper implements ICache
     public function flushCache()
     {
         if (Config::getUseCache())
-            return $this->memcached->flush();
+            return $this->predis->flushdb();
         else
             return true;
     }
