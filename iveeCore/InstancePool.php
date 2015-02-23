@@ -15,7 +15,7 @@
 namespace iveeCore;
 
 /**
- * Class for the object pool (PHP-internal cache) with second level external, persistent cache
+ * Class for the object pool (PHP-internal cache) with second level external, persistent cache.
  *
  * @category IveeCore
  * @package  IveeCoreClasses

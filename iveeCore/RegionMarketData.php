@@ -226,7 +226,7 @@ class RegionMarketData extends CacheableCommon
     /**
      * Returns the type object this market data refers to
      *
-     * @return \iv eCore\Type
+     * @return \iveeCore\Type
      */
     public function getType()
     {

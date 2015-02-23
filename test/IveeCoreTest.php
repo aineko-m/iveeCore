@@ -15,7 +15,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 
-//include the iveeCore configuration, expected in the iveeCore directory, with absolute path
+//include the iveeCore init, expected in the iveeCore directory, with absolute path
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php');
 
 /**
@@ -24,7 +24,7 @@ require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATO
  * The tests cover different parts of iveeCore and focus on the trickier cases. It is mainly used to aid during the
  * development, but can also be used to check the correct working of an iveeCore installation.
  *
- * To run this test, you'll need to have PHPUnit isntalled as well as created the iveeCoreConfig.php file based on the
+ * To run this test, you'll need to have PHPUnit isntalled as well as created the iveeCore/Config.php file based on the
  * provided template.
  *
  * @category IveeCore
