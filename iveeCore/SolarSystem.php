@@ -74,11 +74,6 @@ class SolarSystem extends SdeType
     protected $stationIDs = array();
 
     /**
-     * @var array $teamIDs the IDs of Teams active in this SolarSystem
-     */
-    protected $teamIDs = array();
-
-    /**
      * Loads all SolarSystem names from DB to PHP
      *
      * @return void
@@ -156,7 +151,6 @@ class SolarSystem extends SdeType
         }
 
         $this->loadStations($sde);
-        $this->loadTeams($sde);
     }
 
     /**
@@ -177,27 +171,6 @@ class SolarSystem extends SdeType
         while ($row = $res->fetch_assoc()) {
             $this->stationIDs[] = $row['stationID'];
         }
-    }
-
-    /**
-     * Loads teamIDs in system
-     *
-     * @param \iveeCore\SDE $sde the SDE object
-     *
-     * @return void
-     */
-    protected function loadTeams(SDE $sde)
-    {
-        //get teams in system
-        $res = $sde->query(
-            "SELECT teamID
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTeams
-            WHERE solarSystemID = "
-            . $this->id . " AND expiryTime > '" . date('Y-m-d H:i:s', time()) . "';"
-        );
-
-        while ($row = $res->fetch_assoc())
-            $this->teamIDs[] = $row['teamID'];
     }
 
     /**
@@ -262,30 +235,6 @@ class SolarSystem extends SdeType
         foreach ($this->getStationIDs() as $stationID)
             $stations[$stationID] = $stationClass::getStation($stationID);
         return $stations;
-    }
-
-    /**
-     * Gets IDs of Teams in SolarSystem
-     *
-     * @return array
-     */
-    public function getTeamIDs()
-    {
-        return $this->teamIDs;
-    }
-
-    /**
-     * Gets Teams in SolarSystem
-     *
-     * @return array
-     */
-    public function getTeams()
-    {
-        $teams = array();
-        $teamClass = Config::getIveeClassName("Team");
-        foreach ($this->getTeamIDs() as $teamID)
-            $teams[$teamID] = $teamClass::getTeam($teamID);
-        return $teams;
     }
 
     /**

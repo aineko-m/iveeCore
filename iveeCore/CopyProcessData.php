@@ -47,19 +47,16 @@ class CopyProcessData extends ProcessData
      * @param float $processCost the cost of performing this reseach process
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     * @param int $teamID the ID of the Team being used, if at all
      *
      * @return \iveeCore\CopyProcessData
      */
     public function __construct($bpCopyID, $copyQuantity, $outputRuns, $copyTime, $processCost, $solarSystemID,
-        $assemblyLineID, $teamID = null
+        $assemblyLineID
     ) {
         parent::__construct($bpCopyID, $copyQuantity, $copyTime, $processCost);
         $this->outputRuns     = (int) $outputRuns;
         $this->solarSystemID  = (int) $solarSystemID;
         $this->assemblyLineID = (int) $assemblyLineID;
-        if (isset($teamID))
-            $this->teamID     = (int) $teamID;
     }
 
     /**

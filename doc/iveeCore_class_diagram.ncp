@@ -607,6 +607,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="5" second="15">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -615,6 +617,8 @@ omitted</Text>
         <EndMultiplicity>0..1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="5" second="6">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -651,6 +655,8 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="16" second="18">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -666,8 +672,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="14" second="16">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -681,6 +685,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="16" second="19">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -704,12 +710,12 @@ omitted</Text>
       <Entity type="Class">
         <Name>ResearchTEProcessData</Name>
         <Access>Public</Access>
-        <Location left="862" top="1106" />
+        <Location left="862" top="1076" />
         <Size width="282" height="162" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int startTELevel</Member>
         <Member type="Field">protected int endTELevel</Member>
-        <Member type="Method">public ResearchTEProcessData __construct(int researchedBpID, int researchTime, float processCost, int startTELevel, int endTELevel, int solarSystemID, int assemblyLineID, int teamID)</Member>
+        <Member type="Method">public ResearchTEProcessData __construct(int researchedBpID, int researchTime, float processCost, int startTELevel, int endTELevel, int solarSystemID, int assemblyLineID)</Member>
         <Member type="Method">public int getStartTELevel()</Member>
         <Member type="Method">public int getEndTELevel()</Member>
         <Modifier>None</Modifier>
@@ -717,14 +723,14 @@ omitted</Text>
       <Entity type="Class">
         <Name>InventionProcessData</Name>
         <Access>Public</Access>
-        <Location left="421" top="898" />
+        <Location left="421" top="868" />
         <Size width="330" height="468" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected float probability</Member>
         <Member type="Field">protected int resultRuns</Member>
         <Member type="Field">protected int resultME</Member>
         <Member type="Field">protected int resultTE</Member>
-        <Member type="Method">public InventionProcessData __construct(int producesTypeID, int inventionTime, float processCost, float inventionChance, int resultRuns, int resultME, int resultTE, int solarSystemID, int assemblyLineID, int teamID)</Member>
+        <Member type="Method">public InventionProcessData __construct(int producesTypeID, int inventionTime, float processCost, float inventionChance, int resultRuns, int resultME, int resultTE, int solarSystemID, int assemblyLineID)</Member>
         <Member type="Method">public int getResultRuns()</Member>
         <Member type="Method">public int getResultME()</Member>
         <Member type="Method">public int getResultPE()</Member>
@@ -748,11 +754,11 @@ omitted</Text>
       <Entity type="Class">
         <Name>CopyProcessData</Name>
         <Access>Public</Access>
-        <Location left="36" top="1220" />
+        <Location left="36" top="1190" />
         <Size width="272" height="145" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int outputRuns</Member>
-        <Member type="Method">public CopyData __construct(int bpCopyID, int copyQuantity, int outputRuns, int copyTime, float processCost, int solarSystemID, int assemblyLineID, int teamID)</Member>
+        <Member type="Method">public CopyData __construct(int bpCopyID, int copyQuantity, int outputRuns, int copyTime, float processCost, int solarSystemID, int assemblyLineID)</Member>
         <Member type="Method">public int getOutputRuns()</Member>
         <Modifier>None</Modifier>
       </Entity>
@@ -760,7 +766,7 @@ omitted</Text>
         <Name>ProcessData</Name>
         <Access>Public</Access>
         <Location left="421" top="31" />
-        <Size width="310" height="740" />
+        <Size width="310" height="706" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int activity</Member>
         <Member type="Field">protected int producesTypeID</Member>
@@ -769,7 +775,6 @@ omitted</Text>
         <Member type="Field">protected float processCost</Member>
         <Member type="Field">protected int assemblyLineID</Member>
         <Member type="Field">protected int solarSystemID</Member>
-        <Member type="Field">protected int teamID</Member>
         <Member type="Field">protected SkillMap skills</Member>
         <Member type="Field">protected MaterialMap materials</Member>
         <Member type="Field">protected array subProcessData</Member>
@@ -785,7 +790,6 @@ omitted</Text>
         <Member type="Method">public float getProcessCost()</Member>
         <Member type="Method">public int getSolarSystemID()</Member>
         <Member type="Method">public int getAssemblyLineTypeID()</Member>
-        <Member type="Method">public int getTeamID()</Member>
         <Member type="Method">public float getTotalProcessCost()</Member>
         <Member type="Method">public float getMaterialBuyCost(int maxPriceDataAge, int regionId)</Member>
         <Member type="Method">public float getTotalMaterialBuyCost(int maxPriceDataAge, int regionId)</Member>
@@ -806,12 +810,12 @@ omitted</Text>
       <Entity type="Class">
         <Name>ResearchMEProcessData</Name>
         <Access>Public</Access>
-        <Location left="862" top="898" />
+        <Location left="862" top="868" />
         <Size width="282" height="162" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int startMELevel</Member>
         <Member type="Field">protected int endMELevel</Member>
-        <Member type="Method">public ResearchMEProcessData __construct(int researchedBpID, int researchTime, float processCost, int startMELevel, int endMELevel, int solarSystemID, int assemblyLineID, int teamID)</Member>
+        <Member type="Method">public ResearchMEProcessData __construct(int researchedBpID, int researchTime, float processCost, int startMELevel, int endMELevel, int solarSystemID, int assemblyLineID)</Member>
         <Member type="Method">public int getStartMELevel()</Member>
         <Member type="Method">public int getEndMELevel()</Member>
         <Modifier>None</Modifier>
@@ -819,12 +823,12 @@ omitted</Text>
       <Entity type="Class">
         <Name>ManufactureProcessData</Name>
         <Access>Public</Access>
-        <Location left="36" top="898" />
+        <Location left="36" top="868" />
         <Size width="272" height="230" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int bpMeLevel</Member>
         <Member type="Field">protected int bpPeLevel</Member>
-        <Member type="Method">public ManufactureProcessData __construct(int producesTypeID, int producesQuantity, int processTime, float processCost, int bpMeLevel, int bpTeLevel, int solarSystemID, int assemblyLineID, int teamID)</Member>
+        <Member type="Method">public ManufactureProcessData __construct(int producesTypeID, int producesQuantity, int processTime, float processCost, int bpMeLevel, int bpTeLevel, int solarSystemID, int assemblyLineID)</Member>
         <Member type="Method">public int getMeLevel()</Member>
         <Member type="Method">public int getPeLevel()</Member>
         <Member type="Method">public float getSlotCost()</Member>
@@ -863,11 +867,11 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>805</X>
-          <Y>1178</Y>
+          <Y>1148</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>1002</X>
-          <Y>834</Y>
+          <X>805</X>
+          <Y>802</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="4" second="3">
@@ -879,11 +883,11 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>325</X>
-          <Y>1178</Y>
+          <Y>1148</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>365</X>
-          <Y>834</Y>
+          <X>366</X>
+          <Y>802</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="1" second="3">
@@ -895,15 +899,17 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="3" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>766</X>
-          <Y>731</Y>
+          <Y>706</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>684</X>
-          <Y>805</Y>
+          <Y>771</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
@@ -918,7 +924,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>AssemblyLine</Name>
         <Access>Public</Access>
-        <Location left="833" top="146" />
+        <Location left="486" top="26" />
         <Size width="333" height="434" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static InstancePool instancePool</Member>
@@ -947,20 +953,19 @@ omitted</Text>
       <Entity type="Class">
         <Name>IndustryModifier</Name>
         <Access>Public</Access>
-        <Location left="371" top="42" />
-        <Size width="384" height="604" />
+        <Location left="24" top="26" />
+        <Size width="384" height="502" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array assemblyLines</Member>
         <Member type="Field">protected SolarSystem solarSystem</Member>
         <Member type="Field">protected float tax</Member>
-        <Member type="Field">protected array teams</Member>
         <Member type="Field">protected array skillTimeModifiers</Member>
         <Member type="Field">protected array implantTimeModifiers</Member>
         <Member type="Method">public static IndustryModifier getByNpcStation(int stationID)</Member>
         <Member type="Method">public static IndustryModifier getByBySystemIdForPos(int solarSystemID, float tax)</Member>
         <Member type="Method">public static IndustryModifier getBySystemIdForAllNpcStations(int solarSystemID)</Member>
         <Member type="Method">public static IndustryModifier getBySystemIdWithAssembly(int solarSystemID, array assemblyLineTypeIDs, float tax)</Member>
-        <Member type="Method">public IndustryModifier __construct(SolarSystem system, array assemblyLines, array teams, float tax)</Member>
+        <Member type="Method">public IndustryModifier __construct(SolarSystem system, array assemblyLines, float tax)</Member>
         <Member type="Method">public array getAssemblyLines()</Member>
         <Member type="Method">public array getAssemblyLinesForActivity(int activityID)</Member>
         <Member type="Method">public SolarSystem getSolarSystem()</Member>
@@ -973,21 +978,16 @@ omitted</Text>
         <Member type="Method">public float getSkillTimeModifierForActivity(int activityID)</Member>
         <Member type="Method">public void setSkillTimeModifiers(array modifiers)</Member>
         <Member type="Method">public void setSkillTimeModifierForActivity(float modifier, int activityID)</Member>
-        <Member type="Method">public array getTeams()</Member>
-        <Member type="Method">public array getTeamsForActivity(int activityID)</Member>
-        <Member type="Method">public void setTeams(array teams)</Member>
-        <Member type="Method">public void setTeamsForActivity(array teams, int activityID)</Member>
         <Member type="Method">public bool isActivityPossible(int activityID, Type type)</Member>
         <Member type="Method">public array getModifier(int activityID, Type type)</Member>
         <Member type="Method">public AssemblyLine getBestAssemblyLineForActivity(int activityID, Type type)</Member>
-        <Member type="Method">public Team getBestTeamForActivity(int activityID, Type type)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>SolarSystem</Name>
         <Access>Public</Access>
-        <Location left="371" top="705" />
-        <Size width="384" height="536" />
+        <Location left="24" top="588" />
+        <Size width="384" height="485" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static InstancePool instancePool</Member>
         <Member type="Field">protected static string classNick</Member>
@@ -998,7 +998,6 @@ omitted</Text>
         <Member type="Field">protected int industryIndexDate</Member>
         <Member type="Field">protected array industryIndices</Member>
         <Member type="Field">protected array stationIDs</Member>
-        <Member type="Field">protected array teamIDs</Member>
         <Member type="Method">protected static void loadNames()</Member>
         <Member type="Method">protected SolarSystem __construct(int id)</Member>
         <Member type="Method">public int getSolarSystemID()</Member>
@@ -1008,8 +1007,6 @@ omitted</Text>
         <Member type="Method">public float getSecurity()</Member>
         <Member type="Method">public array getStationIDs()</Member>
         <Member type="Method">public array getStations()</Member>
-        <Member type="Method">public array getTeamIDs()</Member>
-        <Member type="Method">public array getTeams()</Member>
         <Member type="Method">public int getIndustryIndexDate()</Member>
         <Member type="Method">public array getIndustryIndices(int maxIndexDataAge)</Member>
         <Member type="Method">public float getIndustryIndexForActivity(int activityID, int maxIndexDataAge)</Member>
@@ -1021,7 +1018,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>Station</Name>
         <Access>Public</Access>
-        <Location left="833" top="705" />
+        <Location left="486" top="536" />
         <Size width="310" height="417" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static InstancePool instancePool</Member>
@@ -1046,68 +1043,21 @@ omitted</Text>
         <Member type="Method">public IndustryModifier getIndustryModifier()</Member>
         <Modifier>None</Modifier>
       </Entity>
-      <Entity type="Class">
-        <Name>Team</Name>
-        <Access>Public</Access>
-        <Location left="44" top="330" />
-        <Size width="256" height="519" />
-        <Collapsed>False</Collapsed>
-        <Member type="Field">protected static InstancePool instancePool</Member>
-        <Member type="Field">protected static string classNick</Member>
-        <Member type="Field">protected int solarSystemID</Member>
-        <Member type="Field">protected int creationTime</Member>
-        <Member type="Field">protected int expiryTime</Member>
-        <Member type="Field">protected int activityID</Member>
-        <Member type="Field">protected float costModifier</Member>
-        <Member type="Field">protected int specialityID</Member>
-        <Member type="Field">protected array bonusIDs</Member>
-        <Member type="Field">protected array bonusValues</Member>
-        <Member type="Field">protected array workerSpecialities</Member>
-        <Member type="Method">protected static void getIdByName()</Member>
-        <Member type="Method">protected Team __construct(int id)</Member>
-        <Member type="Method">public int getSolarSystemID()</Member>
-        <Member type="Method">public int getCreationTime()</Member>
-        <Member type="Method">public int getExpiryTime()</Member>
-        <Member type="Method">public int getActivityID()</Member>
-        <Member type="Method">public float getCostModifier()</Member>
-        <Member type="Method">public int getSpecialityID()</Member>
-        <Member type="Method">public array getBonusIDs()</Member>
-        <Member type="Method">public array getBonusValues()</Member>
-        <Member type="Method">public array getWorkerSpecialities()</Member>
-        <Member type="Method">public bool isTypeCompatible(Type type)</Member>
-        <Member type="Method">public bool isGroupIDCompatible(int groupID)</Member>
-        <Member type="Method">public array getWorkerIDsForGroupID(int groupID)</Member>
-        <Member type="Method">public array getModifiersForGroupID(int groupID)</Member>
-        <Modifier>None</Modifier>
-      </Entity>
-      <Entity type="Class">
-        <Name>Speciality</Name>
-        <Access>Public</Access>
-        <Location left="56" top="914" />
-        <Size width="230" height="196" />
-        <Collapsed>False</Collapsed>
-        <Member type="Field">protected static InstancePool instancePool</Member>
-        <Member type="Field">protected static string classNick</Member>
-        <Member type="Field">protected array specialityGroupIDs</Member>
-        <Member type="Method">protected static void getIdByName()</Member>
-        <Member type="Method">protected Speciality __construct(int id)</Member>
-        <Member type="Method">public array getSpecialityGroupIDs()</Member>
-        <Member type="Method">public bool appliesToGroupID(int groupID)</Member>
-        <Modifier>None</Modifier>
-      </Entity>
       <Entity type="Comment">
         <Text>All these classes except IndustryModifier inherit from SdeType, omitted for readibility</Text>
-        <Location left="97" top="121" />
+        <Location left="486" top="1024" />
         <Size width="143" height="84" />
       </Entity>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="2" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>780</X>
-          <Y>784</Y>
+          <X>434</X>
+          <Y>694</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
@@ -1115,61 +1065,40 @@ omitted</Text>
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>560</X>
-          <Y>671</Y>
+          <X>213</X>
+          <Y>553</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>560</X>
-          <Y>671</Y>
+          <X>213</X>
+          <Y>554</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Composition</AssociationType>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
-      <Relationship type="Association" first="1" second="4">
-        <StartOrientation>Horizontal</StartOrientation>
-        <EndOrientation>Horizontal</EndOrientation>
-        <BendPoint relativeToStartShape="True">
-          <X>346</X>
-          <Y>459</Y>
-        </BendPoint>
-        <Direction>Unidirectional</Direction>
-        <AssociationType>Aggregation</AssociationType>
-        <EndMultiplicity>0..*</EndMultiplicity>
-      </Relationship>
       <Relationship type="Association" first="1" second="0">
-        <StartOrientation>Horizontal</StartOrientation>
-        <EndOrientation>Horizontal</EndOrientation>
-        <BendPoint relativeToStartShape="True">
-          <X>780</X>
-          <Y>456</Y>
-        </BendPoint>
-        <Direction>Unidirectional</Direction>
-        <AssociationType>Composition</AssociationType>
-        <EndMultiplicity>1..*</EndMultiplicity>
-      </Relationship>
-      <Relationship type="Association" first="4" second="5">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-        <Direction>Unidirectional</Direction>
-        <AssociationType>Composition</AssociationType>
-        <EndMultiplicity>5</EndMultiplicity>
-      </Relationship>
-      <Relationship type="Association" first="2" second="4">
         <Label>
         </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>346</X>
-          <Y>780</Y>
+          <X>439</X>
+          <Y>346</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
+        <AssociationType>Composition</AssociationType>
+        <EndMultiplicity>1..*</EndMultiplicity>
+      </Relationship>
+      <Relationship type="Association" first="3" second="0">
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
+        <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
-        <StartMultiplicity>1</StartMultiplicity>
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
     </Relationships>
@@ -1237,7 +1166,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>EmdrHistoryUpdate</Name>
         <Access>Public</Access>
-        <Location left="690" top="37" />
+        <Location left="714" top="37" />
         <Size width="246" height="179" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int typeID</Member>
@@ -1251,7 +1180,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>EmdrPriceUpdate</Name>
         <Access>Public</Access>
-        <Location left="399" top="37" />
+        <Location left="414" top="37" />
         <Size width="246" height="315" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int typeID</Member>
@@ -1299,25 +1228,9 @@ omitted</Text>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
-        <Name>TeamsUpdater</Name>
-        <Access>Public</Access>
-        <Location left="64" top="757" />
-        <Size width="162" height="77" />
-        <Collapsed>False</Collapsed>
-        <Modifier>None</Modifier>
-      </Entity>
-      <Entity type="Class">
-        <Name>SpecialitiesUpdater</Name>
-        <Access>Public</Access>
-        <Location left="905" top="757" />
-        <Size width="162" height="77" />
-        <Collapsed>False</Collapsed>
-        <Modifier>None</Modifier>
-      </Entity>
-      <Entity type="Class">
         <Name>MarketPricesUpdater</Name>
         <Access>Public</Access>
-        <Location left="697" top="757" />
+        <Location left="967" top="611" />
         <Size width="162" height="77" />
         <Collapsed>False</Collapsed>
         <Modifier>None</Modifier>
@@ -1325,7 +1238,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>IndustrySystemsUpdater</Name>
         <Access>Public</Access>
-        <Location left="482" top="757" />
+        <Location left="752" top="611" />
         <Size width="170" height="77" />
         <Collapsed>False</Collapsed>
         <Modifier>None</Modifier>
@@ -1333,7 +1246,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>IndustryFacilitiesUpdater</Name>
         <Access>Public</Access>
-        <Location left="268" top="757" />
+        <Location left="538" top="611" />
         <Size width="173" height="77" />
         <Collapsed>False</Collapsed>
         <Modifier>None</Modifier>
@@ -1341,7 +1254,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>CrestFetcher</Name>
         <Access>Public</Access>
-        <Location left="765" top="437" />
+        <Location left="35" top="513" />
         <Size width="346" height="179" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected string baseUrl</Member>
@@ -1355,7 +1268,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>CrestDataUpdater</Name>
         <Access>Public</Access>
-        <Location left="444" top="437" />
+        <Location left="714" top="291" />
         <Size width="259" height="230" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static string path</Member>
@@ -1371,31 +1284,23 @@ omitted</Text>
       </Entity>
     </Entities>
     <Relationships>
-      <Relationship type="Generalization" first="4" second="9">
+      <Relationship type="Generalization" first="3" second="7">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
-      <Relationship type="Generalization" first="5" second="9">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-      </Relationship>
-      <Relationship type="Generalization" first="6" second="9">
+      <Relationship type="Generalization" first="4" second="7">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>573</X>
-          <Y>731</Y>
+          <X>843</X>
+          <Y>585</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>573</X>
-          <Y>694</Y>
+          <X>843</X>
+          <Y>548</Y>
         </BendPoint>
       </Relationship>
-      <Relationship type="Generalization" first="7" second="9">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-      </Relationship>
-      <Relationship type="Generalization" first="3" second="9">
+      <Relationship type="Generalization" first="5" second="7">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>

@@ -68,12 +68,11 @@ class InventionProcessData extends ProcessData
      * @param int $resultTE the TE level on the resulting T2 BPC if invention is successful
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     * @param int $teamID the ID of the Team being used, if at all
      *
      * @return InventionProcessData
      */
     public function __construct($inventedBpID, $inventTime, $processCost, $probability, $resultRuns,
-        $resultME, $resultTE, $solarSystemID, $assemblyLineID, $teamID = null
+        $resultME, $resultTE, $solarSystemID, $assemblyLineID
     ) {
         parent::__construct($inventedBpID, 1, $inventTime, $processCost);
         $this->probability     = (float) $probability;
@@ -82,8 +81,6 @@ class InventionProcessData extends ProcessData
         $this->resultTE        = (int) $resultTE;
         $this->solarSystemID   = (int) $solarSystemID;
         $this->assemblyLineID  = (int) $assemblyLineID;
-        if (isset($teamID))
-            $this->teamID      = (int) $teamID;
     }
 
     /**

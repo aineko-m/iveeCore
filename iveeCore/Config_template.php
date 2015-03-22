@@ -37,7 +37,7 @@ class Config
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_pro10';
+    protected static $sdeDbName = 'eve_sde_tia10';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';
@@ -100,11 +100,9 @@ class Config
         'SdeType'                => '\iveeCore\SdeType',
         'SkillMap'               => '\iveeCore\SkillMap',
         'SolarSystem'            => '\iveeCore\SolarSystem',
-        'Speciality'             => '\iveeCore\Speciality',
         'Starbase'               => '\iveeCore\Starbase',
         'Station'                => '\iveeCore\Station',
         'T3Blueprint'            => '\iveeCore\T3Blueprint',
-        'Team'                   => '\iveeCore\Team',
         'Type'                   => '\iveeCore\Type',
         'Util'                   => '\iveeCore\Util',
         'CrestDataUpdate'                => '\iveeCore\CREST\CrestDataUpdater',
@@ -112,8 +110,6 @@ class Config
         'CrestIndustryFacilitiesUpdater' => '\iveeCore\CREST\IndustryFacilitiesUpdater',
         'CrestIndustrySystemsUpdater'    => '\iveeCore\CREST\IndustrySystemsUpdater',
         'CrestMarketPricesUpdater'       => '\iveeCore\CREST\MarketPricesUpdater',
-        'CrestSpecialitiesUpdater'       => '\iveeCore\CREST\SpecialitiesUpdater',
-        'CrestTeamsUpdater'              => '\iveeCore\CREST\TeamsUpdater',
         'EmdrConsumer'       => '\iveeCore\EMDR\Consumer',
         'EmdrPriceUpdater'   => '\iveeCore\EMDR\PriceUpdater',
         'EmdrHistoryUpdater' => '\iveeCore\EMDR\HistoryUpdater',
@@ -142,12 +138,10 @@ class Config
         'StationIdNotFoundException'          => '\iveeCore\Exceptions\StationIdNotFoundException',
         'SystemDataTooOldException'           => '\iveeCore\Exceptions\SystemDataTooOldException',
         'SQLErrorException'                   => '\iveeCore\Exceptions\SQLErrorException',
-        'SpecialityIdNotFoundException'       => '\iveeCore\Exceptions\SpecialityIdNotFoundException',
         'StationIdNotFoundException'          => '\iveeCore\Exceptions\StationIdNotFoundException',
         'StationNameNotFoundException'        => '\iveeCore\Exceptions\StationNameNotFoundException',
         'SystemIdNotFoundException'           => '\iveeCore\Exceptions\SystemIdNotFoundException',
         'SystemNameNotFoundException'         => '\iveeCore\Exceptions\SystemNameNotFoundException',
-        'TeamIdNotFoundException'             => '\iveeCore\Exceptions\TeamIdNotFoundException',
         'TypeIdNotFoundException'             => '\iveeCore\Exceptions\TypeIdNotFoundException',
         'TypeNameNotFoundException'           => '\iveeCore\Exceptions\TypeNameNotFoundException',
         'TypeNotCompatibleException'          => '\iveeCore\Exceptions\TypeNotCompatibleException',

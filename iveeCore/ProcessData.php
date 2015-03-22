@@ -74,11 +74,6 @@ class ProcessData
     protected $solarSystemID;
 
     /**
-     * @var int $teamID the ID of the Team this process is using, if at all
-     */
-    protected $teamID;
-
-    /**
      * @var SkillMap $skills an object defining the minimum required skills to perform this activity.
      */
     protected $skills;
@@ -255,16 +250,6 @@ class ProcessData
     public function getAssemblyLineTypeID()
     {
         return $this->assemblyLineID;
-    }
-
-    /**
-     * Returns ID of the Team this process is using, if at all
-     *
-     * @return int|null
-     */
-    public function getTeamID()
-    {
-        return $this->teamID;
     }
 
     /**

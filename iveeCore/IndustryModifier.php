@@ -18,7 +18,7 @@ namespace iveeCore;
  * IndustryModifier objects are used to aggregate objects and factors that modify the cost, time and material
  * requirements of performing industrial activities (manufacturing, TE research, ME research, copying, reverse
  * engineering and invention). Namely, these are solar system industry indices, assembly lines (of stations or POSes),
- * teams, station taxes, skills affecting time and implants affecting time.
+ * station taxes, skills affecting time and implants affecting time.
  *
  * A number of convenience functions are provided that help in instantiating IndustryModifier objects, automatically
  * passing the required arguments based on a specific NPC station, a POS in a system, all NPC stations in a system or
@@ -53,11 +53,6 @@ class IndustryModifier
      * @var float $tax the relevant industry tax, in the form "0.1" as 10%
      */
     protected $tax;
-
-    /**
-     * @var array $teams holds the available Teams
-     */
-    protected $teams;
 
     /**
      * @var array $skillTimeModifiers the skill-dependent time modifiers in the form $activityID => 0.75 (meaning 25%
@@ -172,16 +167,10 @@ class IndustryModifier
     {
         $systemClass       = Config::getIveeClassName('SolarSystem');
         $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
-        $teamClass         = Config::getIveeClassName('Team');
+
         //instantiate system from ID
         $system = $systemClass::getById($solarSystemID);
 
-        //instantiate Teams from IDs
-        $teams = array();
-        foreach ($system->getTeamIDs() as $teamID) {
-            $team = $teamClass::getById($teamID);
-            $teams[$team->getActivityID()][$teamID] = $team;
-        }
         //instantiate AssemblyLines from IDs
         $assemblyLines = array();
         foreach ($assemblyLineTypeIDs as $activity => $activityAssemblyLineTypeIDs)
@@ -192,7 +181,6 @@ class IndustryModifier
         return new static(
             $system,
             $assemblyLines,
-            $teams,
             $tax
         );
     }
@@ -202,16 +190,14 @@ class IndustryModifier
      *
      * @param \iveeCore\SolarSystem $system which this IndustryModifier is being instantiated for
      * @param array $assemblyLines of \iveeCore\AssemblyLines
-     * @param array $teams of \iveeCore\Teams
      * @param float $tax in the form "0.1" for 10% tax
      *
      * @return \iveeCore\IndustryModifier
      */
-    public function __construct(SolarSystem $system, array $assemblyLines, array $teams, $tax)
+    public function __construct(SolarSystem $system, array $assemblyLines, $tax)
     {
         $this->solarSystem = $system;
         $this->assemblyLines = $assemblyLines;
-        $this->teams = $teams;
         $this->tax = $tax;
 
         $defaultsClass = Config::getIveeClassName('Defaults');
@@ -403,56 +389,6 @@ class IndustryModifier
     }
 
     /**
-     * Returns the Teams
-     *
-     * @return array in the form activityID => teamID => Team
-     */
-    public function getTeams()
-    {
-        return $this->teams;
-    }
-
-    /**
-     * Returns the Teams
-     *
-     * @param int $activityID the ID of the activity to get Teams for
-     *
-     * @return array in the form teamID => Teams
-     */
-    public function getTeamsForActivity($activityID)
-    {
-        if (isset($this->teams[$activityID]))
-            return $this->teams[$activityID];
-        else
-            return array();
-    }
-
-    /**
-     * Allows setting the Teams, overriding the ones given in IndustryModifier instantiation
-     *
-     * @param array $teams in the form activityID => teamID => Team
-     *
-     * @return void
-     */
-    public function setTeams(array $teams)
-    {
-        $this->teams = $teams;
-    }
-
-    /**
-     * Allows setting the Teams, overriding the ones given in IndustryModifier instantiation
-     *
-     * @param array $teams in the form teamID => Team
-     * @param int $activityID the ID of the activity to set Teams for
-     *
-     * @return void
-     */
-    public function setTeamsForActivity(array $teams, $activityID)
-    {
-        $this->teams[(int) $activityID] = $teams;
-    }
-
-    /**
      * Test if a certain activity can be performed with a certain Type with the current IndustryModifier object.
      * It's always the final output item that needs to be checked. This means that for manufacturing, its the Blueprint
      * product; for copying its the Blueprint itself; for invention it is the product of the invented blueprint.
@@ -503,16 +439,6 @@ class IndustryModifier
         //get initial cost factor as system industry index and tax
         $modifiers['c'] = $modifiers['c']
             * $this->getSolarSystem()->getIndustryIndexForActivity($activityID) * $this->getTaxFactor();
-
-        //get the compatible team with the best bonuses. Where ME > TE > cost bonus.
-        $bestTeam = $this->getBestTeamForActivity($activityID, $type);
-        if (isset($bestTeam)) {
-            //factor in teams if they apply
-            foreach ($bestTeam->getModifiersForGroupID($type->getGroupID()) as $modType => $modValue)
-                $modifiers[$modType] = $modifiers[$modType] * $modValue;
-
-            $modifiers['teamID'] = $bestTeam->getId();
-        }
 
         //factor in skill time modifiers if available
         if (isset($this->skillTimeModifiers[$activityID]))
@@ -572,59 +498,5 @@ class IndustryModifier
             }
         }
         return $bestAssemblyLine;
-    }
-
-    /**
-     * Gets the best compatible Team for the activity and Type.
-     * Bonuses are ranked as material bonus > time bonus > cost bonus
-     *
-     * @param int $activityID the ID of the activity to get Team for
-     * @param Type $type It's always the final output item that needs to be given. This means that for manufacturing,
-     * its the Blueprint product; for copying its the Blueprint itself; for invention it is the product of the
-     * invented blueprint.
-     *
-     * @return Team|null
-     */
-    public function getBestTeamForActivity($activityID, Type $type)
-    {
-        $bestTeam = null;
-        $bestModifier = null;
-        try {
-            //get available teams for the wanted activity
-            $teams = $this->getTeamsForActivity($activityID);
-        } catch (Exceptions\ActivityIdNotFoundException $e) {
-            return null;
-        }
-
-        foreach ($teams as $candidateTeam) {
-            //skip teams incompatible with output groupID
-            if (!$candidateTeam->isGroupIDCompatible($type->getGroupID()))
-                continue;
-            elseif (is_null($bestTeam)) {
-                $bestTeam = $candidateTeam;
-                $bestModifier = $candidateTeam->getModifiersForGroupID($type->getGroupID());
-            } else {
-                $candidateModifier = $candidateTeam->getModifiersForGroupID($type->getGroupID());
-
-                //Modifiers are ranked with priority order for material, time then cost modifiers (lower is better!)
-                if ($bestModifier['m'] < $candidateModifier['m'])
-                    continue;
-                elseif ($bestModifier['m'] > $candidateModifier['m']) {
-                    $bestTeam = $candidateTeam;
-                    $bestModifier = $candidateModifier;
-                } elseif ($bestModifier['t'] < $candidateModifier['t'])
-                    continue;
-                elseif ($bestModifier['t'] > $candidateModifier['t']) {
-                    $bestTeam = $candidateTeam;
-                    $bestModifier = $candidateModifier;
-                } elseif ($bestModifier['c'] < $candidateModifier['c'])
-                    continue;
-                elseif ($bestModifier['c'] > $candidateModifier['c']) {
-                    $bestTeam = $candidateTeam;
-                    $bestModifier = $candidateModifier;
-                }
-            }
-        }
-        return $bestTeam;
     }
 }

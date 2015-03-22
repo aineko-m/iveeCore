@@ -198,8 +198,7 @@ class InventorBlueprint extends Blueprint
                 -2 - $decryptor->getMEModifier(),
                 -4 - $decryptor->getTEModifier(),
                 $modifier['solarSystemID'],
-                $modifier['assemblyLineTypeID'],
-                isset($modifier['teamID']) ? $modifier['teamID'] : null
+                $modifier['assemblyLineTypeID']
             );
             $idata->addMaterial($decryptorID, 1);
         } else { //without decryptor
@@ -212,8 +211,7 @@ class InventorBlueprint extends Blueprint
                 -2,
                 -4,
                 $modifier['solarSystemID'],
-                $modifier['assemblyLineTypeID'],
-                isset($modifier['teamID']) ? $modifier['teamID'] : null
+                $modifier['assemblyLineTypeID']
             );
         }
         $idata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING));

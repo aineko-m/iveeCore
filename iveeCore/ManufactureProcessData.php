@@ -53,20 +53,17 @@ class ManufactureProcessData extends ProcessData
      * @param int $bpTeLevel the TE level of the blueprint used in this process
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     * @param int $teamID the ID of the Team being used, if at all
      *
      * @return ProcessData
      */
     public function __construct($producesTypeID, $producesQuantity, $processTime, $processCost, $bpMeLevel,
-        $bpTeLevel, $solarSystemID, $assemblyLineID, $teamID = null
+        $bpTeLevel, $solarSystemID, $assemblyLineID
     ) {
         parent::__construct($producesTypeID, $producesQuantity, $processTime, $processCost);
         $this->bpMeLevel      = (int) $bpMeLevel;
         $this->bpTeLevel      = (int) $bpTeLevel;
         $this->solarSystemID  = (int) $solarSystemID;
         $this->assemblyLineID = (int) $assemblyLineID;
-        if (isset($teamID))
-            $this->teamID     = (int) $teamID;
     }
 
     /**

@@ -242,7 +242,7 @@ class Blueprint extends Type
      * Manufacture using this BP
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines.
+     * indices, tax and assemblyLines.
      *
      * @param int $units the number of items to produce; defaults to 1.
      * @param int $bpME level of the BP; if left null, it is looked up in defaults class
@@ -289,8 +289,7 @@ class Blueprint extends Type
             $bpME,
             $bpTE,
             $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID'],
-            isset($modifier['teamID']) ? $modifier['teamID'] : null
+            $modifier['assemblyLineTypeID']
         );
 
         //add skills
@@ -312,7 +311,7 @@ class Blueprint extends Type
      * Make copy using this BP.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
+     * indices, tax and assemblyLines
      * @param int $copies the number of copies to produce; defaults to 1.
      * @param int|string $runs the number of runs on each copy. Use 'max' for the maximum possible number of runs.
      * @param bool $recursive defines if used materials should be manufactured recursively
@@ -339,8 +338,7 @@ class Blueprint extends Type
             ceil($this->getBaseTimeForActivity(ProcessData::ACTIVITY_COPYING) * $totalRuns * $modifier['t']),
             $this->getProductBaseCost() * 0.02 * $totalRuns * $modifier['c'],
             $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID'],
-            isset($modifier['teamID']) ? $modifier['teamID'] : null
+            $modifier['assemblyLineTypeID']
         );
 
         $cdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_COPYING));
@@ -360,7 +358,7 @@ class Blueprint extends Type
      * Research ME on this BLueprint.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
+     * indices, tax and assemblyLines
      * @param int $startME the initial ME level
      * @param int $endME the ME level after the research
      * @param bool $recursive defines if used materials should be manufactured recursively
@@ -392,8 +390,7 @@ class Blueprint extends Type
             - $startME,
             - $endME,
             $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID'],
-            isset($modifier['teamID']) ? $modifier['teamID'] : null
+            $modifier['assemblyLineTypeID']
         );
 
         $rmdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_ME));
@@ -413,7 +410,7 @@ class Blueprint extends Type
      * Research TE on this BLueprint.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
+     * indices, tax and assemblyLines
      * @param int $startTE the initial TE level
      * @param int $endTE the TE level after the research
      * @param bool $recursive defines if used materials should be manufactured recursively
@@ -440,8 +437,7 @@ class Blueprint extends Type
             - $startTE,
             - $endTE,
             $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID'],
-            isset($modifier['teamID']) ? $modifier['teamID'] : null
+            $modifier['assemblyLineTypeID']
         );
 
         $rtdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_TE));
@@ -461,7 +457,7 @@ class Blueprint extends Type
      * Computes and adds the material requirements for a process to a ProcessData object.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
+     * indices, tax and assemblyLines
      * @param ProcessData $pdata to which materials shall be added
      * @param int $activityId of the activity
      * @param float $materialFactor the IndustryModifier and Blueprint ME level dependant ME bonus factor

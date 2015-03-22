@@ -5,8 +5,8 @@
  * PHP version 5.3
  *
  * This command line PHP script pulls industry related data from EVE's CREST API and stored it to iveeCore's DB tables.
- * You should set it up to run every few hours (as a cronjob, for instance) to have updated system industry indices,
- * teams and adjustedPrice data available at all times.
+ * You should set it up to run every few hours (as a cronjob, for instance) to have updated system industry indices and
+ * adjustedPrice data available at all times.
  *
  * @category IveeCore
  * @package  IveeCoreScripts
@@ -38,13 +38,5 @@ $crestMarketPricesUpdaterClass::doUpdate();
 //do industry facilities update
 $crestIndustryFacilitiesUpdaterClass = \iveeCore\Config::getIveeClassName('CrestIndustryFacilitiesUpdater');
 $crestIndustryFacilitiesUpdaterClass::doUpdate();
-
-//do specialities update
-$crestSpecialitiesUpdaterClass = \iveeCore\Config::getIveeClassName('CrestSpecialitiesUpdater');
-$crestSpecialitiesUpdaterClass::doUpdate();
-
-//do Industry Teams update
-$crestTeamsUpdaterClass = \iveeCore\Config::getIveeClassName('CrestTeamsUpdater');
-$crestTeamsUpdaterClass::doUpdate();
 
 echo 'Peak memory usage: ' . ceil(memory_get_peak_usage(true) / 1024) . 'KiB' . PHP_EOL;

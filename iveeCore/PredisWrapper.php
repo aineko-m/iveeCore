@@ -21,14 +21,15 @@ require_once 'Predis/Autoloader.php';
  * PredisWrapper provides caching functionality for iveeCore based on Redis/Predis: https://github.com/nrk/predis
  *
  * Instantiating iveeCore objects that need to pull data from the SDE DB is a relatively expensive process. This is the
- * case for all Type objects and it's descendants, AssemblyLine, SolarSystem, Speciality, Station and Team. Since these
- * are immutable except when affected by updates from CREST or EMDR, using an object cache is the natural and easy way
+ * case for all Type objects and it's descendants, AssemblyLine, SolarSystem, Station and market data. Since these are
+ * immutable except when affected by updates from CREST or EMDR, using an object cache is the natural and easy way
  * to greatly improve performance of iveeCore. The EMDR client and CREST updaters automatically clear the cache for the
  * objects that have been update by them in the DB.
  *
  * Note that objects that have already been loaded in a running iveeCore program do not get updated by changes to
- * the DB or cache. This might be an issue for long running scripts. For web applications it should be irrelevant,
- * since they get instantiated and will fetch the objects from DB or cache on each client request.
+ * the DB or cache by another process or iveeCore script. This might be an issue for long running scripts. For web
+ * applications it should be irrelevant, since they get instantiated and will fetch the objects from DB or cache on each
+ * client request.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
