@@ -34,7 +34,7 @@ These are a few example questions that can be answered with a few lines of code 
 - Market data gathering via EMDR with realistic price estimation and profit calculation
 - CREST data fetcher handling system industry indices, market prices and facilities
 - Parsers for EFT-style and EvE XML ship fittings descriptions as well as cargo and ship scanning results
-- Caching support for Memcached or Redis (via Predis)
+- Caching support for Memcached or Redis (via PhpRedis)
 - Extensible via configurable subclassing
 - A well documented and mostly PSR compliant codebase
 
@@ -67,9 +67,8 @@ apt-get install build-essential git mysql-server-5.6 php5-dev php5-cli phpunit p
 
 If you are using MariaDB or another MySQL derivate, or have a different setup and know what your are doing, adapt the command as required. If you want to use Redis instead of memcached, replace the memcached packages with 
 ```
-redis-server redis-tools php-pear
+redis-server redis-tools php5-redis
 ```
-and then follow the intructions to install Predis via PEAR channel as described [here](https://github.com/nrk/predis).
 
 ### Compile PHP ZMQ binding
 

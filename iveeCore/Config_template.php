@@ -50,9 +50,6 @@ class Config
     protected static $cacheHost   = 'localhost';
     protected static $cachePort   = '11211';
 
-    //(P)Redis specific settings
-    protected static $predisConnectionString = 'tcp://localhost:6379';
-
     //EMDR config
     //https://eve-market-data-relay.readthedocs.org/en/latest/access.html
     protected static $emdrRelayUrl = 'tcp://relay-eu-germany-1.eve-emdr.com:8050';
@@ -61,7 +58,7 @@ class Config
     protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
 
     //change the application name in the parenthesis to your application. It is used when accessing the CREST API.
-    protected static $userAgent = 'iveeCore/2.3 (unknown application)';
+    protected static $userAgent = 'iveeCore/2.4 (unknown application)';
 
     //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
     //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
@@ -69,8 +66,9 @@ class Config
     protected static $classes = array(
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
-        'Cache'                  => '\iveeCore\MemcachedWrapper',
-        //'Cache'                  => '\iveeCore\PredisWrapper',
+//        'Cache'                  => '\iveeCore\MemcachedWrapper',
+        'Cache'                  => '\iveeCore\RedisWrapper',
+        'CacheableArray'         => '\iveeCore\CacheableArray',
         'CacheableCommon'        => '\iveeCore\CacheableCommon',
         'CopyProcessData'        => '\iveeCore\CopyProcessData',
         'Decryptor'              => '\iveeCore\Decryptor',
@@ -272,16 +270,6 @@ class Config
     public static function getCachePort()
     {
         return static::$cachePort;
-    }
-
-    /**
-     * Returns configured (P)Redis connection string
-     *
-     * @return string
-     */
-    public static function getPredisConnectionString()
-    {
-        return static::$predisConnectionString;
     }
 
     /**

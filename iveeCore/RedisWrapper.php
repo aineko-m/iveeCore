@@ -1,21 +1,20 @@
 <?php
 /**
- * MemcachedWrapper class file.
+ * RedisWrapper class file.
  *
  * PHP version 5.3
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MemcachedWrapper.php
- *
+ * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCore/RedisWrapper.php
  */
 
 namespace iveeCore;
 
 /**
- * MemcachedWrapper provides caching functionality for iveeCore based on php5-memcached.
+ * RedisWrapper provides caching functionality for iveeCore based on Redis with PhpRedis (php5-redis)
  *
  * Instantiating iveeCore objects that need to pull data from the SDE DB is a relatively expensive process. This is the
  * case for all Type objects and it's descendants, AssemblyLine, SolarSystem, Station and market data. Since these are
@@ -31,31 +30,30 @@ namespace iveeCore;
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MemcachedWrapper.php
- *
+ * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCore/RedisWrapper.php
  */
-class MemcachedWrapper implements ICache
+class RedisWrapper implements ICache
 {
     /**
-     * @var \iveeCore\MemcachedWrapper $instance holds the singleton MemcachedWrapper object.
+     * @var \iveeCore\RedisWrapper $instance holds the singleton RedisWrapper object.
      */
     protected static $instance;
 
     /**
-     * @var \Memcached $memcached holds the Memcached connections.
+     * @var \Redis $redis holds the Redis object
      */
-    protected $memcached;
+    protected $redis;
 
     /**
-     * @var int $hits stores the number of hits on memcached.
+     * @var int $hits stores the number of cache hits.
      */
     protected $hits = 0;
 
     /**
-     * Returns MemcachedWrapper instance.
+     * Returns RedisWrapper instance.
      *
-     * @return \iveeCore\MemcachedWrapper
+     * @return \iveeCore\RedisWrapper
      */
     public static function instance()
     {
@@ -65,64 +63,79 @@ class MemcachedWrapper implements ICache
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @return \iveeCore\MemcachedWrapper
+     * @return \iveeCore\RedisWrapper
      */
     protected function __construct()
     {
-        $this->memcached = new \Memcached;
-        $this->memcached->addServer(Config::getCacheHost(), Config::getCachePort());
-        $this->memcached->setOption(\Memcached::OPT_PREFIX_KEY, Config::getCachePrefix());
+        $this->redis = new \Redis;
+        $this->redis->connect(Config::getCacheHost(), Config::getCachePort());
+        $this->redis->setOption(\Redis::OPT_PREFIX, Config::getCachePrefix());
     }
 
     /**
-     * Stores item in Memcached.
+     * Stores item in Redis.
      *
-     * @param ICacheable $item to be stored
+     * @param \iveeCore\ICacheable $item to be stored
      *
      * @return boolean true on success
      */
     public function setItem(ICacheable $item)
     {
-        return $this->memcached->set($item->getKey(), $item, $item->getCacheTTL());
+        $key = $item->getKey();
+        $ttl = $item->getCacheTTL();
+
+        //emulate memcached behaviour: TTLs over 30 days are interpreted as (absolute) UNIX timestamps
+        if ($ttl > 2592000) {
+            $this->redis->set(
+                $key,
+                serialize($item)
+            );
+            return $this->redis->expireAt($key, $ttl);
+        } else {
+            return $this->redis->setex(
+                $key,
+                $ttl,
+                serialize($item)
+            );
+        }
     }
 
     /**
-     * Gets item from Memcached.
+     * Gets item from Redis.
      *
      * @param string $key under which the item is stored
      *
-     * @return ICacheable
+     * @return \iveeCore\ICacheable
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
      */
     public function getItem($key)
     {
-        $item = $this->memcached->get($key);
-        if ($this->memcached->getResultCode() == \Memcached::RES_NOTFOUND) {
+        $item = $this->redis->get($key);
+        if (!$item) {
             $exceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
-            throw new $exceptionClass("Key not found in memcached.");
+            throw new $exceptionClass("Key not found in Redis.");
         }
-        //count memcached hit
+        //count hit
         $this->hits++;
-        return $item;
+        return unserialize($item);
     }
 
     /**
-     * Removes item from Memcached.
+     * Removes item from Redis.
      *
      * @param string $key of object to be removed
      *
-     * @return bool true on success or if memcached has been disabled
+     * @return bool true on success
      */
     public function deleteItem($key)
     {
-        return $this->memcached->delete($key);
+        return $this->redis->delete($key);
     }
 
     /**
-     * Removes multiple items from Memcached.
-     * If using memcached, this method requires php5-memcached package version >=2.0!
+     * Removes multiple items from Redis.
      *
      * @param array $keys of items to be removed
      *
@@ -130,17 +143,17 @@ class MemcachedWrapper implements ICache
      */
     public function deleteMulti(array $keys)
     {
-        return $this->memcached->deleteMulti($keys);
+        return $this->redis->delete($keys);
     }
 
     /**
-     * Clears all stored items in memcached.
+     * Clears all stored items in current Redis DB.
      *
-     * @return boolean true on success, also if memcached has been disabled.
+     * @return boolean true on success
      */
     public function flushCache()
     {
-        return $this->memcached->flush();
+        return $this->redis->flushDB();
     }
 
     /**
