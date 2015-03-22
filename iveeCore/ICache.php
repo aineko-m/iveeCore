@@ -36,14 +36,12 @@ interface ICache
     /**
      * Stores item in cache.
      *
-     * @param mixed $item to be stored
-     * @param string $key under which the object will be stored
-     * @param int $expiration Time To Live of the stored object in seconds
+     * @param ICacheable $item to be stored
      *
      * @return bool true on success
      * @throws \iveeCore\Exceptions\CacheDisabledException if cache use has been disabled in configuration
      */
-    public function setItem($item, $key, $expiration);
+    public function setItem(ICacheable $item);
 
     /**
      * Gets item from cache.
@@ -80,4 +78,11 @@ interface ICache
      * @return boolean true on success, also if cache use has been disabled.
      */
     public function flushCache();
+
+    /**
+     * Gets the number of hits the cache wrapper registered.
+     *
+     * @return int the number of hits
+     */
+    public function getHits();
 }

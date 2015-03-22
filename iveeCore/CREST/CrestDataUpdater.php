@@ -80,8 +80,7 @@ abstract class CrestDataUpdater
             }
         }
 
-        if (\iveeCore\Config::getUseCache())
-            $this->invalidateCaches();
+        $this->invalidateCaches();
         $this->updatedIDs = array();
     }
 

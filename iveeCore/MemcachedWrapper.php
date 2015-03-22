@@ -48,25 +48,20 @@ class MemcachedWrapper implements ICache
     protected $memcached;
 
     /**
-     * @var int $memcachedHit stores the number of hits on memcached.
+     * @var int $hits stores the number of hits on memcached.
      */
-    protected $memcachedHit = 0;
+    protected $hits = 0;
 
     /**
      * Constructor
      *
      * @return \iveeCore\MemcachedWrapper
-     * @throws \iveeCore\Exceptions\CacheDisabledException if cache use is disabled in configuration
      */
     protected function __construct()
     {
-        if (Config::getUseCache()) {
-            $this->memcached = new \Memcached;
-            $this->memcached->addServer(Config::getCacheHost(), Config::getCachePort());
-        } else {
-            $exceptionClass = Config::getIveeClassName('CacheDisabledException');
-            throw new $exceptionClass;
-        }
+        $this->memcached = new \Memcached;
+        $this->memcached->addServer(Config::getCacheHost(), Config::getCachePort());
+        $this->memcached->setOption(\Memcached::OPT_PREFIX_KEY, Config::getCachePrefix());
     }
 
     /**
@@ -84,21 +79,13 @@ class MemcachedWrapper implements ICache
     /**
      * Stores item in Memcached.
      *
-     * @param mixed $item to be stored
-     * @param string $key under which the object will be stored
-     * @param int $expiration Time To Live of the stored object in seconds
+     * @param ICacheable $item to be stored
      *
      * @return boolean true on success
-     * @throws \iveeCore\Exceptions\CacheDisabledException if memcached has been disabled
      */
-    public function setItem($item, $key, $expiration = 86400)
+    public function setItem(ICacheable $item)
     {
-        if (Config::getUseCache())
-            return $this->memcached->set(Config::getCachePrefix() . $key, $item, $expiration);
-        else {
-            $exceptionClass = Config::getIveeClassName('CacheDisabledException');
-            throw new $exceptionClass('Use of Memcached has been disabled in the configuration');
-        }
+        return $this->memcached->set($item->getKey(), $item, $item->getCacheTTL());
     }
 
     /**
@@ -106,25 +93,19 @@ class MemcachedWrapper implements ICache
      *
      * @param string $key under which the item is stored
      *
-     * @return mixed
+     * @return ICacheable
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
-     * @throws \iveeCore\Exceptions\CacheDisabledException if memcached has been disabled
      */
     public function getItem($key)
     {
-        if (Config::getUseCache()) {
-            $item = $this->memcached->get(Config::getCachePrefix() . $key);
-            if ($this->memcached->getResultCode() == \Memcached::RES_NOTFOUND) {
-                $exceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
-                throw new $exceptionClass("Key not found in memcached.");
-            }
-            //count memcached hit
-            $this->memcachedHit++;
-            return $item;
-        } else {
-            $exceptionClass = Config::getIveeClassName('CacheDisabledException');
-            throw new $exceptionClass('Use of Memcached has been disabled in the configuration');
+        $item = $this->memcached->get($key);
+        if ($this->memcached->getResultCode() == \Memcached::RES_NOTFOUND) {
+            $exceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
+            throw new $exceptionClass("Key not found in memcached.");
         }
+        //count memcached hit
+        $this->hits++;
+        return $item;
     }
 
     /**
@@ -136,10 +117,7 @@ class MemcachedWrapper implements ICache
      */
     public function deleteItem($key)
     {
-        if (Config::getUseCache())
-            return $this->memcached->delete(Config::getCachePrefix() . $key);
-        else
-            return true;
+        return $this->memcached->delete($key);
     }
 
     /**
@@ -152,10 +130,7 @@ class MemcachedWrapper implements ICache
      */
     public function deleteMulti(array $keys)
     {
-        if (Config::getUseCache())
-            return $this->memcached->deleteMulti($keys);
-        else
-            return true;
+        return $this->memcached->deleteMulti($keys);
     }
 
     /**
@@ -165,9 +140,16 @@ class MemcachedWrapper implements ICache
      */
     public function flushCache()
     {
-        if (Config::getUseCache())
-            return $this->memcached->flush();
-        else
-            return true;
+        return $this->memcached->flush();
+    }
+
+    /**
+     * Gets the number of hits the cache wrapper registered.
+     *
+     * @return int the number of hits
+     */
+    public function getHits()
+    {
+        return $this->hits; 
     }
 }

@@ -27,12 +27,33 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CacheableCommon.php
  *
  */
-abstract class CacheableCommon implements ICacheable
+abstract class CacheableCommon implements ICacheable, ICoreDataCommon
 {
     /**
      * @var int $id of the CacheableCommon
      */
     protected $id;
+
+    /**
+     * Returns 
+     *
+     * @return string
+     */
+    public static function getClassNick()
+    {
+        return static::CLASSNICK;
+    }
+
+    /**
+     * Returns the key under which the object is stored
+     *
+     * @param array $row data from DB
+     *
+     * @return void
+     */
+    public function getKey() {
+        return static::getClassHierarchyKeyPrefix() . $this->getId();
+    }
 
     /**
      * Initializes static InstancePool
@@ -79,16 +100,6 @@ abstract class CacheableCommon implements ICacheable
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Returns the key of the CacheableCommon object
-     *
-     * @return string
-     */
-    public function getKey()
-    {
-        return (string)$this->getId();
     }
 
     /**

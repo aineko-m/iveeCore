@@ -51,27 +51,21 @@ class PredisWrapper implements ICache
     protected $predis;
 
     /**
-     * @var int $hit stores the number of hits on the cache.
+     * @var int $hits stores the number of hits on the cache.
      */
-    protected $hit = 0;
+    protected $hits = 0;
 
     /**
      * Constructor.
      *
      * @return \iveeCore\PredisWrapper
-     * @throws \iveeCore\Exceptions\CacheDisabledException if cache use is disabled in configuration
      */
     protected function __construct()
     {
-        if (Config::getUseCache()) {
-            $this->predis = new \Predis\Client(
-                Config::getPredisConnectionString(),
-                array('prefix' => Config::getCachePrefix())
-            );
-        } else {
-            $exceptionClass = Config::getIveeClassName('CacheDisabledException');
-            throw new $exceptionClass;
-        }
+        $this->predis = new \Predis\Client(
+            Config::getPredisConnectionString(),
+            array('prefix' => Config::getCachePrefix())
+        );
     }
 
     /**
@@ -94,19 +88,13 @@ class PredisWrapper implements ICache
      * @param int $expiration Time To Live of the stored object in seconds
      *
      * @return boolean true on success
-     * @throws \iveeCore\Exceptions\CacheDisabledException if memcached has been disabled
      */
     public function setItem($item, $key, $expiration = 86400)
     {
-        if (Config::getUseCache())
-            return $this->predis->transaction()
-                ->set($key, serialize($item))
-                ->expire($key, $expiration)
-                ->execute();
-        else {
-            $exceptionClass = Config::getIveeClassName('CacheDisabledException');
-            throw new $exceptionClass('Use of Predis has been disabled in the configuration');
-        }
+        return $this->predis->transaction()
+            ->set($key, serialize($item))
+            ->expire($key, $expiration)
+            ->execute();
     }
 
     /**
@@ -116,23 +104,17 @@ class PredisWrapper implements ICache
      *
      * @return mixed
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
-     * @throws \iveeCore\Exceptions\CacheDisabledException if cache has been disabled
      */
     public function getItem($key)
     {
-        if (Config::getUseCache()) {
-            $cacheResponse = $this->predis->get($key);
-            if(isset($cacheResponse)){
-                $this->hit++;
-                return unserialize($cacheResponse);
-            }
-
-            $exceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
-                throw new $exceptionClass("Key not found in Predis.");
-        } else {
-            $exceptionClass = Config::getIveeClassName('CacheDisabledException');
-            throw new $exceptionClass('Use of Predis has been disabled in the configuration');
+        $cacheResponse = $this->predis->get($key);
+        if(isset($cacheResponse)){
+            $this->hits++;
+            return unserialize($cacheResponse);
         }
+
+        $exceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
+            throw new $exceptionClass("Key not found in Predis.");
     }
 
     /**
@@ -144,10 +126,7 @@ class PredisWrapper implements ICache
      */
     public function deleteItem($key)
     {
-        if (Config::getUseCache())
-            return $this->predis->del($key);
-        else
-            return true;
+        return $this->predis->del($key);
     }
 
     /**
@@ -159,10 +138,7 @@ class PredisWrapper implements ICache
      */
     public function deleteMulti(array $keys)
     {
-        if (Config::getUseCache())
-            return $this->predis->del($keys);
-        else
-            return true;
+        return $this->predis->del($keys);
     }
 
     /**
@@ -172,9 +148,16 @@ class PredisWrapper implements ICache
      */
     public function flushCache()
     {
-        if (Config::getUseCache())
-            return $this->predis->flushdb();
-        else
-            return true;
+        return $this->predis->flushdb();
+    }
+
+    /**
+     * Gets the number of hits the cache wrapper registered.
+     *
+     * @return int the number of hits
+     */
+    public function getHits()
+    {
+        return $this->hits; 
     }
 }

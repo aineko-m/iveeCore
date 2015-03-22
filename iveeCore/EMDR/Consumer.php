@@ -96,10 +96,8 @@ class Consumer
         $defaultsClass = \iveeCore\Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
 
-        if (\iveeCore\Config::getUseCache()) {
-            $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
-            $this->cache = $cacheClass::instance();
-        }
+        $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
+        $this->cache = $cacheClass::instance();
 
         //load IDs of items to track on market
         $res = $this->sde->query(
@@ -256,16 +254,13 @@ class Consumer
      */
     protected function getTimestamps($typeID, $regionID)
     {
-        if (\iveeCore\Config::getUseCache()) {
-            try {
-                return $this->cache->getItem('emdrts_' . $regionID . '_' . $typeID);
-            } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e) {
-                $orderTimestamps = $this->getTimestampsDB($typeID, $regionID);
-                $this->cache->setItem($orderTimestamps, 'emdrts_' . $regionID . '_' . $typeID);
-                return $orderTimestamps;
-            }
-        } else
-            return $this->getTimestampsDB($typeID, $regionID);
+        try {
+            return $this->cache->getItem('emdrts_' . $regionID . '_' . $typeID);
+        } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e) {
+            $orderTimestamps = $this->getTimestampsDB($typeID, $regionID);
+            $this->cache->setItem($orderTimestamps, 'emdrts_' . $regionID . '_' . $typeID);
+            return $orderTimestamps;
+        }
     }
 
     /**
@@ -311,14 +306,12 @@ class Consumer
      */
     protected function updateCaches($typeID, $regionID, \ArrayObject $timestamps)
     {
-        if (\iveeCore\Config::getUseCache()) {
-            //update timestamps cache
-            $this->cache->setItem($timestamps, 'emdrts_' . $regionID . '_' . $typeID);
+        //update timestamps cache
+        $this->cache->setItem($timestamps, 'emdrts_' . $regionID . '_' . $typeID);
 
-            //invalidate RegionMarketData cache
-            $regionMarketDataClass = \iveeCore\Config::getIveeClassName('RegionMarketData');
-            $regionMarketDataClass::deleteFromCache(array($regionID . '_' . $typeID));
-        }
+        //invalidate RegionMarketData cache
+        $regionMarketDataClass = \iveeCore\Config::getIveeClassName('RegionMarketData');
+        $regionMarketDataClass::deleteFromCache(array($regionID . '_' . $typeID));
     }
 
     /**

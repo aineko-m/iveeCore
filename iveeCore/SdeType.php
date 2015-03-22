@@ -18,7 +18,7 @@ namespace iveeCore;
  * SdeType is a base class to all classes that instantiate objects based on data from the SDE, providing common
  * functionality, mostly related to instantiation and caching.
  *
- * Classes that inherit from SdeTypes must define the static attributes $instancePool and $classNick.
+ * Classes that inherit from SdeTypes must define the static attribute $instancePool.
  *
  * Inheritance: SdeType -> CacheableCommon
  *
@@ -49,10 +49,10 @@ abstract class SdeType extends CacheableCommon
             static::init();
 
         try {
-            return static::$instancePool->getObjByKey((int) $id);
+            return static::$instancePool->getObjByKey(static::getClassHierarchyKeyPrefix() . (int) $id);
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
-            $typeClass = Config::getIveeClassName(static::$classNick);
+            $typeClass = Config::getIveeClassName(static::getClassNick());
             $type = new $typeClass((int) $id);
             //store SdeType object in instance pool (and cache if configured)
             static::$instancePool->setObj($type);
@@ -75,12 +75,13 @@ abstract class SdeType extends CacheableCommon
         if (!isset(static::$instancePool))
             static::init();
 
+        $namesKey = static::getClassHierarchyKeyPrefix() . 'Names';
         try {
-            return static::$instancePool->getKeyByName(trim($name));
+            return static::$instancePool->getKeyByName($namesKey, trim($name));
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //load names from DB
             static::loadNames();
-            return static::$instancePool->getKeyByName(trim($name));
+            return static::$instancePool->getKeyByName($namesKey, trim($name));
         }
     }
 
@@ -93,18 +94,8 @@ abstract class SdeType extends CacheableCommon
      */
     public static function getByName($name)
     {
-        $typeClass = Config::getIveeClassName(static::$classNick);
+        $typeClass = Config::getIveeClassName(static::getClassNick());
         return $typeClass::getById($typeClass::getIdByName($name));
-    }
-
-    /**
-     * Loads all names from DB to PHP
-     *
-     * @return void
-     */
-    protected static function loadNames()
-    {
-        //Stub
     }
 
     /**

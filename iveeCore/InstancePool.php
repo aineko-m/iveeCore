@@ -15,7 +15,7 @@
 namespace iveeCore;
 
 /**
- * Class for the object pool (PHP-internal cache) with second level external, persistent cache.
+ * Class for the object pool (PHP-internal cache) with second level external cache.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -26,12 +26,6 @@ namespace iveeCore;
  */
 class InstancePool
 {
-    /**
-     * @var string $className holds the class short name for which this InstancePool will hold objects. It is used as
-     * part of the cache key prefix.
-     */
-    protected $className;
-
     /**
      * @var \iveeCore\ICache $cache object for caching external to PHP
      */
@@ -53,20 +47,15 @@ class InstancePool
     protected $poolHits = 0;
 
     /**
-     * Contructor
-     *
-     * @param string $className class short name for which this InstacePool will hold objects for
+     * Contructor.
      *
      * @return \iveeCore\InstancePool
      */
-    public function __construct($className)
+    public function __construct()
     {
-        $this->className = $className;
-        if (Config::getUseCache()) {
-            //lookup Cache class
-            $cacheClass = Config::getIveeClassName('Cache');
-            $this->cache = $cacheClass::instance();
-        }
+        //lookup Cache class
+        $cacheClass = Config::getIveeClassName('Cache');
+        $this->cache = $cacheClass::instance();
     }
 
     /**
@@ -80,21 +69,26 @@ class InstancePool
     {
         $this->keyToObj[$obj->getKey()] = $obj;
         if ($this->cache instanceof ICache)
-            $this->cache->setItem($obj, $this->className . '_' . $obj->getKey(), $obj->getCacheTTL());
+            $this->cache->setItem($obj, $obj->getKey(), $obj->getCacheTTL());
     }
 
     /**
      * Sets the name to key mapping array and also stores in external cache if configured
      *
+     * @param string $classKey under which the names to id array will be cached
      * @param array $nameToKey in the form name => key
      *
      * @return void
      */
-    public function setNamesToKeys(array $nameToKey)
+    public function setNamesToKeys($classKey, array $nameToKey)
     {
-        $this->nameToKey = $nameToKey;
+        $this->nameToKey[$classKey] = $nameToKey;
+        $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
+        $cacheableArray = new $cacheableArrayClass($classKey, 3600 * 24);
+        $cacheableArray->data = $nameToKey;
+
         if ($this->cache instanceof ICache)
-           $this->cache->setItem($nameToKey, $this->className . 'Names');
+           $this->cache->setItem($cacheableArray);
     }
 
     /**
@@ -111,7 +105,7 @@ class InstancePool
             $this->poolHits++;
             return $this->keyToObj[$key];
         } elseif ($this->cache instanceof ICache) {
-            $obj = $this->cache->getItem($this->className . '_' . $key);
+            $obj = $this->cache->getItem($key);
             $this->keyToObj[$key] = $obj;
             return $obj;
         }
@@ -122,25 +116,27 @@ class InstancePool
     /**
      * Gets the key for a given name
      *
+     * @param string $classTypeNamesKey specific to the class of objects we want to look in
      * @param string $name for which the key should be returned
      *
      * @return string
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if the names to key array isn't found in pool or cache
      * @throws \iveeCore\Exceptions\TypeNameNotFoundException if the given name is not found in the mapping array
      */
-    public function getKeyByName($name)
+    public function getKeyByName($classTypeNamesKey, $name)
     {
-        if (empty($this->nameToKey)) {
-            if ($this->cache instanceof ICache)
+        if (empty($this->nameToKey[$classTypeNamesKey])) {
+            if ($this->cache instanceof ICache) {
                 //try getting mapping array from cache, will throw an exception if not found
-                $this->nameToKey = $this->cache->getItem($this->className . 'Names');
-            else {
+                $cacheableArray = $this->cache->getItem($classTypeNamesKey);
+                $this->nameToKey[$classTypeNamesKey] = $cacheableArray->data;
+            } else {
                 $KeyNotFoundInCacheExceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
                 throw new $KeyNotFoundInCacheExceptionClass('Names not found in pool');
             }
         }
-        if (isset($this->nameToKey[$name]))
-            return $this->nameToKey[$name];
+        if (isset($this->nameToKey[$classTypeNamesKey][$name]))
+            return $this->nameToKey[$classTypeNamesKey][$name];
 
         $typeNameNotFoundExceptionClass = Config::getIveeClassName('TypeNameNotFoundException');
         throw new $typeNameNotFoundExceptionClass('Type name not found');
@@ -160,7 +156,7 @@ class InstancePool
             if (isset($this->keyToObj[$key]))
                 unset($this->keyToObj[$key]);
             if ($c)
-                $this->cache->deleteItem($this->className . '_' . $key);
+                $this->cache->deleteItem($key);
         }
     }
 

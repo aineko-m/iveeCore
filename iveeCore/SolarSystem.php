@@ -28,15 +28,15 @@ namespace iveeCore;
 class SolarSystem extends SdeType
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'SolarSystem';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) SolarSystem objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing)
-     */
-    protected static $classNick = 'SolarSystem';
 
     /**
      * @var int $regionID the ID of region of this SolarSystem.
@@ -92,7 +92,18 @@ class SolarSystem extends SdeType
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['solarSystemName']] = (int) $row['solarSystemID'];
 
-        static::$instancePool->setNamesToKeys($namesToIds);
+        static::$instancePool->setNamesToKeys(static::getClassHierarchyKeyPrefix() . 'Names', $namesToIds);
+    }
+
+    /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
     }
 
     /**
@@ -172,7 +183,7 @@ class SolarSystem extends SdeType
             $this->stationIDs[] = $row['stationID'];
         }
     }
-
+    
     /**
      * Gets regionID of SolarSystem
      *

@@ -1,5 +1,10 @@
 This file lists major changes in iveeCore releases.
 
+Version 2.4 - March
+--------------------------------
+- Removed Team and Speciality classes and related functionality
+- Refactored cache design
+
 Version 2.3 - January 20th, 2015
 --------------------------------
 - Adapted to Proteus release.

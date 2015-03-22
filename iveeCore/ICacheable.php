@@ -26,16 +26,6 @@ namespace iveeCore;
  */
 interface ICacheable
 {
-
-    /**
-     * Invalidate cache entries
-     *
-     * @param array $keys
-     *
-     * @return void
-     */
-    public static function deleteFromCache(array $keys);
-
     /**
      * Returns the key of the ICacheable object under which it is stored and retrieved from the cache
      *

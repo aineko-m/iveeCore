@@ -29,15 +29,15 @@ namespace iveeCore;
 class AssemblyLine extends SdeType
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'AssemblyLine';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) AssemblyLine objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing)
-     */
-    protected static $classNick = 'AssemblyLine';
 
     /**
      * @var float $baseTimeMultiplier the base time multiplier
@@ -152,6 +152,17 @@ class AssemblyLine extends SdeType
     public static function getIdByName($name)
     {
         static::throwException('IveeCoreException', 'GetByName methods not implemented for AssemblyLine');
+    }
+
+    /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
     }
 
     /**

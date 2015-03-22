@@ -28,15 +28,15 @@ namespace iveeCore;
 class Type extends SdeType
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'Type';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) Type and child objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing)
-     */
-    protected static $classNick = 'Type';
 
     /**
      * @var int $groupID the groupID of this Type.
@@ -92,7 +92,7 @@ class Type extends SdeType
             static::init();
 
         try {
-            return static::$instancePool->getObjByKey((int)$id);
+            return static::$instancePool->getObjByKey(static::getClassHierarchyKeyPrefix() . (int)$id);
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
             $type = self::factory((int)$id);
@@ -123,7 +123,18 @@ class Type extends SdeType
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['typeName']] = (int) $row['typeID'];
 
-        self::$instancePool->setNamesToKeys($namesToIds);
+        self::$instancePool->setNamesToKeys(static::getClassHierarchyKeyPrefix() . 'Names', $namesToIds);
+    }
+
+    /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
     }
 
     /**

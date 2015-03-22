@@ -10,15 +10,15 @@ namespace iveeCore;
 class RegionMarketData extends CacheableCommon
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'RegionMarketData';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
-     */
-    protected static $classNick = 'RegionMarketData';
 
     /**
      * @var int $regionID of the region this object refers to
@@ -93,6 +93,17 @@ class RegionMarketData extends CacheableCommon
     protected $avg;
 
     /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
+    }
+
+    /**
      * Main function for getting RegionMarketData objects. Tries caches and instantiates new objects if necessary.
      *
      * @param int $typeID of type
@@ -113,10 +124,12 @@ class RegionMarketData extends CacheableCommon
         }
 
         try {
-            return static::$instancePool->getObjByKey($regionID . '_' . $typeID);
+            return static::$instancePool->getObjByKey(
+                static::getClassHierarchyKeyPrefix() . (int) $regionID . '_' . (int) $typeID
+            );
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
-            $typeClass = Config::getIveeClassName(static::$classNick);
+            $typeClass = Config::getIveeClassName(static::getClassNick());
             $type = new $typeClass($typeID, $regionID);
             //store object in instance pool (and cache if configured)
             static::$instancePool->setObj($type);
@@ -220,7 +233,7 @@ class RegionMarketData extends CacheableCommon
      */
     public function getKey()
     {
-        return $this->getRegionID() . '_' . $this->getId();
+        return $this->getClassHierarchyKeyPrefix() . $this->getRegionID() . '_' . $this->getId();
     }
 
     /**

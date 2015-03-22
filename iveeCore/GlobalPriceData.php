@@ -28,15 +28,15 @@ namespace iveeCore;
 class GlobalPriceData extends CacheableCommon
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'GlobalPriceData';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
-     */
-    protected static $classNick = 'GlobalPriceData';
 
     /**
      * @var float $averagePrice eve-wide average, as returned by CREST
@@ -56,6 +56,17 @@ class GlobalPriceData extends CacheableCommon
     protected $priceDate;
 
     /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
+    }
+
+    /**
      * Retuns a GlobalPriceData object. Tries caches and instantiates new objects if necessary.
      *
      * @param int $typeId of requested market data typeID
@@ -69,10 +80,10 @@ class GlobalPriceData extends CacheableCommon
             static::init();
 
         try {
-            return static::$instancePool->getObjByKey((int)$typeId);
+            return static::$instancePool->getObjByKey(static::getClassHierarchyKeyPrefix() . (int) $typeId);
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
-            $typeClass = Config::getIveeClassName(static::$classNick);
+            $typeClass = Config::getIveeClassName(static::getClassNick());
             $type = new $typeClass((int)$typeId);
             //store object in instance pool (and cache if configured)
             static::$instancePool->setObj($type);

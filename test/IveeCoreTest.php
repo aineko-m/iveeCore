@@ -37,10 +37,8 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 {
     protected function setUp()
     {
-        if (\iveeCore\Config::getUseCache()){
-            $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
-            $cacheClass::instance()->flushCache();
-        }
+        $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
+        $cacheClass::instance()->flushCache();
     }
 
     public function testSde()
@@ -65,10 +63,6 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 
     public function testGetTypeAndCache()
     {
-        //can't test cache with cache disabled
-        if (!\iveeCore\Config::getUseCache())
-            return;
-
         //empty cache entry for type
         $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
         $cacheInstance = $cacheClass::instance();

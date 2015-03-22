@@ -32,7 +32,7 @@ These are a few example questions that can be answered with a few lines of code 
 - Strong object oriented design and class model for inventory types
 - Classes for representing manufacturing, copying, T2 & T3 invention, research and reaction activities, with recursive component building
 - Market data gathering via EMDR with realistic price estimation and profit calculation
-- CREST data fetcher handling system industry indices, market prices, facilities, teams and specialities
+- CREST data fetcher handling system industry indices, market prices and facilities
 - Parsers for EFT-style and EvE XML ship fittings descriptions as well as cargo and ship scanning results
 - Caching support for Memcached or Redis (via Predis)
 - Extensible via configurable subclassing
@@ -164,7 +164,7 @@ $type = \iveeCore\Type::getByName('Damage Control I');
 
 //Now lets looks at industry activities.
 //First we need to get an IndustryModifier object, which aggregates all the things
-//like system indices, available assembly lines, teams, skills & implants.
+//like system indices, available assembly lines, skills & implants.
 $iMod = \iveeCore\IndustryModifier::getBySystemIdForAllNpcStations(30000180); //Osmon
 
 //manufacture 5 units of 'Damage Control I' with ME 10 and TE 20
@@ -195,7 +195,7 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - The prices of items that can't be sold on the market also can't be determined. This includes BPCs (The _cost_ of copying, inventing or researching a BPC can and is calculated for processes, however).
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
 - The EMDR client does some basic filtering on the incoming market data, but there is no measure against malicious clients uploading fake data. This isn't known to have caused any problems, but should be considered.
-- When automatically picking Teams and and AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
+- When automatically picking AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
 - (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see Extending iveeCore below.
 
 Generals notes:
