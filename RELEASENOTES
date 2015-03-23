@@ -5,6 +5,7 @@ Version 2.4 - March
 - Removed Team and Speciality classes and related functionality
 - Replaced Redis support via Predis with PhpRedis
 - Refactored cache design in preparation for iveeCrest merge
+- Using cache is now mandatory
 
 Version 2.3 - January 20th, 2015
 --------------------------------

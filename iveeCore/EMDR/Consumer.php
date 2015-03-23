@@ -176,16 +176,18 @@ class Consumer
                 continue;
 
             //get timestamps from cache or DB
-            $timestamps = $this->getTimestamps($typeID, $regionID);
+            $timestampsObj = $this->getTimestamps($typeID, $regionID);
 
             //order data
-            if ($marketData->resultType == 'orders')
-                $this->handleOrderData($typeID, $regionID, $generatedAt, $rowset, $timestamps);
-
+            if ($marketData->resultType == 'orders') {
+                if (!$this->handleOrderData($typeID, $regionID, $generatedAt, $rowset, $timestampsObj))
+                    continue;
+            }
             //history data
             elseif ($marketData->resultType == 'history') {
                 try {
-                    $this->handleHistoryData($typeID, $regionID, $generatedAt, $rowset, $timestamps);
+                    if (!$this->handleHistoryData($typeID, $regionID, $generatedAt, $rowset, $timestampsObj))
+                        continue;
                 } catch (\iveeCore\Exceptions\NoRelevantDataException $e) {
                     continue;
                 }
@@ -196,7 +198,7 @@ class Consumer
             }
 
             //update and invalidate caches as necessary
-            $this->updateCaches($typeID, $regionID, $timestamps);
+            $this->updateCaches($typeID, $regionID, $timestampsObj);
         }
     }
 
@@ -250,7 +252,7 @@ class Consumer
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
      *
-     * @return \ArrayObject with two elements, carrying the UNIX timestamps
+     * @return \iveeCore\CacheableArray with two elements, carrying the UNIX timestamps
      */
     protected function getTimestamps($typeID, $regionID)
     {
@@ -258,19 +260,18 @@ class Consumer
             return $this->cache->getItem('emdrts_' . $regionID . '_' . $typeID);
         } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e) {
             $orderTimestamps = $this->getTimestampsDB($typeID, $regionID);
-            $this->cache->setItem($orderTimestamps, 'emdrts_' . $regionID . '_' . $typeID);
+            $this->cache->setItem($orderTimestamps);
             return $orderTimestamps;
         }
     }
 
     /**
-     * Gets timestamps for latest price data generation, history data generation and most recent date with history data
-     * from the DB.
+     * Gets timestamps for latest price data generation and history data generation from the DB.
      *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
      *
-     * @return \ArrayObject with two elements, carrying the UNIX timestamps
+     * @return \iveeCore\CacheableArray with two elements, carrying the UNIX timestamps
      */
     protected function getTimestampsDB($typeID, $regionID)
     {
@@ -284,6 +285,9 @@ class Consumer
             WHERE atp.typeID = " . (int) $typeID . " AND atp.regionID = " . (int) $regionID . ";"
         );
 
+        $cacheableArrayClass = \iveeCore\Config::getIveeClassName('CacheableArray');
+        $cacheableArray = new $cacheableArrayClass('emdrts_' . $regionID . '_' . $typeID, 3600 * 24);
+
         if ($res->num_rows == 1) {
             $tmp = $res->fetch_assoc();
             $timestamps[0] = (int) (($tmp['lastPriceDataTS'] > 0) ? $tmp['lastPriceDataTS'] : 0);
@@ -292,7 +296,8 @@ class Consumer
             $timestamps[0] = 0;
             $timestamps[1] = 0;
         }
-        return new \ArrayObject($timestamps);
+        $cacheableArray->data = $timestamps;
+        return $cacheableArray;
     }
 
     /**
@@ -300,14 +305,14 @@ class Consumer
      *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
-     * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
+     * @param \iveeCore\CacheableArray $timestampsObj with two elements carrying the UNIX timestamps
      *
      * @return void
      */
-    protected function updateCaches($typeID, $regionID, \ArrayObject $timestamps)
+    protected function updateCaches($typeID, $regionID, \iveeCore\CacheableArray $timestampsObj)
     {
         //update timestamps cache
-        $this->cache->setItem($timestamps, 'emdrts_' . $regionID . '_' . $typeID);
+        $this->cache->setItem($timestampsObj);
 
         //invalidate RegionMarketData cache
         $regionMarketDataClass = \iveeCore\Config::getIveeClassName('RegionMarketData');
@@ -321,18 +326,19 @@ class Consumer
      * @param int $regionID of the region the data refers to
      * @param int $generatedAt the unix timestamp of the moment the data set was generated at an uploader client
      * @param \stdClass $rowset the raw market data
-     * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
+     * @param \iveeCore\CacheableArray $timestampsObj with two elements carrying the UNIX timestamps
      *
-     * @return void
+     * @return bool wheather relevant data was processed
      */
-    protected function handleOrderData($typeID, $regionID, $generatedAt, \stdClass $rowset, \ArrayObject $timestamps)
-    {
+    protected function handleOrderData($typeID, $regionID, $generatedAt, \stdClass $rowset,
+        \iveeCore\CacheableArray $timestampsObj
+    ) {
         //skip if data is older than newest generatedAt/priceUpdateTimestamp
-        if ($generatedAt < $timestamps[0]) {
+        if ($generatedAt < $timestampsObj->data[0]) {
             if (VERBOSE > 2)
                 echo '- skipping old price data for typeID=' . $typeID . ', generated at '
                     . $rowset->generatedAt . PHP_EOL;
-            return;
+            return false;
         }
 
         //process price data
@@ -346,7 +352,8 @@ class Consumer
         $epu->insertIntoDB();
 
         //update order timestamp
-        $timestamps[0] = $generatedAt;
+        $timestampsObj->data[0] = $generatedAt;
+        return true;
     }
 
     /**
@@ -356,19 +363,20 @@ class Consumer
      * @param int $regionID of the region the data refers to
      * @param int $generatedAt the unix timestamp of the moment the data set was generated at an uploader client
      * @param \stdClass $rowset the raw market data
-     * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
+     * @param \iveeCore\CacheableArray $timestampsObj with two elements carrying the UNIX timestamps
      *
      * @return void
      * @throws NoRelevantDataException if no relevant data rows are given
      */
-    protected function handleHistoryData($typeID, $regionID, $generatedAt, \stdClass $rowset, \ArrayObject $timestamps)
-    {
+    protected function handleHistoryData($typeID, $regionID, $generatedAt, \stdClass $rowset,
+        \iveeCore\CacheableArray $timestampsObj
+    ) {
         //skip if data is older than newest generatedAt/historyUpdateTimestamp
-        if ($generatedAt < $timestamps[1]) {
+        if ($generatedAt < $timestampsObj->data[1]) {
             if (VERBOSE > 2)
                 echo '- skipping old history data for typeID=' . $typeID . ', generated at '
                     . $rowset->generatedAt . PHP_EOL;
-            return;
+            return false;
         }
 
         //process history data
@@ -383,7 +391,8 @@ class Consumer
         $ehu->insertIntoDB();
 
         //update history data generation timestamp
-        $timestamps[1] = $generatedAt;
+        $timestampsObj->data[1] = $generatedAt;
+        return true;
     }
 
     /**
