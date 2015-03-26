@@ -16,7 +16,7 @@ namespace iveeCore;
 /**
  * Blueprint base class.
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: Blueprint -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Blueprint -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

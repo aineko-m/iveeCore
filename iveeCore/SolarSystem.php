@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing solar systems
- * Inheritance: SolarSystem -> SdeType -> CacheableCommon
+ * Inheritance: SolarSystem -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -96,7 +96,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SDE related classes. Example:
      * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
      *
      * @return string

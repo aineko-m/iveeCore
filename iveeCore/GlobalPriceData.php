@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * GlobalPriceData represents the global price data returned by public CREST.
- * Inheritance: GlobalPriceData -> CacheableCommon
+ * Inheritance: GlobalPriceData -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,7 +25,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/GlobalPriceData.php
  *
  */
-class GlobalPriceData extends CacheableCommon
+class GlobalPriceData extends CoreDataCommon
 {
     /**
      * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config

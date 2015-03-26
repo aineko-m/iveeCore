@@ -20,7 +20,7 @@ namespace iveeCore;
  *
  * Classes that inherit from SdeTypes must define the static attribute $instancePool.
  *
- * Inheritance: SdeType -> CacheableCommon
+ * Inheritance: SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -29,7 +29,7 @@ namespace iveeCore;
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SdeType.php
  *
  */
-abstract class SdeType extends CacheableCommon
+abstract class SdeType extends CoreDataCommon
 {
     /**
      * @var string $name of the SdeType

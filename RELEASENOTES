@@ -6,6 +6,8 @@ Version 2.4 - March
 - Replaced Redis support via Predis with PhpRedis
 - Refactored cache design in preparation for iveeCrest merge
 - Using cache is now mandatory
+- Adapted to Scylla release
+- Renamed CacheableCommon to CoreDataCommon
 
 Version 2.3 - January 20th, 2015
 --------------------------------

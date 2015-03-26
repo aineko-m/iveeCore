@@ -7,7 +7,7 @@ namespace iveeCore;
  *
  * @author sknop
  */
-class RegionMarketData extends CacheableCommon
+class RegionMarketData extends CoreDataCommon
 {
     /**
      * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config

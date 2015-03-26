@@ -447,7 +447,7 @@ omitted</Text>
         <Member type="Method">int getCacheTTL()</Member>
       </Entity>
       <Entity type="Class">
-        <Name>CacheableCommon</Name>
+        <Name>CoreDataCommon</Name>
         <Access>Public</Access>
         <Location left="276" top="260" />
         <Size width="297" height="216" />

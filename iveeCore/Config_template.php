@@ -11,7 +11,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Config_template.php
- *
  */
 
 namespace iveeCore;
@@ -24,7 +23,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Config_template.php
- *
  */
 class Config
 {
@@ -69,7 +67,7 @@ class Config
 //        'Cache'                  => '\iveeCore\MemcachedWrapper',
         'Cache'                  => '\iveeCore\RedisWrapper',
         'CacheableArray'         => '\iveeCore\CacheableArray',
-        'CacheableCommon'        => '\iveeCore\CacheableCommon',
+        'CoreDataCommon'         => '\iveeCore\CoreDataCommon',
         'CopyProcessData'        => '\iveeCore\CopyProcessData',
         'Decryptor'              => '\iveeCore\Decryptor',
         'Defaults'               => '\iveeCoreExtensions\MyDefaults',
@@ -113,7 +111,6 @@ class Config
         'EmdrHistoryUpdater' => '\iveeCore\EMDR\HistoryUpdater',
         'ActivityIdNotFoundException'         => '\iveeCore\Exceptions\ActivityIdNotFoundException',
         'AssemblyLineTypeIdNotFoundException' => '\iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException',
-        'CacheDisabledException'              => '\iveeCore\Exceptions\CacheDisabledException',
         'CrestDataTooOldException'            => '\iveeCore\Exceptions\CrestDataTooOldException',
         'CrestException'                      => '\iveeCore\Exceptions\CrestException',
         'CurlException'                       => '\iveeCore\Exceptions\CurlException',

@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for starbases ("Player Owned Stations", "Towers").
- * Inheritance: Starbase -> Manufacturable -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Starbase -> Manufacturable -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for all Reactions
- * Inheritance: Reaction -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Reaction -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

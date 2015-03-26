@@ -17,7 +17,7 @@ namespace iveeCore;
 /**
  * T3Blueprint represents blueprints that can be invented from Relics.
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: T3Blueprint -> InventableBlueprint -> Blueprint -> Type -> SdeType -> CacheableCommon
+ * Inheritance: T3Blueprint -> InventableBlueprint -> Blueprint -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

@@ -2,13 +2,13 @@
 /**
  * CacheableArray class file.
  *
- * PHP version 5.4
+ * PHP version 5.3
  *
- * @category IveeCrest
- * @package  IveeCrestClasses
+ * @category IveeCore
+ * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCrest/CacheableArray.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CacheableArray.php
  */
 
 namespace iveeCore;
@@ -16,11 +16,11 @@ namespace iveeCore;
 /**
  * CacheableArray provides a minimal implementation of the ICacheable interface to allow arrays to be cached.
  *
- * @category IveeCrest
- * @package  IveeCrestClasses
+ * @category IveeCore
+ * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCrest/CacheableArray.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CacheableArray.php
  */
 class CacheableArray extends \stdClass implements ICacheable
 {
@@ -45,7 +45,7 @@ class CacheableArray extends \stdClass implements ICacheable
      * @param string $key under which the object will be stored in cache
      * @param int $ttl the cache time to live in seconds
      *
-     * @return \iveeCrest\CacheableArray
+     * @return \iveeCore\CacheableArray
      */
     public function __construct($key, $ttl)
     {

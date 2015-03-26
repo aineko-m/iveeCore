@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Base class for all inventory Type subclasses.
- * Inheritance: Type -> SdeType -> CacheableCommon
+ * Inheritance: Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

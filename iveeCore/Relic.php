@@ -22,7 +22,7 @@ namespace iveeCore;
  * from use.
  *
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: Relic -> InventorBlueprint -> Blueprint -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Relic -> InventorBlueprint -> Blueprint -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

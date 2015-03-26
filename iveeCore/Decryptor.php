@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for invention decryptors.
- * Inheritance: Decryptor -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Decryptor -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

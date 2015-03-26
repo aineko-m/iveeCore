@@ -17,7 +17,7 @@ namespace iveeCore;
 /**
  * AssemblyLines represent the industry "slot" of a station or POS assembly array or lab. Although slots are not used in
  * EVE anymore since Crius, the restrictions or bonuses they confer still apply.
- * Inheritance: AssemblyLine -> SdeType -> CacheableCommon
+ * Inheritance: AssemblyLine -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for all Types that can be manufactured
- * Inheritance: Manufacturable -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Manufacturable -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

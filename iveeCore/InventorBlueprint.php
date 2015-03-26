@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for blueprints that can be used for inventing.
- * Inheritance: InventorBlueprint -> Blueprint -> Type -> SdeType -> CacheableCommon
+ * Inheritance: InventorBlueprint -> Blueprint -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

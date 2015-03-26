@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for items that can result from reactions.
- * Inheritance: ReactionProduct -> Type -> SdeType -> CacheableCommon
+ * Inheritance: ReactionProduct -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses

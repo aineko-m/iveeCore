@@ -1,7 +1,6 @@
 <?php
-
 /**
- * CacheableCommon class file.
+ * CoreDataCommon class file.
  *
  * PHP version 5.3
  *
@@ -9,28 +8,26 @@
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CacheableCommon.php
- *
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CoreDataCommon.php
  */
 
 namespace iveeCore;
 
 /**
- * CacheableCommon is a base class to all classes that instantiate objects which can get cached by InstancePool
+ * CoreDataCommon is a base class to all classes that instantiate objects which can get cached by InstancePool.
  *
- * Classes that inherit from CacheableCommon must define the static attributes $instancePool.
+ * Classes that inherit from CoreDataCommon must define the static attributes $instancePool.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CacheableCommon.php
- *
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CoreDataCommon.php
  */
-abstract class CacheableCommon implements ICacheable, ICoreDataCommon
+abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
 {
     /**
-     * @var int $id of the CacheableCommon
+     * @var int $id of the CoreDataCommon
      */
     protected $id;
 
@@ -42,17 +39,6 @@ abstract class CacheableCommon implements ICacheable, ICoreDataCommon
     public static function getClassNick()
     {
         return static::CLASSNICK;
-    }
-
-    /**
-     * Returns the key under which the object is stored
-     *
-     * @param array $row data from DB
-     *
-     * @return void
-     */
-    public function getKey() {
-        return static::getClassHierarchyKeyPrefix() . $this->getId();
     }
 
     /**
@@ -93,13 +79,24 @@ abstract class CacheableCommon implements ICacheable, ICoreDataCommon
     }
 
     /**
-     * Returns the id of the CacheableCommon object
+     * Returns the id of the CoreDataCommon object
      *
      * @return int
      */
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Returns the key under which the object is stored
+     *
+     * @param array $row data from DB
+     *
+     * @return void
+     */
+    public function getKey() {
+        return static::getClassHierarchyKeyPrefix() . $this->getId();
     }
 
     /**

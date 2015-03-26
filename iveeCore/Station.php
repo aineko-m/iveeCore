@@ -16,7 +16,7 @@ namespace iveeCore;
 
 /**
  * Class for representing stations
- * Inheritance: Station -> SdeType -> CacheableCommon
+ * Inheritance: Station -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
