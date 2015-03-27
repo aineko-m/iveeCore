@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InstancePool.php
- *
  */
 
 namespace iveeCore;
@@ -22,7 +21,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InstancePool.php
- *
  */
 class InstancePool
 {
@@ -42,9 +40,9 @@ class InstancePool
     protected $nameToKey = array();
 
     /**
-     * @var int $poolHits counter for object pool hits
+     * @var int $hits counter for object pool hits
      */
-    protected $poolHits = 0;
+    protected $hits = 0;
 
     /**
      * Contructor.
@@ -59,21 +57,21 @@ class InstancePool
     }
 
     /**
-     * Stores object in pool under its id, also in external cache if configured
+     * Stores object in pool under its id, also in external cache.
      *
      * @param ICacheable $obj to be stored
      *
      * @return void
      */
-    public function setObj(ICacheable $obj)
+    public function setItem(ICacheable $obj)
     {
         $this->keyToObj[$obj->getKey()] = $obj;
         if ($this->cache instanceof ICache)
-            $this->cache->setItem($obj, $obj->getKey(), $obj->getCacheTTL());
+            $this->cache->setItem($obj);
     }
 
     /**
-     * Sets the name to key mapping array and also stores in external cache if configured
+     * Sets the name to key mapping array and also stores in external cache.
      *
      * @param string $classKey under which the names to id array will be cached
      * @param array $nameToKey in the form name => key
@@ -92,17 +90,17 @@ class InstancePool
     }
 
     /**
-     * Gets the object for key from pool, or external cache if configured
+     * Gets the object for key from pool or external cache.
      *
      * @param string $key of the object to be returned
      *
      * @return object
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if the key cannot be found
      */
-    public function getObjByKey($key)
+    public function getItem($key)
     {
         if (isset($this->keyToObj[$key])) {
-            $this->poolHits++;
+            $this->hits++;
             return $this->keyToObj[$key];
         } elseif ($this->cache instanceof ICache) {
             $obj = $this->cache->getItem($key);
@@ -114,7 +112,7 @@ class InstancePool
     }
 
     /**
-     * Gets the key for a given name
+     * Gets the key for a given name.
      *
      * @param string $classTypeNamesKey specific to the class of objects we want to look in
      * @param string $name for which the key should be returned
@@ -143,35 +141,45 @@ class InstancePool
     }
 
     /**
-     * Removes objects from pool and from cache, if the later is being used
+     * Removes single object from pool and cache.
+     *
+     * @param string $key of the objects to be removed
+     *
+     * @return void
+     */
+    public function deleteItem($key) {
+        $this->cache->deleteItem($key);
+        if (isset($this->keyToObj[$key]))
+            unset($this->keyToObj[$key]);
+    }
+
+    /**
+     * Removes objects from pool and cache.
      *
      * @param array $keys of the objects to be removed
      *
      * @return void
      */
-    public function deleteFromCache(array $keys)
+    public function deleteMulti(array $keys)
     {
-        $c = $this->cache instanceof ICache;
-        foreach ($keys as $key) {
+        $this->cache->deleteMulti($keys);
+        foreach ($keys as $key)
             if (isset($this->keyToObj[$key]))
                 unset($this->keyToObj[$key]);
-            if ($c)
-                $this->cache->deleteItem($key);
-        }
     }
 
     /**
-     * Returns the number of hits on the object pool
+     * Returns the number of hits on the object pool.
      *
      * @return int the number of hits
      */
-    public function getPoolHits()
+    public function getHits()
     {
-        return $this->poolHits;
+        return $this->hits;
     }
 
     /**
-     * Returns the number of objects in the pool
+     * Returns the number of objects in the pool.
      *
      * @return int count
      */

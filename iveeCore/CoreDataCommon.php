@@ -27,12 +27,13 @@ namespace iveeCore;
 abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
 {
     /**
-     * @var int $id of the CoreDataCommon
+     * @var int $id of the CoreDataCommon.
      */
     protected $id;
 
     /**
-     * Returns 
+     * Returns the class short name which is used to lookup the configured FQDN classname in Config (for dynamic
+     * subclassing).
      *
      * @return string
      */
@@ -42,7 +43,7 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     }
 
     /**
-     * Initializes static InstancePool
+     * Initializes static InstancePool.
      *
      * @return void
      */
@@ -55,7 +56,7 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     }
 
     /**
-     * Returns the Instance Pool
+     * Returns the Instance Pool.
      *
      * @return \iveeCore\InstancePool
      */
@@ -67,7 +68,7 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     }
 
     /**
-     * Invalidate instancePool and cache entries
+     * Invalidate instancePool and cache entries.
      *
      * @param array $keys
      *
@@ -75,11 +76,11 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      */
     public static function deleteFromCache(array $keys)
     {
-        static::getInstancePool()->deleteFromCache($keys);
+        static::getInstancePool()->deleteMulti($keys);
     }
 
     /**
-     * Returns the id of the CoreDataCommon object
+     * Returns the id of the CoreDataCommon object.
      *
      * @return int
      */
@@ -89,18 +90,16 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     }
 
     /**
-     * Returns the key under which the object is stored
+     * Returns the key under which the object is stored.
      *
-     * @param array $row data from DB
-     *
-     * @return void
+     * @return string
      */
     public function getKey() {
         return static::getClassHierarchyKeyPrefix() . $this->getId();
     }
 
     /**
-     * Gets the objects cache time to live
+     * Gets the objects cache time to live.
      *
      * @return int
      */
@@ -110,7 +109,7 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     }
 
     /**
-     * Convenience method for throwing iveeCore Exceptions
+     * Convenience method for throwing iveeCore Exceptions.
      *
      * @param string $exceptionName nickname of the exception as configured in Config
      * @param string $message to be passed to the exception

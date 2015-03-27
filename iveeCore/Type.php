@@ -92,12 +92,12 @@ class Type extends SdeType
             static::init();
 
         try {
-            return static::$instancePool->getObjByKey(static::getClassHierarchyKeyPrefix() . (int)$id);
+            return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int)$id);
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
             $type = self::factory((int)$id);
             //store SdeType object in instance pool (and cache if configured)
-            static::$instancePool->setObj($type);
+            static::$instancePool->setItem($type);
 
             return $type;
         }

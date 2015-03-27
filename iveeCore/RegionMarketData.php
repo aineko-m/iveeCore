@@ -124,7 +124,7 @@ class RegionMarketData extends CoreDataCommon
         }
 
         try {
-            return static::$instancePool->getObjByKey(
+            return static::$instancePool->getItem(
                 static::getClassHierarchyKeyPrefix() . (int) $regionID . '_' . (int) $typeID
             );
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
@@ -132,7 +132,7 @@ class RegionMarketData extends CoreDataCommon
             $typeClass = Config::getIveeClassName(static::getClassNick());
             $type = new $typeClass($typeID, $regionID);
             //store object in instance pool (and cache if configured)
-            static::$instancePool->setObj($type);
+            static::$instancePool->setItem($type);
 
             return $type;
         }

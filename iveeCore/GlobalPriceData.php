@@ -80,13 +80,13 @@ class GlobalPriceData extends CoreDataCommon
             static::init();
 
         try {
-            return static::$instancePool->getObjByKey(static::getClassHierarchyKeyPrefix() . (int) $typeId);
+            return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int) $typeId);
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
             $typeClass = Config::getIveeClassName(static::getClassNick());
             $type = new $typeClass((int)$typeId);
             //store object in instance pool (and cache if configured)
-            static::$instancePool->setObj($type);
+            static::$instancePool->setItem($type);
 
             return $type;
         }
