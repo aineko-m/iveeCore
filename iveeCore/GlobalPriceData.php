@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/GlobalPriceData.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/GlobalPriceData.php
- *
  */
 class GlobalPriceData extends CoreDataCommon
 {
@@ -110,7 +108,7 @@ class GlobalPriceData extends CoreDataCommon
     }
 
     /**
-     * Gets all necessary data from SQL
+     * Gets all necessary data from SQL.
      *
      * @return array with attributes queried from DB
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException when a typeID is not found
@@ -124,7 +122,7 @@ class GlobalPriceData extends CoreDataCommon
             "SELECT UNIX_TIMESTAMP(date) as priceDate,
             averagePrice,
             adjustedPrice
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeCrestPrices
+            FROM " . Config::getIveeDbName() . ".iveeCrestPrices
             WHERE typeID = " . $this->id . "
             ORDER BY date DESC LIMIT 1;"
         )->fetch_assoc();
@@ -137,7 +135,7 @@ class GlobalPriceData extends CoreDataCommon
     }
 
     /**
-     * Sets attributes from SQL result row to object
+     * Sets attributes from SQL result row to object.
      *
      * @param array $row data from DB
      *
@@ -151,7 +149,7 @@ class GlobalPriceData extends CoreDataCommon
     }
 
     /**
-     * Returns the type object this market data refers to
+     * Returns the type object this market data refers to.
      *
      * @return \iveeCore\Type
      */
@@ -161,7 +159,7 @@ class GlobalPriceData extends CoreDataCommon
     }
 
     /**
-     * Gets the unix timestamp of the date of the last CREST price data update (day granularity)
+     * Gets the unix timestamp of the date of the last CREST price data update (day granularity).
      *
      * @return int
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
@@ -176,7 +174,7 @@ class GlobalPriceData extends CoreDataCommon
     }
 
     /**
-     * Gets eve-wide average, as returned by CREST
+     * Gets eve-wide average, as returned by CREST.
      *
      * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
      *
@@ -202,7 +200,7 @@ class GlobalPriceData extends CoreDataCommon
     }
 
     /**
-     * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations
+     * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations.
      *
      * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
      *

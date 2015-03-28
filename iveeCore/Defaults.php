@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Defaults.php
- *
  */
 
 namespace iveeCore;
@@ -24,7 +23,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Defaults.php
- *
  */
 class Defaults
 {
@@ -34,12 +32,12 @@ class Defaults
     protected static $instance;
 
     /**
-     * @var int $DEFAULT_REGIONID defines the default market region
+     * @var int $defaultRegionID defines the default market region
      */
     protected $defaultRegionID  = 10000002; //The Forge
 
     /**
-     * @var array $TRACKED_MARKET_REGION_IDS defines the regions for which market data should by gathered by the EMDR
+     * @var int[] $trackedMarketRegionIDs defines the regions for which market data should by gathered by the EMDR
      * client
      */
     protected $trackedMarketRegionIDs = array(
@@ -141,7 +139,7 @@ class Defaults
     protected $maxPriceDataAge = 0;
 
     /**
-     * @var array $bpMeLevels holds the default ME levels of specific blueprints
+     * @var int[] $bpMeLevels holds the default ME levels of specific blueprints
      */
     protected $bpMeLevels = array(
         23758 => -9, //Archon BP
@@ -169,7 +167,7 @@ class Defaults
     );
 
     /**
-     * @var array $bpteLevels holds the default TE levels of specific blueprints
+     * @var int[] $bpteLevels holds the default TE levels of specific blueprints
      */
     protected $bpTeLevels = array(
         23758 => -10, //Archon BP
@@ -209,12 +207,7 @@ class Defaults
     }
 
     /**
-     * The following getters are not implemented as magic __get method for cleaner access control and overwriting in
-     * subclasses
-     */
-
-    /**
-     * Returns the default market region ID
+     * Returns the default market region ID.
      *
      * @return int
      */
@@ -224,9 +217,9 @@ class Defaults
     }
 
     /**
-     * Returns the tracked market regionIDs
+     * Returns the tracked market regionIDs.
      *
-     * @return array with the regionIDs as keys
+     * @return int[] with the regionIDs as keys
      */
     public function getTrackedMarketRegionIDs()
     {
@@ -234,7 +227,7 @@ class Defaults
     }
 
     /**
-     * Returns the default buy tax factor in the form 1.015 for 1.5% total tax
+     * Returns the default buy tax factor in the form 1.015 for 1.5% total tax.
      *
      * @return float
      */
@@ -244,7 +237,7 @@ class Defaults
     }
 
     /**
-     * Returns the default sell tax factor in the form 0.985 for 1.5% total tax
+     * Returns the default sell tax factor in the form 0.985 for 1.5% total tax.
      *
      * @return float
      */
@@ -254,7 +247,7 @@ class Defaults
     }
 
     /**
-     * Returns the default BPO ME level
+     * Returns the default BPO ME level.
      *
      * @return int
      */
@@ -264,7 +257,7 @@ class Defaults
     }
 
     /**
-     * Returns the default BPO TE level
+     * Returns the default BPO TE level.
      *
      * @return int
      */
@@ -274,7 +267,7 @@ class Defaults
     }
 
     /**
-     * Returns the maximum price data age in seconds
+     * Returns the maximum price data age in seconds.
      *
      * @return int
      */
@@ -296,9 +289,9 @@ class Defaults
     }
 
     /**
-     * Returns the implant dependent time modifiers for industry activities
+     * Returns the implant dependent time modifiers for industry activities.
      *
-     * @return array in the form activityID => float (0.98 for 2% bonus)
+     * @return float[] in the form activityID => float (0.98 for 2% bonus)
      */
     public function getIndustryImplantTimeModifiers()
     {
@@ -311,7 +304,7 @@ class Defaults
     }
 
     /**
-     * Returns the default ME level for a specific blueprint
+     * Returns the default ME level for a specific blueprint.
      *
      * @param int $bpID the ID of the blueprint being looked up
      *
@@ -326,7 +319,7 @@ class Defaults
     }
 
     /**
-     * Sets a default ME level for a blueprint
+     * Sets a default ME level for a blueprint.
      *
      * @param int $bpID the ID of the blueprint
      * @param int $meLevel blueprint ME level to be set
@@ -339,7 +332,7 @@ class Defaults
     }
 
     /**
-     * Returns the default TE level for a specific blueprint
+     * Returns the default TE level for a specific blueprint.
      *
      * @param int $bpID the ID of the blueprint being looked up
      *
@@ -354,7 +347,7 @@ class Defaults
     }
 
     /**
-     * Sets a default TE level for a blueprint
+     * Sets a default TE level for a blueprint.
      *
      * @param int $bpID the ID of the blueprint
      * @param int $teLevel blueprint TE level to be set

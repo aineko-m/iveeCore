@@ -44,19 +44,19 @@ class Blueprint extends Type
     protected $activityMaterials = array();
 
     /**
-     * @var array $activitySkills holds activity skill requirements.
+     * @var SkillMap[] $activitySkills holds activity skill requirements.
      * $activitySkills[$activityID] => SkillMap
      */
     protected $activitySkills = array();
 
     /**
-     * @var array $activityTimes holds activity time requirements.
+     * @var int[] $activityTimes holds activity time requirements.
      * $activityTimes[$activityID] => int seconds
      */
     protected $activityTimes = array();
 
     /**
-     * @var array $baseResearchModifier holds the base research modifier for time and cost scaling
+     * @var int[] $baseResearchModifier holds the base research modifier for time and cost scaling.
      */
     protected static $baseResearchModifier = array(
         0 => 0,
@@ -95,7 +95,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Loads activity material requirements, if any
+     * Loads activity material requirements, if any.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -122,7 +122,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Loads activity skill requirements, if any
+     * Loads activity skill requirements, if any.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -146,7 +146,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Loads activity times
+     * Loads activity times.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -165,7 +165,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Gets all necessary data from SQL
+     * Gets all necessary data from SQL.
      *
      * @return array
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
@@ -202,7 +202,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Sets attributes from SQL result row to object
+     * Sets attributes from SQL result row to object.
      *
      * @param array $row data from DB
      *
@@ -216,7 +216,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Gets products base cost based on the adjustedPrice from CREST for each of the input materials
+     * Gets products base cost based on the adjustedPrice from CREST for each of the input materials.
      *
      * @param int $maxPriceDataAge the maximum price data age in seconds
      *
@@ -239,7 +239,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Manufacture using this BP
+     * Manufacture using this BP.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
      * indices, tax and assemblyLines.
@@ -524,7 +524,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Returns manufacturing product ID
+     * Returns manufacturing product ID.
      *
      * @return int
      */
@@ -577,17 +577,17 @@ class Blueprint extends Type
     }
 
     /**
-     * Returns Blueprint rank
+     * Returns Blueprint rank.
      *
      * @return int
      */
     public function getRank()
     {
-        return $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_TE) / 105;
+        return (int) $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_TE) / 105;
     }
 
     /**
-     * Returns the maximum batch size
+     * Returns the maximum batch size.
      *
      * @return int
      */
@@ -620,8 +620,8 @@ class Blueprint extends Type
     }
 
     /**
-     * Calculates the research multiplier for time and cost scaling depending on start and end ME/TE levels
-     * Note: TE levels have to be divided by 2, as they go from 0 to -20 in 10 steps
+     * Calculates the research multiplier for time and cost scaling depending on start and end ME/TE levels.
+     * Note: TE levels have to be divided by 2, as they go from 0 to -20 in 10 steps.
      *
      * @param int $startLevel the initial ME or TE level
      * @param int $endLevel the end ME or TE level

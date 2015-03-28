@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InventorBlueprint.php
- *
  */
 
 namespace iveeCore;
@@ -23,12 +22,11 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InventorBlueprint.php
- *
  */
 class InventorBlueprint extends Blueprint
 {
     /**
-     * @var array $inventsBlueprintID holds the inventable blueprint ID(s)
+     * @var int[] $inventsBlueprintID holds the inventable blueprint ID(s)
      */
     protected $inventsBlueprintIDs = array();
 
@@ -58,7 +56,7 @@ class InventorBlueprint extends Blueprint
     protected $encryptionSkillID;
 
     /**
-     * @var array $datacoreSkillIDs the relevant datacore skillIDs
+     * @var int[] $datacoreSkillIDs the relevant datacore skillIDs
      */
     protected $datacoreSkillIDs;
 
@@ -147,7 +145,7 @@ class InventorBlueprint extends Blueprint
     /**
      * Returns an InventionProcessData object describing the invention process.
      *
-     * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
+     * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $inventedBpID the ID if the blueprint to be invented. If left null, it is set to the first
      * inventable blueprint ID
      * @param int $decryptorID the decryptor the be used, if any
@@ -182,9 +180,16 @@ class InventorBlueprint extends Blueprint
 
         //calculate base cost, its the average of all possible invented BP's product base cost
         $baseCost = 0;
-        foreach ($inventableBpIDs as $inventableBpID)
-            $baseCost += Type::getById($inventableBpID)->getProductBaseCost();
-        $baseCost = $baseCost / count($inventableBpIDs);
+        $numInventableBps = 0;
+        foreach ($inventableBpIDs as $inventableBpID) {
+            $inventableBp = Type::getById($inventableBpID);
+            if($inventableBp instanceof InventableBlueprint) {
+                $baseCost += $inventableBp->getProductBaseCost();
+                $numInventableBps++;
+            }
+        }
+            
+        $baseCost = $baseCost / $numInventableBps;
 
         //with decryptor
         if ($decryptorID > 0) {
@@ -254,13 +259,14 @@ class InventorBlueprint extends Blueprint
     /**
      * Copy, invent T2 blueprint and manufacture from it in one go.
      *
-     * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
+     * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $inventedBpID the ID of the blueprint to be invented. If left null it will default to the first
      * blueprint defined in inventsBlueprintID
      * @param int $decryptorID the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
      *
-     * @return ManufactureProcessData with cascaded InventionProcessData and CopyProcessData objects
+     * @return \iveeCore\ManufactureProcessData with cascaded InventionProcessData and CopyProcessData objects
+     * @throws \iveeCore\Exceptions\WrongTypeException if product is no an InventableBlueprint
      */
     public function copyInventManufacture(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null,
         $recursive = true
@@ -278,9 +284,13 @@ class InventorBlueprint extends Blueprint
 
         //add copyData to invention data
         $inventionData->addSubProcessData($copyData);
+        
+        $producedType = $inventionData->getProducedType();
+        if(!$producedType instanceof InventableBlueprint)
+            self::throwException('WrongTypeException', 'Given object is not instance of InventableBlueprint');
 
         //manufacture from invented BP
-        $manufactureData = $inventionData->getProducedType()->manufacture(
+        $manufactureData = $producedType->manufacture(
             $iMod,
             $inventionData->getResultRuns(),
             $inventionData->getResultME(),
@@ -297,7 +307,7 @@ class InventorBlueprint extends Blueprint
     /**
      * Returns an array with the IDs of inventable blueprints.
      *
-     * @return array
+     * @return int[]
      */
     public function getInventableBlueprintIDs()
     {
@@ -307,7 +317,7 @@ class InventorBlueprint extends Blueprint
     /**
      * Returns an array with the inventable blueprint instances.
      *
-     * @return array
+     * @return \iveeCore\InventableBlueprint[]
      */
     public function getInventableBlueprints()
     {
@@ -328,11 +338,11 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Returns the inventable BPC IDs of a given race
+     * Returns the inventable BPC IDs of a given race.
      *
      * @param int $raceID the race for which the blueprints should be looked up. See table chrRaces for IDs.
      *
-     * @return array
+     * @return int[]
      */
     public function getInventableBlueprintIDsByRaceID($raceID)
     {
@@ -364,7 +374,7 @@ class InventorBlueprint extends Blueprint
     /**
      * Returns an array with the IDs of compatible decryptors.
      *
-     * @return array
+     * @return int[]
      */
     public function getDecryptorIDs()
     {

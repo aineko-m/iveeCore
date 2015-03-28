@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ProcessData.php
- *
  */
 
 namespace iveeCore;
@@ -27,7 +26,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ProcessData.php
- *
  */
 class ProcessData
 {
@@ -74,17 +72,17 @@ class ProcessData
     protected $solarSystemID;
 
     /**
-     * @var SkillMap $skills an object defining the minimum required skills to perform this activity.
+     * @var \iveeCore\SkillMap $skills an object defining the minimum required skills to perform this activity.
      */
     protected $skills;
 
     /**
-     * @var MaterialMap $materials object holding required materials and amounts
+     * @var \iveeCore\MaterialMap $materials object holding required materials and amounts
      */
     protected $materials;
 
     /**
-     * @var array $subProcessData holds (recursive|sub) ProcessData objects.
+     * @var \iveeCore\ProcessData[] $subProcessData holds (recursive|sub) process objects.
      */
     protected $subProcessData;
 
@@ -98,7 +96,7 @@ class ProcessData
      *
      * @return \iveeCore\ProcessData
      */
-    public function __construct($producesTypeID = -1, $producesQuantity = 0, $processTime = 0, $processCost = 0)
+    public function __construct($producesTypeID = -1, $producesQuantity = 0, $processTime = 0, $processCost = 0.0)
     {
         $this->producesTypeID   = (int) $producesTypeID;
         $this->producesQuantity = (int) $producesQuantity;
@@ -124,7 +122,7 @@ class ProcessData
     }
 
     /**
-     * Add required skill to the total skill map
+     * Add required skill to the total skill map.
      *
      * @param int $skillID of the skill
      * @param int $level of the skill
@@ -143,7 +141,7 @@ class ProcessData
     }
 
     /**
-     * Add a skillMap to the required skills
+     * Add a skillMap to the required skills.
      *
      * @param \iveeCore\SkillMap $sm the SkillMap to add
      *
@@ -161,7 +159,7 @@ class ProcessData
     }
 
     /**
-     * Add sub-ProcessData object. This can be used to make entire build-trees or build batches
+     * Add sub-ProcessData object. This can be used to make entire build-trees or build batches.
      *
      * @param \iveeCore\ProcessData $subProcessData ProcessData object to add as a sub-process
      *
@@ -175,7 +173,7 @@ class ProcessData
     }
 
     /**
-     * Returns the activityID of the process
+     * Returns the activityID of the process.
      *
      * @return int
      */
@@ -185,7 +183,7 @@ class ProcessData
     }
 
     /**
-     * Returns Type resulting from this process
+     * Returns Type resulting from this process.
      *
      * @return \iveeCore\Type
      * @throws \iveeCore\Exceptions\NoOutputItemException if process results in no new item
@@ -201,7 +199,7 @@ class ProcessData
     }
 
     /**
-     * Returns number of items resulting from this process
+     * Returns number of items resulting from this process.
      *
      * @return int
      */
@@ -211,9 +209,9 @@ class ProcessData
     }
 
     /**
-     * Returns all sub process data objects, if any
+     * Returns all sub process data objects, if any.
      *
-     * @return array with ProcessData objects
+     * @return \iveeCore\ProcessData[]
      */
     public function getSubProcesses()
     {
@@ -223,7 +221,7 @@ class ProcessData
     }
 
     /**
-     * Returns process cost, without subprocesses
+     * Returns process cost, without subprocesses.
      *
      * @return float
      */
@@ -233,7 +231,7 @@ class ProcessData
     }
 
     /**
-     * Returns ID of the SolarSystem this process is performed in
+     * Returns ID of the SolarSystem this process is performed in.
      *
      * @return int
      */
@@ -243,7 +241,7 @@ class ProcessData
     }
 
     /**
-     * Returns ID of the AssemblyLine this process is performed in
+     * Returns ID of the AssemblyLine this process is performed in.
      *
      * @return int
      */
@@ -253,7 +251,7 @@ class ProcessData
     }
 
     /**
-     * Returns process cost (no materials), including subprocesses
+     * Returns process cost (no materials), including subprocesses.
      *
      * @return float
      */
@@ -270,7 +268,7 @@ class ProcessData
     }
 
     /**
-     * Returns material buy cost, without subprocesses
+     * Returns material buy cost, without subprocesses.
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
      * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
@@ -286,7 +284,7 @@ class ProcessData
     }
 
     /**
-     * Returns material buy cost, including subprocesses
+     * Returns material buy cost, including subprocesses.
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
      * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
@@ -307,7 +305,7 @@ class ProcessData
     }
 
     /**
-     * Returns total cost, including subprocesses
+     * Returns total cost, including subprocesses.
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
      * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
@@ -339,7 +337,7 @@ class ProcessData
     /**
      * Returns a new MaterialMap object containing all required materials, including sub-processes.
      * Note that material quantities might be fractionary, due to invention chance effects or requesting builds of items
-     * in numbers that are not multiple of portionSize
+     * in numbers that are not multiple of portionSize.
      *
      * @return \iveeCore\MaterialMap
      */
@@ -388,7 +386,7 @@ class ProcessData
     }
 
     /**
-     * Returns object defining the minimum skills required for this process, without sub-processes
+     * Returns object defining the minimum skills required for this process, without sub-processes.
      *
      * @return \iveeCore\SkillMap
      */
@@ -403,7 +401,7 @@ class ProcessData
     }
 
     /**
-     * Returns a new object with all skills required, including sub-processes
+     * Returns a new object with all skills required, including sub-processes.
      *
      * @return \iveeCore\SkillMap
      */
@@ -420,7 +418,7 @@ class ProcessData
     }
 
     /**
-     * Returns the time for this process, in seconds, without sub-processes
+     * Returns the time for this process, in seconds, without sub-processes.
      *
      * @return int
      */
@@ -430,7 +428,7 @@ class ProcessData
     }
 
     /**
-     * Returns sum of all times, in seconds, including sub-processes
+     * Returns sum of all times, in seconds, including sub-processes.
      *
      * @return int|float
      */
@@ -447,18 +445,18 @@ class ProcessData
     }
 
     /**
-     * Returns array with process times summed by activity, in seconds, including sub-processes
+     * Returns array with process times summed by activity, in seconds, including sub-processes.
      *
-     * @return array in the form activityID => int
+     * @return float[] in the form activityID => float
      */
     public function getTotalTimes()
     {
         $sum = array(
-            static::ACTIVITY_MANUFACTURING => 0,
-            static::ACTIVITY_RESEARCH_TE => 0,
-            static::ACTIVITY_RESEARCH_ME => 0,
-            static::ACTIVITY_COPYING => 0,
-            static::ACTIVITY_INVENTING => 0
+            static::ACTIVITY_MANUFACTURING => 0.0,
+            static::ACTIVITY_RESEARCH_TE => 0.0,
+            static::ACTIVITY_RESEARCH_ME => 0.0,
+            static::ACTIVITY_COPYING => 0.0,
+            static::ACTIVITY_INVENTING => 0.0
         );
 
         if ($this->processTime > 0)
@@ -476,12 +474,12 @@ class ProcessData
     }
 
     /**
-     * Returns total profit for this batch (direct child ManufactureProcessData sub-processes)
+     * Returns total profit for this batch (direct child ManufactureProcessData sub-processes).
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds.
      * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
      *
-     * @return array
+     * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
@@ -496,7 +494,7 @@ class ProcessData
     }
 
     /**
-     * Prints data about this process
+     * Prints data about this process.
      *
      * @return void
      */

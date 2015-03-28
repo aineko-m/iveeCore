@@ -15,6 +15,8 @@
  * @link     https://github.com/aineko-m/iveeCore/blob/master/update_crest.php
  */
 
+use \iveeCore\Config;
+
 echo "  ____ ____  _____ ____ _____    __              _____     _______ _____
  / ___|  _ \| ____/ ___|_   _|  / _| ___  _ __  |_ _\ \   / / ____| ____|
 | |   | |_) |  _| \___ \ | |   | |_ / _ \| '__|  | | \ \ / /|  _| |  _|
@@ -28,15 +30,15 @@ ini_set('display_errors', 'on');
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
 
 //do industry systems update
-$crestIndustrySystemsUpdaterClass = \iveeCore\Config::getIveeClassName('CrestIndustrySystemsUpdater');
+$crestIndustrySystemsUpdaterClass = Config::getIveeClassName('CrestIndustrySystemsUpdater');
 $crestIndustrySystemsUpdaterClass::doUpdate();
 
 //do market prices update
-$crestMarketPricesUpdaterClass = \iveeCore\Config::getIveeClassName('CrestMarketPricesUpdater');
+$crestMarketPricesUpdaterClass = Config::getIveeClassName('CrestMarketPricesUpdater');
 $crestMarketPricesUpdaterClass::doUpdate();
 
 //do industry facilities update
-$crestIndustryFacilitiesUpdaterClass = \iveeCore\Config::getIveeClassName('CrestIndustryFacilitiesUpdater');
+$crestIndustryFacilitiesUpdaterClass = Config::getIveeClassName('CrestIndustryFacilitiesUpdater');
 $crestIndustryFacilitiesUpdaterClass::doUpdate();
 
 echo 'Peak memory usage: ' . ceil(memory_get_peak_usage(true) / 1024) . 'KiB' . PHP_EOL;

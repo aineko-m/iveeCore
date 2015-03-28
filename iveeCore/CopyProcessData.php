@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CopyProcessData.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CopyProcessData.php
- *
  */
 class CopyProcessData extends ProcessData
 {
@@ -38,7 +36,7 @@ class CopyProcessData extends ProcessData
     protected $outputRuns;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param int $bpCopyID typeID of the blueprint being copied
      * @param int $copyQuantity the number of copies being made
@@ -60,7 +58,7 @@ class CopyProcessData extends ProcessData
     }
 
     /**
-     * Returns the number of runs per copy
+     * Returns the number of runs per copy.
      *
      * @return int
      */

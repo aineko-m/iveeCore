@@ -54,7 +54,7 @@ class CacheableArray extends \stdClass implements ICacheable
     }
 
     /**
-     * Returns the cache time to live in seconds
+     * Returns the cache time to live in seconds.
      *
      * @return int
      */
@@ -64,7 +64,7 @@ class CacheableArray extends \stdClass implements ICacheable
     }
 
     /**
-     * Returns the key under which the object is cached
+     * Returns the key under which the object is cached.
      *
      * @return string
      */

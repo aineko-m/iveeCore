@@ -13,6 +13,7 @@
  */
 
 namespace iveeCore\CREST;
+use \iveeCore\Config;
 
 /**
  * IndustrySystemsUpdater specific CREST data updater
@@ -45,7 +46,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
      */
     protected function processDataItemToSQL(\stdClass $item)
     {
-        $exceptionClass = \iveeCore\Config::getIveeClassName('CrestException');
+        $exceptionClass = Config::getIveeClassName('CrestException');
 
         if (!isset($item->solarSystem->id))
             throw new $exceptionClass('systemID missing in Industry Systems CREST data');
@@ -91,9 +92,9 @@ class IndustrySystemsUpdater extends CrestDataUpdater
 
         $this->updatedIDs[] = $systemID;
 
-        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
+        $sdeClass = Config::getIveeClassName('SDE');
 
-        return $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveeIndustrySystems', $insert, $update);
+        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.iveeIndustrySystems', $insert, $update);
     }
 
     /**
@@ -103,7 +104,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
      */
     protected function invalidateCaches()
     {
-        $assemblyLineClass  = \iveeCore\Config::getIveeClassName('SolarSystem');
+        $assemblyLineClass  = Config::getIveeClassName('SolarSystem');
         $assemblyLineClass::deleteFromCache($this->updatedIDs);
     }
 }

@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SolarSystem.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SolarSystem.php
- *
  */
 class SolarSystem extends SdeType
 {
@@ -74,7 +72,7 @@ class SolarSystem extends SdeType
     protected $stationIDs = array();
 
     /**
-     * Loads all SolarSystem names from DB to PHP
+     * Loads all SolarSystem names from DB to PHP.
      *
      * @return void
      */
@@ -139,7 +137,7 @@ class SolarSystem extends SdeType
         $res = $sde->query(
             "SELECT systemID, UNIX_TIMESTAMP(date) as crestIndexDate, manufacturingIndex, teResearchIndex,
             meResearchIndex, copyIndex, reverseIndex, inventionIndex
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeIndustrySystems
+            FROM " . Config::getIveeDbName() . ".iveeIndustrySystems
             WHERE systemID = " . $this->id . "
             ORDER BY date DESC LIMIT 1;"
         )->fetch_assoc();
@@ -165,7 +163,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Loads stationIDs in system
+     * Loads stationIDs in system.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -185,7 +183,7 @@ class SolarSystem extends SdeType
     }
     
     /**
-     * Gets regionID of SolarSystem
+     * Gets regionID of SolarSystem.
      *
      * @return int
      */
@@ -195,7 +193,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets constellationID of SolarSystem
+     * Gets constellationID of SolarSystem.
      *
      * @return int
      */
@@ -205,7 +203,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets security rating of SolarSystem
+     * Gets security rating of SolarSystem.
      *
      * @return float
      */
@@ -225,9 +223,9 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets IDs of Stations in SolarSystem
+     * Gets IDs of Stations in SolarSystem.
      *
-     * @return array
+     * @return int[]
      */
     public function getStationIDs()
     {
@@ -235,9 +233,9 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets Stations in SolarSystem
+     * Gets Stations in SolarSystem.
      *
-     * @return array
+     * @return \iveeCore\Station[]
      */
     public function getStations()
     {
@@ -249,7 +247,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets unix timstamp for the last update to industry system indices (day granularity)
+     * Gets unix timstamp for the last update to industry system indices (day granularity).
      *
      * @return int
      */
@@ -266,11 +264,11 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets industry indices of SolarSystem
+     * Gets industry indices of SolarSystem.
      *
      * @param int $maxIndexDataAge maximum index data age in seconds, optional
      *
-     * @return array in the form activityID => float
+     * @return float[] in the form activityID => float
      * @throws \iveeCore\Exceptions\CrestDataTooOldException if given max index data age is exceeded
      */
     public function getIndustryIndices($maxIndexDataAge = null)
@@ -282,7 +280,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets industry indices of SolarSystem
+     * Gets industry indices of SolarSystem.
      *
      * @param int $activityID the ID of the activity to get industry index for
      * @param int $maxIndexDataAge maximum index data age in seconds, optional
@@ -307,7 +305,7 @@ class SolarSystem extends SdeType
     /**
      * Sets industry indices. Useful for wormhole systems or what-if scenarios. If called, industryIndexDate is updated.
      *
-     * @param array $indices must be in the form activityID => float
+     * @param float[] $indices must be in the form activityID => float
      *
      * @return void
      */
@@ -318,7 +316,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Returns an IndustryModifier object for a POS in this system
+     * Returns an IndustryModifier object for a POS in this system.
      *
      * @param float $tax set on the POS
      *
@@ -331,7 +329,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Returns an IndustryModifier object for all NPC stations in this system
+     * Returns an IndustryModifier object for all NPC stations in this system.
      *
      * @return \iveeCore\IndustryModifier
      */

@@ -70,7 +70,7 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     /**
      * Invalidate instancePool and cache entries.
      *
-     * @param array $keys
+     * @param string[] $keys
      *
      * @return void
      */

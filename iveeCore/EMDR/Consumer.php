@@ -9,13 +9,13 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/EMDR/Consumer.php
- *
  */
 
 namespace iveeCore\EMDR;
+use \iveeCore\Config;
 
 /**
- * EMDR for IVEE Consumer
+ * EMDR for IVEE Consumer.
  * EmdrConsumer handles the incoming data stream from the relay and passes rowsets to either EmdrPriceUpdate or
  * EmdrHistoryUpdate.
  *
@@ -24,7 +24,6 @@ namespace iveeCore\EMDR;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/EMDR/Consumer.php
- *
  */
 class Consumer
 {
@@ -34,27 +33,27 @@ class Consumer
     protected static $instance;
 
     /**
-     * @var array $trackedTypeIDs array holding the typeIDs => typeNames of items to track on the market
+     * @var string[] $trackedTypeIDs array holding the typeIDs => typeNames of items to track on the market
      */
     protected $trackedTypeIDs = array();
 
     /**
-     * @var array $trackedMarketRegionIDs array holding the IDs of the market regions to be tracked
+     * @var int[] $trackedMarketRegionIDs array holding the IDs of the market regions to be tracked
      */
     protected $trackedMarketRegionIDs = array();
 
     /**
-     * @var array $regions regionID => regionName
+     * @var string[] $regions regionID => regionName
      */
     protected $regions;
 
     /**
-     * @var SDE $sde holds the SDE instance, for convenience
+     * @var \iveeCore\SDE $sde holds the SDE instance, for convenience
      */
     protected $sde;
 
     /**
-     * @var ICache $cache holds a cache instance, if cache use is configured
+     * @var \iveeCore\ICache $cache holds a cache instance, if cache use is configured
      */
     protected $cache;
 
@@ -69,7 +68,7 @@ class Consumer
     protected $emdrHistoryUpdateClass;
 
     /**
-     * Returns singleton instance
+     * Returns singleton instance.
      *
      * @return \iveeCore\EMDR\Consumer
      */
@@ -81,22 +80,22 @@ class Consumer
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @return EmdrConsumer
+     * @return \iveeCore\EMDR\EmdrConsumer
      */
     protected function __construct()
     {
         if (VERBOSE)
             echo "Instantiating EmdrConsumer" . PHP_EOL . "Getting tracked item IDs... ";
 
-        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
+        $sdeClass = Config::getIveeClassName('SDE');
         $this->sde = $sdeClass::instance();
 
-        $defaultsClass = \iveeCore\Config::getIveeClassName('Defaults');
+        $defaultsClass = Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
 
-        $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
+        $cacheClass = Config::getIveeClassName('Cache');
         $this->cache = $cacheClass::instance();
 
         //load IDs of items to track on market
@@ -121,8 +120,8 @@ class Consumer
             $this->regions[(int) $tmp[0]] = $tmp[1];
 
         $this->trackedMarketRegionIDs = $defaults->getTrackedMarketRegionIDs();
-        $this->emdrPriceUpdateClass   = \iveeCore\Config::getIveeClassName('EmdrPriceUpdater');
-        $this->emdrHistoryUpdateClass = \iveeCore\Config::getIveeClassName('EmdrHistoryUpdater');
+        $this->emdrPriceUpdateClass   = Config::getIveeClassName('EmdrPriceUpdater');
+        $this->emdrHistoryUpdateClass = Config::getIveeClassName('EmdrHistoryUpdater');
     }
 
     /**
@@ -142,7 +141,7 @@ class Consumer
         $subscriber = $context->getSocket(\ZMQ::SOCKET_SUB);
 
         //Connect to EMDR relay.
-        $subscriber->connect(\iveeCore\Config::getEmdrRelayUrl());
+        $subscriber->connect(Config::getEmdrRelayUrl());
 
         // Disable filtering.
         $subscriber->setSockOpt(\ZMQ::SOCKOPT_SUBSCRIBE, "");
@@ -203,7 +202,7 @@ class Consumer
     }
 
     /**
-     * Filters incoming data by type, region and generation date
+     * Filters incoming data by type, region and generation date.
      *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
@@ -281,11 +280,11 @@ class Consumer
             "SELECT
             UNIX_TIMESTAMP(atp.lastPriceUpdate) as lastPriceDataTS,
             UNIX_TIMESTAMP(atp.lastHistUpdate) as lastHistDataTS
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTrackedPrices as atp
+            FROM " . Config::getIveeDbName() . ".iveeTrackedPrices as atp
             WHERE atp.typeID = " . (int) $typeID . " AND atp.regionID = " . (int) $regionID . ";"
         );
 
-        $cacheableArrayClass = \iveeCore\Config::getIveeClassName('CacheableArray');
+        $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
         $cacheableArray = new $cacheableArrayClass('emdrts_' . $regionID . '_' . $typeID, 3600 * 24);
 
         if ($res->num_rows == 1) {
@@ -301,7 +300,7 @@ class Consumer
     }
 
     /**
-     * Updates or invalidates cache entries after market data update
+     * Updates or invalidates cache entries after market data update.
      *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
@@ -315,12 +314,12 @@ class Consumer
         $this->cache->setItem($timestampsObj);
 
         //invalidate RegionMarketData cache
-        $regionMarketDataClass = \iveeCore\Config::getIveeClassName('RegionMarketData');
+        $regionMarketDataClass = Config::getIveeClassName('RegionMarketData');
         $regionMarketDataClass::deleteFromCache(array($regionID . '_' . $typeID));
     }
 
     /**
-     * Handles the processing and DB insertion of order data
+     * Handles the processing and DB insertion of order data.
      *
      * @param int $typeID of the item the data refers to
      * @param int $regionID of the region the data refers to
@@ -357,7 +356,7 @@ class Consumer
     }
 
     /**
-     * Handles the processing and DB insertion of history data
+     * Handles the processing and DB insertion of history data.
      *
      * @param int $typeID of the item the data refers to
      * @param int $regionID of the region the data refers to
@@ -365,8 +364,8 @@ class Consumer
      * @param \stdClass $rowset the raw market data
      * @param \iveeCore\CacheableArray $timestampsObj with two elements carrying the UNIX timestamps
      *
-     * @return void
-     * @throws NoRelevantDataException if no relevant data rows are given
+     * @return bool
+     * @throws \iveeCore\Exceptions\NoRelevantDataException if no relevant data rows are given
      */
     protected function handleHistoryData($typeID, $regionID, $generatedAt, \stdClass $rowset,
         \iveeCore\CacheableArray $timestampsObj
@@ -396,7 +395,7 @@ class Consumer
     }
 
     /**
-     * Gets the typeName for a market tracked TypeID
+     * Gets the typeName for a market tracked TypeID.
      *
      * @param int $typeID of the item to get the name for
      *
@@ -409,13 +408,13 @@ class Consumer
         if (isset($this->trackedTypeIDs[(int) $typeID]))
             return $this->trackedTypeIDs[(int) $typeID];
         else {
-            $exceptionClass = \iveeCore\Config::getIveeClassName('TypeIdNotFoundException');
+            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
             throw new $exceptionClass((int) $typeID . ' not found among market tracked item IDs.');
         }
     }
 
     /**
-     * Gets the regionName for a regionID
+     * Gets the regionName for a regionID.
      *
      * @param int $regionID of the region to get the name for
      *
@@ -427,7 +426,7 @@ class Consumer
         if (isset($this->regions[(int) $regionID]))
             return $this->regions[(int) $regionID];
         else {
-            $exceptionClass = \iveeCore\Config::getIveeClassName('SystemIdNotFoundException');
+            $exceptionClass = Config::getIveeClassName('SystemIdNotFoundException');
             throw new $exceptionClass((int) $regionID . ' not found among region IDs.');
         }
     }

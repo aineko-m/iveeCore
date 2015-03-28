@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Starbase.php
- *
  */
 
 namespace iveeCore;
@@ -23,17 +22,16 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Starbase.php
- *
  */
 class Starbase extends Manufacturable
 {
     /**
-     * @var array $onlineCycleFuelReq holding raw fuel requirement data.
+     * @var int[] $onlineCycleFuelReq holding raw fuel requirement data.
      */
     protected $onlineCycleFuelReq = array();
 
     /**
-     * @var array $reinforcedCycleFuelReq holding raw reinforcement fuel requirement data.
+     * @var int[] $reinforcedCycleFuelReq holding raw reinforcement fuel requirement data.
      */
     protected $reinforcedCycleFuelReq = array();
 

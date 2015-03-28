@@ -20,6 +20,8 @@
  * @link     https://github.com/aineko-m/iveeCore/blob/master/emdr.php
  */
 
+use \iveeCore\Config;
+
 echo " _____ __  __ ____  ____     __              _____     _______ _____
 | ____|  \/  |  _ \|  _ \   / _| ___  _ __  |_ _\ \   / / ____| ____|
 |  _| | |\/| | | | | |_) | | |_ / _ \| '__|  | | \ \ / /|  _| |  _|
@@ -35,7 +37,7 @@ DEFINE('VERBOSE', 1);
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
 
 //get EmdrConsumer class name
-$EmdrConsumerClass = \iveeCore\Config::getIveeClassName('EmdrConsumer');
+$EmdrConsumerClass = Config::getIveeClassName('EmdrConsumer');
 
 //instantiate and run
 $ec = $EmdrConsumerClass::instance();

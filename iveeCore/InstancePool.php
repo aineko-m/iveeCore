@@ -30,12 +30,12 @@ class InstancePool
     protected $cache;
 
     /**
-     * @var array $keyToObj containing the pooled objects in the form key => obj
+     * @var \iveeCore\ICacheable[] $keyToObj containing the pooled objects in the form key => obj
      */
     protected $keyToObj = array();
 
     /**
-     * @var array $nameToKey containing the name => key mapping
+     * @var string[] $nameToKey containing the name => key mapping
      */
     protected $nameToKey = array();
 
@@ -59,7 +59,7 @@ class InstancePool
     /**
      * Stores object in pool under its id, also in external cache.
      *
-     * @param ICacheable $obj to be stored
+     * @param \iveeCore\ICacheable $obj to be stored
      *
      * @return void
      */
@@ -74,7 +74,7 @@ class InstancePool
      * Sets the name to key mapping array and also stores in external cache.
      *
      * @param string $classKey under which the names to id array will be cached
-     * @param array $nameToKey in the form name => key
+     * @param string[] $nameToKey in the form name => key
      *
      * @return void
      */
@@ -94,7 +94,7 @@ class InstancePool
      *
      * @param string $key of the object to be returned
      *
-     * @return object
+     * @return \iveeCore\ICacheable
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if the key cannot be found
      */
     public function getItem($key)
@@ -120,6 +120,7 @@ class InstancePool
      * @return string
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if the names to key array isn't found in pool or cache
      * @throws \iveeCore\Exceptions\TypeNameNotFoundException if the given name is not found in the mapping array
+     * @throws \iveeCore\Exceptions\WrongTypeException if object returned from cache is not CacheableArray
      */
     public function getKeyByName($classTypeNamesKey, $name)
     {
@@ -127,6 +128,10 @@ class InstancePool
             if ($this->cache instanceof ICache) {
                 //try getting mapping array from cache, will throw an exception if not found
                 $cacheableArray = $this->cache->getItem($classTypeNamesKey);
+                if(!$cacheableArray instanceof CacheableArray) {
+                    $WrongTypeExceptionClass = Config::getIveeClassName('WrongTypeException');
+                    throw new $WrongTypeExceptionClass('Object given is not CacheableArray');
+                }
                 $this->nameToKey[$classTypeNamesKey] = $cacheableArray->data;
             } else {
                 $KeyNotFoundInCacheExceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
@@ -156,7 +161,7 @@ class InstancePool
     /**
      * Removes objects from pool and cache.
      *
-     * @param array $keys of the objects to be removed
+     * @param string[] $keys of the objects to be removed
      *
      * @return void
      */

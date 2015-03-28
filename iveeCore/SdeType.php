@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SdeType.php
- *
  */
 
 namespace iveeCore;
@@ -27,7 +26,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SdeType.php
- *
  */
 abstract class SdeType extends CoreDataCommon
 {
@@ -62,7 +60,16 @@ abstract class SdeType extends CoreDataCommon
     }
 
     /**
-     * Returns ID for a given SdeType name
+     * Loads all names from DB to PHP.
+     *
+     * @return void
+     */
+    protected static function loadNames()
+    {
+    }
+
+    /**
+     * Returns ID for a given SdeType name.
      * Loads all names from DB or cache to PHP when first used.
      * Note that populating the name => id array takes time and uses a few MBs of RAM
      *
@@ -99,7 +106,7 @@ abstract class SdeType extends CoreDataCommon
     }
 
     /**
-     * Returns the name of the SdeType object
+     * Returns the name of the SdeType object.
      *
      * @return string
      */

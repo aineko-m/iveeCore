@@ -14,7 +14,7 @@
 namespace iveeCore;
 
 /**
- * RedisWrapper provides caching functionality for iveeCore based on Redis with PhpRedis (php5-redis)
+ * RedisWrapper provides caching functionality for iveeCore based on Redis with PhpRedis (php5-redis).
  *
  * Instantiating iveeCore objects that need to pull data from the SDE DB is a relatively expensive process. This is the
  * case for all Type objects and it's descendants, AssemblyLine, SolarSystem, Station and market data. Since these are
@@ -137,7 +137,7 @@ class RedisWrapper implements ICache
     /**
      * Removes multiple items from Redis.
      *
-     * @param array $keys of items to be removed
+     * @param string[] $keys of items to be removed
      *
      * @return bool true on success, also if memcached has been disabled
      */

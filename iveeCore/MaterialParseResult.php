@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MaterialParseResult.php
- *
  */
 
 namespace iveeCore;
@@ -24,7 +23,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MaterialParseResult.php
- *
  */
 class MaterialParseResult extends MaterialMap
 {
@@ -49,7 +47,7 @@ class MaterialParseResult extends MaterialMap
     /**
      * Returns the array with the unparseables.
      *
-     * @return array
+     * @return string[]
      */
     public function getUnparseables()
     {

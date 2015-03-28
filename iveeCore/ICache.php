@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ICache.php
- *
  */
 
 namespace iveeCore;
@@ -22,7 +21,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ICache.php
- *
  */
 interface ICache
 {
@@ -48,7 +46,7 @@ interface ICache
      *
      * @param string $key under which the item is stored
      *
-     * @return mixed
+     * @return ICacheable
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
      * @throws \iveeCore\Exceptions\CacheDisabledException if cache use has been disabled in configuration
      */
@@ -66,7 +64,7 @@ interface ICache
     /**
      * Removes multiple items from cache.
      *
-     * @param array $keys of items to be removed
+     * @param string[] $keys of items to be removed
      *
      * @return bool true on success, also if cache use has been disabled
      */

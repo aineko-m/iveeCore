@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MemcachedWrapper.php
- *
  */
 
 namespace iveeCore;
@@ -33,7 +32,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MemcachedWrapper.php
- *
  */
 class MemcachedWrapper implements ICache
 {
@@ -65,7 +63,7 @@ class MemcachedWrapper implements ICache
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @return \iveeCore\MemcachedWrapper
      */
@@ -79,7 +77,7 @@ class MemcachedWrapper implements ICache
     /**
      * Stores item in Memcached.
      *
-     * @param ICacheable $item to be stored
+     * @param \iveeCore\ICacheable $item to be stored
      *
      * @return boolean true on success
      */
@@ -93,7 +91,7 @@ class MemcachedWrapper implements ICache
      *
      * @param string $key under which the item is stored
      *
-     * @return ICacheable
+     * @return \iveeCore\ICacheable
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
      */
     public function getItem($key)
@@ -122,9 +120,9 @@ class MemcachedWrapper implements ICache
 
     /**
      * Removes multiple items from Memcached.
-     * If using memcached, this method requires php5-memcached package version >=2.0!
+     * This method requires php5-memcached package version >=2.0!
      *
-     * @param array $keys of items to be removed
+     * @param string[] $keys of items to be removed
      *
      * @return bool true on success, also if memcached has been disabled
      */

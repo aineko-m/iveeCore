@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Manufacturable.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Manufacturable.php
- *
  */
 class Manufacturable extends Type
 {
@@ -33,7 +31,7 @@ class Manufacturable extends Type
     protected $producedFromBlueprintID;
 
     /**
-     * Gets all necessary data from SQL
+     * Gets all necessary data from SQL.
      *
      * @return array
      * @throws \iveCore\Exceptions\TypeIdNotFoundException when a typeID is not found
@@ -66,7 +64,7 @@ class Manufacturable extends Type
     }
 
     /**
-     * Sets attributes from SQL result row to object
+     * Sets attributes from SQL result row to object.
      *
      * @param array $row data from DB
      *
@@ -80,7 +78,7 @@ class Manufacturable extends Type
     }
 
     /**
-     * Returns blueprint ID that can manufacture this item
+     * Returns blueprint ID that can manufacture this item.
      *
      * @return int
      */
@@ -90,9 +88,9 @@ class Manufacturable extends Type
     }
 
     /**
-     * Returns blueprint object that can manufacture this item
+     * Returns blueprint object that can manufacture this item.
      *
-     * @return Blueprint
+     * @return \iveeCore\Blueprint
      */
     public function getBlueprint()
     {

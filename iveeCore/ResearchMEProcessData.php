@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ResearchMEProcessData.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ResearchMEProcessData.php
- *
  */
 class ResearchMEProcessData extends ProcessData
 {
@@ -43,7 +41,7 @@ class ResearchMEProcessData extends ProcessData
     protected $endMELevel;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param int $researchedBpID of the Blueprint being researched
      * @param int $researchTime the time the process takes
@@ -66,7 +64,7 @@ class ResearchMEProcessData extends ProcessData
     }
 
     /**
-     * Returns the initial ME level of the Blueprint
+     * Returns the initial ME level of the Blueprint.
      *
      * @return int
      */
@@ -76,7 +74,7 @@ class ResearchMEProcessData extends ProcessData
     }
 
     /**
-     * Returns the ME level of the Blueprint after the research
+     * Returns the ME level of the Blueprint after the research.
      *
      * @return int
      */

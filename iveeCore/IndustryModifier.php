@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/IndustryModifier.php
- *
  */
 
 namespace iveeCore;
@@ -35,12 +34,11 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/IndustryModifier.php
- *
  */
 class IndustryModifier
 {
     /**
-     * @var array $assemblyLines holds AssemblyLine objects
+     * @var array $assemblyLines holds the available AssemblyLine objects by activityID
      */
     protected $assemblyLines;
 
@@ -55,13 +53,13 @@ class IndustryModifier
     protected $tax;
 
     /**
-     * @var array $skillTimeModifiers the skill-dependent time modifiers in the form $activityID => 0.75 (meaning 25%
+     * @var float[] $skillTimeModifiers the skill-dependent time modifiers in the form $activityID => 0.75 (meaning 25%
      * bonus). These are looked up in Defaults for each skillID.
      */
     protected $skillTimeModifiers;
 
     /**
-     * @var array $implantTimeModifiers the implant-dependent time modifiers in the form $activityID => 0.98 (meaning 2%
+     * @var float[] $implantTimeModifiers the implant-dependent time modifiers in the form $activityID => 0.98 (meaning 2%
      * bonus). These are looked up in Defaults but can be overriden.
      */
     protected $implantTimeModifiers;
@@ -157,7 +155,7 @@ class IndustryModifier
      * the system industry indices, as no data for them is provided by CREST.
      *
      * @param int $solarSystemID of the SolarSystem to get data for
-     * @param array $assemblyLineTypeIDs IDs of the type of AssemblyLine to set
+     * @param array $assemblyLineTypeIDs IDs of the type of AssemblyLine to set by activityID
      * @param float $tax if the POS has a tax set, in the form "0.1" as 10%
      *
      * @return \iveeCore\IndustryModifier
@@ -175,8 +173,7 @@ class IndustryModifier
         $assemblyLines = array();
         foreach ($assemblyLineTypeIDs as $activity => $activityAssemblyLineTypeIDs)
             foreach ($activityAssemblyLineTypeIDs as $assemblyLineTypeID)
-                $assemblyLines[$activity][$assemblyLineTypeID]
-                    = $assemblyLineClass::getById($assemblyLineTypeID);
+                $assemblyLines[$activity][$assemblyLineTypeID] = $assemblyLineClass::getById($assemblyLineTypeID);
 
         return new static(
             $system,
@@ -189,7 +186,7 @@ class IndustryModifier
      * Constructor. Note available convenience functions for helping with instantiation.
      *
      * @param \iveeCore\SolarSystem $system which this IndustryModifier is being instantiated for
-     * @param array $assemblyLines of \iveeCore\AssemblyLines
+     * @param array[] $assemblyLines the available AssemblyLines by activityID
      * @param float $tax in the form "0.1" for 10% tax
      *
      * @return \iveeCore\IndustryModifier
@@ -222,7 +219,7 @@ class IndustryModifier
     }
 
     /**
-     * Returns all available AssemblyLines
+     * Returns all available AssemblyLines.
      *
      * @return array in the form activityID => assemblyLineTypeID => AssemblyLine
      */
@@ -232,11 +229,11 @@ class IndustryModifier
     }
 
     /**
-     * Returns all available AssemblyLines for a given activityID
+     * Returns all available AssemblyLines for a given activityID.
      *
      * @param int $activityID the activity to get AssemblyLines for
      *
-     * @return array in the form assemblyLineTypeID => AssemblyLine
+     * @return \iveeCore\AssemblyLine[] in the form assemblyLineTypeID => AssemblyLine
      */
     public function getAssemblyLinesForActivity($activityID)
     {
@@ -247,7 +244,7 @@ class IndustryModifier
     }
 
     /**
-     * Returns the SolarSystem
+     * Returns the SolarSystem.
      *
      * @return \iveeCore\SolarSystem
      */
@@ -257,7 +254,7 @@ class IndustryModifier
     }
 
     /**
-     * Returns the tax in the form "0.1" for 10%
+     * Returns the tax in the form "0.1" for 10%.
      *
      * @return float
      */
@@ -267,7 +264,7 @@ class IndustryModifier
     }
 
     /**
-     * Returns the tax in the form "1.1" for 10%
+     * Returns the tax in the form "1.1" for 10%.
      *
      * @return float
      */
@@ -277,9 +274,9 @@ class IndustryModifier
     }
 
     /**
-     * Returns the implant dependent industry activity time modifiers
+     * Returns the implant dependent industry activity time modifiers.
      *
-     * @return array in the form activityID => float, "0.95" for 5% bonus
+     * @return float[] in the form activityID => float, "0.95" for 5% bonus
      */
     public function getImplantTimeModifiers()
     {
@@ -287,7 +284,7 @@ class IndustryModifier
     }
 
     /**
-     * Returns the implant dependent industry activity time modifiers
+     * Returns the implant dependent industry activity time modifiers.
      *
      * @param int $activityID optional
      *
@@ -302,7 +299,7 @@ class IndustryModifier
     }
 
     /**
-     * Allows setting the implant time modifiers, overriding the defaults looked up during instantiation
+     * Allows setting the implant time modifiers, overriding the defaults looked up during instantiation.
      *
      * @param float $modifier the time factor, in the form 0.95 for 5% bonus
      * @param int $activityID the ID of the activity this time bonus is for
@@ -321,7 +318,7 @@ class IndustryModifier
     }
 
     /**
-     * Allows setting the implant time modifiers, overriding the defaults looked up during instantiation
+     * Allows setting the implant time modifiers, overriding the defaults looked up during instantiation.
      *
      * @param array $modifiers in the form activityID => float
      *
@@ -333,9 +330,9 @@ class IndustryModifier
     }
 
     /**
-     * Returns the skill dependent industry activity time modifiers
+     * Returns the skill dependent industry activity time modifiers.
      *
-     * @return array in the form activityID => float
+     * @return float[] in the form activityID => float
      */
     public function getSkillTimeModifiers()
     {
@@ -343,7 +340,7 @@ class IndustryModifier
     }
 
     /**
-     * Returns the skill dependent industry activity time modifier
+     * Returns the skill dependent industry activity time modifier.
      *
      * @param int $activityID the ID of the activity
      *
@@ -358,7 +355,7 @@ class IndustryModifier
     }
 
     /**
-     * Allows setting the skill dependent time modifiers, overriding the defaults looked up during instantiation
+     * Allows setting the skill dependent time modifiers, overriding the defaults looked up during instantiation.
      *
      * @param array $modifiers in the form activityID => 0.98 (for 2% bonus)
      *
@@ -370,7 +367,7 @@ class IndustryModifier
     }
 
     /**
-     * Allows setting the skill dependent time modifiers, overriding the defaults looked up during instantiation
+     * Allows setting the skill dependent time modifiers, overriding the defaults looked up during instantiation.
      *
      * @param float $modifier in the form 0.98 for 2% bonus
      * @param int $activityID the ID of the activity
@@ -415,11 +412,11 @@ class IndustryModifier
      * variables.
      *
      * @param int $activityID ID of the activity to get modifiers for
-     * @param Type $type It's the final output item that needs to be given for checking. This means that for
+     * @param \iveeCore\Type $type It's the final output item that needs to be given for checking. This means that for
      * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product
      * of the invented blueprint. Only for reverse engineering the input Relic must be checked.
      *
-     * @return array
+     * @return float[]
      */
     public function getModifier($activityID, Type $type)
     {
@@ -453,19 +450,20 @@ class IndustryModifier
 
     /**
      * Gets the best compatible assemblyLine for the activity and Type.
-     * Bonuses are ranked as material bonus > time bonus > cost bonus
+     * Bonuses are ranked as material bonus > time bonus > cost bonus.
      *
      * @param int $activityID the ID of the activity to get AssemblyLines for
-     * @param Type $type It's always the final output item that needs to be given. This means that for manufacturing,
-     * its the Blueprint product; for copying its the Blueprint itself; for invention it is the product of the
-     * invented blueprint.
+     * @param \iveeCore\Type $type It's always the final output item that needs to be given. This means that for
+     * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product
+     * of the invented blueprint.
      *
-     * @return AssemblyLine|null
+     * @return \iveeCore\AssemblyLine|null
      */
     public function getBestAssemblyLineForActivity($activityID, Type $type)
     {
         $bestAssemblyLine = null;
         $bestModifier = null;
+
         foreach ($this->getAssemblyLinesForActivity($activityID) as $candidateAssemblyLine) {
             //skip incompatible assemblyLines
             if (!$candidateAssemblyLine->isTypeCompatible($type))

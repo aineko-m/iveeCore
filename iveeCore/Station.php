@@ -9,13 +9,12 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Station.php
- *
  */
 
 namespace iveeCore;
 
 /**
- * Class for representing stations
+ * Class for representing stations.
  * Inheritance: Station -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Station.php
- *
  */
 class Station extends SdeType
 {
@@ -75,7 +73,7 @@ class Station extends SdeType
     protected $assemblyLineTypeIDs = array();
 
     /**
-     * Loads all Station names from DB to PHP
+     * Loads all Station names from DB to PHP.
      *
      * @return void
      */
@@ -156,7 +154,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets solarSystemID
+     * Gets solarSystemID.
      *
      * @return int
      */
@@ -166,7 +164,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets SolarSystem
+     * Gets SolarSystem.
      *
      * @return \iveeCore\SolarSystem
      */
@@ -177,7 +175,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets oprationID
+     * Gets oprationID.
      *
      * @return int
      */
@@ -187,7 +185,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets stationTypeID
+     * Gets stationTypeID.
      *
      * @return int
      */
@@ -197,7 +195,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets owning corporationID
+     * Gets owning corporationID.
      *
      * @return int
      */
@@ -207,7 +205,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets station reprocessing efficiency
+     * Gets station reprocessing efficiency.
      *
      * @return float
      */
@@ -217,7 +215,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets station tax
+     * Gets station tax.
      *
      * @return float
      * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost
@@ -235,7 +233,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets a stations assemblyLineTypeIDs
+     * Gets a stations assemblyLineTypeIDs.
      *
      * @return array $activityID => array(id1, id2...)
      */
@@ -245,7 +243,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets a stations assemblyLineTypeIDs
+     * Gets a stations assemblyLineTypeIDs.
      *
      * @param int $activityID to get assemblyLineTypeIDs for
      *
@@ -260,7 +258,7 @@ class Station extends SdeType
     }
 
     /**
-     * Returns an IndustryModifier object for this station
+     * Returns an IndustryModifier object for this station.
      *
      * @return \iveeCore\IndustryModifier
      */

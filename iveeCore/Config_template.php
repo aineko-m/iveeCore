@@ -46,7 +46,7 @@ class Config
 
     //Memcached specific settings
     protected static $cacheHost   = 'localhost';
-    protected static $cachePort   = '11211'; //memcached default: 11211, redis default: 6379
+    protected static $cachePort   = 11211; //memcached default: 11211, redis default: 6379
 
     //EMDR config
     //https://eve-market-data-relay.readthedocs.org/en/latest/access.html
@@ -170,7 +170,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database host
+     * Returns configured SDE database host.
      *
      * @return string
      */
@@ -180,7 +180,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database port
+     * Returns configured SDE database port.
      *
      * @return int
      */
@@ -190,7 +190,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database user
+     * Returns configured SDE database user.
      *
      * @return string
      */
@@ -200,7 +200,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database password
+     * Returns configured SDE database password.
      *
      * @return string
      */
@@ -210,7 +210,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database name
+     * Returns configured SDE database name.
      *
      * @return string
      */
@@ -220,7 +220,7 @@ class Config
     }
 
     /**
-     * Returns configured iveeCore database name
+     * Returns configured iveeCore database name.
      *
      * @return string
      */
@@ -230,7 +230,7 @@ class Config
     }
 
     /**
-     * Returns if cache use is configured or not
+     * Returns if cache use is configured or not.
      *
      * @return bool
      */
@@ -240,7 +240,7 @@ class Config
     }
 
     /**
-     * Returns configured cache prefix for keys stored by iveeCore
+     * Returns configured cache prefix for keys stored by iveeCore.
      *
      * @return string
      */
@@ -250,7 +250,7 @@ class Config
     }
 
     /**
-     * Returns configured cache host name
+     * Returns configured cache host name.
      *
      * @return string
      */
@@ -260,7 +260,7 @@ class Config
     }
 
     /**
-     * Returns configured cache port
+     * Returns configured cache port.
      *
      * @return int
      */
@@ -270,7 +270,7 @@ class Config
     }
 
     /**
-     * Returns configured EMDR URL
+     * Returns configured EMDR URL.
      *
      * @return string
      */
@@ -280,7 +280,7 @@ class Config
     }
 
     /**
-     * Returns configured CREST base URL
+     * Returns configured CREST base URL.
      *
      * @return string
      */
@@ -290,7 +290,7 @@ class Config
     }
 
     /**
-     * Returns configured user agent to be used by the CREST client
+     * Returns configured user agent to be used by the CREST client.
      *
      * @return string
      */
@@ -301,7 +301,7 @@ class Config
 
     /**
      * Returns the fully qualified name of classes to instantiate for a given class nickname. This is used extensively
-     * in iveeCore to allow for configurable class instantiation
+     * in iveeCore to allow for configurable class instantiation.
      *
      * @param string $classNickname a short name for the class
      *

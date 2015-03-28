@@ -9,10 +9,10 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/EMDR/EmdrPriceUpdate.php
- *
  */
 
 namespace iveeCore\EMDR;
+use \iveeCore\Config;
 
 /**
  * EmdrPriceUpdate handles price/order data updates from EMDR
@@ -22,7 +22,6 @@ namespace iveeCore\EMDR;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/EMDR/EmdrPriceUpdate.php
- *
  */
 class PriceUpdater
 {
@@ -42,7 +41,7 @@ class PriceUpdater
     protected $generatedAt;
 
     /**
-     * @var array $averages contains the averages for volume and transactions for the last 7 days
+     * @var float[] $averages contains the averages for volume and transactions for the last 7 days
      */
     protected $averages;
 
@@ -77,7 +76,7 @@ class PriceUpdater
     protected $supplyIn5;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param int $typeID ID of item this price data is from
      * @param int $regionID ID of the region this price data is from
@@ -115,13 +114,13 @@ class PriceUpdater
     }
 
     /**
-     * Loads the weekle averages for transaction count and volume for the current item/region
+     * Loads the weekle averages for transaction count and volume for the current item/region.
      *
      * @return void
      */
     protected function loadWeekAverages()
     {
-        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
+        $sdeClass = Config::getIveeClassName('SDE');
 
         //get weekly averages for vol and tx from DB
         //Look at stored procedure iveeCompleteHistoryUpdate() for details
@@ -129,7 +128,7 @@ class PriceUpdater
             "SELECT
             atp.avgVol,
             atp.avgTx
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTrackedPrices as atp
+            FROM " . Config::getIveeDbName() . ".iveeTrackedPrices as atp
             WHERE atp.regionID = " . $this->regionID . "
             AND atp.typeID = " . $this->typeID . ";"
         );
@@ -147,7 +146,7 @@ class PriceUpdater
     }
 
     /**
-     * Estimates a realistic sell price and the supply within 5% of this price
+     * Estimates a realistic sell price and the supply within 5% of this price.
      *
      * @param array &$sdata sell orders
      *
@@ -172,7 +171,7 @@ class PriceUpdater
     }
 
     /**
-     * Estimates a realistic buy price and the demand within 5% of this price
+     * Estimates a realistic buy price and the demand within 5% of this price.
      *
      * @param array &$bdata buy orders
      *
@@ -216,19 +215,19 @@ class PriceUpdater
     }
 
     /**
-     * Inserts price data into the DB
+     * Inserts price data into the DB.
      *
      * @return void
      */
     public function insertIntoDB()
     {
         if (isset($this->sell) OR isset($this->buy)) {
-            $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
+            $sdeClass = Config::getIveeClassName('SDE');
 
             //check if row already exists
             $res = $sdeClass::instance()->query(
                 "SELECT regionID
-                FROM " . \iveeCore\Config::getIveeDbName() . ".iveePrices
+                FROM " . Config::getIveeDbName() . ".iveePrices
                 WHERE regionID = " . $this->regionID . "
                 AND typeID = " . $this->typeID . "
                 AND date = '" . date('Y-m-d', $this->generatedAt) . "';"
@@ -246,7 +245,7 @@ class PriceUpdater
                 );
 
                 //build update query
-                $sql = $sdeClass::makeUpdateQuery(\iveeCore\Config::getIveeDbName() . '.iveePrices', $updatetData,
+                $sql = $sdeClass::makeUpdateQuery(Config::getIveeDbName() . '.iveePrices', $updatetData,
                     $where);
             } else { //insert data
                 $insertData = $this->getOptionalPriceDataArray();
@@ -255,11 +254,11 @@ class PriceUpdater
                 $insertData['date']     = date('Y-m-d', $this->generatedAt);
 
                 //build insert query
-                $sql = $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveePrices', $insertData);
+                $sql = $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.iveePrices', $insertData);
             }
 
             //add stored procedure call to complete the update
-            $sql .= "CALL " . \iveeCore\Config::getIveeDbName() . ".iveeCompletePriceUpdate("
+            $sql .= "CALL " . Config::getIveeDbName() . ".iveeCompletePriceUpdate("
                 . $this->typeID . ", "
                 . $this->regionID . ", '"
                 . date('Y-m-d H:i:s', $this->generatedAt)
@@ -269,7 +268,7 @@ class PriceUpdater
             $sdeClass::instance()->multiQuery($sql);
 
             if (VERBOSE) {
-                $ecClass = \iveeCore\Config::getIveeClassName('EmdrConsumer');
+                $ecClass = Config::getIveeClassName('EmdrConsumer');
                 $ec = $ecClass::instance();
                 echo "P: " . $ec->getTypeNameById($this->typeID) . ' (' . $this->typeID . '), '
                     . $ec->getRegionNameById($this->regionID) . ' ('. $this->regionID . ')' . PHP_EOL;
@@ -278,7 +277,7 @@ class PriceUpdater
     }
 
     /**
-     * Returns an array with the available price set; used for DB updates / inserts
+     * Returns an array with the available price set; used for DB updates / inserts.
      *
      * @return array
      */
@@ -301,7 +300,7 @@ class PriceUpdater
     }
 
     /**
-     * Estimate realistic prices by calculating weighted average of orders equivalent to 5% of daily volume
+     * Estimate realistic prices by calculating weighted average of orders equivalent to 5% of daily volume.
      *
      * @param array $odata the orders (buy or sell)
      * @param array $averages with averages for volume and transactions

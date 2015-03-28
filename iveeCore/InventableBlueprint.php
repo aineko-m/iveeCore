@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InventableBlueprint.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InventableBlueprint.php
- *
  */
 class InventableBlueprint extends Blueprint
 {
@@ -50,7 +48,7 @@ class InventableBlueprint extends Blueprint
     }
 
     /**
-     * Load Blueprint this InventableBlueprint can be invented from
+     * Load Blueprint this InventableBlueprint can be invented from.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -77,7 +75,7 @@ class InventableBlueprint extends Blueprint
     }
 
     /**
-     * Returns the inventor blueprint ID
+     * Returns the inventor blueprint ID.
      *
      * @return int
      */
@@ -87,9 +85,9 @@ class InventableBlueprint extends Blueprint
     }
 
     /**
-     * Returns the inventor blueprint
+     * Returns the inventor blueprint.
      *
-     * @return InventorBlueprint
+     * @return \iveeCore\InventorBlueprint
      */
     public function getInventorBlueprint()
     {
@@ -97,9 +95,9 @@ class InventableBlueprint extends Blueprint
     }
 
     /**
-     * Convenience function for inventing starting from the inveted blueprint instead of inventor
+     * Convenience function for inventing starting from the inveted blueprint instead of inventor.
      *
-     * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
+     * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $decryptorID the decryptor the be used, if any
      * @param boolean $recursive defines if manufacturables should be build recursively
      *
@@ -111,9 +109,9 @@ class InventableBlueprint extends Blueprint
     }
 
     /**
-     * Convenience function to copy, invent T2 blueprint and manufacture from blueprint in one go
+     * Convenience function to copy, invent T2 blueprint and manufacture from blueprint in one go.
      *
-     * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
+     * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $decryptorID the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
      *

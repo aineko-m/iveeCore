@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ManufactureProcessData.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ManufactureProcessData.php
- *
  */
 class ManufactureProcessData extends ProcessData
 {
@@ -54,7 +52,7 @@ class ManufactureProcessData extends ProcessData
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
      *
-     * @return ProcessData
+     * @return \iveeCore\ProcessData
      */
     public function __construct($producesTypeID, $producesQuantity, $processTime, $processCost, $bpMeLevel,
         $bpTeLevel, $solarSystemID, $assemblyLineID
@@ -120,7 +118,7 @@ class ManufactureProcessData extends ProcessData
     }
 
     /**
-     * Prints data about this process
+     * Prints data about this process.
      *
      * @return void
      */
