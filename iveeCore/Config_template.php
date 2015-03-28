@@ -31,11 +31,11 @@ class Config
     /////////////////////
 
     //SDE DB config
-    protected static $sdeDbHost = 'localhost';
+    protected static $sdeDbHost = 'localhost'; //if DB connection fails try 127.0.0.1 instead of localhost
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_tia10';
+    protected static $sdeDbName = 'eve_sde_scy10';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';
@@ -46,7 +46,7 @@ class Config
 
     //Memcached specific settings
     protected static $cacheHost   = 'localhost';
-    protected static $cachePort   = '11211';
+    protected static $cachePort   = '11211'; //memcached default: 11211, redis default: 6379
 
     //EMDR config
     //https://eve-market-data-relay.readthedocs.org/en/latest/access.html
@@ -64,8 +64,8 @@ class Config
     protected static $classes = array(
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
-//        'Cache'                  => '\iveeCore\MemcachedWrapper',
-        'Cache'                  => '\iveeCore\RedisWrapper',
+        'Cache'                  => '\iveeCore\MemcachedWrapper',
+//        'Cache'                  => '\iveeCore\RedisWrapper',
         'CacheableArray'         => '\iveeCore\CacheableArray',
         'CoreDataCommon'         => '\iveeCore\CoreDataCommon',
         'CopyProcessData'        => '\iveeCore\CopyProcessData',
