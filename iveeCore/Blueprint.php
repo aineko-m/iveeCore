@@ -477,13 +477,19 @@ class Blueprint extends Type
             }
 
             $mat = Type::getById($matID);
+            $amount = $matData['q'] * $materialFactor * $numPortions;
 
             //calculate total quantity needed, applying all modifiers
             //if number of portions is a fraction, don't ceil() amounts
-            if (fmod($numPortions, 1.0) > 0.0)
-                $totalNeeded = $matData['q'] * $materialFactor * $numPortions;
-            else
-                $totalNeeded = ceil($matData['q'] * $materialFactor * $numPortions);
+            if (fmod($numPortions, 1.0) > 0.000000001)
+                $totalNeeded = $amount;
+            else {
+                //fix float precision problems
+                if (fmod($amount, 1.0) < 0.000000001)
+                    $totalNeeded = round($amount);
+                else
+                    $totalNeeded = ceil($amount);
+            }
 
             //at least one unit of material is required per portion
             if ($totalNeeded < $numPortions)
