@@ -58,7 +58,7 @@ class Manufacturable extends Type
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException ('TypeIdNotFoundException', "typeID " . $this->id . " not found");
+            self::throwException('TypeIdNotFoundException', "typeID " . $this->id . " not found");
 
         return $row;
     }

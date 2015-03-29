@@ -82,8 +82,6 @@ class PriceUpdater
      * @param int $regionID ID of the region this price data is from
      * @param int $generatedAt unix timestamp of the data generation
      * @param array &$orders the order data rows
-     *
-     * @return void
      */
     public function __construct($typeID, $regionID, $generatedAt, array &$orders)
     {

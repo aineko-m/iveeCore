@@ -93,8 +93,6 @@ class ProcessData
      * @param int $producesQuantity the number of produces items
      * @param int $processTime the time this process takes in seconds
      * @param float $processCost the cost of performing this activity (without material cost or subprocesses)
-     *
-     * @return \iveeCore\ProcessData
      */
     public function __construct($producesTypeID = -1, $producesQuantity = 0, $processTime = 0, $processCost = 0.0)
     {

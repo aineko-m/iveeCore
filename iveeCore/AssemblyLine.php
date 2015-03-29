@@ -168,7 +168,6 @@ class AssemblyLine extends SdeType
      *
      * @param int $id of the AssemblyLine
      *
-     * @return \iveeCore\AssemblyLine
      * @throws \iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeID is not found
      */
     protected function __construct($id)

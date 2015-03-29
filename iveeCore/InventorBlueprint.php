@@ -65,7 +65,6 @@ class InventorBlueprint extends Blueprint
      *
      * @param int $id of the InventorBlueprint object
      *
-     * @return \iveeCore\InventorBlueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($id)
@@ -183,7 +182,7 @@ class InventorBlueprint extends Blueprint
         $numInventableBps = 0;
         foreach ($inventableBpIDs as $inventableBpID) {
             $inventableBp = Type::getById($inventableBpID);
-            if($inventableBp instanceof InventableBlueprint) {
+            if ($inventableBp instanceof InventableBlueprint) {
                 $baseCost += $inventableBp->getProductBaseCost();
                 $numInventableBps++;
             }

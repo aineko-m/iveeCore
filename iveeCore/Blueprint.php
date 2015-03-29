@@ -77,7 +77,6 @@ class Blueprint extends Type
      *
      * @param int $id of the Blueprint object
      *
-     * @return \iveeCore\Blueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
     protected function __construct($id)

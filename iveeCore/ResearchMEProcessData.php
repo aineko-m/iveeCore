@@ -50,8 +50,6 @@ class ResearchMEProcessData extends ProcessData
      * @param int $endMELevel the ME level of the Blueprint after the research
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     *
-     * @return \iveeCore\ResearchMEProcessData
      */
     public function __construct($researchedBpID, $researchTime, $processCost, $startMELevel, $endMELevel,
         $solarSystemID, $assemblyLineID

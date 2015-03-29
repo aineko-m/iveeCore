@@ -154,11 +154,10 @@ Again, running the provided unit test to check for problems is a good idea.
 Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.pdf](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf) and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have run update_crest.php at least once before any of the industry methods will work.
 ```php
 <?php
-use iveeCore\Type;
-use iveeCore\IndustryModifier;
-
 //initialize iveeCore. Adapt path as required.
 require_once('/path/to/iveeCore/iveeCoreInit.php');
+
+use iveeCore\Type, iveeCore\IndustryModifier;
 
 //show the object for 'Damage Control I'
 print_r(Type::getById(2046));
@@ -191,7 +190,7 @@ $processData = Type::getByName('Damage Control II Blueprint')->copyInventManufac
 $reactionProcessData = Type::getByName('Unrefined Hyperflurite Reaction')->react(24 * 30, true, true);
 echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit() . PHP_EOL;
 ```
-The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the library are Type and its child classes, ProcessData and its child classes and IndustryModifier.
+The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the engine are Type and its child classes, ProcessData and its child classes and IndustryModifier.
 
 ## Notes
 Although I tried to make iveeCore as configurable as possible, there are still a number of underlying assumptions made and caveats:
@@ -210,7 +209,7 @@ Alternatively you can run the PHPUnit test, which also clears the cache.
 
 
 ## Extending iveeCore
-If you extend the library with features that are generally useful and compatible with the goals and structuring of the project, Github pull requests are welcome. In any case, if you modify iveeCrest source code, you'll need to comply with the LGPL and release your modifications under the same license.
+If you extend the engine with features that are generally useful and compatible with the goals and structuring of the project, Github pull requests are welcome. In any case, if you modify iveeCrest source code, you'll need to comply with the LGPL and release your modifications under the same license.
 
 To extend iveeCore to your needs without changing the code, the suggested way of doing so is to use subclassing, creating new classes inheriting from the iveeCore classes, and changing the configuration (iveeCore/Config::classes). Class names are looked up dynamically, so with the adjustment objects from your classes will get instantiated instead.
 
@@ -224,7 +223,7 @@ I'll try to keep improving iveeCores structuring, API and test coverage. I also 
 ## FAQ
 Q: What were the beginnings of iveeCore?
 A: In early 2012 I began writing my own indy application in PHP. I had been using the [Invention Calculator Plugin](http://oldforums.eveonline.com/?a=topic&threadID=1223530) for EvEHQ, but with the author going AFG and the new EvEHQ v2 having a good but not nearly flexible enough calculator for my expanding industrial needs, I decided to build my own. The application called "ivee" grew over time and well beyond the scope of it's predecessor. In the end it was rewritten from scratch two and a half times, until I was happy with the overall structure.
-Eventually I decided I wanted to release the part of the code that provided general useful functionality, without revealing too much of ivee's secret sauce. So I put in some effort into separating and generalizing the code dealing with SDE DB interaction and Type classes into the library which now is iveeCore.
+Eventually I decided I wanted to release the part of the code that provided general useful functionality, without revealing too much of ivee's secret sauce. So I put in some effort into separating and generalizing the code dealing with SDE DB interaction and Type classes into the engine which now is iveeCore.
 
 Q: What's the motivation for releasing iveeCore?
 A: I wanted to share something back to the eve developer community. I also see it as an opportunity to dip my toes into working on a Github hosted project, even if it is a small one, and it is a motivation to strive for better code quality.

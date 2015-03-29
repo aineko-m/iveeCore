@@ -49,8 +49,6 @@ abstract class CrestDataUpdater
      * Constructor.
      *
      * @param \stdClass $data the data received from CREST
-     *
-     * @return \iveeCore\CREST\CrestDataUpdater
      */
     public function __construct(\stdClass $data)
     {

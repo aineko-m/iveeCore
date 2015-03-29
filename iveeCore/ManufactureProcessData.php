@@ -51,8 +51,6 @@ class ManufactureProcessData extends ProcessData
      * @param int $bpTeLevel the TE level of the blueprint used in this process
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     *
-     * @return \iveeCore\ProcessData
      */
     public function __construct($producesTypeID, $producesQuantity, $processTime, $processCost, $bpMeLevel,
         $bpTeLevel, $solarSystemID, $assemblyLineID

@@ -81,8 +81,6 @@ class Consumer
 
     /**
      * Constructor.
-     *
-     * @return \iveeCore\EMDR\EmdrConsumer
      */
     protected function __construct()
     {
@@ -181,9 +179,8 @@ class Consumer
             if ($marketData->resultType == 'orders') {
                 if (!$this->handleOrderData($typeID, $regionID, $generatedAt, $rowset, $timestampsObj))
                     continue;
-            }
-            //history data
-            elseif ($marketData->resultType == 'history') {
+            } elseif ($marketData->resultType == 'history') {
+                //history data
                 try {
                     if (!$this->handleHistoryData($typeID, $regionID, $generatedAt, $rowset, $timestampsObj))
                         continue;

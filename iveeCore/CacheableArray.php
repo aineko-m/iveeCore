@@ -44,8 +44,6 @@ class CacheableArray extends \stdClass implements ICacheable
      *
      * @param string $key under which the object will be stored in cache
      * @param int $ttl the cache time to live in seconds
-     *
-     * @return \iveeCore\CacheableArray
      */
     public function __construct($key, $ttl)
     {

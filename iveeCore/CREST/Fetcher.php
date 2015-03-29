@@ -36,9 +36,7 @@ class Fetcher
     protected $userAgent;
 
     /**
-     * Constructor
-     *
-     * @return \iveeCore\CREST\Fetcher
+     * Constructor.
      */
     public function __construct()
     {

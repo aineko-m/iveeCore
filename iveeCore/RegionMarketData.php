@@ -160,7 +160,6 @@ class RegionMarketData extends CoreDataCommon
      * @param int $typeID of type
      * @param int $regionID of the region
      *
-     * @return \iveeCore\RegionMarketData
      * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */

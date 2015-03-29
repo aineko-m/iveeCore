@@ -188,8 +188,6 @@ class IndustryModifier
      * @param \iveeCore\SolarSystem $system which this IndustryModifier is being instantiated for
      * @param array[] $assemblyLines the available AssemblyLines by activityID
      * @param float $tax in the form "0.1" for 10% tax
-     *
-     * @return \iveeCore\IndustryModifier
      */
     public function __construct(SolarSystem $system, array $assemblyLines, $tax)
     {

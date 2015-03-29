@@ -109,7 +109,6 @@ class SolarSystem extends SdeType
      *
      * @param int $id of the SolarSystem
      *
-     * @return \iveeCore\SolarSystem
      * @throws \iveeCore\Exceptions\SolarSystemIdNotFoundException if solarSystemID is not found
      */
     protected function __construct($id)
@@ -125,7 +124,7 @@ class SolarSystem extends SdeType
         )->fetch_assoc();
 
         if (empty($row))
-            static::throwException('SystemIdNotFoundException', "SolarSystem ID=". $this->id . " not found" );
+            static::throwException('SystemIdNotFoundException', "SolarSystem ID=". $this->id . " not found");
 
         //set data to attributes
         $this->regionID        = (int) $row['regionID'];
@@ -142,7 +141,7 @@ class SolarSystem extends SdeType
             ORDER BY date DESC LIMIT 1;"
         )->fetch_assoc();
 
-        if (!empty($res)){
+        if (!empty($res)) {
             if (isset($res['crestIndexDate']))
                 $this->industryIndexDate = (int) $res['crestIndexDate'];
             if (isset($res['manufacturingIndex']))

@@ -95,7 +95,6 @@ class GlobalPriceData extends CoreDataCommon
      *
      * @param int $typeId of the market data type
      *
-     * @return \iveeCore\GlobalMarketData
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
      */
     protected function __construct($typeId)
@@ -128,8 +127,10 @@ class GlobalPriceData extends CoreDataCommon
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('NoPriceDataAvailableException', "No global price data for "
-                . $this->getType()->getName() . " (typeID=" . $this->id . ") found");
+            self::throwException(
+                'NoPriceDataAvailableException', "No global price data for " . $this->getType()->getName()
+                    . " (typeID=" . $this->id . ") found"
+            );
 
         return $row;
     }
@@ -169,8 +170,9 @@ class GlobalPriceData extends CoreDataCommon
         if ($this->priceDate > 0)
             return $this->priceDate;
         else
-            self::throwException('NoPriceDataAvailableException', "No CREST price available for "
-                . $this->getType()->getName());
+            self::throwException(
+                'NoPriceDataAvailableException', "No CREST price available for " . $this->getType()->getName()
+            );
     }
 
     /**

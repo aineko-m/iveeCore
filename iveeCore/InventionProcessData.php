@@ -66,8 +66,6 @@ class InventionProcessData extends ProcessData
      * @param int $resultTE the TE level on the resulting T2 BPC if invention is successful
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     *
-     * @return InventionProcessData
      */
     public function __construct($inventedBpID, $inventTime, $processCost, $probability, $resultRuns,
         $resultME, $resultTE, $solarSystemID, $assemblyLineID

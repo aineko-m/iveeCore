@@ -53,7 +53,6 @@ class HistoryUpdater
      * @param int $generatedAt unix timestamp of the data generation
      * @param array $rows the history data rows
      *
-     * @return \iveeCore\EMDR\HistoryUpdater
      * @throws \iveeCore\Exceptions\NoRelevantDataException if 0 relevant rows are given
      */
     public function __construct($typeID, $regionID, $generatedAt, array $rows)
@@ -131,8 +130,11 @@ class HistoryUpdater
                 );
 
                 //build update query
-                $combinedSql .= $sdeClass::makeUpdateQuery(Config::getIveeDbName() . '.iveePrices',
-                    $updateData, $where);
+                $combinedSql .= $sdeClass::makeUpdateQuery(
+                    Config::getIveeDbName() . '.iveePrices',
+                    $updateData,
+                    $where
+                );
             } else { // do insert for all missing data
                 $insertData = array(
                     'typeID'   => $this->typeID,

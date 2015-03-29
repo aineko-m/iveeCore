@@ -57,8 +57,6 @@ class ReactionProcessData
      * @param int $cycles defines the number of cycles the object covers
      * @param bool $withReprocessing defines if the process includes a reprocessing step, which can happen for alchemy
      * @param bool $withFeedback defines if the process includes a material feedback loop, which can happen for alchemy
-     *
-     * @return \iveeCore\ReactionProcessData
      */
     public function __construct(MaterialMap $inputMaterialMap, MaterialMap $outputMaterialMap, $cycles = 1,
         $withReprocessing = false, $withFeedback = false

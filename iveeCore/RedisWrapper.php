@@ -64,8 +64,6 @@ class RedisWrapper implements ICache
 
     /**
      * Constructor.
-     *
-     * @return \iveeCore\RedisWrapper
      */
     protected function __construct()
     {

@@ -35,7 +35,6 @@ class InventableBlueprint extends Blueprint
      *
      * @param int $id of the InventableBlueprint object
      *
-     * @return \iveeCore\InventableBlueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
     protected function __construct($id)

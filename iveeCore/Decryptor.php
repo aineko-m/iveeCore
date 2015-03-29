@@ -55,7 +55,6 @@ class Decryptor extends Type
      *
      * @param int $id of the Decryptor object
      *
-     * @return \iveeCore\Decryptor
      * @throws \iveeCore\Exceptions\UnexpectedDataException when loading Decryptor data fails
      */
     protected function __construct($id)

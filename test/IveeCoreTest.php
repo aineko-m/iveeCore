@@ -26,7 +26,7 @@ use \iveeCore\ReactionProduct;
 use \iveeCore\FitParser;
 
 //include the iveeCore init, expected in the iveeCore directory, with absolute path
-require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php');
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
 
 /**
  * PHPUnit test for iveeCore

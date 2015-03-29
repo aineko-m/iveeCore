@@ -110,7 +110,6 @@ class Station extends SdeType
      *
      * @param int $id of the Station
      *
-     * @return \iveeCore\Station
      * @throws \iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
      * @throws \iveeCore\Exceptions\IveeCoreException if trying to instantiate a player built outpost
      */

@@ -64,8 +64,6 @@ class MemcachedWrapper implements ICache
 
     /**
      * Constructor.
-     *
-     * @return \iveeCore\MemcachedWrapper
      */
     protected function __construct()
     {

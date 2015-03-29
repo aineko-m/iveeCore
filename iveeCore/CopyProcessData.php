@@ -45,8 +45,6 @@ class CopyProcessData extends ProcessData
      * @param float $processCost the cost of performing this reseach process
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     *
-     * @return \iveeCore\CopyProcessData
      */
     public function __construct($bpCopyID, $copyQuantity, $outputRuns, $copyTime, $processCost, $solarSystemID,
         $assemblyLineID

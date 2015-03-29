@@ -162,8 +162,6 @@ class Config
 
     /**
      * Instantiates Config object. Private so this class is only used as static.
-     *
-     * @return Config
      */
     private function __construct()
     {

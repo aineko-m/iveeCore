@@ -234,6 +234,7 @@ class Type extends SdeType
      */
     private static function decideType(array $subtypeInfo)
     {
+        $subtype = '';
         if (empty($subtypeInfo))
             self::throwException('TypeIdNotFoundException', "typeID not found");
         elseif ($subtypeInfo['categoryID'] == 24)
@@ -267,7 +268,6 @@ class Type extends SdeType
      *
      * @param int $id of the Type
      *
-     * @return \iveeCore\Type
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($id)

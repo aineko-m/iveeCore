@@ -36,7 +36,6 @@ class ReactionProduct extends Type
      *
      * @param int $id of the ReactionProduct object
      *
-     * @return \iveeCore\ReactionProduct
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($id)
@@ -66,7 +65,7 @@ class ReactionProduct extends Type
         );
 
         if (empty($res))
-            static::throwException('TypeIdNotFoundException', "ReactionProduct ID=". $this->id . " not found" );
+            static::throwException('TypeIdNotFoundException', "ReactionProduct ID=". $this->id . " not found");
 
         while ($row = $res->fetch_assoc())
             $this->productOfReactionIDs[] = (int) $row['reactionTypeID'];

@@ -46,8 +46,6 @@ class InstancePool
 
     /**
      * Contructor.
-     *
-     * @return \iveeCore\InstancePool
      */
     public function __construct()
     {
@@ -128,7 +126,7 @@ class InstancePool
             if ($this->cache instanceof ICache) {
                 //try getting mapping array from cache, will throw an exception if not found
                 $cacheableArray = $this->cache->getItem($classTypeNamesKey);
-                if(!$cacheableArray instanceof CacheableArray) {
+                if (!$cacheableArray instanceof CacheableArray) {
                     $WrongTypeExceptionClass = Config::getIveeClassName('WrongTypeException');
                     throw new $WrongTypeExceptionClass('Object given is not CacheableArray');
                 }
@@ -152,7 +150,8 @@ class InstancePool
      *
      * @return void
      */
-    public function deleteItem($key) {
+    public function deleteItem($key)
+    {
         $this->cache->deleteItem($key);
         if (isset($this->keyToObj[$key]))
             unset($this->keyToObj[$key]);
