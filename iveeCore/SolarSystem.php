@@ -9,34 +9,32 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SolarSystem.php
- *
  */
 
 namespace iveeCore;
 
 /**
  * Class for representing solar systems
- * Inheritance: SolarSystem -> SdeType -> CacheableCommon
+ * Inheritance: SolarSystem -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SolarSystem.php
- *
  */
 class SolarSystem extends SdeType
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'SolarSystem';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) SolarSystem objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing)
-     */
-    protected static $classNick = 'SolarSystem';
 
     /**
      * @var int $regionID the ID of region of this SolarSystem.
@@ -74,12 +72,7 @@ class SolarSystem extends SdeType
     protected $stationIDs = array();
 
     /**
-     * @var array $teamIDs the IDs of Teams active in this SolarSystem
-     */
-    protected $teamIDs = array();
-
-    /**
-     * Loads all SolarSystem names from DB to PHP
+     * Loads all SolarSystem names from DB to PHP.
      *
      * @return void
      */
@@ -97,7 +90,18 @@ class SolarSystem extends SdeType
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['solarSystemName']] = (int) $row['solarSystemID'];
 
-        static::$instancePool->setNamesToKeys($namesToIds);
+        static::$instancePool->setNamesToKeys(static::getClassHierarchyKeyPrefix() . 'Names', $namesToIds);
+    }
+
+    /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SDE related classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
     }
 
     /**
@@ -105,7 +109,6 @@ class SolarSystem extends SdeType
      *
      * @param int $id of the SolarSystem
      *
-     * @return \iveeCore\SolarSystem
      * @throws \iveeCore\Exceptions\SolarSystemIdNotFoundException if solarSystemID is not found
      */
     protected function __construct($id)
@@ -121,7 +124,7 @@ class SolarSystem extends SdeType
         )->fetch_assoc();
 
         if (empty($row))
-            static::throwException('SystemIdNotFoundException', "SolarSystem ID=". $this->id . " not found" );
+            static::throwException('SystemIdNotFoundException', "SolarSystem ID=". $this->id . " not found");
 
         //set data to attributes
         $this->regionID        = (int) $row['regionID'];
@@ -133,12 +136,12 @@ class SolarSystem extends SdeType
         $res = $sde->query(
             "SELECT systemID, UNIX_TIMESTAMP(date) as crestIndexDate, manufacturingIndex, teResearchIndex,
             meResearchIndex, copyIndex, reverseIndex, inventionIndex
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeIndustrySystems
+            FROM " . Config::getIveeDbName() . ".iveeIndustrySystems
             WHERE systemID = " . $this->id . "
             ORDER BY date DESC LIMIT 1;"
         )->fetch_assoc();
 
-        if (!empty($res)){
+        if (!empty($res)) {
             if (isset($res['crestIndexDate']))
                 $this->industryIndexDate = (int) $res['crestIndexDate'];
             if (isset($res['manufacturingIndex']))
@@ -156,11 +159,10 @@ class SolarSystem extends SdeType
         }
 
         $this->loadStations($sde);
-        $this->loadTeams($sde);
     }
 
     /**
-     * Loads stationIDs in system
+     * Loads stationIDs in system.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -178,30 +180,9 @@ class SolarSystem extends SdeType
             $this->stationIDs[] = $row['stationID'];
         }
     }
-
+    
     /**
-     * Loads teamIDs in system
-     *
-     * @param \iveeCore\SDE $sde the SDE object
-     *
-     * @return void
-     */
-    protected function loadTeams(SDE $sde)
-    {
-        //get teams in system
-        $res = $sde->query(
-            "SELECT teamID
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTeams
-            WHERE solarSystemID = "
-            . $this->id . " AND expiryTime > '" . date('Y-m-d H:i:s', time()) . "';"
-        );
-
-        while ($row = $res->fetch_assoc())
-            $this->teamIDs[] = $row['teamID'];
-    }
-
-    /**
-     * Gets regionID of SolarSystem
+     * Gets regionID of SolarSystem.
      *
      * @return int
      */
@@ -211,7 +192,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets constellationID of SolarSystem
+     * Gets constellationID of SolarSystem.
      *
      * @return int
      */
@@ -221,7 +202,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets security rating of SolarSystem
+     * Gets security rating of SolarSystem.
      *
      * @return float
      */
@@ -241,9 +222,9 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets IDs of Stations in SolarSystem
+     * Gets IDs of Stations in SolarSystem.
      *
-     * @return array
+     * @return int[]
      */
     public function getStationIDs()
     {
@@ -251,9 +232,9 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets Stations in SolarSystem
+     * Gets Stations in SolarSystem.
      *
-     * @return array
+     * @return \iveeCore\Station[]
      */
     public function getStations()
     {
@@ -265,31 +246,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets IDs of Teams in SolarSystem
-     *
-     * @return array
-     */
-    public function getTeamIDs()
-    {
-        return $this->teamIDs;
-    }
-
-    /**
-     * Gets Teams in SolarSystem
-     *
-     * @return array
-     */
-    public function getTeams()
-    {
-        $teams = array();
-        $teamClass = Config::getIveeClassName("Team");
-        foreach ($this->getTeamIDs() as $teamID)
-            $teams[$teamID] = $teamClass::getTeam($teamID);
-        return $teams;
-    }
-
-    /**
-     * Gets unix timstamp for the last update to industry system indices (day granularity)
+     * Gets unix timstamp for the last update to industry system indices (day granularity).
      *
      * @return int
      */
@@ -306,11 +263,11 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets industry indices of SolarSystem
+     * Gets industry indices of SolarSystem.
      *
      * @param int $maxIndexDataAge maximum index data age in seconds, optional
      *
-     * @return array in the form activityID => float
+     * @return float[] in the form activityID => float
      * @throws \iveeCore\Exceptions\CrestDataTooOldException if given max index data age is exceeded
      */
     public function getIndustryIndices($maxIndexDataAge = null)
@@ -322,7 +279,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets industry indices of SolarSystem
+     * Gets industry indices of SolarSystem.
      *
      * @param int $activityID the ID of the activity to get industry index for
      * @param int $maxIndexDataAge maximum index data age in seconds, optional
@@ -347,7 +304,7 @@ class SolarSystem extends SdeType
     /**
      * Sets industry indices. Useful for wormhole systems or what-if scenarios. If called, industryIndexDate is updated.
      *
-     * @param array $indices must be in the form activityID => float
+     * @param float[] $indices must be in the form activityID => float
      *
      * @return void
      */
@@ -358,7 +315,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Returns an IndustryModifier object for a POS in this system
+     * Returns an IndustryModifier object for a POS in this system.
      *
      * @param float $tax set on the POS
      *
@@ -371,7 +328,7 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Returns an IndustryModifier object for all NPC stations in this system
+     * Returns an IndustryModifier object for all NPC stations in this system.
      *
      * @return \iveeCore\IndustryModifier
      */

@@ -1,5 +1,5 @@
 # iveeCore
-a PHP library for calculations of EVE Online industrial activities
+a PHP engine for calculations of EVE Online industrial activities
 
 Copyright (C)2013-2015 by Aineko Macx
 All rights reserved.
@@ -18,11 +18,12 @@ iveeCore will likely be most useful for developers with at least basic PHP knowl
 These are a few example questions that can be answered with a few lines of code using iveeCore:
 - "What is the profit of buying this item in Jita and selling in Dodixie?"
 - "What do these items reprocess to? And whats the volume of that and it's sell value in Jita?"
+- "How much does this EFT fit cost? How much is this scanned cargo worth?"
 - "What is the job cost for building this item in this system? And when built in a POS in low sec?"
 - "What is the total bill of materials to build these Jump Freighters and the minimum skills?"
 - "Is it more profitable to build the components myself or buy off the market?"
 - "Whats the total profit for copying this BPC, inventing with it, building from the resulting T2 BPC and selling the result?"
-- "How do different Decryptors affects ISK/hour?"
+- "How do different Decryptors affect ISK/hour?"
 - "How do Blueprint ME levels impact capital ship manufacturing profits?"
 - "How much is a month of Unrefined Ferrofluid Reaction worth?"
 
@@ -31,10 +32,10 @@ These are a few example questions that can be answered with a few lines of code 
 - An API that strives to be "good", with high power-to-weight ratio
 - Strong object oriented design and class model for inventory types
 - Classes for representing manufacturing, copying, T2 & T3 invention, research and reaction activities, with recursive component building
-- Market data gathering via EMDR with realistic price estimation and profit calculation
-- CREST data fetcher handling system industry indices, market prices, facilities, teams and specialities
+- Market data gathering via EMDR (soon via CREST) with realistic price estimation and profit calculation
+- CREST data fetcher handling system industry indices, market prices and facilities
 - Parsers for EFT-style and EvE XML ship fittings descriptions as well as cargo and ship scanning results
-- Caching support for Memcached or Redis (via Predis)
+- Caching support for Memcached or Redis (via PhpRedis)
 - Extensible via configurable subclassing
 - A well documented and mostly PSR compliant codebase
 
@@ -42,6 +43,7 @@ These are a few example questions that can be answered with a few lines of code 
 ## Requirements
 For basic usage, iveeCore requires:
 - PHP >= 5.3 CLI (64 bit). PHP 5.5 CLI 64 bit recommended.
+- Memcached or Redis
 - MySQL >= 5.5 or derivate. [MariaDB 10](https://mariadb.org/) recommended.
 - Steve Ronuken's EVE Static Data Export (SDE) in MySQL format with industry tables
 
@@ -49,11 +51,11 @@ However, with just that you won't have access to the EMDR market data feed and t
 
 With long running batch scripts iveeCore can consume more RAM than what is typically configured on shared hosting offers for PHP, so a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
 
-For best performance of iveeCore, using caching (Memcached or Redis) is highly recommended. Also using APC is recommended for faster application startup if using PHP prior to version 5.5. Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third compared to 5.3.
+For best performance iveeCore uses caching provided by Memcached or Redis. Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third compared to 5.3. If using PHP prior to version 5.5 also using the APC opcode cache is recommended for quicker application startup.
 
 With increasing number of tracked regional markets, the database size and load from the EMDR client also increases.
 
-Preliminary tests indicate iveeCore also works with the [HipHop Virtual Machine](http://en.wikipedia.org/wiki/HHVM). For long running scripts it can bring some speed improvements and significant memory savings. The EMDR client is not compatible out of the box due to the ZMQ binding requirement.
+iveeCore works with the [HipHop Virtual Machine](http://en.wikipedia.org/wiki/HHVM), except for the EMDR client due to the ZMQ binding requirement. For long running scripts it can bring some speed improvements and significant memory savings. 
 Pre-built HHVM packages can be found [here](https://github.com/facebook/hhvm/wiki/Prebuilt%20Packages%20for%20HHVM).
 
 ## Installation
@@ -67,9 +69,8 @@ apt-get install build-essential git mysql-server-5.6 php5-dev php5-cli phpunit p
 
 If you are using MariaDB or another MySQL derivate, or have a different setup and know what your are doing, adapt the command as required. If you want to use Redis instead of memcached, replace the memcached packages with 
 ```
-redis-server redis-tools php-pear
+redis-server redis-tools php5-redis
 ```
-and then follow the intructions to install Predis via PEAR channel as described [here](https://github.com/nrk/predis).
 
 ### Compile PHP ZMQ binding
 
@@ -90,9 +91,9 @@ If everything went well, you should see a line with the libzmq version.
 ### Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to helpful 3rd party developer Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&t=397875](https://forums.eveonline.com/default.aspx?g=posts&t=397875)
+[https://forums.eveonline.com/default.aspx?g=posts&t=414591](https://forums.eveonline.com/default.aspx?g=posts&t=414591)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_pro10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_scy10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 Then create a second database, naming it "iveeCore" and giving the same user as before full privileges to it.
 
 ### Setup iveeCore
@@ -104,7 +105,7 @@ cd /path/to/my/project
 git clone git://github.com/aineko-m/iveeCore.git
 ```
 
-Once you've done this, you'll find the directory 'iveeCore'. Import the file iveeCore/sql/SDE_additions.sql into the same database you set up for the SDE. This will add a few indices for improved peformance and add some missing data. Then imort the file iveeCore/sql/iveeCore_tables_and_SP into the iveeCore database. This will create the tables iveeCore uses and stored procedures.
+Once you've done this, you'll find the directory 'iveeCore'. Import the file iveeCore/sql/SDE_additions.sql into the same database you set up for the SDE. This will add a few indices for improved performance and add some missing data. Then import the file iveeCore/sql/iveeCore_tables_and_SP into the iveeCore database. This will create the tables iveeCore uses and stored procedures.
 
 Make a copy of the file iveeCore/Config_template.php, naming it Config.php and edit the configuration to match your environment.
 iveeCore comes with a lot of default variables describing an industrial setup in eve, defined in iveeCore/Defaults.php. Once you get comfortable using iveeCore you'll want to customize these defaults, to be done in iveeCoreExtensions/MyDefaults.php, which extends the Defaults class and thus allows you to overwrite whichever aspect is required. The variables are commented or should be self-explanatory to an EvE industrialist or developer.
@@ -115,9 +116,9 @@ To test the setup try running the EMDR client:
 php emdr.php
 ```
 If everything is fine, you should see IDs of items and regions for which price and history market data is being updated as it comes in. Ctrl+C to cancel.
-You'll want to setup this script to run in the background to have up-to-date market data available in iveeCore at all times. The EMDR client tends to become zombified if it doesn't receive data for a while so occasionaly you'll have to kill the existing process and restart it. restart_emdr.sh is a bash script that does this. You can set up a cronjob to run it on a hourly basis, for instance. The job needs to run under a user with the necessary rights, but not root!
+You'll want to setup this script to run in the background to have up-to-date market data available in iveeCore at all times. The EMDR client tends to become zombified if it doesn't receive data for a while so occasionally you'll have to kill the existing process and restart it. restart_emdr.sh is a bash script that does this. You can set up a cronjob to run it on a hourly basis, for instance. The job needs to run under a user with the necessary rights, but not root!
 
-During the first few days of market data collection the load on the DB will be higher, especially if multiple regions are tracked, due to the large number of inserts for the market history of items. By default, the EMDR client only tracks The Forge market region. This can be changed in iveeCoreExtensions/MyDefaults.php.
+During the first few days of market data collection the load on the DB will be higher, especially if multiple regions are tracked, due to the large number of inserts for the market history of items. By default, the EMDR client only tracks "The Forge" market region. This can be changed in iveeCoreExtensions/MyDefaults.php.
 
 Note that EMDR relays can change, so visit https://eve-market-data-relay.readthedocs.org/en/latest/access.html and pick the one nearest to you and change iveeCore/Config.php accordingly.
 
@@ -156,16 +157,18 @@ Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.
 //initialize iveeCore. Adapt path as required.
 require_once('/path/to/iveeCore/iveeCoreInit.php');
 
+use iveeCore\Type, iveeCore\IndustryModifier;
+
 //show the object for 'Damage Control I'
-print_r(\iveeCore\Type::getById(2046));
+print_r(Type::getById(2046));
 
 //it's also possible to instantiate type objects by name
-$type = \iveeCore\Type::getByName('Damage Control I');
+$type = Type::getByName('Damage Control I');
 
 //Now lets looks at industry activities.
 //First we need to get an IndustryModifier object, which aggregates all the things
-//like system indices, available assembly lines, teams, skills & implants.
-$iMod = \iveeCore\IndustryModifier::getBySystemIdForAllNpcStations(30000180); //Osmon
+//like system indices, available assembly lines, skills & implants.
+$iMod = IndustryModifier::getBySystemIdForAllNpcStations(30000180); //Osmon
 
 //manufacture 5 units of 'Damage Control I' with ME 10 and TE 20
 $manuData = $type->getBlueprint()->manufacture($iMod, 5, 10, 20);
@@ -179,15 +182,15 @@ $manuData->printData();
 //get the data for making Damage Control I blueprint copy, inventing from it with a
 //decryptor and building from the resulting T2 BPC, recursively building the necessary
 //components
-$processData = \iveeCore\Type::getByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 34203, true);
+$processData = Type::getByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 34203, true);
 
 //get the raw profit for running an Unrefined Hyperflurite Reaction for 30 days,
 //taking into account the refining and material feedback steps,
 //using defaults for refinery efficiency and skills
-$reactionProcessData = \iveeCore\Type::getByName('Unrefined Hyperflurite Reaction')->react(24 * 30, true, true);
+$reactionProcessData = Type::getByName('Unrefined Hyperflurite Reaction')->react(24 * 30, true, true);
 echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit() . PHP_EOL;
 ```
-The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the library are Type and its child classes, ProcessData and its child classes and IndustryModifier.
+The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the engine are Type and its child classes, ProcessData and its child classes and IndustryModifier.
 
 ## Notes
 Although I tried to make iveeCore as configurable as possible, there are still a number of underlying assumptions made and caveats:
@@ -195,30 +198,32 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - The prices of items that can't be sold on the market also can't be determined. This includes BPCs (The _cost_ of copying, inventing or researching a BPC can and is calculated for processes, however).
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
 - The EMDR client does some basic filtering on the incoming market data, but there is no measure against malicious clients uploading fake data. This isn't known to have caused any problems, but should be considered.
-- When automatically picking Teams and and AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
+- When automatically picking AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
 - (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see Extending iveeCore below.
 
 Generals notes:
 - Remember to restart or flush the cache after making changes to type classes or changing the DB. For memcache, you can do so with a command like: ```echo 'flush_all' | nc localhost 11211```. For Redis, enter the interactive Redis client using ```redis-cli``` and issue ```FLUSHALL```.
 Alternatively you can run the PHPUnit test, which also clears the cache.
-- iveeCore is under active development so I can't promise the API will be stable, especially if noone gives input.
+- iveeCore is under active development so I can't promise the API will be stable.
 - When iveeCore is updated, be sure to read RELEASENOTES for changes that might affect your application or setup
 
 
 ## Extending iveeCore
-To extend iveeCore to your needs, the suggested way of doing so is to use subclassing, creating new classes inheriting from the iveeCore classes, and changing the configuration (iveeCore/Config::classes). Class names are looked up dynamically, so with the adjustment objects from your classes will get instantiated instead.
-You can modify iveeCore directly, however, you'll need to comply with the LGPL and release your modifications under the same license. Also you'll have more work maintaining and applying patches to iveeCore when updates are released.
+If you extend the engine with features that are generally useful and compatible with the goals and structuring of the project, Github pull requests are welcome. In any case, if you modify iveeCrest source code, you'll need to comply with the LGPL and release your modifications under the same license.
+
+To extend iveeCore to your needs without changing the code, the suggested way of doing so is to use subclassing, creating new classes inheriting from the iveeCore classes, and changing the configuration (iveeCore/Config::classes). Class names are looked up dynamically, so with the adjustment objects from your classes will get instantiated instead.
+
 
 
 ## Future Plans
-With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; a CREST client will be introduced (also as a standalone library). Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
+With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; an authenticated CREST client will be introduced. Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
 I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
 
 
 ## FAQ
 Q: What were the beginnings of iveeCore?
 A: In early 2012 I began writing my own indy application in PHP. I had been using the [Invention Calculator Plugin](http://oldforums.eveonline.com/?a=topic&threadID=1223530) for EvEHQ, but with the author going AFG and the new EvEHQ v2 having a good but not nearly flexible enough calculator for my expanding industrial needs, I decided to build my own. The application called "ivee" grew over time and well beyond the scope of it's predecessor. In the end it was rewritten from scratch two and a half times, until I was happy with the overall structure.
-Eventually I decided I wanted to release the part of the code that provided general useful functionality, without revealing too much of ivee's secret sauce. So I put in some effort into separating and generalizing the code dealing with SDE DB interaction and Type classes into the library which now is iveeCore.
+Eventually I decided I wanted to release the part of the code that provided general useful functionality, without revealing too much of ivee's secret sauce. So I put in some effort into separating and generalizing the code dealing with SDE DB interaction and Type classes into the engine which now is iveeCore.
 
 Q: What's the motivation for releasing iveeCore?
 A: I wanted to share something back to the eve developer community. I also see it as an opportunity to dip my toes into working on a Github hosted project, even if it is a small one, and it is a motivation to strive for better code quality.

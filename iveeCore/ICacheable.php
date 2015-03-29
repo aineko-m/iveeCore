@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ICacheable.php
- *
  */
 
 namespace iveeCore;
@@ -22,29 +21,18 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ICacheable.php
- *
  */
 interface ICacheable
 {
-
     /**
-     * Invalidate cache entries
-     *
-     * @param array $keys
-     *
-     * @return void
-     */
-    public static function deleteFromCache(array $keys);
-
-    /**
-     * Returns the key of the ICacheable object under which it is stored and retrieved from the cache
+     * Returns the key of the ICacheable object under which it is stored and retrieved from the cache.
      *
      * @return string
      */
     public function getKey();
 
     /**
-    * Gets the objects cache time to live
+    * Gets the objects cache time to live.
     *
     * @return int
     */

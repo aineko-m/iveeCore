@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ResearchTEProcessData.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ResearchTEProcessData.php
- *
  */
 class ResearchTEProcessData extends ProcessData
 {
@@ -43,7 +41,7 @@ class ResearchTEProcessData extends ProcessData
     protected $endTELevel;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param int $researchedBpID of the Blueprint being researched
      * @param int $researchTime the time the process takes
@@ -52,24 +50,19 @@ class ResearchTEProcessData extends ProcessData
      * @param int $endTELevel the TE level of the Blueprint after the research
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     * @param int $teamID the ID of the Team being used, if at all
-     *
-     * @return \iveeCore\ResearchTEProcessData
      */
     public function __construct($researchedBpID, $researchTime, $processCost, $startTELevel, $endTELevel,
-        $solarSystemID, $assemblyLineID, $teamID = null
+        $solarSystemID, $assemblyLineID
     ) {
         parent::__construct($researchedBpID, 1, $researchTime, $processCost);
         $this->startTELevel   = (int) $startTELevel;
         $this->endTELevel     = (int) $endTELevel;
         $this->solarSystemID  = (int) $solarSystemID;
         $this->assemblyLineID = (int) $assemblyLineID;
-        if (isset($teamID))
-            $this->teamID     = (int) $teamID;
     }
 
     /**
-     * Returns the initial TE level of the Blueprint
+     * Returns the initial TE level of the Blueprint.
      *
      * @return int
      */
@@ -79,7 +72,7 @@ class ResearchTEProcessData extends ProcessData
     }
 
     /**
-     * Returns the TE level of the Blueprint after the research
+     * Returns the TE level of the Blueprint after the research.
      *
      * @return int
      */

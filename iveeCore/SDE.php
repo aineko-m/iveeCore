@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SDE.php
- *
  */
 
 namespace iveeCore;
@@ -23,7 +22,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SDE.php
- *
  */
 class SDE
 {
@@ -84,7 +82,7 @@ class SDE
     }
 
     /**
-     * Returns a new mysqli connection object
+     * Returns a new mysqli connection object.
      *
      * @return \mysqli
      */
@@ -183,7 +181,7 @@ class SDE
     }
 
     /**
-     * Add SQL query time for performance tracking
+     * Add SQL query time for performance tracking.
      *
      * @param float $time to add
      *
@@ -196,7 +194,7 @@ class SDE
     }
 
     /**
-     * Returns various statistics for database and queries
+     * Returns various statistics for database and queries.
      *
      * @return array
      */
@@ -211,7 +209,7 @@ class SDE
     }
 
     /**
-     * Makes "INSERT .. ON DUPLICATE KEY UPDATE" SQL query string
+     * Makes "INSERT .. ON DUPLICATE KEY UPDATE" SQL query string.
      *
      * @param string $table the name of the SQL table to be used
      * @param array $insert the data to be inserted in the form column => value, where value is an int, float or
@@ -258,7 +256,7 @@ class SDE
     }
 
     /**
-     * Makes simple "UPDATE" SQL query string
+     * Makes simple "UPDATE" SQL query string.
      *
      * @param string $table the name of the SQL table to be used
      * @param array $update the data to be updated as column => value. Values need to be already escaped, if required

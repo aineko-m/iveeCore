@@ -9,10 +9,10 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/Fetcher.php
- *
  */
 
 namespace iveeCore\CREST;
+use \iveeCore\Config;
 
 /**
  * Fetcher is a CREST specific wrapper around CURL with minimal functionality
@@ -22,7 +22,6 @@ namespace iveeCore\CREST;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/Fetcher.php
- *
  */
 class Fetcher
 {
@@ -37,14 +36,12 @@ class Fetcher
     protected $userAgent;
 
     /**
-     * Constructor
-     *
-     * @return \iveeCore\CREST\Fetcher
+     * Constructor.
      */
     public function __construct()
     {
-        $this->baseUrl   = \iveeCore\Config::getCrestBaseUrl();
-        $this->userAgent = \iveeCore\Config::getUserAgent();
+        $this->baseUrl   = Config::getCrestBaseUrl();
+        $this->userAgent = Config::getUserAgent();
     }
 
     /**
@@ -61,7 +58,7 @@ class Fetcher
         $res = $this->curlGetJson($this->baseUrl . $path);
 
         if ($this->parseContentTypeToRepresentation($res->curlInfo['content_type']) != $representationName) {
-            $exceptionClass = \iveeCore\Config::getIveeClassName('CrestException');
+            $exceptionClass = Config::getIveeClassName('CrestException');
             throw new $exceptionClass('Unexpected Content-Type returned by CREST: ' . $res->info['content_type']);
         }
         return $res;
@@ -95,7 +92,7 @@ class Fetcher
         $errmsg = curl_error($ch);
         curl_close($ch);
 
-        $exceptionClass = \iveeCore\Config::getIveeClassName('CurlException');
+        $exceptionClass = Config::getIveeClassName('CurlException');
 
         if ($err != 0)
             throw new $exceptionClass($errmsg, $err);
@@ -118,12 +115,12 @@ class Fetcher
     {
         $matches = array();
 
-        preg_match(\iveeCore\Config::CREST_CONTENT_TYPE_REPRESENTATION_PATTERN, $contentType, $matches);
+        preg_match(Config::CREST_CONTENT_TYPE_REPRESENTATION_PATTERN, $contentType, $matches);
 
         if (count($matches) == 2)
             return $matches[1];
 
-        $exceptionClass = \iveeCore\Config::getIveeClassName('CrestException');
+        $exceptionClass = Config::getIveeClassName('CrestException');
         throw new $exceptionClass("Couldn't parse CREST response content type to representation");
     }
 }

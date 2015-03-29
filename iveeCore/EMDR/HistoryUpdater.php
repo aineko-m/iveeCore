@@ -9,10 +9,10 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/EMDR/EmdrHistoryUpdate.php
- *
  */
 
 namespace iveeCore\EMDR;
+use \iveeCore\Config;
 
 /**
  * EmdrHistoryUpdate handles market history data updates from EMDR
@@ -22,7 +22,6 @@ namespace iveeCore\EMDR;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/EMDR/EmdrHistoryUpdate.php
- *
  */
 class HistoryUpdater
 {
@@ -47,20 +46,19 @@ class HistoryUpdater
     protected $rows;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param int $typeID ID of item this history data is from
      * @param int $regionID ID of the region this history data is from
      * @param int $generatedAt unix timestamp of the data generation
      * @param array $rows the history data rows
      *
-     * @return \iveeCore\EMDR\HistoryUpdater
-     * @throws NoRelevantDataException if 0 relevant rows are given
+     * @throws \iveeCore\Exceptions\NoRelevantDataException if 0 relevant rows are given
      */
     public function __construct($typeID, $regionID, $generatedAt, array $rows)
     {
         if (count($rows) < 1) {
-            $exceptionClass = \iveeCore\Config::getIveeClassName('NoRelevantDataException');
+            $exceptionClass = Config::getIveeClassName('NoRelevantDataException');
             throw new $exceptionClass("0 relevant history rows to process");
         }
 
@@ -71,7 +69,7 @@ class HistoryUpdater
     }
 
     /**
-     * Inserts history data into the DB
+     * Inserts history data into the DB.
      *
      * @return void
      */
@@ -81,8 +79,8 @@ class HistoryUpdater
         $latestDate = 0;
         $oldestDate = 9999999999;
         $existingDates = array();
-        $sdeClass  = \iveeCore\Config::getIveeClassName('SDE');
-        $emdrClass = \iveeCore\Config::getIveeClassName('EmdrConsumer');
+        $sdeClass  = Config::getIveeClassName('SDE');
+        $emdrClass = Config::getIveeClassName('EmdrConsumer');
 
         //find newest and oldest dates in data rows
         foreach ($this->rows as $day) {
@@ -98,7 +96,7 @@ class HistoryUpdater
         //get dates with existing history data
         $res = $sdeClass::instance()->query(
             "SELECT UNIX_TIMESTAMP(date)
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveePrices
+            FROM " . Config::getIveeDbName() . ".iveePrices
             WHERE typeID = " . $this->typeID . "
             AND regionID = " . $this->regionID . "
             AND date <= '" . date('Y-m-d', $latestDate) . "'
@@ -132,8 +130,11 @@ class HistoryUpdater
                 );
 
                 //build update query
-                $combinedSql .= $sdeClass::makeUpdateQuery(\iveeCore\Config::getIveeDbName() . '.iveePrices',
-                    $updateData, $where);
+                $combinedSql .= $sdeClass::makeUpdateQuery(
+                    Config::getIveeDbName() . '.iveePrices',
+                    $updateData,
+                    $where
+                );
             } else { // do insert for all missing data
                 $insertData = array(
                     'typeID'   => $this->typeID,
@@ -147,13 +148,13 @@ class HistoryUpdater
                 );
 
                 //build insert query
-                $combinedSql .= $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveePrices',
+                $combinedSql .= $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.iveePrices',
                     $insertData);
             }
 
         }
         //add stored procedure call to complete the update
-        $combinedSql .= "CALL " . \iveeCore\Config::getIveeDbName() . ".iveeCompleteHistoryUpdate(" . $this->typeID
+        $combinedSql .= "CALL " . Config::getIveeDbName() . ".iveeCompleteHistoryUpdate(" . $this->typeID
             . ", " . $this->regionID . ", '" . date('Y-m-d H:i:s', $this->generatedAt) . "'); COMMIT;";
 
         //run all queries

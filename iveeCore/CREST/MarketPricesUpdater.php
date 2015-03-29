@@ -9,20 +9,19 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/MarketPricesUpdater.php
- *
  */
 
 namespace iveeCore\CREST;
+use \iveeCore\Config;
 
 /**
- * MarketPricesUpdater specific CREST data updater
+ * MarketPricesUpdater specific CREST data updater.
  *
  * @category IveeCore
  * @package  IveeCoreCrest
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/MarketPricesUpdater.php
- *
  */
 class MarketPricesUpdater extends CrestDataUpdater
 {
@@ -45,7 +44,7 @@ class MarketPricesUpdater extends CrestDataUpdater
      */
     protected function processDataItemToSQL(\stdClass $item)
     {
-        $exceptionClass = \iveeCore\Config::getIveeClassName('CrestException');
+        $exceptionClass = Config::getIveeClassName('CrestException');
 
         if (!isset($item->type->id))
             throw new $exceptionClass('typeID missing in Market Prices CREST data');
@@ -64,9 +63,9 @@ class MarketPricesUpdater extends CrestDataUpdater
         $insert['typeID'] = $typeID;
         $insert['date'] = date('Y-m-d');
 
-        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
+        $sdeClass = Config::getIveeClassName('SDE');
 
-        return $sdeClass::makeUpsertQuery(\iveeCore\Config::getIveeDbName() . '.iveeCrestPrices', $insert, $update);
+        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.iveeCrestPrices', $insert, $update);
     }
 
     /**
@@ -76,7 +75,7 @@ class MarketPricesUpdater extends CrestDataUpdater
      */
     protected function invalidateCaches()
     {
-        $globalPriceDataClass = \iveeCore\Config::getIveeClassName('GlobalPriceData');
+        $globalPriceDataClass = Config::getIveeClassName('GlobalPriceData');
         $globalPriceDataClass::deleteFromCache($this->updatedIDs);
     }
 }

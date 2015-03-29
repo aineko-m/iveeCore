@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MaterialMap.php
- *
  */
 
 namespace iveeCore;
@@ -22,18 +21,17 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MaterialMap.php
- *
  */
 class MaterialMap
 {
     /**
-     * @var array $materials holds the data in the form $typeID => $quantity
+     * @var int[]|float[] $materials holds the data in the form $typeID => $quantity
      * Note that quantities of 0 may indicate that an item is required, but not consumed
      */
     protected $materials = array();
 
     /**
-     * Add required material and amount to total material array
+     * Add required material and amount to total material array.
      *
      * @param int $typeID of the material
      * @param int $quantity of the material
@@ -55,9 +53,9 @@ class MaterialMap
     }
 
     /**
-     * Add required materials and amounts to total material array
+     * Add required materials and amounts to total material array.
      *
-     * @param array $materials in the form $typeID => $quantity
+     * @param int[]|float[] $materials in the form $typeID => $quantity
      *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException
@@ -69,7 +67,7 @@ class MaterialMap
     }
 
     /**
-     * Subtracts materials from the total material array
+     * Subtracts materials from the total material array.
      *
      * @param int $typeID of the material
      * @param int $quantity of the material
@@ -94,10 +92,10 @@ class MaterialMap
 
     /**
      * Given two MaterialMap objects, creates the symmetric difference between the two. That is, whichever quantities
-     * of the same type appear in both are subtracted from both
+     * of the same type appear in both are subtracted from both.
      *
-     * @param MaterialMap $m1 first MaterialMap
-     * @param MaterialMap $m2 second MaterialMap
+     * @param \iveeCore\MaterialMap $m1 first MaterialMap
+     * @param \iveeCore\MaterialMap $m2 second MaterialMap
      *
      * @return void
      */
@@ -117,9 +115,9 @@ class MaterialMap
     }
 
     /**
-     * Sums the materials of another Materials object to this
+     * Sums the materials of another Materials object to this.
      *
-     * @param MaterialMap $materials to add materials from
+     * @param \iveeCore\MaterialMap $materials to add materials from
      *
      * @return void
      */
@@ -130,9 +128,9 @@ class MaterialMap
     }
 
     /**
-     * Returns the materials as array $typeID => $quantity
+     * Returns the materials as array $typeID => $quantity.
      *
-     * @return array
+     * @return int[]|float[]
      */
     public function getMaterials()
     {
@@ -140,11 +138,11 @@ class MaterialMap
     }
 
     /**
-     * Returns a new materialMap object with quantities multiplied by given factor
+     * Returns a new materialMap object with quantities multiplied by given factor.
      *
      * @param float|int $factor for the multiplication
      *
-     * @return MaterialMap
+     * @return \iveeCore\MaterialMap
      */
     public function getMultipliedMaterialMap($factor)
     {
@@ -157,7 +155,7 @@ class MaterialMap
     }
 
     /**
-     * Replaces every reprocessable in the map with its reprocessed materials
+     * Replaces every reprocessable in the map with its reprocessed materials.
      *
      * @param float $equipmentYield station dependant reprocessing yield (<1.0)
      * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor (0.95 for 5% tax)
@@ -185,7 +183,7 @@ class MaterialMap
     }
 
     /**
-     * Returns the volume of the materials
+     * Returns the volume of the materials.
      *
      * @return float
      */
@@ -199,7 +197,7 @@ class MaterialMap
     }
 
     /**
-     * Returns material buy cost, considering taxes
+     * Returns material buy cost, considering taxes.
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
      * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
@@ -225,7 +223,7 @@ class MaterialMap
     }
 
     /**
-     * Returns material sell value, cosnidering taxes
+     * Returns material sell value, considering taxes.
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
      * @param int $regionID of the market region to be used for price lookup. If none passed, default is are used.

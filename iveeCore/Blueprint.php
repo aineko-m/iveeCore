@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Blueprint.php
- *
  */
 
 namespace iveeCore;
@@ -17,14 +16,13 @@ namespace iveeCore;
 /**
  * Blueprint base class.
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: Blueprint -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Blueprint -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Blueprint.php
- *
  */
 class Blueprint extends Type
 {
@@ -46,19 +44,19 @@ class Blueprint extends Type
     protected $activityMaterials = array();
 
     /**
-     * @var array $activitySkills holds activity skill requirements.
+     * @var SkillMap[] $activitySkills holds activity skill requirements.
      * $activitySkills[$activityID] => SkillMap
      */
     protected $activitySkills = array();
 
     /**
-     * @var array $activityTimes holds activity time requirements.
+     * @var int[] $activityTimes holds activity time requirements.
      * $activityTimes[$activityID] => int seconds
      */
     protected $activityTimes = array();
 
     /**
-     * @var array $baseResearchModifier holds the base research modifier for time and cost scaling
+     * @var int[] $baseResearchModifier holds the base research modifier for time and cost scaling.
      */
     protected static $baseResearchModifier = array(
         0 => 0,
@@ -79,7 +77,6 @@ class Blueprint extends Type
      *
      * @param int $id of the Blueprint object
      *
-     * @return \iveeCore\Blueprint
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
     protected function __construct($id)
@@ -97,7 +94,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Loads activity material requirements, if any
+     * Loads activity material requirements, if any.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -124,7 +121,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Loads activity skill requirements, if any
+     * Loads activity skill requirements, if any.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -148,7 +145,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Loads activity times
+     * Loads activity times.
      *
      * @param \iveeCore\SDE $sde the SDE object
      *
@@ -167,7 +164,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Gets all necessary data from SQL
+     * Gets all necessary data from SQL.
      *
      * @return array
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
@@ -204,7 +201,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Sets attributes from SQL result row to object
+     * Sets attributes from SQL result row to object.
      *
      * @param array $row data from DB
      *
@@ -218,7 +215,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Gets products base cost based on the adjustedPrice from CREST for each of the input materials
+     * Gets products base cost based on the adjustedPrice from CREST for each of the input materials.
      *
      * @param int $maxPriceDataAge the maximum price data age in seconds
      *
@@ -241,10 +238,10 @@ class Blueprint extends Type
     }
 
     /**
-     * Manufacture using this BP
+     * Manufacture using this BP.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines.
+     * indices, tax and assemblyLines.
      *
      * @param int $units the number of items to produce; defaults to 1.
      * @param int $bpME level of the BP; if left null, it is looked up in defaults class
@@ -291,8 +288,7 @@ class Blueprint extends Type
             $bpME,
             $bpTE,
             $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID'],
-            isset($modifier['teamID']) ? $modifier['teamID'] : null
+            $modifier['assemblyLineTypeID']
         );
 
         //add skills
@@ -314,7 +310,7 @@ class Blueprint extends Type
      * Make copy using this BP.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
+     * indices, tax and assemblyLines
      * @param int $copies the number of copies to produce; defaults to 1.
      * @param int|string $runs the number of runs on each copy. Use 'max' for the maximum possible number of runs.
      * @param bool $recursive defines if used materials should be manufactured recursively
@@ -341,8 +337,7 @@ class Blueprint extends Type
             ceil($this->getBaseTimeForActivity(ProcessData::ACTIVITY_COPYING) * $totalRuns * $modifier['t']),
             $this->getProductBaseCost() * 0.02 * $totalRuns * $modifier['c'],
             $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID'],
-            isset($modifier['teamID']) ? $modifier['teamID'] : null
+            $modifier['assemblyLineTypeID']
         );
 
         $cdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_COPYING));
@@ -362,7 +357,7 @@ class Blueprint extends Type
      * Research ME on this BLueprint.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
+     * indices, tax and assemblyLines
      * @param int $startME the initial ME level
      * @param int $endME the ME level after the research
      * @param bool $recursive defines if used materials should be manufactured recursively
@@ -394,8 +389,7 @@ class Blueprint extends Type
             - $startME,
             - $endME,
             $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID'],
-            isset($modifier['teamID']) ? $modifier['teamID'] : null
+            $modifier['assemblyLineTypeID']
         );
 
         $rmdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_ME));
@@ -415,7 +409,7 @@ class Blueprint extends Type
      * Research TE on this BLueprint.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
+     * indices, tax and assemblyLines
      * @param int $startTE the initial TE level
      * @param int $endTE the TE level after the research
      * @param bool $recursive defines if used materials should be manufactured recursively
@@ -442,8 +436,7 @@ class Blueprint extends Type
             - $startTE,
             - $endTE,
             $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID'],
-            isset($modifier['teamID']) ? $modifier['teamID'] : null
+            $modifier['assemblyLineTypeID']
         );
 
         $rtdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_TE));
@@ -463,7 +456,7 @@ class Blueprint extends Type
      * Computes and adds the material requirements for a process to a ProcessData object.
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
-     * indices, teams, tax and assemblyLines
+     * indices, tax and assemblyLines
      * @param ProcessData $pdata to which materials shall be added
      * @param int $activityId of the activity
      * @param float $materialFactor the IndustryModifier and Blueprint ME level dependant ME bonus factor
@@ -530,7 +523,7 @@ class Blueprint extends Type
     }
 
     /**
-     * Returns manufacturing product ID
+     * Returns manufacturing product ID.
      *
      * @return int
      */
@@ -583,17 +576,17 @@ class Blueprint extends Type
     }
 
     /**
-     * Returns Blueprint rank
+     * Returns Blueprint rank.
      *
      * @return int
      */
     public function getRank()
     {
-        return $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_TE) / 105;
+        return (int) $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_TE) / 105;
     }
 
     /**
-     * Returns the maximum batch size
+     * Returns the maximum batch size.
      *
      * @return int
      */
@@ -626,8 +619,8 @@ class Blueprint extends Type
     }
 
     /**
-     * Calculates the research multiplier for time and cost scaling depending on start and end ME/TE levels
-     * Note: TE levels have to be divided by 2, as they go from 0 to -20 in 10 steps
+     * Calculates the research multiplier for time and cost scaling depending on start and end ME/TE levels.
+     * Note: TE levels have to be divided by 2, as they go from 0 to -20 in 10 steps.
      *
      * @param int $startLevel the initial ME or TE level
      * @param int $endLevel the end ME or TE level

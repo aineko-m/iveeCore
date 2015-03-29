@@ -9,109 +9,99 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InstancePool.php
- *
  */
 
 namespace iveeCore;
 
 /**
- * Class for the object pool (PHP-internal cache) with second level external, persistent cache
+ * Class for the object pool (PHP-internal cache) with second level external cache.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InstancePool.php
- *
  */
 class InstancePool
 {
-    /**
-     * @var string $className holds the class short name for which this InstancePool will hold objects. It is used as
-     * part of the cache key prefix.
-     */
-    protected $className;
-
     /**
      * @var \iveeCore\ICache $cache object for caching external to PHP
      */
     protected $cache;
 
     /**
-     * @var array $keyToObj containing the pooled objects in the form key => obj
+     * @var \iveeCore\ICacheable[] $keyToObj containing the pooled objects in the form key => obj
      */
     protected $keyToObj = array();
 
     /**
-     * @var array $nameToKey containing the name => key mapping
+     * @var string[] $nameToKey containing the name => key mapping
      */
     protected $nameToKey = array();
 
     /**
-     * @var int $poolHits counter for object pool hits
+     * @var int $hits counter for object pool hits
      */
-    protected $poolHits = 0;
+    protected $hits = 0;
 
     /**
-     * Contructor
-     *
-     * @param string $className class short name for which this InstacePool will hold objects for
-     *
-     * @return \iveeCore\InstancePool
+     * Contructor.
      */
-    public function __construct($className)
+    public function __construct()
     {
-        $this->className = $className;
-        if (Config::getUseCache()) {
-            //lookup Cache class
-            $cacheClass = Config::getIveeClassName('Cache');
-            $this->cache = $cacheClass::instance();
-        }
+        //lookup Cache class
+        $cacheClass = Config::getIveeClassName('Cache');
+        $this->cache = $cacheClass::instance();
     }
 
     /**
-     * Stores object in pool under its id, also in external cache if configured
+     * Stores object in pool under its id, also in external cache.
      *
-     * @param ICacheable $obj to be stored
+     * @param \iveeCore\ICacheable $obj to be stored
      *
      * @return void
      */
-    public function setObj(ICacheable $obj)
+    public function setItem(ICacheable $obj)
     {
         $this->keyToObj[$obj->getKey()] = $obj;
         if ($this->cache instanceof ICache)
-            $this->cache->setItem($obj, $this->className . '_' . $obj->getKey(), $obj->getCacheTTL());
+            $this->cache->setItem($obj);
     }
 
     /**
-     * Sets the name to key mapping array and also stores in external cache if configured
+     * Sets the name to key mapping array and also stores in external cache.
      *
-     * @param array $nameToKey in the form name => key
+     * @param string $classKey under which the names to id array will be cached
+     * @param string[] $nameToKey in the form name => key
      *
      * @return void
      */
-    public function setNamesToKeys(array $nameToKey)
+    public function setNamesToKeys($classKey, array $nameToKey)
     {
-        $this->nameToKey = $nameToKey;
+        $this->nameToKey[$classKey] = $nameToKey;
+        $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
+        $cacheableArray = new $cacheableArrayClass($classKey, 3600 * 24);
+        $cacheableArray->data = $nameToKey;
+
         if ($this->cache instanceof ICache)
-           $this->cache->setItem($nameToKey, $this->className . 'Names');
+           $this->cache->setItem($cacheableArray);
     }
 
     /**
-     * Gets the object for key from pool, or external cache if configured
+     * Gets the object for key from pool or external cache.
      *
      * @param string $key of the object to be returned
      *
-     * @return object
+     * @return \iveeCore\ICacheable
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if the key cannot be found
      */
-    public function getObjByKey($key)
+    public function getItem($key)
     {
         if (isset($this->keyToObj[$key])) {
-            $this->poolHits++;
+            $this->hits++;
             return $this->keyToObj[$key];
         } elseif ($this->cache instanceof ICache) {
-            $obj = $this->cache->getItem($this->className . '_' . $key);
+            $obj = $this->cache->getItem($key);
             $this->keyToObj[$key] = $obj;
             return $obj;
         }
@@ -120,62 +110,80 @@ class InstancePool
     }
 
     /**
-     * Gets the key for a given name
+     * Gets the key for a given name.
      *
+     * @param string $classTypeNamesKey specific to the class of objects we want to look in
      * @param string $name for which the key should be returned
      *
      * @return string
      * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if the names to key array isn't found in pool or cache
      * @throws \iveeCore\Exceptions\TypeNameNotFoundException if the given name is not found in the mapping array
+     * @throws \iveeCore\Exceptions\WrongTypeException if object returned from cache is not CacheableArray
      */
-    public function getKeyByName($name)
+    public function getKeyByName($classTypeNamesKey, $name)
     {
-        if (empty($this->nameToKey)) {
-            if ($this->cache instanceof ICache)
+        if (empty($this->nameToKey[$classTypeNamesKey])) {
+            if ($this->cache instanceof ICache) {
                 //try getting mapping array from cache, will throw an exception if not found
-                $this->nameToKey = $this->cache->getItem($this->className . 'Names');
-            else {
+                $cacheableArray = $this->cache->getItem($classTypeNamesKey);
+                if (!$cacheableArray instanceof CacheableArray) {
+                    $WrongTypeExceptionClass = Config::getIveeClassName('WrongTypeException');
+                    throw new $WrongTypeExceptionClass('Object given is not CacheableArray');
+                }
+                $this->nameToKey[$classTypeNamesKey] = $cacheableArray->data;
+            } else {
                 $KeyNotFoundInCacheExceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
                 throw new $KeyNotFoundInCacheExceptionClass('Names not found in pool');
             }
         }
-        if (isset($this->nameToKey[$name]))
-            return $this->nameToKey[$name];
+        if (isset($this->nameToKey[$classTypeNamesKey][$name]))
+            return $this->nameToKey[$classTypeNamesKey][$name];
 
         $typeNameNotFoundExceptionClass = Config::getIveeClassName('TypeNameNotFoundException');
         throw new $typeNameNotFoundExceptionClass('Type name not found');
     }
 
     /**
-     * Removes objects from pool and from cache, if the later is being used
+     * Removes single object from pool and cache.
      *
-     * @param array $keys of the objects to be removed
+     * @param string $key of the objects to be removed
      *
      * @return void
      */
-    public function deleteFromCache(array $keys)
+    public function deleteItem($key)
     {
-        $c = $this->cache instanceof ICache;
-        foreach ($keys as $key) {
-            if (isset($this->keyToObj[$key]))
-                unset($this->keyToObj[$key]);
-            if ($c)
-                $this->cache->deleteItem($this->className . '_' . $key);
-        }
+        $this->cache->deleteItem($key);
+        if (isset($this->keyToObj[$key]))
+            unset($this->keyToObj[$key]);
     }
 
     /**
-     * Returns the number of hits on the object pool
+     * Removes objects from pool and cache.
+     *
+     * @param string[] $keys of the objects to be removed
+     *
+     * @return void
+     */
+    public function deleteMulti(array $keys)
+    {
+        $this->cache->deleteMulti($keys);
+        foreach ($keys as $key)
+            if (isset($this->keyToObj[$key]))
+                unset($this->keyToObj[$key]);
+    }
+
+    /**
+     * Returns the number of hits on the object pool.
      *
      * @return int the number of hits
      */
-    public function getPoolHits()
+    public function getHits()
     {
-        return $this->poolHits;
+        return $this->hits;
     }
 
     /**
-     * Returns the number of objects in the pool
+     * Returns the number of objects in the pool.
      *
      * @return int count
      */

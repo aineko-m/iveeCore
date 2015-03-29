@@ -1,7 +1,6 @@
 <?php
-
 /**
- * CacheableCommon class file.
+ * CoreDataCommon class file.
  *
  * PHP version 5.3
  *
@@ -9,33 +8,42 @@
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CacheableCommon.php
- *
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CoreDataCommon.php
  */
 
 namespace iveeCore;
 
 /**
- * CacheableCommon is a base class to all classes that instantiate objects which can get cached by InstancePool
+ * CoreDataCommon is a base class to all classes that instantiate objects which can get cached by InstancePool.
  *
- * Classes that inherit from CacheableCommon must define the static attributes $instancePool.
+ * Classes that inherit from CoreDataCommon must define the static attributes $instancePool.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CacheableCommon.php
- *
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CoreDataCommon.php
  */
-abstract class CacheableCommon implements ICacheable
+abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
 {
     /**
-     * @var int $id of the CacheableCommon
+     * @var int $id of the CoreDataCommon.
      */
     protected $id;
 
     /**
-     * Initializes static InstancePool
+     * Returns the class short name which is used to lookup the configured FQDN classname in Config (for dynamic
+     * subclassing).
+     *
+     * @return string
+     */
+    public static function getClassNick()
+    {
+        return static::CLASSNICK;
+    }
+
+    /**
+     * Initializes static InstancePool.
      *
      * @return void
      */
@@ -48,7 +56,7 @@ abstract class CacheableCommon implements ICacheable
     }
 
     /**
-     * Returns the Instance Pool
+     * Returns the Instance Pool.
      *
      * @return \iveeCore\InstancePool
      */
@@ -60,19 +68,19 @@ abstract class CacheableCommon implements ICacheable
     }
 
     /**
-     * Invalidate instancePool and cache entries
+     * Invalidate instancePool and cache entries.
      *
-     * @param array $keys
+     * @param string[] $keys
      *
      * @return void
      */
     public static function deleteFromCache(array $keys)
     {
-        static::getInstancePool()->deleteFromCache($keys);
+        static::getInstancePool()->deleteMulti($keys);
     }
 
     /**
-     * Returns the id of the CacheableCommon object
+     * Returns the id of the CoreDataCommon object.
      *
      * @return int
      */
@@ -82,17 +90,16 @@ abstract class CacheableCommon implements ICacheable
     }
 
     /**
-     * Returns the key of the CacheableCommon object
+     * Returns the key under which the object is stored.
      *
      * @return string
      */
-    public function getKey()
-    {
-        return (string)$this->getId();
+    public function getKey() {
+        return static::getClassHierarchyKeyPrefix() . $this->getId();
     }
 
     /**
-     * Gets the objects cache time to live
+     * Gets the objects cache time to live.
      *
      * @return int
      */
@@ -102,7 +109,7 @@ abstract class CacheableCommon implements ICacheable
     }
 
     /**
-     * Convenience method for throwing iveeCore Exceptions
+     * Convenience method for throwing iveeCore Exceptions.
      *
      * @param string $exceptionName nickname of the exception as configured in Config
      * @param string $message to be passed to the exception

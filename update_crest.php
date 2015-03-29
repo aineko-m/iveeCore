@@ -5,8 +5,8 @@
  * PHP version 5.3
  *
  * This command line PHP script pulls industry related data from EVE's CREST API and stored it to iveeCore's DB tables.
- * You should set it up to run every few hours (as a cronjob, for instance) to have updated system industry indices,
- * teams and adjustedPrice data available at all times.
+ * You should set it up to run every few hours (as a cronjob, for instance) to have updated system industry indices and
+ * adjustedPrice data available at all times.
  *
  * @category IveeCore
  * @package  IveeCoreScripts
@@ -14,6 +14,8 @@
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/update_crest.php
  */
+
+use \iveeCore\Config;
 
 echo "  ____ ____  _____ ____ _____    __              _____     _______ _____
  / ___|  _ \| ____/ ___|_   _|  / _| ___  _ __  |_ _\ \   / / ____| ____|
@@ -28,23 +30,15 @@ ini_set('display_errors', 'on');
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
 
 //do industry systems update
-$crestIndustrySystemsUpdaterClass = \iveeCore\Config::getIveeClassName('CrestIndustrySystemsUpdater');
+$crestIndustrySystemsUpdaterClass = Config::getIveeClassName('CrestIndustrySystemsUpdater');
 $crestIndustrySystemsUpdaterClass::doUpdate();
 
 //do market prices update
-$crestMarketPricesUpdaterClass = \iveeCore\Config::getIveeClassName('CrestMarketPricesUpdater');
+$crestMarketPricesUpdaterClass = Config::getIveeClassName('CrestMarketPricesUpdater');
 $crestMarketPricesUpdaterClass::doUpdate();
 
 //do industry facilities update
-$crestIndustryFacilitiesUpdaterClass = \iveeCore\Config::getIveeClassName('CrestIndustryFacilitiesUpdater');
+$crestIndustryFacilitiesUpdaterClass = Config::getIveeClassName('CrestIndustryFacilitiesUpdater');
 $crestIndustryFacilitiesUpdaterClass::doUpdate();
-
-//do specialities update
-$crestSpecialitiesUpdaterClass = \iveeCore\Config::getIveeClassName('CrestSpecialitiesUpdater');
-$crestSpecialitiesUpdaterClass::doUpdate();
-
-//do Industry Teams update
-$crestTeamsUpdaterClass = \iveeCore\Config::getIveeClassName('CrestTeamsUpdater');
-$crestTeamsUpdaterClass::doUpdate();
 
 echo 'Peak memory usage: ' . ceil(memory_get_peak_usage(true) / 1024) . 'KiB' . PHP_EOL;

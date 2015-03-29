@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InventionProcessData.php
- *
  */
 
 namespace iveeCore;
@@ -27,7 +26,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/InventionProcessData.php
- *
  */
 class InventionProcessData extends ProcessData
 {
@@ -68,12 +66,9 @@ class InventionProcessData extends ProcessData
      * @param int $resultTE the TE level on the resulting T2 BPC if invention is successful
      * @param int $solarSystemID ID of the SolarSystem the research is performed
      * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
-     * @param int $teamID the ID of the Team being used, if at all
-     *
-     * @return InventionProcessData
      */
     public function __construct($inventedBpID, $inventTime, $processCost, $probability, $resultRuns,
-        $resultME, $resultTE, $solarSystemID, $assemblyLineID, $teamID = null
+        $resultME, $resultTE, $solarSystemID, $assemblyLineID
     ) {
         parent::__construct($inventedBpID, 1, $inventTime, $processCost);
         $this->probability     = (float) $probability;
@@ -82,12 +77,10 @@ class InventionProcessData extends ProcessData
         $this->resultTE        = (int) $resultTE;
         $this->solarSystemID   = (int) $solarSystemID;
         $this->assemblyLineID  = (int) $assemblyLineID;
-        if (isset($teamID))
-            $this->teamID      = (int) $teamID;
     }
 
     /**
-     * Returns the number of runs on the resulting T2 BPC if invention is successful
+     * Returns the number of runs on the resulting T2 BPC if invention is successful.
      *
      * @return int
      */
@@ -97,7 +90,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns the ME level on the resulting T2 BPC if invention is successful
+     * Returns the ME level on the resulting T2 BPC if invention is successful.
      *
      * @return int
      */
@@ -107,7 +100,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns the TE level on the resulting T2 BPC if invention is successful
+     * Returns the TE level on the resulting T2 BPC if invention is successful.
      *
      * @return int
      */
@@ -117,7 +110,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns the chance of success for the invention
+     * Returns the chance of success for the invention.
      *
      * @return float
      */
@@ -127,7 +120,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns the average time until invention success, without sub-processes
+     * Returns the average time until invention success, without sub-processes.
      *
      * @return float
      */
@@ -137,7 +130,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns the average time until invention success, including sub-processes
+     * Returns the average time until invention success, including sub-processes.
      *
      * @return float
      */
@@ -147,18 +140,18 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns array with sum of average time until invention success, grouped by activity, including sub-processes
+     * Returns array with sum of average time until invention success, grouped by activity, including sub-processes.
      *
-     * @return array
+     * @return float[]
      */
     public function getTotalSuccessTimes()
     {
         $sum = array(
-            static::ACTIVITY_MANUFACTURING => 0,
-            static::ACTIVITY_RESEARCH_TE => 0,
-            static::ACTIVITY_RESEARCH_ME => 0,
-            static::ACTIVITY_COPYING => 0,
-            static::ACTIVITY_INVENTING => 0
+            static::ACTIVITY_MANUFACTURING => 0.0,
+            static::ACTIVITY_RESEARCH_TE => 0.0,
+            static::ACTIVITY_RESEARCH_ME => 0.0,
+            static::ACTIVITY_COPYING => 0.0,
+            static::ACTIVITY_INVENTING => 0.0
         );
 
         $sum[$this->activityID] = $this->processTime / $this->probability;
@@ -171,9 +164,9 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns MaterialMap object with average required materials until invention success, without sub-processes
+     * Returns MaterialMap object with average required materials until invention success, without sub-processes.
      *
-     * @return MaterialMap
+     * @return \iveeCore\MaterialMap
      */
     public function getSuccessMaterialMap()
     {
@@ -187,9 +180,9 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns MaterialMap object with average required materials until invention success, including sub-processes
+     * Returns MaterialMap object with average required materials until invention success, including sub-processes.
      *
-     * @return MaterialMap
+     * @return \iveeCore\MaterialMap
      */
     public function getTotalSuccessMaterialMap()
     {
@@ -202,7 +195,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns volume of average required materials until invention success, without sub-processes
+     * Returns volume of average required materials until invention success, without sub-processes.
      *
      * @return float volume
      */
@@ -212,7 +205,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns volume of average required materials until invention success, including sub-processes
+     * Returns volume of average required materials until invention success, including sub-processes.
      *
      * @return float volume
      */
@@ -222,7 +215,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns average invention slot cost until success, without subprocesses
+     * Returns average invention slot cost until success, without subprocesses.
      *
      * @return float
      */
@@ -232,7 +225,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns average total slot cost until success, including subprocesses
+     * Returns average total slot cost until success, including subprocesses.
      *
      * @return float
      */
@@ -242,7 +235,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns average material cost until success, without subprocesses
+     * Returns average material cost until success, without subprocesses.
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
      * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
@@ -255,7 +248,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns average material cost until success, including subprocesses
+     * Returns average material cost until success, including subprocesses.
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
      * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
@@ -268,7 +261,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns total average cost until success, including subprocesses
+     * Returns total average cost until success, including subprocesses.
      *
      * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
      * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
@@ -281,7 +274,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Prints data about this process
+     * Prints data about this process.
      *
      * @return void
      */

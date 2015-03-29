@@ -9,34 +9,32 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Station.php
- *
  */
 
 namespace iveeCore;
 
 /**
- * Class for representing stations
- * Inheritance: Station -> SdeType -> CacheableCommon
+ * Class for representing stations.
+ * Inheritance: Station -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Station.php
- *
  */
 class Station extends SdeType
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'Station';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) Station objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing)
-     */
-    protected static $classNick = 'Station';
 
     /**
      * @var int $solarSystemID the ID of SolarSystem this Station is in.
@@ -75,7 +73,7 @@ class Station extends SdeType
     protected $assemblyLineTypeIDs = array();
 
     /**
-     * Loads all Station names from DB to PHP
+     * Loads all Station names from DB to PHP.
      *
      * @return void
      */
@@ -93,7 +91,18 @@ class Station extends SdeType
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['stationName']] = (int) $row['stationID'];
 
-        static::$instancePool->setNamesToKeys($namesToIds);
+        static::$instancePool->setNamesToKeys(static::getClassHierarchyKeyPrefix() . 'Names', $namesToIds);
+    }
+
+    /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
     }
 
     /**
@@ -101,7 +110,6 @@ class Station extends SdeType
      *
      * @param int $id of the Station
      *
-     * @return \iveeCore\Station
      * @throws \iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
      * @throws \iveeCore\Exceptions\IveeCoreException if trying to instantiate a player built outpost
      */
@@ -145,7 +153,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets solarSystemID
+     * Gets solarSystemID.
      *
      * @return int
      */
@@ -155,7 +163,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets SolarSystem
+     * Gets SolarSystem.
      *
      * @return \iveeCore\SolarSystem
      */
@@ -166,7 +174,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets oprationID
+     * Gets oprationID.
      *
      * @return int
      */
@@ -176,7 +184,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets stationTypeID
+     * Gets stationTypeID.
      *
      * @return int
      */
@@ -186,7 +194,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets owning corporationID
+     * Gets owning corporationID.
      *
      * @return int
      */
@@ -196,7 +204,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets station reprocessing efficiency
+     * Gets station reprocessing efficiency.
      *
      * @return float
      */
@@ -206,7 +214,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets station tax
+     * Gets station tax.
      *
      * @return float
      * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost
@@ -224,7 +232,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets a stations assemblyLineTypeIDs
+     * Gets a stations assemblyLineTypeIDs.
      *
      * @return array $activityID => array(id1, id2...)
      */
@@ -234,7 +242,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets a stations assemblyLineTypeIDs
+     * Gets a stations assemblyLineTypeIDs.
      *
      * @param int $activityID to get assemblyLineTypeIDs for
      *
@@ -249,7 +257,7 @@ class Station extends SdeType
     }
 
     /**
-     * Returns an IndustryModifier object for this station
+     * Returns an IndustryModifier object for this station.
      *
      * @return \iveeCore\IndustryModifier
      */

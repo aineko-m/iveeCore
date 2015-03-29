@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Util.php
- *
  */
 
 namespace iveeCore;
@@ -22,12 +21,11 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Util.php
- *
  */
 class Util
 {
     /**
-     * Converts long numbers to nice readable representation with appended unit: K, M or G
+     * Converts long numbers to nice readable representation with appended unit: K, M or G.
      *
      * @param int|float $val the number to be formatted
      *
@@ -54,7 +52,7 @@ class Util
     }
 
     /**
-     * Convenience function for converting large second values into a 1d2h33m44s representation
+     * Convenience function for converting large second values into a 1d2h33m44s representation.
      *
      * @param int $fseconds the seconds to be formatted
      *

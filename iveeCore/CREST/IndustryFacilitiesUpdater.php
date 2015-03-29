@@ -9,10 +9,10 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/IndustryFacilitiesUpdater.php
- *
  */
 
 namespace iveeCore\CREST;
+use \iveeCore\Config;
 
 /**
  * IndustryFacilities specific CREST data updater
@@ -22,7 +22,6 @@ namespace iveeCore\CREST;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/IndustryFacilitiesUpdater.php
- *
  */
 class IndustryFacilitiesUpdater extends CrestDataUpdater
 {
@@ -45,8 +44,8 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
      */
     protected function processDataItemToSQL(\stdClass $item)
     {
-        $exceptionClass = \iveeCore\Config::getIveeClassName('CrestException');
-        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
+        $exceptionClass = Config::getIveeClassName('CrestException');
+        $sdeClass = Config::getIveeClassName('SDE');
 
         $update = array();
 
@@ -63,11 +62,11 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
             $update['solarSystemID'] = (int) $item->solarSystem->id;
             $update['stationName']   = $item->name;
             $update['stationTypeID'] = (int) $item->type->id;
-            $table = \iveeCore\Config::getIveeDbName() . '.iveeOutposts';
+            $table = Config::getIveeDbName() . '.iveeOutposts';
         } else {
             if (isset($item->tax))
                 $update['tax'] = (float) $item->tax;
-            $table = \iveeCore\Config::getIveeDbName() . '.iveeFacilities';
+            $table = Config::getIveeDbName() . '.iveeFacilities';
         }
 
         $insert = $update;
@@ -84,7 +83,7 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
      */
     protected function invalidateCaches()
     {
-        $assemblyLineClass  = \iveeCore\Config::getIveeClassName('AssemblyLine');
+        $assemblyLineClass  = Config::getIveeClassName('AssemblyLine');
         $assemblyLineClass::deleteFromCache($this->updatedIDs);
     }
 }

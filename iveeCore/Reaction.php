@@ -9,31 +9,29 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Reaction.php
- *
  */
 
 namespace iveeCore;
 
 /**
  * Class for all Reactions
- * Inheritance: Reaction -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Reaction -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Reaction.php
- *
  */
 class Reaction extends Type
 {
     /**
-     * @var array $cycleInputMaterials contains the consumed materials for one reaction cycle
+     * @var int[] $cycleInputMaterials contains the consumed materials for one reaction cycle
      */
     protected $cycleInputMaterials = array();
 
     /**
-     * @var array $cycleOutputMaterials contains the output materials for one reaction cycle
+     * @var int[] $cycleOutputMaterials contains the output materials for one reaction cycle
      */
     protected $cycleOutputMaterials = array();
 
@@ -47,7 +45,6 @@ class Reaction extends Type
      *
      * @param int $id of the Reaction object
      *
-     * @return Reaction
      * @throws Exception if typeID is not found
      */
     protected function __construct($id)
@@ -87,9 +84,9 @@ class Reaction extends Type
     }
 
     /**
-     * Gets the the array of input materials for one reaction cycle
+     * Gets the the array of input materials for one reaction cycle.
      *
-     * @return array
+     * @return int[]
      */
     public function getCycleInputMaterials()
     {
@@ -97,9 +94,9 @@ class Reaction extends Type
     }
 
     /**
-     * Gets the the array of output materials for one reaction cycle
+     * Gets the the array of output materials for one reaction cycle.
      *
-     * @return array
+     * @return int[]
      */
     public function getCycleOutputMaterials()
     {
@@ -107,7 +104,7 @@ class Reaction extends Type
     }
 
     /**
-     * Returns whether this reaction is an alchemy reaction or not
+     * Returns whether this reaction is an alchemy reaction or not.
      *
      * @return bool
      */
@@ -117,7 +114,7 @@ class Reaction extends Type
     }
 
     /**
-     * Produces an ReactionProcessData object detailing a reaction process
+     * Produces an ReactionProcessData object detailing a reaction process.
      *
      * @param int|float $cycles defines the number of reaction cycles to be calculated. One cycle takes 1h to complete.
      * @param bool $reprocess defines reprocessable reaction outputs should be reprocessed in the process. Applies to

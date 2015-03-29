@@ -9,27 +9,25 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Relic.php
- *
  */
 
 namespace iveeCore;
 
 /**
- * Relic class represents items that can be used to invent T3Blueprints
+ * Relic class represents items that can be used to invent T3Blueprints.
  *
  * Since Phoebe 1.0, Relic is a subclass of InventorBlueprint, as the distinction between reverse engineering and
  * invention was mostly eliminated. However, since Relic is not a Blueprint, some of the inherited methods are blocked
  * from use.
  *
  * Where applicable, attribute names are the same as SDE database column names.
- * Inheritance: Relic -> InventorBlueprint -> Blueprint -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Relic -> InventorBlueprint -> Blueprint -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Relic.php
- *
  */
 class Relic extends InventorBlueprint
 {
@@ -70,7 +68,7 @@ class Relic extends InventorBlueprint
     /**
      * Returns an InventionProcessData object describing the invention process.
      *
-     * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
+     * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $inventedBpID the ID if the T3Blueprint to be invented. If left null, it is set to the first
      * inventable blueprint ID
      * @param int $decryptorID the decryptor the be used, if any
@@ -89,15 +87,16 @@ class Relic extends InventorBlueprint
     }
 
     /**
-     * Invent T3Blueprint and manufacture from it in one go
+     * Invent T3Blueprint and manufacture from it in one go.
      *
-     * @param IndustryModifier $iMod the object with all the necessary industry modifying entities
+     * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $inventedBpID the ID of the T3Blueprint to be invented. If left null it will default to the first
      * blueprint defined in inventsBlueprintID
      * @param int $decryptorID the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
      *
-     * @return ManufactureProcessData with cascaded InventionProcessData object
+     * @return \iveeCore\ManufactureProcessData with cascaded InventionProcessData object
+     * @throws \iveeCore\Exceptions\WrongTypeException if product is no an InventableBlueprint
      */
     public function inventManufacture(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null,
         $recursive = true
@@ -110,8 +109,12 @@ class Relic extends InventorBlueprint
             $recursive
         );
 
+        $producedType = $inventionData->getProducedType();
+        if(!$producedType instanceof T3Blueprint)
+            self::throwException('WrongTypeException', 'Given object is not instance of T3Blueprint');
+
         //manufacture from invented BP
-        $manufactureData = $inventionData->getProducedType()->manufacture(
+        $manufactureData = $producedType->manufacture(
             $iMod,
             $inventionData->getResultRuns(),
             $inventionData->getResultME(),

@@ -9,34 +9,32 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/GlobalPriceData.php
- *
  */
 
 namespace iveeCore;
 
 /**
  * GlobalPriceData represents the global price data returned by public CREST.
- * Inheritance: GlobalPriceData -> CacheableCommon
+ * Inheritance: GlobalPriceData -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/GlobalPriceData.php
- *
  */
-class GlobalPriceData extends CacheableCommon
+class GlobalPriceData extends CoreDataCommon
 {
+    /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'GlobalPriceData';
+
     /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
-     */
-    protected static $classNick = 'GlobalPriceData';
 
     /**
      * @var float $averagePrice eve-wide average, as returned by CREST
@@ -56,6 +54,17 @@ class GlobalPriceData extends CacheableCommon
     protected $priceDate;
 
     /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
+    }
+
+    /**
      * Retuns a GlobalPriceData object. Tries caches and instantiates new objects if necessary.
      *
      * @param int $typeId of requested market data typeID
@@ -69,13 +78,13 @@ class GlobalPriceData extends CacheableCommon
             static::init();
 
         try {
-            return static::$instancePool->getObjByKey((int)$typeId);
+            return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int) $typeId);
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
-            $typeClass = Config::getIveeClassName(static::$classNick);
+            $typeClass = Config::getIveeClassName(static::getClassNick());
             $type = new $typeClass((int)$typeId);
             //store object in instance pool (and cache if configured)
-            static::$instancePool->setObj($type);
+            static::$instancePool->setItem($type);
 
             return $type;
         }
@@ -86,7 +95,6 @@ class GlobalPriceData extends CacheableCommon
      *
      * @param int $typeId of the market data type
      *
-     * @return \iveeCore\GlobalMarketData
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
      */
     protected function __construct($typeId)
@@ -99,7 +107,7 @@ class GlobalPriceData extends CacheableCommon
     }
 
     /**
-     * Gets all necessary data from SQL
+     * Gets all necessary data from SQL.
      *
      * @return array with attributes queried from DB
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException when a typeID is not found
@@ -113,20 +121,22 @@ class GlobalPriceData extends CacheableCommon
             "SELECT UNIX_TIMESTAMP(date) as priceDate,
             averagePrice,
             adjustedPrice
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeCrestPrices
+            FROM " . Config::getIveeDbName() . ".iveeCrestPrices
             WHERE typeID = " . $this->id . "
             ORDER BY date DESC LIMIT 1;"
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('NoPriceDataAvailableException', "No global price data for "
-                . $this->getType()->getName() . " (typeID=" . $this->id . ") found");
+            self::throwException(
+                'NoPriceDataAvailableException', "No global price data for " . $this->getType()->getName()
+                    . " (typeID=" . $this->id . ") found"
+            );
 
         return $row;
     }
 
     /**
-     * Sets attributes from SQL result row to object
+     * Sets attributes from SQL result row to object.
      *
      * @param array $row data from DB
      *
@@ -140,9 +150,9 @@ class GlobalPriceData extends CacheableCommon
     }
 
     /**
-     * Returns the type object this market data refers to
+     * Returns the type object this market data refers to.
      *
-     * @return \iv eCore\Type
+     * @return \iveeCore\Type
      */
     public function getType()
     {
@@ -150,7 +160,7 @@ class GlobalPriceData extends CacheableCommon
     }
 
     /**
-     * Gets the unix timestamp of the date of the last CREST price data update (day granularity)
+     * Gets the unix timestamp of the date of the last CREST price data update (day granularity).
      *
      * @return int
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
@@ -160,12 +170,13 @@ class GlobalPriceData extends CacheableCommon
         if ($this->priceDate > 0)
             return $this->priceDate;
         else
-            self::throwException('NoPriceDataAvailableException', "No CREST price available for "
-                . $this->getType()->getName());
+            self::throwException(
+                'NoPriceDataAvailableException', "No CREST price available for " . $this->getType()->getName()
+            );
     }
 
     /**
-     * Gets eve-wide average, as returned by CREST
+     * Gets eve-wide average, as returned by CREST.
      *
      * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
      *
@@ -191,7 +202,7 @@ class GlobalPriceData extends CacheableCommon
     }
 
     /**
-     * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations
+     * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations.
      *
      * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
      *

@@ -9,13 +9,13 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/EMDR/Consumer.php
- *
  */
 
 namespace iveeCore\EMDR;
+use \iveeCore\Config;
 
 /**
- * EMDR for IVEE Consumer
+ * EMDR for IVEE Consumer.
  * EmdrConsumer handles the incoming data stream from the relay and passes rowsets to either EmdrPriceUpdate or
  * EmdrHistoryUpdate.
  *
@@ -24,7 +24,6 @@ namespace iveeCore\EMDR;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/EMDR/Consumer.php
- *
  */
 class Consumer
 {
@@ -34,27 +33,27 @@ class Consumer
     protected static $instance;
 
     /**
-     * @var array $trackedTypeIDs array holding the typeIDs => typeNames of items to track on the market
+     * @var string[] $trackedTypeIDs array holding the typeIDs => typeNames of items to track on the market
      */
     protected $trackedTypeIDs = array();
 
     /**
-     * @var array $trackedMarketRegionIDs array holding the IDs of the market regions to be tracked
+     * @var int[] $trackedMarketRegionIDs array holding the IDs of the market regions to be tracked
      */
     protected $trackedMarketRegionIDs = array();
 
     /**
-     * @var array $regions regionID => regionName
+     * @var string[] $regions regionID => regionName
      */
     protected $regions;
 
     /**
-     * @var SDE $sde holds the SDE instance, for convenience
+     * @var \iveeCore\SDE $sde holds the SDE instance, for convenience
      */
     protected $sde;
 
     /**
-     * @var ICache $cache holds a cache instance, if cache use is configured
+     * @var \iveeCore\ICache $cache holds a cache instance, if cache use is configured
      */
     protected $cache;
 
@@ -69,7 +68,7 @@ class Consumer
     protected $emdrHistoryUpdateClass;
 
     /**
-     * Returns singleton instance
+     * Returns singleton instance.
      *
      * @return \iveeCore\EMDR\Consumer
      */
@@ -81,25 +80,21 @@ class Consumer
     }
 
     /**
-     * Constructor
-     *
-     * @return EmdrConsumer
+     * Constructor.
      */
     protected function __construct()
     {
         if (VERBOSE)
             echo "Instantiating EmdrConsumer" . PHP_EOL . "Getting tracked item IDs... ";
 
-        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
+        $sdeClass = Config::getIveeClassName('SDE');
         $this->sde = $sdeClass::instance();
 
-        $defaultsClass = \iveeCore\Config::getIveeClassName('Defaults');
+        $defaultsClass = Config::getIveeClassName('Defaults');
         $defaults = $defaultsClass::instance();
 
-        if (\iveeCore\Config::getUseCache()) {
-            $cacheClass = \iveeCore\Config::getIveeClassName('Cache');
-            $this->cache = $cacheClass::instance();
-        }
+        $cacheClass = Config::getIveeClassName('Cache');
+        $this->cache = $cacheClass::instance();
 
         //load IDs of items to track on market
         $res = $this->sde->query(
@@ -123,8 +118,8 @@ class Consumer
             $this->regions[(int) $tmp[0]] = $tmp[1];
 
         $this->trackedMarketRegionIDs = $defaults->getTrackedMarketRegionIDs();
-        $this->emdrPriceUpdateClass   = \iveeCore\Config::getIveeClassName('EmdrPriceUpdater');
-        $this->emdrHistoryUpdateClass = \iveeCore\Config::getIveeClassName('EmdrHistoryUpdater');
+        $this->emdrPriceUpdateClass   = Config::getIveeClassName('EmdrPriceUpdater');
+        $this->emdrHistoryUpdateClass = Config::getIveeClassName('EmdrHistoryUpdater');
     }
 
     /**
@@ -144,7 +139,7 @@ class Consumer
         $subscriber = $context->getSocket(\ZMQ::SOCKET_SUB);
 
         //Connect to EMDR relay.
-        $subscriber->connect(\iveeCore\Config::getEmdrRelayUrl());
+        $subscriber->connect(Config::getEmdrRelayUrl());
 
         // Disable filtering.
         $subscriber->setSockOpt(\ZMQ::SOCKOPT_SUBSCRIBE, "");
@@ -178,16 +173,17 @@ class Consumer
                 continue;
 
             //get timestamps from cache or DB
-            $timestamps = $this->getTimestamps($typeID, $regionID);
+            $timestampsObj = $this->getTimestamps($typeID, $regionID);
 
             //order data
-            if ($marketData->resultType == 'orders')
-                $this->handleOrderData($typeID, $regionID, $generatedAt, $rowset, $timestamps);
-
-            //history data
-            elseif ($marketData->resultType == 'history') {
+            if ($marketData->resultType == 'orders') {
+                if (!$this->handleOrderData($typeID, $regionID, $generatedAt, $rowset, $timestampsObj))
+                    continue;
+            } elseif ($marketData->resultType == 'history') {
+                //history data
                 try {
-                    $this->handleHistoryData($typeID, $regionID, $generatedAt, $rowset, $timestamps);
+                    if (!$this->handleHistoryData($typeID, $regionID, $generatedAt, $rowset, $timestampsObj))
+                        continue;
                 } catch (\iveeCore\Exceptions\NoRelevantDataException $e) {
                     continue;
                 }
@@ -198,12 +194,12 @@ class Consumer
             }
 
             //update and invalidate caches as necessary
-            $this->updateCaches($typeID, $regionID, $timestamps);
+            $this->updateCaches($typeID, $regionID, $timestampsObj);
         }
     }
 
     /**
-     * Filters incoming data by type, region and generation date
+     * Filters incoming data by type, region and generation date.
      *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
@@ -252,30 +248,26 @@ class Consumer
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
      *
-     * @return \ArrayObject with two elements, carrying the UNIX timestamps
+     * @return \iveeCore\CacheableArray with two elements, carrying the UNIX timestamps
      */
     protected function getTimestamps($typeID, $regionID)
     {
-        if (\iveeCore\Config::getUseCache()) {
-            try {
-                return $this->cache->getItem('emdrts_' . $regionID . '_' . $typeID);
-            } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e) {
-                $orderTimestamps = $this->getTimestampsDB($typeID, $regionID);
-                $this->cache->setItem($orderTimestamps, 'emdrts_' . $regionID . '_' . $typeID);
-                return $orderTimestamps;
-            }
-        } else
-            return $this->getTimestampsDB($typeID, $regionID);
+        try {
+            return $this->cache->getItem('emdrts_' . $regionID . '_' . $typeID);
+        } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e) {
+            $orderTimestamps = $this->getTimestampsDB($typeID, $regionID);
+            $this->cache->setItem($orderTimestamps);
+            return $orderTimestamps;
+        }
     }
 
     /**
-     * Gets timestamps for latest price data generation, history data generation and most recent date with history data
-     * from the DB.
+     * Gets timestamps for latest price data generation and history data generation from the DB.
      *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
      *
-     * @return \ArrayObject with two elements, carrying the UNIX timestamps
+     * @return \iveeCore\CacheableArray with two elements, carrying the UNIX timestamps
      */
     protected function getTimestampsDB($typeID, $regionID)
     {
@@ -285,9 +277,12 @@ class Consumer
             "SELECT
             UNIX_TIMESTAMP(atp.lastPriceUpdate) as lastPriceDataTS,
             UNIX_TIMESTAMP(atp.lastHistUpdate) as lastHistDataTS
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTrackedPrices as atp
+            FROM " . Config::getIveeDbName() . ".iveeTrackedPrices as atp
             WHERE atp.typeID = " . (int) $typeID . " AND atp.regionID = " . (int) $regionID . ";"
         );
+
+        $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
+        $cacheableArray = new $cacheableArrayClass('emdrts_' . $regionID . '_' . $typeID, 3600 * 24);
 
         if ($res->num_rows == 1) {
             $tmp = $res->fetch_assoc();
@@ -297,49 +292,49 @@ class Consumer
             $timestamps[0] = 0;
             $timestamps[1] = 0;
         }
-        return new \ArrayObject($timestamps);
+        $cacheableArray->data = $timestamps;
+        return $cacheableArray;
     }
 
     /**
-     * Updates or invalidates cache entries after market data update
+     * Updates or invalidates cache entries after market data update.
      *
      * @param int $typeID the ID of the item
      * @param int $regionID the ID of the region
-     * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
+     * @param \iveeCore\CacheableArray $timestampsObj with two elements carrying the UNIX timestamps
      *
      * @return void
      */
-    protected function updateCaches($typeID, $regionID, \ArrayObject $timestamps)
+    protected function updateCaches($typeID, $regionID, \iveeCore\CacheableArray $timestampsObj)
     {
-        if (\iveeCore\Config::getUseCache()) {
-            //update timestamps cache
-            $this->cache->setItem($timestamps, 'emdrts_' . $regionID . '_' . $typeID);
+        //update timestamps cache
+        $this->cache->setItem($timestampsObj);
 
-            //invalidate RegionMarketData cache
-            $regionMarketDataClass = \iveeCore\Config::getIveeClassName('RegionMarketData');
-            $regionMarketDataClass::deleteFromCache(array($regionID . '_' . $typeID));
-        }
+        //invalidate RegionMarketData cache
+        $regionMarketDataClass = Config::getIveeClassName('RegionMarketData');
+        $regionMarketDataClass::deleteFromCache(array($regionID . '_' . $typeID));
     }
 
     /**
-     * Handles the processing and DB insertion of order data
+     * Handles the processing and DB insertion of order data.
      *
      * @param int $typeID of the item the data refers to
      * @param int $regionID of the region the data refers to
      * @param int $generatedAt the unix timestamp of the moment the data set was generated at an uploader client
      * @param \stdClass $rowset the raw market data
-     * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
+     * @param \iveeCore\CacheableArray $timestampsObj with two elements carrying the UNIX timestamps
      *
-     * @return void
+     * @return bool wheather relevant data was processed
      */
-    protected function handleOrderData($typeID, $regionID, $generatedAt, \stdClass $rowset, \ArrayObject $timestamps)
-    {
+    protected function handleOrderData($typeID, $regionID, $generatedAt, \stdClass $rowset,
+        \iveeCore\CacheableArray $timestampsObj
+    ) {
         //skip if data is older than newest generatedAt/priceUpdateTimestamp
-        if ($generatedAt < $timestamps[0]) {
+        if ($generatedAt < $timestampsObj->data[0]) {
             if (VERBOSE > 2)
                 echo '- skipping old price data for typeID=' . $typeID . ', generated at '
                     . $rowset->generatedAt . PHP_EOL;
-            return;
+            return false;
         }
 
         //process price data
@@ -353,29 +348,31 @@ class Consumer
         $epu->insertIntoDB();
 
         //update order timestamp
-        $timestamps[0] = $generatedAt;
+        $timestampsObj->data[0] = $generatedAt;
+        return true;
     }
 
     /**
-     * Handles the processing and DB insertion of history data
+     * Handles the processing and DB insertion of history data.
      *
      * @param int $typeID of the item the data refers to
      * @param int $regionID of the region the data refers to
      * @param int $generatedAt the unix timestamp of the moment the data set was generated at an uploader client
      * @param \stdClass $rowset the raw market data
-     * @param \ArrayObject $timestamps with two elements carrying the UNIX timestamps
+     * @param \iveeCore\CacheableArray $timestampsObj with two elements carrying the UNIX timestamps
      *
-     * @return void
-     * @throws NoRelevantDataException if no relevant data rows are given
+     * @return bool
+     * @throws \iveeCore\Exceptions\NoRelevantDataException if no relevant data rows are given
      */
-    protected function handleHistoryData($typeID, $regionID, $generatedAt, \stdClass $rowset, \ArrayObject $timestamps)
-    {
+    protected function handleHistoryData($typeID, $regionID, $generatedAt, \stdClass $rowset,
+        \iveeCore\CacheableArray $timestampsObj
+    ) {
         //skip if data is older than newest generatedAt/historyUpdateTimestamp
-        if ($generatedAt < $timestamps[1]) {
+        if ($generatedAt < $timestampsObj->data[1]) {
             if (VERBOSE > 2)
                 echo '- skipping old history data for typeID=' . $typeID . ', generated at '
                     . $rowset->generatedAt . PHP_EOL;
-            return;
+            return false;
         }
 
         //process history data
@@ -390,11 +387,12 @@ class Consumer
         $ehu->insertIntoDB();
 
         //update history data generation timestamp
-        $timestamps[1] = $generatedAt;
+        $timestampsObj->data[1] = $generatedAt;
+        return true;
     }
 
     /**
-     * Gets the typeName for a market tracked TypeID
+     * Gets the typeName for a market tracked TypeID.
      *
      * @param int $typeID of the item to get the name for
      *
@@ -407,13 +405,13 @@ class Consumer
         if (isset($this->trackedTypeIDs[(int) $typeID]))
             return $this->trackedTypeIDs[(int) $typeID];
         else {
-            $exceptionClass = \iveeCore\Config::getIveeClassName('TypeIdNotFoundException');
+            $exceptionClass = Config::getIveeClassName('TypeIdNotFoundException');
             throw new $exceptionClass((int) $typeID . ' not found among market tracked item IDs.');
         }
     }
 
     /**
-     * Gets the regionName for a regionID
+     * Gets the regionName for a regionID.
      *
      * @param int $regionID of the region to get the name for
      *
@@ -425,7 +423,7 @@ class Consumer
         if (isset($this->regions[(int) $regionID]))
             return $this->regions[(int) $regionID];
         else {
-            $exceptionClass = \iveeCore\Config::getIveeClassName('SystemIdNotFoundException');
+            $exceptionClass = Config::getIveeClassName('SystemIdNotFoundException');
             throw new $exceptionClass((int) $regionID . ' not found among region IDs.');
         }
     }

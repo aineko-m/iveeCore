@@ -9,34 +9,32 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Type.php
- *
  */
 
 namespace iveeCore;
 
 /**
  * Base class for all inventory Type subclasses.
- * Inheritance: Type -> SdeType -> CacheableCommon
+ * Inheritance: Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Type.php
- *
  */
 class Type extends SdeType
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'Type';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) Type and child objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing)
-     */
-    protected static $classNick = 'Type';
 
     /**
      * @var int $groupID the groupID of this Type.
@@ -59,7 +57,7 @@ class Type extends SdeType
     protected $portionSize;
 
     /**
-     * @var int $basePrice the base price of this Type.
+     * @var float $basePrice the base price of this Type.
      */
     protected $basePrice;
 
@@ -92,19 +90,19 @@ class Type extends SdeType
             static::init();
 
         try {
-            return static::$instancePool->getObjByKey((int)$id);
+            return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int)$id);
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
             $type = self::factory((int)$id);
             //store SdeType object in instance pool (and cache if configured)
-            static::$instancePool->setObj($type);
+            static::$instancePool->setItem($type);
 
             return $type;
         }
     }
 
     /**
-     * Loads all type names from DB to PHP
+     * Loads all type names from DB to PHP.
      *
      * @return void
      */
@@ -123,7 +121,18 @@ class Type extends SdeType
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['typeName']] = (int) $row['typeID'];
 
-        self::$instancePool->setNamesToKeys($namesToIds);
+        self::$instancePool->setNamesToKeys(static::getClassHierarchyKeyPrefix() . 'Names', $namesToIds);
+    }
+
+    /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
     }
 
     /**
@@ -225,6 +234,7 @@ class Type extends SdeType
      */
     private static function decideType(array $subtypeInfo)
     {
+        $subtype = '';
         if (empty($subtypeInfo))
             self::throwException('TypeIdNotFoundException', "typeID not found");
         elseif ($subtypeInfo['categoryID'] == 24)
@@ -258,7 +268,6 @@ class Type extends SdeType
      *
      * @param int $id of the Type
      *
-     * @return \iveeCore\Type
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($id)
@@ -290,7 +299,7 @@ class Type extends SdeType
     }
 
     /**
-     * Gets all necessary data from SQL
+     * Gets all necessary data from SQL.
      *
      * @return array with attributes queried from DB
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
@@ -329,7 +338,7 @@ class Type extends SdeType
     }
 
     /**
-     * Sets attributes from SQL result row to object
+     * Sets attributes from SQL result row to object.
      *
      * @param array $row data from DB
      *
@@ -342,7 +351,7 @@ class Type extends SdeType
         $this->name        = $row['typeName'];
         $this->volume      = (float) $row['volume'];
         $this->portionSize = (int) $row['portionSize'];
-        $this->basePrice   = (int) $row['basePrice'];
+        $this->basePrice   = (float) $row['basePrice'];
         if (isset($row['marketGroupID']))
             $this->marketGroupID = (int) $row['marketGroupID'];
         if (isset($row['reprocessingSkillID']))
@@ -350,7 +359,7 @@ class Type extends SdeType
     }
 
     /**
-     * Gets the groupID of the Type
+     * Gets the groupID of the Type.
      *
      * @return int
      */
@@ -360,7 +369,7 @@ class Type extends SdeType
     }
 
     /**
-     * Gets the categoryID of the Type
+     * Gets the categoryID of the Type.
      *
      * @return int
      */
@@ -370,7 +379,7 @@ class Type extends SdeType
     }
 
     /**
-     * Gets the volume of the Type
+     * Gets the volume of the Type.
      *
      * @return float
      */
@@ -380,7 +389,7 @@ class Type extends SdeType
     }
 
     /**
-     * Gets the portion size of the Type (relevant for manufacturing and reprocessing)
+     * Gets the portion size of the Type (relevant for manufacturing and reprocessing).
      *
      * @return int
      */
@@ -393,7 +402,7 @@ class Type extends SdeType
      * Gets the base price.
      * Not to be confused with the base price calculated in industry activities for cost calculation.
      *
-     * @return int
+     * @return float
      */
     public function getBasePrice()
     {
@@ -401,7 +410,7 @@ class Type extends SdeType
     }
 
     /**
-     * Gets marketGroupID
+     * Gets marketGroupID.
      *
      * @return int marketGroupID
      */
@@ -411,7 +420,7 @@ class Type extends SdeType
     }
 
     /**
-     * Returns boolean on whether item can be sold/bought or not
+     * Returns boolean on whether item can be sold/bought or not.
      *
      * @return bool
      */
@@ -421,7 +430,7 @@ class Type extends SdeType
     }
 
     /**
-     * Returns the GlobalPriceData object for this Type
+     * Returns the GlobalPriceData object for this Type.
      *
      * @return \iveeCore\GlobalPriceData
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for this Type
@@ -433,7 +442,7 @@ class Type extends SdeType
     }
 
     /**
-     * Returns the RegionMarketData object for this Type
+     * Returns the RegionMarketData object for this Type.
      *
      * @param int $regionID of the region to get market data for. If none passed, default is looked up.
      *
@@ -448,7 +457,7 @@ class Type extends SdeType
     }
 
     /**
-     * Returns whether this Type can be reprocessed or not
+     * Returns whether this Type can be reprocessed or not.
      *
      * @return bool
      */
@@ -460,7 +469,7 @@ class Type extends SdeType
     /**
      * Returns the materials for Type. Since Crius this is only relevant for reprocessing.
      *
-     * @return array typeID => quantity
+     * @return int[] in the form typeID => quantity
      */
     public function getMaterials()
     {
@@ -471,7 +480,7 @@ class Type extends SdeType
     }
 
     /**
-     * Returns the specific reprocessing skill ID for this Type
+     * Returns the specific reprocessing skill ID for this Type.
      *
      * @return int
      */
@@ -481,7 +490,7 @@ class Type extends SdeType
     }
 
     /**
-     * Returns a MaterialMap object representing the reprocessing materials of the item
+     * Returns a MaterialMap object representing the reprocessing materials of the item.
      *
      * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
      * @param float $equipmentYield the reprocessing yield of the station or array
@@ -534,7 +543,7 @@ class Type extends SdeType
     }
 
     /**
-     * Calculates the tax factor for reprocessing in stations (5% tax = factor of 0.95)
+     * Calculates the tax factor for reprocessing in stations (5% tax = factor of 0.95).
      *
      * @param float $standings with the corporation of the station you are reprocessing at
      *

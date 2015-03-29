@@ -9,26 +9,24 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ReactionProduct.php
- *
  */
 
 namespace iveeCore;
 
 /**
  * Class for items that can result from reactions.
- * Inheritance: ReactionProduct -> Type -> SdeType -> CacheableCommon
+ * Inheritance: ReactionProduct -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ReactionProduct.php
- *
  */
 class ReactionProduct extends Type
 {
     /**
-     * @var array $productOfReactionIDs the typeID(s) of the reactions this product can be produced from. Includes
+     * @var int[] $productOfReactionIDs the typeID(s) of the reactions this product can be produced from. Includes
      * alchemy reactions.
      */
     protected $productOfReactionIDs = array();
@@ -38,7 +36,6 @@ class ReactionProduct extends Type
      *
      * @param int $id of the ReactionProduct object
      *
-     * @return \iveeCore\ReactionProduct
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($id)
@@ -68,16 +65,16 @@ class ReactionProduct extends Type
         );
 
         if (empty($res))
-            static::throwException('TypeIdNotFoundException', "ReactionProduct ID=". $this->id . " not found" );
+            static::throwException('TypeIdNotFoundException', "ReactionProduct ID=". $this->id . " not found");
 
         while ($row = $res->fetch_assoc())
             $this->productOfReactionIDs[] = (int) $row['reactionTypeID'];
     }
 
     /**
-     * Gets the Reaction object(s) this product can be produced from
+     * Gets the Reaction object(s) this product can be produced from.
      *
-     * @return array with Reaction objects(s)
+     * @return \iveeCore\Reaction[] with Reaction objects(s)
      */
     public function getReactions()
     {
@@ -89,9 +86,9 @@ class ReactionProduct extends Type
     }
 
     /**
-     * Gets the Reaction ID(s) this product can be produced from
+     * Gets the Reaction ID(s) this product can be produced from.
      *
-     * @return array with Reaction ID(s)
+     * @return int[] with Reaction ID(s)
      */
     public function getReactionIDs()
     {

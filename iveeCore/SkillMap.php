@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SkillMap.php
- *
  */
 
 namespace iveeCore;
@@ -22,7 +21,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/SkillMap.php
- *
  */
 class SkillMap
 {
@@ -32,7 +30,7 @@ class SkillMap
     protected $skills = array();
 
     /**
-     * Sanity checks a skill level (verify it's an integer between 0 and 5)
+     * Sanity checks a skill level (verify it's an integer between 0 and 5).
      *
      * @param int $skillLevel the value to be checked
      *
@@ -49,7 +47,7 @@ class SkillMap
     }
 
     /**
-     * Add required skill to the total skill array
+     * Add required skill to the total skill array.
      *
      * @param int $skillID of the skill
      * @param int $level of the skill
@@ -70,9 +68,9 @@ class SkillMap
     }
 
     /**
-     * Sums the skills of another SkillMap object to this
+     * Sums the skills of another SkillMap object to this.
      *
-     * @param SkillMap $skillMap of skills to be added
+     * @param \iveeCore\SkillMap $skillMap of skills to be added
      *
      * @return void
      */
@@ -83,9 +81,9 @@ class SkillMap
     }
 
     /**
-     * Returns the skills as array $skillID => $level
+     * Returns the skills as array $skillID => $level.
      *
-     * @return array
+     * @return int[]
      */
     public function getSkills()
     {

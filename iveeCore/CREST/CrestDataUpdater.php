@@ -9,20 +9,19 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/CrestDataUpdater.php
- *
  */
 
 namespace iveeCore\CREST;
+use \iveeCore\Config;
 
 /**
- * Abstract base class for the specific CREST endpoint updaters
+ * Abstract base class for the specific CREST endpoint updaters.
  *
  * @category IveeCore
  * @package  IveeCoreCrest
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/CrestDataUpdater.php
- *
  */
 abstract class CrestDataUpdater
 {
@@ -42,16 +41,14 @@ abstract class CrestDataUpdater
     protected $data;
 
     /**
-     * @var array $updatedIDs holding the updated IDs
+     * @var int[] $updatedIDs holding the updated IDs
      */
     protected $updatedIDs = array();
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param \stdClass $data the data received from CREST
-     *
-     * @return \iveeCore\CREST\CrestDataUpdater
      */
     public function __construct(\stdClass $data)
     {
@@ -59,14 +56,14 @@ abstract class CrestDataUpdater
     }
 
     /**
-     * Saves the data to the database
+     * Saves the data to the database.
      *
      * @return void
      */
     public function insertIntoDB()
     {
         //lookup SDE class
-        $sdeClass = \iveeCore\Config::getIveeClassName('SDE');
+        $sdeClass = Config::getIveeClassName('SDE');
         $sdeDb = $sdeClass::instance();
         $sql = '';
         $count = 0;
@@ -80,13 +77,12 @@ abstract class CrestDataUpdater
             }
         }
 
-        if (\iveeCore\Config::getUseCache())
-            $this->invalidateCaches();
+        $this->invalidateCaches();
         $this->updatedIDs = array();
     }
 
     /**
-     * Processes data objects to SQL
+     * Processes data objects to SQL.
      *
      * @param \stdClass $item to be processed
      *
@@ -98,7 +94,7 @@ abstract class CrestDataUpdater
     }
 
     /**
-     * Invalidate any cache entries that were update in the DB
+     * Invalidate any cache entries that were update in the DB.
      *
      * @return void
      */
@@ -107,14 +103,14 @@ abstract class CrestDataUpdater
     }
 
     /**
-     * Perform the complete update
+     * Perform the complete update.
      *
      * @return void
      */
     public static function doUpdate()
     {
         //get CrestFetcher class name and instantiate
-        $crestFetcherClass = \iveeCore\Config::getIveeClassName('CrestFetcher');
+        $crestFetcherClass = Config::getIveeClassName('CrestFetcher');
         $cf = new $crestFetcherClass;
         echo get_called_class() . ' getting data from CREST... ';
 

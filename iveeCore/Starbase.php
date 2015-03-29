@@ -9,31 +9,29 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Starbase.php
- *
  */
 
 namespace iveeCore;
 
 /**
  * Class for starbases ("Player Owned Stations", "Towers").
- * Inheritance: Starbase -> Manufacturable -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Starbase -> Manufacturable -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Starbase.php
- *
  */
 class Starbase extends Manufacturable
 {
     /**
-     * @var array $onlineCycleFuelReq holding raw fuel requirement data.
+     * @var int[] $onlineCycleFuelReq holding raw fuel requirement data.
      */
     protected $onlineCycleFuelReq = array();
 
     /**
-     * @var array $reinforcedCycleFuelReq holding raw reinforcement fuel requirement data.
+     * @var int[] $reinforcedCycleFuelReq holding raw reinforcement fuel requirement data.
      */
     protected $reinforcedCycleFuelReq = array();
 
@@ -42,7 +40,6 @@ class Starbase extends Manufacturable
      *
      * @param int $id of the Type
      *
-     * @return \iveeCore\Starbase
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($id)

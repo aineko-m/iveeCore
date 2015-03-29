@@ -1,24 +1,40 @@
 <?php
+/**
+ * RegionMarketData class file.
+ *
+ * PHP version 5.3
+ *
+ * @category IveeCore
+ * @package  IveeCoreClasses
+ * @author   Aineko Macx <ai@sknop.net>
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/RegionMarketData.php
+ */
 
 namespace iveeCore;
 
 /**
- * Description of MarketData
+ * RegionMarketData represents the market data for a specific region and type.
+ * Inheritance: RegionMarketData -> CoreDataCommon
  *
- * @author sknop
+ * @category IveeCore
+ * @package  IveeCoreClasses
+ * @author   Aineko Macx <ai@sknop.net>
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/RegionMarketData.php
  */
-class RegionMarketData extends CacheableCommon
+class RegionMarketData extends CoreDataCommon
 {
+    /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'RegionMarketData';
+
     /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing) and is used as part of the cache key prefix for objects of this and child classes
-     */
-    protected static $classNick = 'RegionMarketData';
 
     /**
      * @var int $regionID of the region this object refers to
@@ -93,6 +109,17 @@ class RegionMarketData extends CacheableCommon
     protected $avg;
 
     /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
+    }
+
+    /**
      * Main function for getting RegionMarketData objects. Tries caches and instantiates new objects if necessary.
      *
      * @param int $typeID of type
@@ -113,13 +140,15 @@ class RegionMarketData extends CacheableCommon
         }
 
         try {
-            return static::$instancePool->getObjByKey($regionID . '_' . $typeID);
+            return static::$instancePool->getItem(
+                static::getClassHierarchyKeyPrefix() . (int) $regionID . '_' . (int) $typeID
+            );
         } catch (Exceptions\KeyNotFoundInCacheException $e) {
             //go to DB
-            $typeClass = Config::getIveeClassName(static::$classNick);
+            $typeClass = Config::getIveeClassName(static::getClassNick());
             $type = new $typeClass($typeID, $regionID);
             //store object in instance pool (and cache if configured)
-            static::$instancePool->setObj($type);
+            static::$instancePool->setItem($type);
 
             return $type;
         }
@@ -131,7 +160,6 @@ class RegionMarketData extends CacheableCommon
      * @param int $typeID of type
      * @param int $regionID of the region
      *
-     * @return \iveeCore\RegionMarketData
      * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
@@ -163,9 +191,9 @@ class RegionMarketData extends CacheableCommon
             ap.demandIn5,
             ap.avgSell5OrderAge,
             ap.avgBuy5OrderAge
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveeTrackedPrices
-            LEFT JOIN " . \iveeCore\Config::getIveeDbName() . ".iveePrices AS ah ON iveeTrackedPrices.newestHistData = ah.id
-            LEFT JOIN " . \iveeCore\Config::getIveeDbName() . ".iveePrices AS ap ON iveeTrackedPrices.newestPriceData = ap.id
+            FROM " . Config::getIveeDbName() . ".iveeTrackedPrices
+            LEFT JOIN " . Config::getIveeDbName() . ".iveePrices AS ah ON iveeTrackedPrices.newestHistData = ah.id
+            LEFT JOIN " . Config::getIveeDbName() . ".iveePrices AS ap ON iveeTrackedPrices.newestPriceData = ap.id
             WHERE iveeTrackedPrices.typeID = " . $this->id . "
             AND iveeTrackedPrices.regionID = " . $this->regionID . ";"
         )->fetch_assoc();
@@ -204,7 +232,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Returns the id of the the region this objects refers to
+     * Returns the id of the the region this objects refers to.
      *
      * @return int
      */
@@ -214,19 +242,19 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Returns the key used to store and find the object in the cache
+     * Returns the key used to store and find the object in the cache.
      *
      * @return string
      */
     public function getKey()
     {
-        return $this->getRegionID() . '_' . $this->getId();
+        return $this->getClassHierarchyKeyPrefix() . $this->getRegionID() . '_' . $this->getId();
     }
 
     /**
-     * Returns the type object this market data refers to
+     * Returns the type object this market data refers to.
      *
-     * @return \iv eCore\Type
+     * @return \iveeCore\Type
      */
     public function getType()
     {
@@ -234,7 +262,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets the objects cache time to live
+     * Gets the objects cache time to live.
      *
      * @return int
      */
@@ -244,12 +272,12 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Returns the realistic buy price as estimated in \iveeCore\EMDR\PriceUpdate
+     * Returns the realistic buy price as estimated in \iveeCore\EMDR\PriceUpdate.
      *
      * @param int $maxPriceDataAge optional parameter, specifies the maximum price data age in seconds.
      *
      * @return float
-     * @throws NotOnMarketException if the item is not actually sellable (child classes)
+     * @throws \iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no buy price available
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
@@ -267,7 +295,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Returns the realistic sell price as estimated in EmdrPriceUpdate
+     * Returns the realistic sell price as estimated in EmdrPriceUpdate.
      *
      * @param int $maxPriceDataAge optional parameter, specifies the maximum price data age in seconds.
      *
@@ -333,7 +361,7 @@ class RegionMarketData extends CacheableCommon
             demandIn5,
             avgSell5OrderAge,
             avgBuy5OrderAge
-            FROM " . \iveeCore\Config::getIveeDbName() . ".iveePrices
+            FROM " . Config::getIveeDbName() . ".iveePrices
             WHERE typeID = " . $this->id . "
             AND regionID = " . $this->regionID . "
             AND date > '" . date('Y-m-d', $fromDateTS) . "'
@@ -347,7 +375,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets unix timestamp of the date of the last price data update for default region (day granularity)
+     * Gets unix timestamp of the date of the last price data update for default region (day granularity).
      *
      * @return int
      */
@@ -357,7 +385,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets the average volume in default region, computed over the last 7 days
+     * Gets the average volume in default region, computed over the last 7 days.
      *
      * @return float
      */
@@ -367,7 +395,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets the average number of transactions in default region, computed over the last 7 days
+     * Gets the average number of transactions in default region, computed over the last 7 days.
      *
      * @return float
      */
@@ -377,7 +405,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets the volume available in sell orders within 5% of sellPrice
+     * Gets the volume available in sell orders within 5% of sellPrice.
      *
      * @return int
      */
@@ -387,7 +415,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets the volume demanded by buy orders withing 5% of buyPrice
+     * Gets the volume demanded by buy orders withing 5% of buyPrice.
      *
      * @return int
      */
@@ -419,7 +447,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets the unix timestamp of the date of the last history data update for default region (day granularity)
+     * Gets the unix timestamp of the date of the last history data update for default region (day granularity).
      *
      * @return int
      */
@@ -429,7 +457,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets market "low", as returned by EVEs history for default region
+     * Gets market "low", as returned by EVEs history for default region.
      *
      * @return float
      */
@@ -439,7 +467,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets market "high", as returned by EVEs history for default region
+     * Gets market "high", as returned by EVEs history for default region.
      *
      * @return float
      */
@@ -449,7 +477,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Gets market "avg", as returned by EVEs history for default region
+     * Gets market "avg", as returned by EVEs history for default region.
      *
      * @return float
      */
@@ -459,7 +487,7 @@ class RegionMarketData extends CacheableCommon
     }
 
     /**
-     * Throws NotOnMarketException
+     * Throws NotOnMarketException.
      *
      * @return void
      * @throws \iveeCore\Exceptions\NotOnMarketException

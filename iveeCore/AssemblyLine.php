@@ -9,7 +9,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/AssemblyLine.php
- *
  */
 
 namespace iveeCore;
@@ -17,27 +16,26 @@ namespace iveeCore;
 /**
  * AssemblyLines represent the industry "slot" of a station or POS assembly array or lab. Although slots are not used in
  * EVE anymore since Crius, the restrictions or bonuses they confer still apply.
- * Inheritance: AssemblyLine -> SdeType -> CacheableCommon
+ * Inheritance: AssemblyLine -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/AssemblyLine.php
- *
  */
 class AssemblyLine extends SdeType
 {
     /**
+     * @var string CLASSNICK holds the class short name which is used to lookup the configured FQDN classname in Config
+     * (for dynamic subclassing)
+     */
+    const CLASSNICK = 'AssemblyLine';
+
+    /**
      * @var \iveeCore\InstancePool $instancePool used to pool (cache) AssemblyLine objects
      */
     protected static $instancePool;
-
-    /**
-     * @var string $classNick holds the class short name which is used to lookup the configured FQDN classname in Config
-     * (for dynamic subclassing)
-     */
-    protected static $classNick = 'AssemblyLine';
 
     /**
      * @var float $baseTimeMultiplier the base time multiplier
@@ -63,13 +61,13 @@ class AssemblyLine extends SdeType
      * @var array $groupModifiers defines which groupIDs can be used with this AssemblyLine and also stores additional
      * multipliers.
      */
-    protected $groupModifiers;
+    protected $groupModifiers = array();
 
     /**
      * @var array $categoryModifiers defines which categoryIDs can be used with this AssemblyLine and also stores
      * additional multipliers.
      */
-    protected $categoryModifiers;
+    protected $categoryModifiers = array();
 
     /**
      * Gets the assemblyLineTypeIDs for the best installable labs and assembly arrays for POSes depending on system
@@ -78,7 +76,7 @@ class AssemblyLine extends SdeType
      *
      * @param float $systemSecurity defining the system security status
      *
-     * @return array in the form activityID => assemblyLineTypeIDs[]
+     * @return int[] in the form activityID => assemblyLineTypeIDs[]
      */
     public static function getBestPosAssemblyLineTypeIDs($systemSecurity = 1.0)
     {
@@ -128,7 +126,7 @@ class AssemblyLine extends SdeType
     /**
      * Gets the assemblyLineTypeIDs for the generic hisec station.
      *
-     * @return array in the form activityID => assemblyLineTypeIDs[]
+     * @return int[] in the form activityID => assemblyLineTypeIDs[]
      */
     public static function getHisecStationAssemlyLineTypeIDs()
     {
@@ -142,7 +140,7 @@ class AssemblyLine extends SdeType
     }
 
     /**
-     * Method blocked as there is no safe way to get an AssemblyLine by name
+     * Method blocked as there is no safe way to get an AssemblyLine by name.
      *
      * @param string $name of requested AssemblyLine
      *
@@ -155,11 +153,21 @@ class AssemblyLine extends SdeType
     }
 
     /**
+     * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
+     * Type and Blueprint are in the same hierarchy, Type and SolarSystem are not.
+     *
+     * @return string
+     */
+    public static function getClassHierarchyKeyPrefix()
+    {
+        return __CLASS__ . '_';
+    }
+
+    /**
      * Constructor
      *
      * @param int $id of the AssemblyLine
      *
-     * @return \iveeCore\AssemblyLine
      * @throws \iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeID is not found
      */
     protected function __construct($id)
@@ -194,9 +202,8 @@ class AssemblyLine extends SdeType
             WHERE assemblyLineTypeID = " . $this->id . ';'
         );
 
-        $this->categoryModifiers = array();
         while ($row = $res->fetch_assoc())
-            $this->categoryModifiers[$row['categoryID']] = array(
+            $this->categoryModifiers[(int) $row['categoryID']] = array(
                 't' => (float) $row['timeMultiplier'],
                 'm' => (float) $row['materialMultiplier'],
                 'c' => (float) $row['costMultiplier']
@@ -209,9 +216,8 @@ class AssemblyLine extends SdeType
             WHERE assemblyLineTypeID = " . $this->id . ';'
         );
 
-        $this->groupModifiers = array();
         while ($row = $res->fetch_assoc())
-            $this->groupModifiers[$row['groupID']] = array(
+            $this->groupModifiers[(int) $row['groupID']] = array(
                 'c' => (float) $row['costMultiplier'],
                 'm' => (float) $row['materialMultiplier'],
                 't' => (float) $row['timeMultiplier']
@@ -219,7 +225,7 @@ class AssemblyLine extends SdeType
     }
 
     /**
-     * Gets the base time multiplier of the AssemblyLine
+     * Gets the base time multiplier of the AssemblyLine.
      *
      * @return float
      */
@@ -229,7 +235,7 @@ class AssemblyLine extends SdeType
     }
 
     /**
-     * Gets the base material multiplier of the AssemblyLine
+     * Gets the base material multiplier of the AssemblyLine.
      *
      * @return float
      */
@@ -239,7 +245,7 @@ class AssemblyLine extends SdeType
     }
 
     /**
-     * Gets the base cost multiplier of the AssemblyLine
+     * Gets the base cost multiplier of the AssemblyLine.
      *
      * @return float
      */
@@ -249,7 +255,7 @@ class AssemblyLine extends SdeType
     }
 
     /**
-     * Gets the ID of the activity that can be performed with the AssemblyLine
+     * Gets the ID of the activity that can be performed with the AssemblyLine.
      *
      * @return int
      */
@@ -259,7 +265,7 @@ class AssemblyLine extends SdeType
     }
 
     /**
-     * Returns the group modifier array
+     * Returns the group modifier array.
      *
      * @return array
      */
@@ -269,7 +275,7 @@ class AssemblyLine extends SdeType
     }
 
     /**
-     * Returns the category modifier array
+     * Returns the category modifier array.
      *
      * @return array
      */
@@ -285,7 +291,7 @@ class AssemblyLine extends SdeType
      *
      * @param Type $type the item to get the modifiers for
      *
-     * @return array in the form ('c' => float, 'm' => float, 't' => float)
+     * @return float[] in the form ('c' => float, 'm' => float, 't' => float)
      * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the given Type is not compatible
      */
     public function getModifiersForType(Type $type)

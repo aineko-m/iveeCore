@@ -9,21 +9,19 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Decryptor.php
- *
  */
 
 namespace iveeCore;
 
 /**
  * Class for invention decryptors.
- * Inheritance: Decryptor -> Type -> SdeType -> CacheableCommon
+ * Inheritance: Decryptor -> Type -> SdeType -> CoreDataCommon
  *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Decryptor.php
- *
  */
 class Decryptor extends Type
 {
@@ -57,7 +55,6 @@ class Decryptor extends Type
      *
      * @param int $id of the Decryptor object
      *
-     * @return \iveeCore\Decryptor
      * @throws \iveeCore\Exceptions\UnexpectedDataException when loading Decryptor data fails
      */
     protected function __construct($id)
@@ -101,7 +98,7 @@ class Decryptor extends Type
     }
 
     /**
-     * Returns the ME modifier
+     * Returns the ME modifier.
      *
      * @return int the material efficiency modifier
      */
@@ -111,7 +108,7 @@ class Decryptor extends Type
     }
 
     /**
-     * Returns the TE modifier
+     * Returns the TE modifier.
      *
      * @return int the time efficiency modifier
      */
@@ -121,7 +118,7 @@ class Decryptor extends Type
     }
 
     /**
-     * Returns the run modifier
+     * Returns the run modifier.
      *
      * @return int the production run modifier
      */
@@ -131,7 +128,7 @@ class Decryptor extends Type
     }
 
     /**
-     * Returns the invention chance modifier
+     * Returns the invention chance modifier.
      *
      * @return float the invention chance factor
      */
@@ -141,11 +138,11 @@ class Decryptor extends Type
     }
 
     /**
-     * Returns the compatible decryptor IDs for a given groupID
+     * Returns the compatible decryptor IDs for a given groupID.
      *
      * @param int $groupID specifies the decryptor group to return
      *
-     * @return array with the decryptor IDs
+     * @return int[] with the decryptor IDs
      * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if decryptor group is not found
      */
     public static function getIDsFromGroup($groupID)
@@ -161,7 +158,7 @@ class Decryptor extends Type
                 AND it.published = 1"
             );
             while ($row = $res->fetch_assoc())
-                static::$decryptorGroups[(int) $row['groupID']][] = $row['typeID'];
+                static::$decryptorGroups[(int) $row['groupID']][] = (int) $row['typeID'];
         }
 
         if (!isset(static::$decryptorGroups[$groupID]))
@@ -171,7 +168,7 @@ class Decryptor extends Type
     }
 
     /**
-     * Returns whether this Type is reprocessable
+     * Returns whether this Type is reprocessable.
      *
      * @return bool if the item is reprocessable. Decryptors never are.
      */

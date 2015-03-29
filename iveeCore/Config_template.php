@@ -11,7 +11,6 @@
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Config_template.php
- *
  */
 
 namespace iveeCore;
@@ -24,7 +23,6 @@ namespace iveeCore;
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Config_template.php
- *
  */
 class Config
 {
@@ -33,11 +31,11 @@ class Config
     /////////////////////
 
     //SDE DB config
-    protected static $sdeDbHost = 'localhost';
+    protected static $sdeDbHost = 'localhost'; //if DB connection fails try 127.0.0.1 instead of localhost
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_pro10';
+    protected static $sdeDbName = 'eve_sde_scy10';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';
@@ -48,10 +46,7 @@ class Config
 
     //Memcached specific settings
     protected static $cacheHost   = 'localhost';
-    protected static $cachePort   = '11211';
-
-    //(P)Redis specific settings
-    protected static $predisConnectionString = 'tcp://localhost:6379';
+    protected static $cachePort   = 11211; //memcached default: 11211, redis default: 6379
 
     //EMDR config
     //https://eve-market-data-relay.readthedocs.org/en/latest/access.html
@@ -61,7 +56,7 @@ class Config
     protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
 
     //change the application name in the parenthesis to your application. It is used when accessing the CREST API.
-    protected static $userAgent = 'iveeCore/2.3 (unknown application)';
+    protected static $userAgent = 'iveeCore/2.4 (unknown application)';
 
     //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
     //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
@@ -70,8 +65,9 @@ class Config
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
         'Cache'                  => '\iveeCore\MemcachedWrapper',
-        //'Cache'                  => '\iveeCore\PredisWrapper',
-        'CacheableCommon'        => '\iveeCore\CacheableCommon',
+//        'Cache'                  => '\iveeCore\RedisWrapper',
+        'CacheableArray'         => '\iveeCore\CacheableArray',
+        'CoreDataCommon'         => '\iveeCore\CoreDataCommon',
         'CopyProcessData'        => '\iveeCore\CopyProcessData',
         'Decryptor'              => '\iveeCore\Decryptor',
         'Defaults'               => '\iveeCoreExtensions\MyDefaults',
@@ -100,11 +96,9 @@ class Config
         'SdeType'                => '\iveeCore\SdeType',
         'SkillMap'               => '\iveeCore\SkillMap',
         'SolarSystem'            => '\iveeCore\SolarSystem',
-        'Speciality'             => '\iveeCore\Speciality',
         'Starbase'               => '\iveeCore\Starbase',
         'Station'                => '\iveeCore\Station',
         'T3Blueprint'            => '\iveeCore\T3Blueprint',
-        'Team'                   => '\iveeCore\Team',
         'Type'                   => '\iveeCore\Type',
         'Util'                   => '\iveeCore\Util',
         'CrestDataUpdate'                => '\iveeCore\CREST\CrestDataUpdater',
@@ -112,14 +106,11 @@ class Config
         'CrestIndustryFacilitiesUpdater' => '\iveeCore\CREST\IndustryFacilitiesUpdater',
         'CrestIndustrySystemsUpdater'    => '\iveeCore\CREST\IndustrySystemsUpdater',
         'CrestMarketPricesUpdater'       => '\iveeCore\CREST\MarketPricesUpdater',
-        'CrestSpecialitiesUpdater'       => '\iveeCore\CREST\SpecialitiesUpdater',
-        'CrestTeamsUpdater'              => '\iveeCore\CREST\TeamsUpdater',
         'EmdrConsumer'       => '\iveeCore\EMDR\Consumer',
         'EmdrPriceUpdater'   => '\iveeCore\EMDR\PriceUpdater',
         'EmdrHistoryUpdater' => '\iveeCore\EMDR\HistoryUpdater',
         'ActivityIdNotFoundException'         => '\iveeCore\Exceptions\ActivityIdNotFoundException',
         'AssemblyLineTypeIdNotFoundException' => '\iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException',
-        'CacheDisabledException'              => '\iveeCore\Exceptions\CacheDisabledException',
         'CrestDataTooOldException'            => '\iveeCore\Exceptions\CrestDataTooOldException',
         'CrestException'                      => '\iveeCore\Exceptions\CrestException',
         'CurlException'                       => '\iveeCore\Exceptions\CurlException',
@@ -142,12 +133,10 @@ class Config
         'StationIdNotFoundException'          => '\iveeCore\Exceptions\StationIdNotFoundException',
         'SystemDataTooOldException'           => '\iveeCore\Exceptions\SystemDataTooOldException',
         'SQLErrorException'                   => '\iveeCore\Exceptions\SQLErrorException',
-        'SpecialityIdNotFoundException'       => '\iveeCore\Exceptions\SpecialityIdNotFoundException',
         'StationIdNotFoundException'          => '\iveeCore\Exceptions\StationIdNotFoundException',
         'StationNameNotFoundException'        => '\iveeCore\Exceptions\StationNameNotFoundException',
         'SystemIdNotFoundException'           => '\iveeCore\Exceptions\SystemIdNotFoundException',
         'SystemNameNotFoundException'         => '\iveeCore\Exceptions\SystemNameNotFoundException',
-        'TeamIdNotFoundException'             => '\iveeCore\Exceptions\TeamIdNotFoundException',
         'TypeIdNotFoundException'             => '\iveeCore\Exceptions\TypeIdNotFoundException',
         'TypeNameNotFoundException'           => '\iveeCore\Exceptions\TypeNameNotFoundException',
         'TypeNotCompatibleException'          => '\iveeCore\Exceptions\TypeNotCompatibleException',
@@ -173,15 +162,13 @@ class Config
 
     /**
      * Instantiates Config object. Private so this class is only used as static.
-     *
-     * @return Config
      */
     private function __construct()
     {
     }
 
     /**
-     * Returns configured SDE database host
+     * Returns configured SDE database host.
      *
      * @return string
      */
@@ -191,7 +178,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database port
+     * Returns configured SDE database port.
      *
      * @return int
      */
@@ -201,7 +188,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database user
+     * Returns configured SDE database user.
      *
      * @return string
      */
@@ -211,7 +198,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database password
+     * Returns configured SDE database password.
      *
      * @return string
      */
@@ -221,7 +208,7 @@ class Config
     }
 
     /**
-     * Returns configured SDE database name
+     * Returns configured SDE database name.
      *
      * @return string
      */
@@ -231,7 +218,7 @@ class Config
     }
 
     /**
-     * Returns configured iveeCore database name
+     * Returns configured iveeCore database name.
      *
      * @return string
      */
@@ -241,7 +228,7 @@ class Config
     }
 
     /**
-     * Returns if cache use is configured or not
+     * Returns if cache use is configured or not.
      *
      * @return bool
      */
@@ -251,7 +238,7 @@ class Config
     }
 
     /**
-     * Returns configured cache prefix for keys stored by iveeCore
+     * Returns configured cache prefix for keys stored by iveeCore.
      *
      * @return string
      */
@@ -261,7 +248,7 @@ class Config
     }
 
     /**
-     * Returns configured cache host name
+     * Returns configured cache host name.
      *
      * @return string
      */
@@ -271,7 +258,7 @@ class Config
     }
 
     /**
-     * Returns configured cache port
+     * Returns configured cache port.
      *
      * @return int
      */
@@ -281,17 +268,7 @@ class Config
     }
 
     /**
-     * Returns configured (P)Redis connection string
-     *
-     * @return string
-     */
-    public static function getPredisConnectionString()
-    {
-        return static::$predisConnectionString;
-    }
-
-    /**
-     * Returns configured EMDR URL
+     * Returns configured EMDR URL.
      *
      * @return string
      */
@@ -301,7 +278,7 @@ class Config
     }
 
     /**
-     * Returns configured CREST base URL
+     * Returns configured CREST base URL.
      *
      * @return string
      */
@@ -311,7 +288,7 @@ class Config
     }
 
     /**
-     * Returns configured user agent to be used by the CREST client
+     * Returns configured user agent to be used by the CREST client.
      *
      * @return string
      */
@@ -322,7 +299,7 @@ class Config
 
     /**
      * Returns the fully qualified name of classes to instantiate for a given class nickname. This is used extensively
-     * in iveeCore to allow for configurable class instantiation
+     * in iveeCore to allow for configurable class instantiation.
      *
      * @param string $classNickname a short name for the class
      *
