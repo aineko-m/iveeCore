@@ -260,7 +260,7 @@ class Config
     /**
      * Configure SDE database name.
      *
-     * @param string $sdeDbName;
+     * @param string $sdeDbName
      */
     public static function setSdeDbName($sdeDbName)
     {
