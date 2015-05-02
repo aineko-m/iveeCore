@@ -1,0 +1,26 @@
+{
+    "name": "aineko-m/iveeCore",
+    "description": "PHP engine for calculations of EVE Online industrial activities",
+    "type": "library",
+    "keywords": ["EVE Online", "EVE API", "CREST", "ivee", "iveeCore"],
+    "homepage": "https://github.com/aineko-m/iveeCore",
+    "license": "LGPL-3.0",
+    "authors": [
+        {
+            "name": "aineko-m"
+        }
+    ],
+
+    "require": {
+        "php-64bit": ">=5.3"
+    },
+
+    "support": {
+        "issues": "https://github.com/aineko-m/iveeCore/issues"
+    },
+
+    "autoload": {
+        "files": ["iveeCoreInit.php"]
+    }
+}
+
