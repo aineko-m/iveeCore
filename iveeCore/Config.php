@@ -158,7 +158,7 @@ class Config
     const CREST_CONTENT_TYPE_REPRESENTATION_PATTERN = '/^application\/(.*)\+json; charset=utf-8$/im';
     //when using this pattern for strings in SQL queries, you MUST encase them in double quotes, as single quotes are
     //allowed!
-    const SANITIZE_STRING_PATTERN = "/[^0-9a-zA-Z()_&':-\s]/";
+    const SANITIZE_STRING_PATTERN = "/[^0-9a-zA-Z()_&':\s-]/";
 
     /**
      * Instantiates Config object. Private so this class is only used as static.
