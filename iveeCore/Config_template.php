@@ -35,7 +35,7 @@ class Config
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_scy10';
+    protected static $sdeDbName = 'eve_sde_mos10';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';
@@ -52,11 +52,11 @@ class Config
     //https://eve-market-data-relay.readthedocs.org/en/latest/access.html
     protected static $emdrRelayUrl = 'tcp://relay-eu-germany-1.eve-emdr.com:8050';
 
-    //EVE CREST base URL. Needs trailing slash.
+    //EVE public CREST base URL. Needs trailing slash.
     protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
 
     //change the application name in the parenthesis to your application. It is used when accessing the CREST API.
-    protected static $userAgent = 'iveeCore/2.4 (unknown application)';
+    protected static $userAgent = 'iveeCore/2.4.1 (unknown application)';
 
     //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
     //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which

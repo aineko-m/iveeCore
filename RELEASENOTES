@@ -1,7 +1,13 @@
 This file lists major changes in iveeCore releases.
 
+Version 2.4.1 - May 3rd, 2015
+-----------------------------
+- Adapted to Mosaic release.
+- Added Composer/Packagist support, courtesy of Tarioch.
+- Fixed a floating point precision issue that could make industrial activities use too much materials.
+
 Version 2.4 - March 29th, 2015
---------------------------------
+------------------------------
 - Adapted to Scylla release.
 - Removed Team and Speciality classes and related functionality.
 - Replaced Redis support via Predis with PhpRedis.
