@@ -128,6 +128,19 @@ php update_crest.php
 ```
 This will fetch the newest relevant data from CREST. This script should be run every few hours so especially your system industry indices are up-to-date. They do change over the course of a day.
 
+### Setup iveeCore using Composer
+
+You can use composer to install iveeCore, the package name is 'aineko-m/ivee-core'. See https://getcomposer.org/ for how to get started with composer.
+To configure ivee core, you can do this during runtime using
+
+```php
+use iveeCore\Config;
+
+Config::setSdeDbUser('ivee');
+Config::setSdeDbPw('supersecret');
+Config::setSdeDbName('eve');
+Config::setIveeDbName('ivee_core');
+```
 
 ## Upgrading the SDE
 Whenever you want to upgrade to another SDE, the following steps are recommended:
