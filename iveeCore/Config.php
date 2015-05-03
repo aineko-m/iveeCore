@@ -158,7 +158,7 @@ class Config
     const CREST_CONTENT_TYPE_REPRESENTATION_PATTERN = '/^application\/(.*)\+json; charset=utf-8$/im';
     //when using this pattern for strings in SQL queries, you MUST encase them in double quotes, as single quotes are
     //allowed!
-    const SANITIZE_STRING_PATTERN = "/[^0-9a-zA-Z()_&':-\s]/";
+    const SANITIZE_STRING_PATTERN = "/[^0-9a-zA-Z()_&':\s-]/";
 
     /**
      * Instantiates Config object. Private so this class is only used as static.
@@ -178,6 +178,16 @@ class Config
     }
 
     /**
+     * Configure SDE database host.
+     *
+     * @param string $sdeDbHost
+     */
+    public static function setSdeDbHost($sdeDbHost)
+    {
+        static::$sdeDbHost = $sdeDbHost;
+    }
+
+    /**
      * Returns configured SDE database port.
      *
      * @return int
@@ -185,6 +195,16 @@ class Config
     public static function getSdeDbPort()
     {
         return static::$sdeDbPort;
+    }
+
+    /**
+     * Configure SDE database port.
+     *
+     * @param int $sdeDbPort
+     */
+    public static function setSdeDbPort($sdeDbPort)
+    {
+        static::$sdeDbPort = $sdeDbPort;
     }
 
     /**
@@ -198,6 +218,16 @@ class Config
     }
 
     /**
+     * Configure SDE database user.
+     *
+     * @param string $sdeDbUser
+     */
+    public static function setSdeDbUser($sdeDbUser)
+    {
+        static::$sdeDbUser = $sdeDbUser;
+    }
+
+    /**
      * Returns configured SDE database password.
      *
      * @return string
@@ -205,6 +235,16 @@ class Config
     public static function getSdeDbPw()
     {
         return static::$sdeDbPw;
+    }
+
+    /**
+     * Configure SDE database password.
+     *
+     * @param string $sdeDbPw
+     */
+    public static function setSdeDbPw($sdeDbPw)
+    {
+        static::$sdeDbPw = $sdeDbPw;
     }
 
     /**
@@ -218,6 +258,16 @@ class Config
     }
 
     /**
+     * Configure SDE database name.
+     *
+     * @param string $sdeDbName
+     */
+    public static function setSdeDbName($sdeDbName)
+    {
+        static::$sdeDbName = $sdeDbName;
+    }
+
+    /**
      * Returns configured iveeCore database name.
      *
      * @return string
@@ -225,6 +275,16 @@ class Config
     public static function getIveeDbName()
     {
         return static::$iveeDbName;
+    }
+
+    /**
+     * Configure iveeCore database name.
+     *
+     * @param string $iveeDbName
+     */
+    public static function setIveeDbName($iveeDbName)
+    {
+        static::$iveeDbName = $iveeDbName;
     }
 
     /**
@@ -238,6 +298,16 @@ class Config
     }
 
     /**
+     * Configure whether to use cache or not.
+     *
+     * @param bool $useCache
+     */
+    public static function setUseCache($useCache)
+    {
+        static::$useCache = $useCache;
+    }
+
+    /**
      * Returns configured cache prefix for keys stored by iveeCore.
      *
      * @return string
@@ -245,6 +315,16 @@ class Config
     public static function getCachePrefix()
     {
         return static::$cachePrefix;
+    }
+
+    /**
+     * Configure cache prefix for keys stored by iveeCore.
+     *
+     * @param string $cachePrefix
+     */
+    public static function setCachePrefix($cachePrefix)
+    {
+        static::$cachePrefix = $cachePrefix;
     }
 
     /**
@@ -258,6 +338,16 @@ class Config
     }
 
     /**
+     * Configure cache host name.
+     *
+     * @param string $cacheHost
+     */
+    public static function setCacheHost($cacheHost)
+    {
+        static::$cacheHost = $cacheHost;
+    }
+
+    /**
      * Returns configured cache port.
      *
      * @return int
@@ -265,6 +355,16 @@ class Config
     public static function getCachePort()
     {
         return static::$cachePort;
+    }
+
+    /**
+     * Configure cache port.
+     *
+     * @param int $cachePort
+     */
+    public static function setCachePort($cachePort)
+    {
+        static::$cachePort = $cachePort;
     }
 
     /**
@@ -278,6 +378,16 @@ class Config
     }
 
     /**
+     * Configure EMDR URL.
+     *
+     * @param string $emdrRelayUrl
+     */
+    public static function setEmdrRelayUrl($emdrRelayUrl)
+    {
+        static::$emdrRelayUrl = $emdrRelayUrl;
+    }
+
+    /**
      * Returns configured CREST base URL.
      *
      * @return string
@@ -288,6 +398,16 @@ class Config
     }
 
     /**
+     * Configure CREST base URL.
+     *
+     * @param string $crestBaseUrl
+     */
+    public static function setCrestBaseUrl($crestBaseUrl)
+    {
+        static::$crestBaseUrl = $crestBaseUrl;
+    }
+
+    /**
      * Returns configured user agent to be used by the CREST client.
      *
      * @return string
@@ -295,6 +415,16 @@ class Config
     public static function getUserAgent()
     {
         return static::$userAgent;
+    }
+
+    /**
+     * Configure user agent to be used by the CREST client.
+     *
+     * @param string $userAgent
+     */
+    public static function setUserAgent($userAgent)
+    {
+        static::$userAgent = $userAgent;
     }
 
     /**
@@ -312,5 +442,16 @@ class Config
         else
             exit('Fatal Error: No class configured  for "' . $classNickname . '" in iveeCore' . DIRECTORY_SEPARATOR
                 . 'Config.php' . PHP_EOL);
+    }
+
+    /**
+     * Configure a fully qualified name of a class to instantiate for a given class nickname.
+     *
+     * @param string $classNickname a short name for the class
+     * @param string $className the full class name to use
+     */
+    public static function setIveeClassName($classNickname, $className)
+    {
+        static::$classes[$classNickname] = $className;
     }
 }
