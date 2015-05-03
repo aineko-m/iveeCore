@@ -28,6 +28,11 @@ if (PHP_INT_SIZE < 8)
 //eve runs on UTC time
 date_default_timezone_set('UTC');
 
+//include Config_template if Config doesn't exist
+$iveeCoreClassesBasePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'iveeCore' . DIRECTORY_SEPARATOR;
+if(!file_exists($iveeCoreClassesBasePath . 'Config.php'))
+    require_once $iveeCoreClassesBasePath . 'Config_template.php';
+
 //register iveeCores's class loader
 spl_autoload_register('iveeClassLoader');
 
