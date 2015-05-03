@@ -91,9 +91,9 @@ If everything went well, you should see a line with the libzmq version.
 ### Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to helpful 3rd party developer Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&t=414591](https://forums.eveonline.com/default.aspx?g=posts&t=414591)
+[https://forums.eveonline.com/default.aspx?g=posts&t=421276](https://forums.eveonline.com/default.aspx?g=posts&t=421276)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_scy10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_mos10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 Then create a second database, naming it "iveeCore" and giving the same user as before full privileges to it.
 
 ### Setup iveeCore
@@ -131,7 +131,7 @@ This will fetch the newest relevant data from CREST. This script should be run e
 ### Setup iveeCore using Composer
 
 You can use composer to install iveeCore, the package name is 'aineko-m/ivee-core'. See https://getcomposer.org/ for how to get started with composer.
-To configure ivee core, you can do this during runtime using
+To configure iveeCore, you can do this during runtime using
 
 ```php
 use iveeCore\Config;
@@ -141,6 +141,7 @@ Config::setSdeDbPw('supersecret');
 Config::setSdeDbName('eve');
 Config::setIveeDbName('ivee_core');
 ```
+If using this method you don't have to create Config.php based on a copy of Config_template.php. If the file Config.php doesn't exist, it will use the template file.
 
 ## Upgrading the SDE
 Whenever you want to upgrade to another SDE, the following steps are recommended:
@@ -230,7 +231,7 @@ To extend iveeCore to your needs without changing the code, the suggested way of
 
 ## Future Plans
 With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; an authenticated CREST client will be introduced. Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
-I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458)
+I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
 
 
 ## FAQ

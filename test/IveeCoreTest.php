@@ -66,7 +66,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($type->getName() == 'Arkonor');
         $this->assertTrue($type->getVolume() == 16);
         $this->assertTrue($type->getPortionSize() == 100);
-        $this->assertTrue($type->getBasePrice() == 2174386.0);
+        $this->assertTrue($type->getBasePrice() == 2745440.0);
         $this->assertTrue($type->isReprocessable());
         $this->assertTrue(is_array($type->getMaterials()));
     }
@@ -135,10 +135,9 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
     {
         $rmap = Type::getByName('Arkonor')->getReprocessingMaterialMap(100, 0.5, 0.95, 1.01);
         $materialTarget = new MaterialMap;
-        $materialTarget->addMaterial(34, 4610);
-        $materialTarget->addMaterial(36, 853);
-        $materialTarget->addMaterial(39, 77);
-        $materialTarget->addMaterial(40, 154);
+        $materialTarget->addMaterial(34, 14687);
+        $materialTarget->addMaterial(36, 1669);
+        $materialTarget->addMaterial(40, 214);
         $this->assertTrue($rmap == $materialTarget);
 
         $rmap = Type::getByName('Ark')->getReprocessingMaterialMap(1, 0.5, 1.0, 1.0);
