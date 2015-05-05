@@ -24,6 +24,7 @@ class DoctrineCacheWrapper implements ICache
 
     /**
      * @var \Doctrine\Common\Cache\CacheProvider $cache holds the Doctrine Cache Provider.
+     */
     protected $cache;
     
     /**
