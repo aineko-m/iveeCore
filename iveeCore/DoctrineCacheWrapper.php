@@ -6,15 +6,35 @@
  *
  * @category IveeCore
  * @package  IveeCoreClasses
- * @author   Talos Katuma/Patrick Ruckstuhl
+ * @author   Talos Katuma/Patrick Ruckstuhl <patrick@ch.tario.org>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/DoctrineCacheWrapper.php
  */
 
 namespace iveeCore;
 
-use Doctrine\Common\Cache\CacheProvider;
+use \Doctrine\Common\Cache\CacheProvider;
 
+/**
+ * DoctrineCacheWrapper provides caching functionality for iveeCore based on the Doctrine CacheProvider.
+ *
+ * Instantiating iveeCore objects that need to pull data from the SDE DB is a relatively expensive process. This is the
+ * case for all Type objects and it's descendants, AssemblyLine, SolarSystem, Station and market data. Since these are
+ * immutable except when affected by updates from CREST or EMDR, using an object cache is the natural and easy way
+ * to greatly improve performance of iveeCore. The EMDR client and CREST updaters automatically clear the cache for the
+ * objects that have been update by them in the DB.
+ *
+ * Note that objects that have already been loaded in a running iveeCore program do not get updated by changes to
+ * the DB or cache by another process or iveeCore script. This might be an issue for long running scripts. For web
+ * applications it should be irrelevant, since they get instantiated and will fetch the objects from DB or cache on each
+ * client request.
+ *
+ * @category IveeCore
+ * @package  IveeCoreClasses
+ * @author   Talos Katuma/Patrick Ruckstuhl <patrick@ch.tario.org>
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/DoctrineCacheWrapper.php
+ */
 class DoctrineCacheWrapper implements ICache
 {
     /**
@@ -48,6 +68,8 @@ class DoctrineCacheWrapper implements ICache
      * Set the Doctrine Cache Provider.
      * 
      * @param \Doctrine\Common\Cache\CacheProvider $cache Doctrine Cache Provider to use.
+     *
+     * @return void
      */
     public function setCache(CacheProvider $cache)
     {
@@ -107,11 +129,9 @@ class DoctrineCacheWrapper implements ICache
     public function deleteMulti(array $keys)
     {
         foreach ($keys as $key) {
-            if (!$this->cache->delete($key)) {
+            if (!$this->cache->delete($key))
                 return false;
-            }
         }
-        
         return true;
     }
 
