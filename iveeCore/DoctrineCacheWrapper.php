@@ -6,7 +6,7 @@
  *
  * @category IveeCore
  * @package  IveeCoreClasses
- * @author   Aineko Macx <ai@sknop.net>
+ * @author   Talos Katuma/Patrick Ruckstuhl
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/DoctrineCacheWrapper.php
  */
