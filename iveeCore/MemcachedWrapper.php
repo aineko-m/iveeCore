@@ -119,6 +119,7 @@ class MemcachedWrapper implements ICache
     /**
      * Removes multiple items from Memcached.
      * This method requires php5-memcached package version >=2.0!
+     * If using HHVM, the call has to be emulated via multiple deleteItem calls.
      *
      * @param string[] $keys of items to be removed
      *
@@ -126,6 +127,11 @@ class MemcachedWrapper implements ICache
      */
     public function deleteMulti(array $keys)
     {
+        if(defined('HHVM_VERSION')){
+            foreach ($keys as $key)
+                $this->deleteItem ($key);
+            return true;
+        }
         return $this->memcached->deleteMulti($keys);
     }
 
