@@ -222,6 +222,19 @@ class AssemblyLine extends SdeType
                 'm' => (float) $row['materialMultiplier'],
                 't' => (float) $row['timeMultiplier']
             );
+        
+        //Since Phoebe the SDE does not contain group or category specific blueprint compatibility and bonus data.
+        //Instead, the bonuses have been merge into the base bonuses of ramAssemblyLineTypes and all blueprints are
+        //allowed for research, copying and invention activities. Here we add neutral compatibility data for those
+        //blueprint activities, so the compatibility checking doesn't need special casing.
+        if(in_array($this->activityID, array(3, 4, 5, 8))){
+            $this->categoryModifiers[9] = array(
+                't' => 1,
+                'm' => 1,
+                'c' => 1
+            );
+        }
+
     }
 
     /**
