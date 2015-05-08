@@ -150,6 +150,44 @@ class IndustryModifier
     }
 
     /**
+     * Returns an IndustryModifier object with AssemblyLines of a certain installationType (e.g. a player owned stationType)
+     *
+     * @param int $solarSystemID of the SolarSystem to get data for
+     * @param int $installationTypeID of the installation (e.g. a stationTypeID)
+     * @param float $tax to use
+     *
+     * @return \iveeCore\IndustryModifier
+     */
+    public static function getBySystemIdForInstallationType($solarSystemID, $installationTypeID, $tax = 0.0)
+    {
+        $sdeClass = Config::getIveeClassName('SDE');
+        $sde = $sdeClass::instance();
+
+        // get the assemblyLineTypeIDs for the stationTypeID
+        $res = $sde->query(
+            "SELECT DISTINCT ralt.assemblyLineTypeID, activityID
+            FROM ramInstallationTypeContents ritc
+            JOIN ramAssemblyLineTypes as ralt ON ralt.assemblyLineTypeID = ritc.assemblyLineTypeID
+            WHERE installationTypeID = " . (int) $installationTypeID . ";"
+        );
+
+        if ($res->num_rows < 1) {
+            $exceptionClass = Config::getIveeClassName('AssemblyLineTypeIdNotFoundException');
+            throw new $exceptionClass("No assembly lines found for installationTypeID=" . (int) $installationTypeID);
+        }
+
+        $assemblyLineTypeIDs = array();
+        while ($row = $res->fetch_assoc())
+            $assemblyLineTypeIDs[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
+
+        return static::getBySystemIdWithAssembly(
+            $solarSystemID,
+            $assemblyLineTypeIDs,
+            $tax
+        );
+    }
+
+    /**
      * Returns an IndustryModifier object for a specific system, but allowing for manual setting of AssemblyLine IDs.
      * This is required for player built outposts or wormholes. The latter will additionally require manually setting
      * the system industry indices, as no data for them is provided by CREST.
