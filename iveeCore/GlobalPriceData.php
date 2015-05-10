@@ -178,14 +178,14 @@ class GlobalPriceData extends CoreDataCommon
     /**
      * Gets eve-wide average, as returned by CREST.
      *
-     * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds, 0 for unlimited.
      *
      * @return float
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST
      * price data is older
      */
-    public function getAveragePrice($maxPriceDataAge = null)
+    public function getAveragePrice($maxPriceDataAge)
     {
         if (is_null($this->averagePrice))
             self::throwException(
@@ -204,14 +204,14 @@ class GlobalPriceData extends CoreDataCommon
     /**
      * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations.
      *
-     * @param int $maxPriceDataAge optional parameter, specifies the maximum CREST price data age in seconds.
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds, 0 for unlimited.
      *
      * @return float
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST
      * price data is older
      */
-    public function getAdjustedPrice($maxPriceDataAge = null)
+    public function getAdjustedPrice($maxPriceDataAge)
     {
         if (is_null($this->adjustedPrice))
             self::throwException(

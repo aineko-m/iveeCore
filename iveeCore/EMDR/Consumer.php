@@ -90,9 +90,6 @@ class Consumer
         $sdeClass = Config::getIveeClassName('SDE');
         $this->sde = $sdeClass::instance();
 
-        $defaultsClass = Config::getIveeClassName('Defaults');
-        $defaults = $defaultsClass::instance();
-
         $cacheClass = Config::getIveeClassName('Cache');
         $this->cache = $cacheClass::instance();
 
@@ -117,7 +114,7 @@ class Consumer
         while ($tmp = $res->fetch_array(MYSQL_NUM))
             $this->regions[(int) $tmp[0]] = $tmp[1];
 
-        $this->trackedMarketRegionIDs = $defaults->getTrackedMarketRegionIDs();
+        $this->trackedMarketRegionIDs = array_flip(Config::getTrackedMarketRegionIds());
         $this->emdrPriceUpdateClass   = Config::getIveeClassName('EmdrPriceUpdater');
         $this->emdrHistoryUpdateClass = Config::getIveeClassName('EmdrHistoryUpdater');
     }

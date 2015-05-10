@@ -42,7 +42,7 @@ These are a few example questions that can be answered with a few lines of code 
 
 ## Requirements
 For basic usage, iveeCore requires:
-- PHP >= 5.3 CLI (64 bit). PHP 5.5 CLI 64 bit recommended.
+- PHP >= 5.3 CLI/Web (64 bit). PHP 5.5 64 bit recommended.
 - Memcached or Redis
 - MySQL >= 5.5 or derivate. [MariaDB 10](https://mariadb.org/) recommended.
 - Steve Ronuken's EVE Static Data Export (SDE) in MySQL format with industry tables
@@ -51,7 +51,7 @@ However, with just that you won't have access to the EMDR market data feed and t
 
 With long running batch scripts iveeCore can consume more RAM than what is typically configured on shared hosting offers for PHP, so a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
 
-For best performance iveeCore uses caching provided by Memcached or Redis. Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third compared to 5.3. If using PHP prior to version 5.5 also using the APC opcode cache is recommended for quicker application startup.
+For best performance iveeCore uses caching provided by Memcached or Redis. If using PHP prior to version 5.5 also using the APC opcode cache is recommended for quicker application startup.
 
 With increasing number of tracked regional markets, the database size and load from the EMDR client also increases.
 
@@ -108,8 +108,8 @@ git clone git://github.com/aineko-m/iveeCore.git
 Once you've done this, you'll find the directory 'iveeCore'. Import the file iveeCore/sql/SDE_additions.sql into the same database you set up for the SDE. This will add a few indices for improved performance. Then import the file iveeCore/sql/iveeCore_tables_and_SP into the iveeCore database. This will create the tables iveeCore uses and stored procedures.
 
 Make a copy of the file iveeCore/Config_template.php, naming it Config.php and edit the configuration to match your environment.
-iveeCore comes with a lot of default variables describing an industrial setup in eve, defined in iveeCore/Defaults.php. Once you get comfortable using iveeCore you'll want to customize these defaults, to be done in iveeCoreExtensions/MyDefaults.php, which extends the Defaults class and thus allows you to overwrite whichever aspect is required. The variables are commented or should be self-explanatory to an EvE industrialist or developer.
-MyDefaults serves as example of the intended way of extending iveeCore.
+
+iveeCore comes with a lot of variables pre-set to reasonable (but not universal) default values, so with time adjustments will be needed. Apart from the parameters in Config.php there are many things that can be set on IndustryModifier objects, which provide context data for industry and pricing processes. Developers will also surely want to customize the CharacterModifier and BlueprintModifier classes via subclassing, so skills, standings and BP research levels match their setup or scenario.
 
 To test the setup try running the EMDR client:
 ```
@@ -118,7 +118,7 @@ php emdr.php
 If everything is fine, you should see IDs of items and regions for which price and history market data is being updated as it comes in. Ctrl+C to cancel.
 You'll want to setup this script to run in the background to have up-to-date market data available in iveeCore at all times. The EMDR client tends to become zombified if it doesn't receive data for a while so occasionally you'll have to kill the existing process and restart it. restart_emdr.sh is a bash script that does this. You can set up a cronjob to run it on a hourly basis, for instance. The job needs to run under a user with the necessary rights, but not root!
 
-During the first few days of market data collection the load on the DB will be higher, especially if multiple regions are tracked, due to the large number of inserts for the market history of items. By default, the EMDR client only tracks "The Forge" market region. This can be changed in iveeCoreExtensions/MyDefaults.php.
+During the first few days of market data collection the load on the DB will be higher, especially if multiple regions are tracked, due to the large number of inserts for the market history of items. By default, the EMDR client only tracks "The Forge", "Sinq Laison", "Domain" and "Metropolis" market regions. This can be changed in Config.php, also at runtime.
 
 Note that EMDR relays can change, so visit https://eve-market-data-relay.readthedocs.org/en/latest/access.html and pick the one nearest to you and change iveeCore/Config.php accordingly.
 
@@ -181,7 +181,7 @@ $type = Type::getByName('Damage Control I');
 
 //Now lets looks at industry activities.
 //First we need to get an IndustryModifier object, which aggregates all the things
-//like system indices, available assembly lines, skills & implants.
+//like system indices, available assembly lines, character skills & implants.
 $iMod = IndustryModifier::getBySystemIdForAllNpcStations(30000180); //Osmon
 
 //manufacture 5 units of 'Damage Control I' with ME 10 and TE 20
@@ -190,8 +190,14 @@ $manuData = $type->getBlueprint()->manufacture($iMod, 5, 10, 20);
 //show the ManufactureProcessData object
 print_r($manuData);
 
+//Lets create another IndustryModifier object for Jita, so we can calculate costs and 
+//profits there
+$sMod = IndustryModifier::getBySystemIdForAllNpcStations(30000142);
+//set default market station to Jita 4-4 CNAP
+$sMod->setPreferredMarketStation(60003760);
+        
 //print materials, cost and profits for this process
-$manuData->printData();
+$manuData->printData($sMod);
 
 //get the data for making Damage Control I blueprint copy, inventing from it with a
 //decryptor and building from the resulting T2 BPC, recursively building the necessary
@@ -199,10 +205,11 @@ $manuData->printData();
 $processData = Type::getByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 34203, true);
 
 //get the raw profit for running an Unrefined Hyperflurite Reaction for 30 days,
-//taking into account the refining and material feedback steps,
-//using defaults for refinery efficiency and skills
-$reactionProcessData = Type::getByName('Unrefined Hyperflurite Reaction')->react(24 * 30, true, true);
-echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit() . PHP_EOL;
+//taking into account the refining and material feedback steps, and refinery
+//efficiency and tax dependent on character skill and standing, then selling in Jita
+$reaction = Type::getByName('Unrefined Hyperflurite Reaction');
+$reactionProcessData = $reaction->react(24 * 30, true, true, $iMod);
+echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit($sMod) . PHP_EOL;
 ```
 The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the engine are Type and its child classes, ProcessData and its child classes and IndustryModifier.
 
@@ -213,7 +220,6 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
 - The EMDR client does some basic filtering on the incoming market data, but there is no measure against malicious clients uploading fake data. This isn't known to have caused any problems, but should be considered.
 - When automatically picking AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
-- (My)Defaults.php contains functions for setting and looking up default BPO ME and TE levels. Also see Extending iveeCore below.
 
 Generals notes:
 - Remember to restart or flush the cache after making changes to type classes or changing the DB. For memcache, you can do so with a command like: ```echo 'flush_all' | nc localhost 11211```. For Redis, enter the interactive Redis client using ```redis-cli``` and issue ```FLUSHALL```.
@@ -225,12 +231,12 @@ Alternatively you can run the PHPUnit test, which also clears the cache.
 ## Extending iveeCore
 If you extend the engine with features that are generally useful and compatible with the goals and structuring of the project, Github pull requests are welcome. In any case, if you modify iveeCrest source code, you'll need to comply with the LGPL and release your modifications under the same license.
 
-To extend iveeCore to your needs without changing the code, the suggested way of doing so is to use subclassing, creating new classes inheriting from the iveeCore classes, and changing the configuration (iveeCore/Config::classes). Class names are looked up dynamically, so with the adjustment objects from your classes will get instantiated instead.
+To extend iveeCore to your needs without changing the code, the suggested way of doing so is to use subclassing, creating new classes inheriting from the iveeCore classes or implementing the appropriate interfaces, and changing the configuration (iveeCore/Config::classes). Class names are looked up dynamically, so with the adjustment objects from your classes will get instantiated instead.
 
 
 
 ## Future Plans
-With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; an authenticated CREST client will be introduced. Something for calculating ore compression would be nice. While T3 invention is now supported by iveeCore, T3 production chains are not, so this is an area where there is possibly going to be improvements. PI is not of interest to me, but would welcome someone working on it.
+With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; an authenticated CREST client will be introduced. Something for calculating ore compression would be nice. 
 I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
 
 

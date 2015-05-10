@@ -77,7 +77,6 @@ class Relic extends InventorBlueprint
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if the specified blueprint can't be invented from this
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor
-     * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if a non-matching decryptor is specified
      */
     public function invent(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null, $recursive = true)
     {

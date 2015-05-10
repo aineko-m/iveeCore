@@ -37,6 +37,21 @@ class Station extends SdeType
     protected static $instancePool;
 
     /**
+     * @var array holding station operation details
+     */
+    protected static $operations;
+
+    /**
+     * @var array holding the serviceIds per station operation
+     */
+    protected static $operationServices;
+
+    /**
+     * @var array holding the service names
+     */
+    protected static $services;
+
+    /**
      * @var int $solarSystemID the ID of SolarSystem this Station is in.
      */
     protected $solarSystemID;
@@ -57,9 +72,19 @@ class Station extends SdeType
     protected $corporationID;
 
     /**
+     * @var int $factionID the ID of the faction of the owning corporation.
+     */
+    protected $factionID;
+
+    /**
      * @var float $reprocessingEfficiency the reprocessing efficiency of this Station as factor (<1.0)
      */
     protected $reprocessingEfficiency;
+
+    /**
+     * @var float $reprocessingStationsTake the base fraction the stations owner take as reprocessing tax
+     */
+    protected $reprocessingStationsTake;
 
     /**
      * @var float $tax the reprocessing efficiency of this Station as percentage / 100.
@@ -106,6 +131,99 @@ class Station extends SdeType
     }
 
     /**
+     * Returns an array with details about a specific station operation.
+     * Note that "activityID" in the returned array is not comparable to industry activity IDs.
+     *
+     * @return array
+     */
+    protected static function getStaticOperationDetails($operationId)
+    {
+        if (!isset(static::$operations)) {
+            $key = static::getClassHierarchyKeyPrefix() . 'operations';
+            try {
+                static::$operations = static::$instancePool->getItem($key)->data;
+            } catch (Exceptions\KeyNotFoundInCacheException $e) {
+                static::$operations = array();
+                $sdeClass = Config::getIveeClassName('SDE');
+                $sde = $sdeClass::instance();
+                $res = $sde->query('SELECT operationID, activityID, operationName, description FROM staOperations;');
+                if ($res->num_rows > 0) {
+                    while ($row = $res->fetch_assoc()) {
+                        static::$operations[(int) $row['operationID']] = array(
+                            'activityID'    => (int) $row['activityID'],
+                            'operationName' => $row['operationName'],
+                            'description'   => $row['description']
+                        );
+                    }
+                }
+                $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
+                $cacheArray = new $cacheableArrayClass($key, 24 * 3600);
+                $cacheArray->data = static::$operations;
+                static::$instancePool->setItem($cacheArray);
+            }
+        }
+        return static::$operations[$operationId];
+    }
+
+    /**
+     * Returns an array with the serviceIDs for a given station operation.
+     *
+     * @return array
+     */
+    protected static function getStaticOperationServices($operationId)
+    {
+        if (!isset(static::$operationServices)) {
+            $key = static::getClassHierarchyKeyPrefix() . 'operationServices';
+            try {
+                static::$operationServices = static::$instancePool->getItem($key)->data;
+            } catch (Exceptions\KeyNotFoundInCacheException $e) {
+                static::$operationServices = array();
+                $sdeClass = Config::getIveeClassName('SDE');
+                $sde = $sdeClass::instance();
+                $res = $sde->query('SELECT * FROM staOperationServices;');
+                if ($res->num_rows > 0)
+                    while ($row = $res->fetch_assoc())
+                        static::$operationServices[(int) $row['operationID']][] = (int) $row['serviceID'];
+
+                $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
+                $cacheArray = new $cacheableArrayClass($key, 24 * 3600);
+                $cacheArray->data = static::$operationServices;
+                static::$instancePool->setItem($cacheArray);
+            }
+        }
+        return static::$operationServices[$operationId];
+    }
+
+    /**
+     * Returns a name for a specific station service.
+     *
+     * @return string
+     */
+    public static function getServiceName($serviceId)
+    {
+        if (!isset(static::$services)) {
+            $key = static::getClassHierarchyKeyPrefix() . 'services';
+            try {
+                static::$services = static::$instancePool->getItem($key)->data;
+            } catch (Exceptions\KeyNotFoundInCacheException $e) {
+                static::$services = array();
+                $sdeClass = Config::getIveeClassName('SDE');
+                $sde = $sdeClass::instance();
+                $res = $sde->query('SELECT * FROM staServices;');
+                if ($res->num_rows > 0)
+                    while ($row = $res->fetch_assoc())
+                        static::$services[(int) $row['serviceID']] = $row['serviceName'];
+
+                $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
+                $cacheArray = new $cacheableArrayClass($key, 24 * 3600);
+                $cacheArray->data = static::$services;
+                static::$instancePool->setItem($cacheArray);
+            }
+        }
+        return static::$services[$serviceId];
+    }
+
+    /**
      * Constructor. Use \iveeCore\Station::getById() to instantiate Station objects instead.
      *
      * @param int $id of the Station
@@ -123,8 +241,10 @@ class Station extends SdeType
         $sde = $sdeClass::instance();
 
         $row = $sde->query(
-            "SELECT operationID, stationTypeID, corporationID, solarSystemID, stationName, reprocessingEfficiency
-            FROM staStations
+            "SELECT operationID, stationTypeID, sta.corporationID, sta.solarSystemID, stationName,
+            reprocessingEfficiency, reprocessingStationsTake, factionID
+            FROM staStations as sta
+            JOIN crpNPCCorporations as corps ON corps.corporationID = sta.corporationID
             WHERE stationID = " . $this->id . ';'
         )->fetch_assoc();
 
@@ -135,9 +255,11 @@ class Station extends SdeType
         $this->operationID   = (int) $row['operationID'];
         $this->stationTypeID = (int) $row['stationTypeID'];
         $this->corporationID = (int) $row['corporationID'];
+        $this->factionID     = (int) $row['factionID'];
         $this->solarSystemID = (int) $row['solarSystemID'];
         $this->name          = $row['stationName'];
         $this->reprocessingEfficiency   = (float) $row['reprocessingEfficiency'];
+        $this->reprocessingStationsTake = (float) $row['reprocessingStationsTake'];
 
         //get assembly lines in station
         $res = $sde->query(
@@ -174,7 +296,7 @@ class Station extends SdeType
     }
 
     /**
-     * Gets oprationID.
+     * Gets operationID.
      *
      * @return int
      */
@@ -184,11 +306,31 @@ class Station extends SdeType
     }
 
     /**
+     * Gets the station operation details.
+     *
+     * @return array
+     */
+    public function getOperationDetails()
+    {
+        return static::getStaticOperationDetails($this->getOperationID());
+    }
+
+    /**
+     * Gets the available service IDs of the station
+     *
+     * @return array
+     */
+    public function getServiceIds()
+    {
+        return static::getStaticOperationServices($this->getOperationID());
+    }
+
+    /**
      * Gets stationTypeID.
      *
      * @return int
      */
-    public function getStationTypeID()
+    public function getStationTypeId()
     {
         return $this->stationTypeID;
     }
@@ -198,7 +340,17 @@ class Station extends SdeType
      *
      * @return int
      */
-    public function getCorporationID()
+    public function getCorporationId()
+    {
+        return $this->corporationID;
+    }
+
+    /**
+     * Gets the faction ID of the owning corporation.
+     *
+     * @return int
+     */
+    public function getFactionId()
     {
         return $this->corporationID;
     }
@@ -214,21 +366,34 @@ class Station extends SdeType
     }
 
     /**
-     * Gets station tax.
+     * Gets station tax, defaults to 0.1 for NPC stations.
      *
      * @return float
-     * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost
+     * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost if none was set
      */
     public function getTax()
     {
+        if (isset($this->tax)) {
+            return $this->tax;
+        }
         if ($this->id >= 61000000) {
             $exceptionClass = Config::getIveeClassName('IveeCoreException');
             throw new $exceptionClass("iveeCore currently can't handle player built outposts.");
         }
-        if (isset($this->tax)) {
-            return $this->tax;
-        }
         return 0.1;
+    }
+
+    /**
+     * Sets station tax
+     *
+     * @param float $tax the tax as factor
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost if none was set
+     */
+    public function setTax($tax)
+    {
+        $this->tax = (float) $tax;
     }
 
     /**

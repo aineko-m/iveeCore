@@ -241,8 +241,25 @@ class SolarSystem extends SdeType
         $stations = array();
         $stationClass = Config::getIveeClassName("Station");
         foreach ($this->getStationIDs() as $stationID)
-            $stations[$stationID] = $stationClass::getStation($stationID);
+            $stations[$stationID] = $stationClass::getById($stationID);
         return $stations;
+    }
+
+    /**
+     * Gets the Stations in SolarSystem with a specific service.
+     *
+     * @param int serviceId
+     *
+     * @return \iveeCore\Station[] in the form stationId => Station
+     */
+    public function getStationsWithService($serviceId)
+    {
+        $ret = array();
+        foreach ($this->getStations() as $station)
+            if(in_array($serviceId, $station->getServiceIds()))
+               $ret[$station->getId()] = $station;
+
+        return $ret;
     }
 
     /**
@@ -265,12 +282,12 @@ class SolarSystem extends SdeType
     /**
      * Gets industry indices of SolarSystem.
      *
-     * @param int $maxIndexDataAge maximum index data age in seconds, optional
+     * @param int $maxIndexDataAge maximum index data age in seconds
      *
      * @return float[] in the form activityID => float
      * @throws \iveeCore\Exceptions\CrestDataTooOldException if given max index data age is exceeded
      */
-    public function getIndustryIndices($maxIndexDataAge = null)
+    public function getIndustryIndices($maxIndexDataAge = 172800)
     {
         if ($maxIndexDataAge > 0 AND ($this->industryIndexDate + $maxIndexDataAge) < time())
             static::throwException('CrestDataTooOldException', 'Index data for ' . $this->getName() . ' is too old');
@@ -282,12 +299,12 @@ class SolarSystem extends SdeType
      * Gets industry indices of SolarSystem.
      *
      * @param int $activityID the ID of the activity to get industry index for
-     * @param int $maxIndexDataAge maximum index data age in seconds, optional
+     * @param int $maxIndexDataAge maximum index data age in seconds
      *
      * @return float
      * @throws \iveeCore\Exceptions\ActivityIdNotFoundException if no index data is found for activityID in this system
      */
-    public function getIndustryIndexForActivity($activityID, $maxIndexDataAge = null)
+    public function getIndustryIndexForActivity($activityID, $maxIndexDataAge = 172800)
     {
         if (isset($this->industryIndices[$activityID])) {
             if ($maxIndexDataAge > 0 AND ($this->industryIndexDate + $maxIndexDataAge) < time())

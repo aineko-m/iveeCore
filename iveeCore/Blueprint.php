@@ -221,18 +221,14 @@ class Blueprint extends Type
      *
      * @return float
      */
-    public function getProductBaseCost($maxPriceDataAge = null)
+    public function getProductBaseCost($maxPriceDataAge)
     {
-        if (is_null($maxPriceDataAge)) {
-            $defaultsClass = Config::getIveeClassName('Defaults');
-            $maxPriceDataAge = $defaultsClass::instance()->getMaxPriceDataAge();
-        }
-
         $baseCost = 0;
         foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matID => $matData) {
             if (isset($matData['c']))
                 continue;
-            $baseCost += Type::getById($matID)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge) * $matData['q'];
+            $baseCost += Type::getById($matID)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge) 
+                * $matData['q'];
         }
         return $baseCost;
     }
@@ -244,8 +240,8 @@ class Blueprint extends Type
      * indices, tax and assemblyLines.
      *
      * @param int $units the number of items to produce; defaults to 1.
-     * @param int $bpME level of the BP; if left null, it is looked up in defaults class
-     * @param int $bpTE level of the BP; if left null, it is looked up in defaults class
+     * @param int $bpME level of the BP; if left null, get from IBlueprintModifier contained in IndustryModifier
+     * @param int $bpTE level of the BP; if left null, get from IBlueprintModifier contained in IndustryModifier
      * @param bool $recursive defines if components should be manufactured recursively
      *
      * @return \iveeCore\ManufactureProcessData describing the manufacturing process
@@ -259,10 +255,8 @@ class Blueprint extends Type
         //get modifiers and test if manufacturing the product is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_MANUFACTURING, $product);
 
-        //get required class FQDNs
+        //get required class FQDN
         $manufactureDataClass = Config::getIveeClassName('ManufactureProcessData');
-        $defaultsClass        = Config::getIveeClassName('Defaults');
-        $defaults = $defaultsClass::instance();
 
         //Some items are manufactured in atomic batches (charges, for instance).
         //We need to normalize quantities and times to the equivalent needed for 1 unit * requested units.
@@ -270,9 +264,9 @@ class Blueprint extends Type
 
         //lookup ME & TE levels if not set
         if (is_null($bpME))
-            $bpME = $defaults->getBpMeLevel($this->id);
+            $bpME = $iMod->getBlueprintModifier()->getBpMeLevel($this->id);
         if (is_null($bpTE))
-            $bpTE = $defaults->getBpTeLevel($this->id);
+            $bpTE = $iMod->getBlueprintModifier()->getBpTeLevel($this->id);
 
         //instantiate manu data object
         $mdata = new $manufactureDataClass(
@@ -284,7 +278,7 @@ class Blueprint extends Type
                 * static::convertBpLevelToFactor($bpTE)
                 * $modifier['t']
             ),
-            $this->getProductBaseCost() * $numPortions * $modifier['c'],
+            $this->getProductBaseCost($iMod->getMaxPriceDataAge()) * $numPortions * $modifier['c'],
             $bpME,
             $bpTE,
             $modifier['solarSystemID'],
@@ -335,7 +329,7 @@ class Blueprint extends Type
             $copies,
             $runs,
             ceil($this->getBaseTimeForActivity(ProcessData::ACTIVITY_COPYING) * $totalRuns * $modifier['t']),
-            $this->getProductBaseCost() * 0.02 * $totalRuns * $modifier['c'],
+            $this->getProductBaseCost($iMod->getMaxPriceDataAge()) * 0.02 * $totalRuns * $modifier['c'],
             $modifier['solarSystemID'],
             $modifier['assemblyLineTypeID']
         );
@@ -385,7 +379,7 @@ class Blueprint extends Type
                 * $modifier['t']
                 * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_ME)
             ),
-            $researchMultiplier * $modifier['c'] * $this->getProductBaseCost() * 0.02,
+            $researchMultiplier * $modifier['c'] * $this->getProductBaseCost($iMod->getMaxPriceDataAge()) * 0.02,
             - $startME,
             - $endME,
             $modifier['solarSystemID'],
@@ -432,7 +426,7 @@ class Blueprint extends Type
         $rtdata = new $researchTEDataClass(
             $this->id,
             ceil($scaleModifier * $modifier['t'] * $this->getBaseTimeForActivity(ProcessData::ACTIVITY_RESEARCH_TE)),
-            $scaleModifier * $modifier['c'] * $this->getProductBaseCost() * 0.02,
+            $scaleModifier * $modifier['c'] * $this->getProductBaseCost($iMod->getMaxPriceDataAge()) * 0.02,
             - $startTE,
             - $endTE,
             $modifier['solarSystemID'],

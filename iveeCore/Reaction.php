@@ -121,14 +121,12 @@ class Reaction extends Type
      * alchemy reaction.
      * @param bool $feedback defines if materials occuring in both input and output should be subtracted in the
      * possible numbers, thus showing the effective input/output materials. Applies to alchemy reactions.
-     * @param float $equipmentYield the station dependant reprocessing yield
-     * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor
+     * @param \iveeCore\IndustryModifier $iMod as industry context, only required when reprocess is also true
      *
      * @return \iveeCore\ReactionProcessData
      */
-    public function react($cycles = 1, $reprocess = true, $feedback = true, $equipmentYield = 0.5,
-        $reprocessingTaxFactor = 1.0
-    ) {
+    public function react($cycles = 1, $reprocess = true, $feedback = true, IndustryModifier $iMod = null)
+    {
         $materialsClass = Config::getIveeClassName('MaterialMap');
         $imm = new $materialsClass;
         $omm = new $materialsClass;
@@ -137,7 +135,7 @@ class Reaction extends Type
 
         //if refine flag set, replace the refinable output materials by their refined materials
         if ($reprocess)
-            $omm->reprocessMaterials($equipmentYield, $reprocessingTaxFactor, 1);
+            $omm->reprocessMaterials($iMod);
 
         //if feedback flag set, subtract materials occurring in both input and output from each other, respecting
         //quantities. This gives the effective required and resulting materials.

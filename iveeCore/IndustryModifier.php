@@ -2,7 +2,7 @@
 /**
  * IndustryModifier Class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -53,16 +53,24 @@ class IndustryModifier
     protected $tax;
 
     /**
-     * @var float[] $skillTimeModifiers the skill-dependent time modifiers in the form $activityID => 0.75 (meaning 25%
-     * bonus). These are looked up in Defaults for each skillID.
+     * @var \iveeCore\ICharacterModifier $characterModifier holding the character specific data like skills and implants
      */
-    protected $skillTimeModifiers;
+    protected $characterModifier;
 
     /**
-     * @var float[] $implantTimeModifiers the implant-dependent time modifiers in the form $activityID => 0.98 (meaning 2%
-     * bonus). These are looked up in Defaults but can be overriden.
+     * @var \iveeCore\IBlueprintModifier $blueprintModifier holding the blueprint specific research levels
      */
-    protected $implantTimeModifiers;
+    protected $blueprintModifier;
+
+    /**
+     * @var int $preferredMarketStationId defines if and which station should be preferred for market operations
+     */
+    protected $preferredMarketStationId;
+
+    /**
+     * @var int $maxPriceDataAge defines the maximum acceptable price data age in seconds. 0 for unlimited.
+     */
+    protected $maxPriceDataAge = 86400;
 
     /**
      * Returns a IndustryModifier object for a specific NPC station. This method can't be used for player built
@@ -233,25 +241,94 @@ class IndustryModifier
         $this->assemblyLines = $assemblyLines;
         $this->tax = $tax;
 
-        $defaultsClass = Config::getIveeClassName('Defaults');
-        $defaults = $defaultsClass::instance();
+        $charModClass = Config::getIveeClassName('CharacterModifier');
+        $this->characterModifier = new $charModClass;
+        
+        $bpModClass = Config::getIveeClassName('BlueprintModifier');
+        $this->blueprintModifier = new $bpModClass;
+    }
 
-        //get implant time modifiers from Defaults
-        $this->implantTimeModifiers = $defaults->getIndustryImplantTimeModifiers();
+    /**
+     * Gets the set ICharacterModifier object.
+     *
+     * @return \iveeCore\ICharacterModifier
+     */
+    public function getCharacterModifier()
+    {
+        return $this->characterModifier;
+    }
 
-        //get skill level dependent time modifiers
-        $this->skillTimeModifiers = array(
-            //Industry and Advanced Industry skills
-            1 => (1.0 - 0.04 * $defaults->getSkillLevel(3380)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
-            //Research and Advanced Industry skill
-            3 => (1.0 - 0.05 * $defaults->getSkillLevel(3403)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
-            //Metallurgy and Advanced Industry skill
-            4 => (1.0 - 0.05 * $defaults->getSkillLevel(3409)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
-            //Science and Advanced Industry skill
-            5 => (1.0 - 0.05 * $defaults->getSkillLevel(3402)) * (1.0 - 0.03 * $defaults->getSkillLevel(3388)),
-            //Advanced Industry skill
-            7 => 1.0 - 0.03 * $defaults->getSkillLevel(3388)
-        );
+    /**
+     * Sets a new ICharacterModifier.
+     *
+     * @param \iveeCore\ICharacterModifier $charMod
+     *
+     * @return void
+     */
+    public function setCharacterModifier(ICharacterModifier $charMod)
+    {
+        $this->characterModifier = $charMod;
+    }
+
+    /**
+     * Gets the set IBlueprintModifier object.
+     *
+     * @return \iveeCore\IBlueprintModifier
+     */
+    public function getBlueprintModifier()
+    {
+        return $this->blueprintModifier;
+    }
+
+    /**
+     * Sets a new IBlueprintModifier.
+     *
+     * @param \iveeCore\IBlueprintModifier $bpMod
+     *
+     * @return void
+     */
+    public function setBlueprintModifier(IBlueprintModifier $bpMod)
+    {
+        $this->blueprintModifier = $bpMod;
+    }
+
+    /**
+     * Sets a preferred station for market operations.
+     *
+     * @param int $stationId to be used
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\InvalidParameterValueException when an invalid stationId is given
+     */
+    public function setPreferredMarketStation($stationId)
+    {
+        if (!in_array($stationId, $this->getSolarSystem()->getStationIDs())) {
+            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
+            throw new $exceptionClass((int) $stationId . ' is not a Station in this SolarSystem');
+        }
+        $this->preferredMarketStationId = (int) $stationId;
+    }
+
+    /**
+     * Gets the maximum acceptable price data age in seconds. 0 for unlimited.
+     *
+     * @return int
+     */
+    public function getMaxPriceDataAge()
+    {
+        return $this->maxPriceDataAge;
+    }
+
+    /**
+     * Sets the maximum acceptable price data age in seconds. 0 for unlimited.
+     *
+     * @param int $maxPriceDataAge the time in seconds
+     *
+     * @return void
+     */
+    public function setMaxPriceDataAge($maxPriceDataAge)
+    {
+        $this->maxPriceDataAge = $maxPriceDataAge;
     }
 
     /**
@@ -310,118 +387,6 @@ class IndustryModifier
     }
 
     /**
-     * Returns the implant dependent industry activity time modifiers.
-     *
-     * @return float[] in the form activityID => float, "0.95" for 5% bonus
-     */
-    public function getImplantTimeModifiers()
-    {
-        return $this->implantTimeModifiers;
-    }
-
-    /**
-     * Returns the implant dependent industry activity time modifiers.
-     *
-     * @param int $activityID optional
-     *
-     * @return float the specific factor in the form "0.95" for 5% bonus
-     */
-    public function getImplantTimeModifierForActivity($activityID)
-    {
-        if (isset($this->implantTimeModifiers[$activityID]))
-            return $this->implantTimeModifiers[$activityID];
-        else
-            return 1.0;
-    }
-
-    /**
-     * Allows setting the implant time modifiers, overriding the defaults looked up during instantiation.
-     *
-     * @param float $modifier the time factor, in the form 0.95 for 5% bonus
-     * @param int $activityID the ID of the activity this time bonus is for
-     *
-     * @return void
-     * @throws \iveeCore\Exceptions\InvalidParameterValueException if $modifier is not sane
-     */
-    public function setImplantTimeModifierForActivity($modifier, $activityID)
-    {
-        if ($modifier <= 1.0 AND $modifier >= 0.9)
-            $this->implantTimeModifiers[(int) $activityID] = (float) $modifier;
-        else {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Invalid modifier given");
-        }
-    }
-
-    /**
-     * Allows setting the implant time modifiers, overriding the defaults looked up during instantiation.
-     *
-     * @param array $modifiers in the form activityID => float
-     *
-     * @return void
-     */
-    public function setImplantTimeModifiers(array $modifiers)
-    {
-        $this->implantTimeModifiers = $modifiers;
-    }
-
-    /**
-     * Returns the skill dependent industry activity time modifiers.
-     *
-     * @return float[] in the form activityID => float
-     */
-    public function getSkillTimeModifiers()
-    {
-        return $this->skillTimeModifiers;
-    }
-
-    /**
-     * Returns the skill dependent industry activity time modifier.
-     *
-     * @param int $activityID the ID of the activity
-     *
-     * @return float
-     */
-    public function getSkillTimeModifierForActivity($activityID)
-    {
-        if (isset($this->skillTimeModifiers[$activityID]))
-            return $this->skillTimeModifiers[$activityID];
-        else
-            return 1.0;
-    }
-
-    /**
-     * Allows setting the skill dependent time modifiers, overriding the defaults looked up during instantiation.
-     *
-     * @param array $modifiers in the form activityID => 0.98 (for 2% bonus)
-     *
-     * @return void
-     */
-    public function setSkillTimeModifiers(array $modifiers)
-    {
-        $this->skillTimeModifiers = $modifiers;
-    }
-
-    /**
-     * Allows setting the skill dependent time modifiers, overriding the defaults looked up during instantiation.
-     *
-     * @param float $modifier in the form 0.98 for 2% bonus
-     * @param int $activityID the ID of the activity
-     *
-     * @return void
-     * @throws \iveeCore\Exceptions\InvalidParameterValueException if $modifier is not sane
-     */
-    public function setSkillTimeModifierForActivity($modifier, $activityID)
-    {
-        if ($modifier <= 1.0 AND $modifier >= 0.75)
-            $this->skillTimeModifiers[(int) $activityID] = (float) $modifier;
-        else {
-            $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-            throw new $exceptionClass("Given modifier is not sane");
-        }
-    }
-
-    /**
      * Test if a certain activity can be performed with a certain Type with the current IndustryModifier object.
      * It's always the final output item that needs to be checked. This means that for manufacturing, its the Blueprint
      * product; for copying its the Blueprint itself; for invention it is the product of the invented blueprint.
@@ -473,13 +438,9 @@ class IndustryModifier
         $modifiers['c'] = $modifiers['c']
             * $this->getSolarSystem()->getIndustryIndexForActivity($activityID) * $this->getTaxFactor();
 
-        //factor in skill time modifiers if available
-        if (isset($this->skillTimeModifiers[$activityID]))
-            $modifiers['t'] = $modifiers['t'] * $this->skillTimeModifiers[$activityID];
-
-        //factor in implant time modifiers if available
-        if (isset($this->implantTimeModifiers[$activityID]))
-            $modifiers['t'] = $modifiers['t'] * $this->implantTimeModifiers[$activityID];
+        //apply skill and implant time factors
+        $modifiers['t'] = $modifiers['t'] * $this->characterModifier->getIndustrySkillTimeFactor($activityID)
+            * $this->characterModifier->getIndustryImplantTimeFactor($activityID);
 
         return $modifiers;
     }
@@ -532,5 +493,87 @@ class IndustryModifier
             }
         }
         return $bestAssemblyLine;
+    }
+
+    /**
+     * Gets the best station for market trading in the system, based on the tax, which is dependent on the standings
+     * from it's corporation and faction to the character. If multiple stations have the same effective tax, the first
+     * of those is returned. If a preferred market station has been set, it is returned.
+     *
+     * @return \iveeCore\Station
+     * @throws \iveeCore\Exceptions\NoRelevantDataException when there is no station with Market service (64) in system
+     */
+    public function getBestMarketStation()
+    {
+        $bestStation = null;
+        $lowestBrokerTax = 100;
+        $stations = $this->getSolarSystem()->getStationsWithService(64);
+
+        //check if preferred station is among them
+        if (isset($this->preferredMarketStationId) AND isset($stations[$this->preferredMarketStationId]))
+            return $stations[$this->preferredMarketStationId];
+
+        foreach ($stations as $station) {
+            $tax = $this->getCharacterModifier()->getBrokerTax($station->getFactionId(), $station->getCorporationId());
+            if ($tax < $lowestBrokerTax) {
+                $lowestBrokerTax = $tax;
+                $bestStation = $station;
+            }
+        }
+        if (is_null($bestStation)) {
+            $exceptionClass = Config::getIveeClassName('NoRelevantDataException');
+            throw new $exceptionClass('No Station with Market service in System');
+        }
+        return $bestStation;
+    }
+
+    /**
+     * Gets the best station for reprocessing in the system, based on the yield, which is dependent on the base
+     * reprocessing efficiency and the standings from it's corporation to the character. If multiple stations have the
+     * same yield, the first of those is returned.
+     *
+     * @return \iveeCore\Station
+     * @throws \iveeCore\Exceptions\NoRelevantDataException when there is no station with Reprocessing Plant (16)
+     * service in system
+     */
+    public function getBestReprocessingStation()
+    {
+        $bestStation = null;
+        $bestYield = 0.0;
+        foreach ($this->getSolarSystem()->getStationsWithService(16) as $station) {
+            $yield = $station->getReprocessingEfficiency()
+                * $this->getCharacterModifier()->getReprocessingTaxFactor($station->getCorporationId());
+            if ($yield > $bestYield) {
+                $bestYield = $yield;
+                $bestStation = $station;
+            }
+        }
+        if (is_null($bestStation)) {
+            $exceptionClass = Config::getIveeClassName('NoRelevantDataException');
+            throw new $exceptionClass('No Station with Reprocessing Plant service in System');
+        }
+        return $bestStation;
+    }
+
+    /**
+     * Gets the station (standings) and skill dependant total market sell order tax.
+     *
+     * @return float in the form 0.988 for 1.2% total tax
+     */
+    public function getSellTaxFactor()
+    {
+        $station = $this->getBestMarketStation();
+        return $this->getCharacterModifier()->getSellTaxFactor($station->getFactionId(), $station->getCorporationId());
+    }
+
+    /**
+     * Gets the station (standings) and skill dependant total market buy order tax.
+     *
+     * @return float in the form 1.012 for 1.2% total tax
+     */
+    public function getBuyTaxFactor()
+    {
+        $station = $this->getBestMarketStation();
+        return $this->getCharacterModifier()->getBuyTaxFactor($station->getFactionId(), $station->getCorporationId());
     }
 }
