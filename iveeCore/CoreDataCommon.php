@@ -76,7 +76,12 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      */
     public static function deleteFromCache(array $keys)
     {
-        static::getInstancePool()->deleteMulti($keys);
+        $classPrefix = static::getClassHierarchyKeyPrefix();
+        $fullKeys = array();
+        foreach ($keys as $key) {
+            $fullKeys[] = $classPrefix . $key;
+        }
+        static::getInstancePool()->deleteMulti($fullKeys);
     }
 
     /**
