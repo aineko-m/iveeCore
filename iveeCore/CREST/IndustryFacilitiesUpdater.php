@@ -57,8 +57,8 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
             throw new $exceptionClass("owner missing from facilities CREST data");
         $update['owner'] = (int) $item->owner->id;
 
-        //branch depending if player built outpost or regular stations
-        if ($facilityID >= 61000000) {
+        //branch depending if station is conquerable
+        if ($facilityID >= 61000000 OR ($facilityID >= 60014861 AND $facilityID <= 60014928)) {
             $update['solarSystemID'] = (int) $item->solarSystem->id;
             $update['stationName']   = $item->name;
             $update['stationTypeID'] = (int) $item->type->id;

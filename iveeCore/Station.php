@@ -77,6 +77,11 @@ class Station extends SdeType
     protected $factionID;
 
     /**
+     * @var bool $conquerable if the station is conquerable.
+     */
+    protected $conquerable;
+
+    /**
      * @var float $reprocessingEfficiency the reprocessing efficiency of this Station as factor (<1.0)
      */
     protected $reprocessingEfficiency;
@@ -242,16 +247,21 @@ class Station extends SdeType
         //regular Stations and Outposts need to be treated differently
         if ($this->id >= 61000000) {
             $row = $sde->query(
-                "SELECT stationTypeID, owner as corporationID, solarSystemID, stationName
-                FROM " . Config::getIveeDbName() . ".iveeOutposts
+                "SELECT io.stationTypeID, owner as playerCorpID, solarSystemID, stationName as playerStationName,
+                    operationID, conquerable, reprocessingEfficiency
+                FROM " . Config::getIveeDbName() . ".iveeOutposts as io
+                JOIN staStationTypes as sst ON sst.stationTypeID = io.stationTypeID
                 WHERE facilityID = " . $this->id . ';'
             )->fetch_assoc();
         } else {
             $row = $sde->query(
-                "SELECT operationID, stationTypeID, sta.corporationID, sta.solarSystemID, stationName,
-                reprocessingEfficiency, reprocessingStationsTake, factionID
+                "SELECT sta.operationID, sta.stationTypeID, sta.corporationID, sta.solarSystemID, sta.stationName,
+                    io.stationName as playerStationName, sta.reprocessingEfficiency, reprocessingStationsTake,
+                    factionID, conquerable, io.owner as playerCorpID
                 FROM staStations as sta
                 JOIN crpNPCCorporations as corps ON corps.corporationID = sta.corporationID
+                JOIN staStationTypes as sst ON sst.stationTypeID = sta.stationTypeID
+                LEFT JOIN " . Config::getIveeDbName() . ".iveeOutposts as io ON io.facilityID = stationID
                 WHERE stationID = " . $this->id . ';'
             )->fetch_assoc();
         }
@@ -260,15 +270,18 @@ class Station extends SdeType
             static::throwException('StationIdNotFoundException', "Station ID=". $this->id . " not found");
 
         //set data to attributes
+        $this->conquerable   = (bool) $row['conquerable'];
         $this->solarSystemID = (int) $row['solarSystemID'];
         $this->stationTypeID = (int) $row['stationTypeID'];
-        $this->corporationID = (int) $row['corporationID'];
-        $this->name          = $row['stationName'];
+        $this->corporationID = ($this->conquerable AND isset($row['playerCorpID']))
+            ? (int) $row['playerCorpID'] : (int) $row['corporationID'];
+        $this->name          = ($this->conquerable AND isset($row['playerStationName']))
+            ? $row['playerStationName'] : $row['stationName'];
+        $this->operationID   = (int) $row['operationID'];
+        $this->reprocessingEfficiency   = (float) $row['reprocessingEfficiency'];
 
         if ($this->id < 61000000) {
-            $this->operationID   = (int) $row['operationID'];
             $this->factionID     = (int) $row['factionID'];
-            $this->reprocessingEfficiency   = (float) $row['reprocessingEfficiency'];
             $this->reprocessingStationsTake = (float) $row['reprocessingStationsTake'];
         }
 
@@ -322,8 +335,6 @@ class Station extends SdeType
      */
     public function getOperationID()
     {
-        if ($this->id >= 61000000)
-            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return $this->operationID;
     }
 
@@ -334,8 +345,6 @@ class Station extends SdeType
      */
     public function getOperationDetails()
     {
-        if ($this->id >= 61000000)
-            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return static::getStaticOperationDetails($this->getOperationID());
     }
 
@@ -346,8 +355,6 @@ class Station extends SdeType
      */
     public function getServiceIds()
     {
-        if ($this->id >= 61000000)
-            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return static::getStaticOperationServices($this->getOperationID());
     }
 
@@ -384,14 +391,22 @@ class Station extends SdeType
     }
 
     /**
+     * Gets whether the station is conquerable.
+     *
+     * @return bool
+     */
+    public function isConquerable()
+    {
+        return $this->conquerable;
+    }
+
+    /**
      * Gets station reprocessing efficiency.
      *
      * @return float
      */
     public function getReprocessingEfficiency()
     {
-        if ($this->id >= 61000000)
-            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return $this->reprocessingEfficiency;
     }
 

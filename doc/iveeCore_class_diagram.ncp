@@ -973,7 +973,7 @@ omitted</Text>
         <Name>Station</Name>
         <Access>Public</Access>
         <Location left="1121" top="530" />
-        <Size width="310" height="655" />
+        <Size width="310" height="689" />
         <Collapsed>False</Collapsed>
         <Member type="Field">public static string classNick</Member>
         <Member type="Field">protected static InstancePool instancePool</Member>
@@ -985,6 +985,7 @@ omitted</Text>
         <Member type="Field">protected int stationTypeID</Member>
         <Member type="Field">protected int corporationID</Member>
         <Member type="Field">protected int factionID</Member>
+        <Member type="Field">protected bool conquerable</Member>
         <Member type="Field">protected float reprocessingEfficiency</Member>
         <Member type="Field">protected float reprocessingStationsTake</Member>
         <Member type="Field">protected float tax</Member>
@@ -1003,6 +1004,7 @@ omitted</Text>
         <Member type="Method">public int getStationTypeId()</Member>
         <Member type="Method">public int getCorporationId()</Member>
         <Member type="Method">public int getFactionId()</Member>
+        <Member type="Method">public bool isConquerable()</Member>
         <Member type="Method">public float getReprocessingEfficiency()</Member>
         <Member type="Method">public float getTax()</Member>
         <Member type="Method">public void setTax(float tax)</Member>
@@ -1013,13 +1015,13 @@ omitted</Text>
       </Entity>
       <Entity type="Comment">
         <Text>SdeType repeated on this page for completeness</Text>
-        <Location left="1437" top="1361" />
+        <Location left="1443" top="1403" />
         <Size width="114" height="63" />
       </Entity>
       <Entity type="Class">
         <Name>SdeType</Name>
         <Access>Public</Access>
-        <Location left="1413" top="1229" />
+        <Location left="1419" top="1271" />
         <Size width="162" height="77" />
         <Collapsed>False</Collapsed>
         <Modifier>None</Modifier>
