@@ -85,5 +85,10 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
     {
         $assemblyLineClass  = Config::getIveeClassName('AssemblyLine');
         $assemblyLineClass::deleteFromCache($this->updatedIDs);
+
+        //we also need to invalidate the Station names cache as Outpost names can change
+        $cacheClass = Config::getIveeClassName('Cache');
+        $cache = $cacheClass::instance();
+        $cache->deleteItem(\iveeCore\Station::getClassHierarchyKeyPrefix() . 'Names');
     }
 }

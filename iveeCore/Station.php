@@ -109,7 +109,10 @@ class Station extends SdeType
 
         $res = $sdeClass::instance()->query(
             "SELECT stationID, stationName
-            FROM staStations;"
+            FROM staStations
+            UNION
+            SELECT facilityID as stationID, stationName
+            FROM " . Config::getIveeDbName() . ".iveeOutposts;"
         );
 
         $namesToIds = array();
@@ -229,45 +232,62 @@ class Station extends SdeType
      * @param int $id of the Station
      *
      * @throws \iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
-     * @throws \iveeCore\Exceptions\IveeCoreException if trying to instantiate a player built outpost
      */
     protected function __construct($id)
     {
         $this->id = (int) $id;
-        if ($this->id >= 61000000)
-            static::throwException('IveeCoreException', "iveeCore currently can't handle player built outposts.");
-
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
-        $row = $sde->query(
-            "SELECT operationID, stationTypeID, sta.corporationID, sta.solarSystemID, stationName,
-            reprocessingEfficiency, reprocessingStationsTake, factionID
-            FROM staStations as sta
-            JOIN crpNPCCorporations as corps ON corps.corporationID = sta.corporationID
-            WHERE stationID = " . $this->id . ';'
-        )->fetch_assoc();
+        //regular Stations and Outposts need to be treated differently
+        if ($this->id >= 61000000) {
+            $row = $sde->query(
+                "SELECT stationTypeID, owner as corporationID, solarSystemID, stationName
+                FROM " . Config::getIveeDbName() . ".iveeOutposts
+                WHERE facilityID = " . $this->id . ';'
+            )->fetch_assoc();
+        } else {
+            $row = $sde->query(
+                "SELECT operationID, stationTypeID, sta.corporationID, sta.solarSystemID, stationName,
+                reprocessingEfficiency, reprocessingStationsTake, factionID
+                FROM staStations as sta
+                JOIN crpNPCCorporations as corps ON corps.corporationID = sta.corporationID
+                WHERE stationID = " . $this->id . ';'
+            )->fetch_assoc();
+        }
 
         if (empty($row))
             static::throwException('StationIdNotFoundException', "Station ID=". $this->id . " not found");
 
         //set data to attributes
-        $this->operationID   = (int) $row['operationID'];
+        $this->solarSystemID = (int) $row['solarSystemID'];
         $this->stationTypeID = (int) $row['stationTypeID'];
         $this->corporationID = (int) $row['corporationID'];
-        $this->factionID     = (int) $row['factionID'];
-        $this->solarSystemID = (int) $row['solarSystemID'];
         $this->name          = $row['stationName'];
-        $this->reprocessingEfficiency   = (float) $row['reprocessingEfficiency'];
-        $this->reprocessingStationsTake = (float) $row['reprocessingStationsTake'];
 
-        //get assembly lines in station
-        $res = $sde->query(
-            "SELECT rals.assemblyLineTypeID, ralt.activityID
-            FROM ramAssemblyLineStations as rals
-            JOIN ramAssemblyLineTypes as ralt ON ralt.assemblyLineTypeID = rals.assemblyLineTypeID
-            WHERE stationID = " . $this->id . ';'
-        );
+        if ($this->id < 61000000) {
+            $this->operationID   = (int) $row['operationID'];
+            $this->factionID     = (int) $row['factionID'];
+            $this->reprocessingEfficiency   = (float) $row['reprocessingEfficiency'];
+            $this->reprocessingStationsTake = (float) $row['reprocessingStationsTake'];
+        }
+
+        if ($this->id >= 61000000) {
+            $res = $sde->query(
+                "SELECT ritc.assemblyLineTypeID, activityID
+                FROM ramInstallationTypeContents as ritc
+                JOIN ramAssemblyLineTypes as ralt ON ritc.assemblyLineTypeID = ralt.assemblyLineTypeID
+                WHERE installationTypeID = " . $this->stationTypeID . ';'
+            );
+        } else {
+            //get assembly lines in station
+            $res = $sde->query(
+                "SELECT rals.assemblyLineTypeID, ralt.activityID
+                FROM ramAssemblyLineStations as rals
+                JOIN ramAssemblyLineTypes as ralt ON ralt.assemblyLineTypeID = rals.assemblyLineTypeID
+                WHERE stationID = " . $this->id . ';'
+            );
+        }
 
         while ($row = $res->fetch_assoc()) {
             $this->assemblyLineTypeIDs[$row['activityID']][] = $row['assemblyLineTypeID'];
@@ -302,6 +322,8 @@ class Station extends SdeType
      */
     public function getOperationID()
     {
+        if ($this->id >= 61000000)
+            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return $this->operationID;
     }
 
@@ -312,6 +334,8 @@ class Station extends SdeType
      */
     public function getOperationDetails()
     {
+        if ($this->id >= 61000000)
+            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return static::getStaticOperationDetails($this->getOperationID());
     }
 
@@ -322,6 +346,8 @@ class Station extends SdeType
      */
     public function getServiceIds()
     {
+        if ($this->id >= 61000000)
+            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return static::getStaticOperationServices($this->getOperationID());
     }
 
@@ -352,6 +378,8 @@ class Station extends SdeType
      */
     public function getFactionId()
     {
+        if ($this->id >= 61000000)
+            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return $this->corporationID;
     }
 
@@ -362,6 +390,8 @@ class Station extends SdeType
      */
     public function getReprocessingEfficiency()
     {
+        if ($this->id >= 61000000)
+            static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
         return $this->reprocessingEfficiency;
     }
 
@@ -369,17 +399,11 @@ class Station extends SdeType
      * Gets station tax, defaults to 0.1 for NPC stations.
      *
      * @return float
-     * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost if none was set
      */
     public function getTax()
     {
-        if (isset($this->tax)) {
+        if (isset($this->tax))
             return $this->tax;
-        }
-        if ($this->id >= 61000000) {
-            $exceptionClass = Config::getIveeClassName('IveeCoreException');
-            throw new $exceptionClass("iveeCore currently can't handle player built outposts.");
-        }
         return 0.1;
     }
 
@@ -429,6 +453,6 @@ class Station extends SdeType
     public function getIndustryModifier()
     {
         $industryModifierClass = Config::getIveeClassName('IndustryModifier');
-        return $industryModifierClass::getByNpcStationID($this->id);
+        return $industryModifierClass::getByStationID($this->id);
     }
 }

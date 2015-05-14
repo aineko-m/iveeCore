@@ -561,8 +561,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="5" second="15">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -571,8 +569,6 @@ omitted</Text>
         <EndMultiplicity>0..1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="5" second="6">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -613,6 +609,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="14" second="16">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -642,8 +640,6 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="16" second="17">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -853,8 +849,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="3" second="3">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -909,7 +903,7 @@ omitted</Text>
         <Name>IndustryModifier</Name>
         <Access>Public</Access>
         <Location left="653" top="10" />
-        <Size width="384" height="536" />
+        <Size width="384" height="553" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array assemblyLines</Member>
         <Member type="Field">protected SolarSystem solarSystem</Member>
@@ -917,9 +911,10 @@ omitted</Text>
         <Member type="Field">protected ICharacterModifier characterModifier</Member>
         <Member type="Field">protected IBlueprintModifier blueprintModifier</Member>
         <Member type="Field">protected int preferredMarketStationId</Member>
-        <Member type="Method">public static IndustryModifier getByNpcStation(int stationID)</Member>
+        <Member type="Method">public static IndustryModifier getByStation(int stationID, array assemblyLineTypeIds, float tax)</Member>
         <Member type="Method">public static IndustryModifier getByBySystemIdForPos(int solarSystemID, float tax)</Member>
         <Member type="Method">public static IndustryModifier getBySystemIdForAllNpcStations(int solarSystemID)</Member>
+        <Member type="Method">public static IndustryModifier getBySystemIdForInstallationType(int solarSystemID, int installationTypeId, float tax)</Member>
         <Member type="Method">public static IndustryModifier getBySystemIdWithAssembly(int solarSystemID, array assemblyLineTypeIDs, float tax)</Member>
         <Member type="Method">public IndustryModifier __construct(SolarSystem system, array assemblyLines, float tax)</Member>
         <Member type="Method">public ICharacterModifier getCharacterModifier()</Member>
@@ -943,7 +938,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>SolarSystem</Name>
         <Access>Public</Access>
-        <Location left="653" top="613" />
+        <Location left="653" top="662" />
         <Size width="384" height="519" />
         <Collapsed>False</Collapsed>
         <Member type="Field">public static string classNick</Member>
@@ -1077,13 +1072,11 @@ omitted</Text>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="2" second="3">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>1063</X>
-          <Y>719</Y>
+          <Y>768</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
@@ -1091,25 +1084,21 @@ omitted</Text>
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>842</X>
-          <Y>571</Y>
+          <Y>588</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>842</X>
-          <Y>579</Y>
+          <Y>628</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Composition</AssociationType>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="0">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1121,6 +1110,8 @@ omitted</Text>
         <EndMultiplicity>1..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="3" second="0">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1132,7 +1123,7 @@ omitted</Text>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>844</X>
-          <Y>1218</Y>
+          <Y>1267</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="3" second="5">
@@ -1152,8 +1143,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="1" second="7">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1161,8 +1150,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="6">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">

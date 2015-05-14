@@ -73,15 +73,18 @@ class IndustryModifier
     protected $maxPriceDataAge = 86400;
 
     /**
-     * Returns a IndustryModifier object for a specific NPC station. This method can't be used for player built
-     * outsposts as they aren't in the SDE. You need to use getBySystemIdWithAssembly(...) in that case.
+     * Returns a IndustryModifier object for a specific station or outpost.
+     * Note that for player built outposts no programatically accessible data tells about upgrades or taxes, thus they
+     * have to be set manually. For this the optional arguments assemblyLineTypeIds and tax exist.
      *
      * @param int $stationID of Station to use to get all the data
+     * @param array $assemblyLineTypeIds per activityId, overrides Ids defined in SDE, useful for upgraded outposts
+     * @param float $tax the industry tax, used only for instantiating player built outpost, ignored otherwise
      *
      * @return \iveeCore\IndustryModifier
      * @throws \iveeCore\Exceptions\StationIdNotFoundException if the stationID is not found
      */
-    public static function getByNpcStationID($stationID)
+    public static function getByStationID($stationID, array $assemblyLineTypeIds = null, $tax = 0.0)
     {
         $stationClass = Config::getIveeClassName('Station');
         //instantiate station from ID
@@ -89,8 +92,8 @@ class IndustryModifier
 
         return static::getBySystemIdWithAssembly(
             $station->getSolarSystemID(),
-            $station->getAssemblyLineTypeIDs(),
-            $station->getTax()
+            is_null($assemblyLineTypeIds) ? $station->getAssemblyLineTypeIDs() : $assemblyLineTypeIds,
+            $stationID > 61000000 ? $tax : $station->getTax()
         );
     }
 
@@ -120,7 +123,7 @@ class IndustryModifier
     }
 
     /**
-     * Similar to getByNpcStationID(...), but returns a IndustryModifier object with the AssembyLines of all NPC
+     * Similar to getByStationID(...), but returns a IndustryModifier object with the AssembyLines of all NPC
      * stations in the system.
      *
      * @param int $solarSystemID of the SolarSystem to get data for
