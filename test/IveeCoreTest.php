@@ -24,7 +24,6 @@ use \iveeCore\AssemblyLine;
 use \iveeCore\MaterialMap;
 use \iveeCore\ReactionProduct;
 use \iveeCore\FitParser;
-use \iveeCore\CharacterModifier;
 
 //include the iveeCore init, expected in the iveeCore directory, with absolute path
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
@@ -72,18 +71,28 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(is_array($type->getMaterials()));
     }
 
+    /**
+     * @expectedException \iveeCore\Exceptions\KeyNotFoundInCacheException
+     */
     public function testGetTypeAndCache()
     {
-        //empty cache entry for type
+        //get cache object for direct calls
         $cacheClass = Config::getIveeClassName('Cache');
         $cacheInstance = $cacheClass::instance();
+        //empty cache entry for type
         $cacheInstance->deleteItem('iveeCore\Type_645');
 
-        //get type
+        //get type via Type
         $type = Type::getById(645);
         $this->assertTrue($type instanceof Manufacturable);
+        //fetch item directly from cache
         $this->assertTrue($type == $cacheInstance->getItem('iveeCore\Type_645'));
         $this->assertTrue($type == Type::getByName('Dominix'));
+
+        //test cache invalidation
+        Type::deleteFromCache(array(645));
+        //this should throw an exception
+        $cacheInstance->getItem('iveeCore\Type_645');
     }
 
     /**
