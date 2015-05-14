@@ -51,6 +51,11 @@ class MemcachedWrapper implements ICache
     protected $hits = 0;
 
     /**
+     * @var bool $hasMultiDelete if the memcached extension supports the deleteMulti call.
+     */
+    protected $hasMultiDelete;
+
+    /**
      * Returns MemcachedWrapper instance.
      *
      * @return \iveeCore\MemcachedWrapper
@@ -70,6 +75,14 @@ class MemcachedWrapper implements ICache
         $this->memcached = new \Memcached;
         $this->memcached->addServer(Config::getCacheHost(), Config::getCachePort());
         $this->memcached->setOption(\Memcached::OPT_PREFIX_KEY, Config::getCachePrefix());
+
+        //determine if deleteMulti() is supported
+        if (defined('HHVM_VERSION'))
+            $this->hasMultiDelete = false;
+        else {
+            $ext = new \ReflectionExtension('memcached');
+            $this->hasMultiDelete = version_compare($ext->getVersion(), '2.0.0', '>=');
+        }
     }
 
     /**
@@ -118,21 +131,19 @@ class MemcachedWrapper implements ICache
 
     /**
      * Removes multiple items from Memcached.
-     * This method requires php5-memcached package version >=2.0!
-     * If using HHVM, the call has to be emulated via multiple deleteItem calls.
      *
      * @param string[] $keys of items to be removed
      *
-     * @return bool true on success, also if memcached has been disabled
+     * @return bool true on success
      */
     public function deleteMulti(array $keys)
     {
-        if(defined('HHVM_VERSION')){
-            foreach ($keys as $key)
-                $this->deleteItem ($key);
-            return true;
-        }
-        return $this->memcached->deleteMulti($keys);
+        if ($this->hasMultiDelete)
+            return $this->memcached->deleteMulti($keys);
+
+        foreach ($keys as $key)
+            $this->deleteItem ($key);
+        return true;
     }
 
     /**
