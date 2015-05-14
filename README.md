@@ -51,7 +51,7 @@ However, with just that you won't have access to the EMDR market data feed and t
 
 With long running batch scripts iveeCore can consume more RAM than what is typically configured on shared hosting offers for PHP, so a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
 
-For best performance iveeCore uses caching provided by Memcached or Redis. If using PHP prior to version 5.5 also using the APC opcode cache is recommended for quicker application startup.
+Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third compared to 5.3. If using PHP prior to version 5.5 also using the APC opcode cache is recommended for quicker application startup.
 
 With increasing number of tracked regional markets, the database size and load from the EMDR client also increases.
 

@@ -2,7 +2,7 @@
 /**
  * IndustryModifier Class file.
  *
- * PHP version 5.4
+ * PHP version 5.3
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -16,12 +16,14 @@ namespace iveeCore;
 /**
  * IndustryModifier objects are used to aggregate objects and factors that modify the cost, time and material
  * requirements of performing industrial activities (manufacturing, TE research, ME research, copying, reverse
- * engineering and invention). Namely, these are solar system industry indices, assembly lines (of stations or POSes),
- * station taxes, skills affecting time and implants affecting time.
+ * engineering and invention), or market activities. Namely, these are solar system industry indices, assembly lines
+ * (of stations or POSes), station industry taxes. The contained CharacterModifier allows for lookup of skills, time and
+ * implant factors, standings, taxes and efficiencies based on skills and standings. BlueprintModifier is used for
+ * blueprint research level lookup.
  *
  * A number of convenience functions are provided that help in instantiating IndustryModifier objects, automatically
  * passing the required arguments based on a specific NPC station, a POS in a system, all NPC stations in a system or
- * a system plus manual assembly line type definition (necessary for player built outposts and wormholes).
+ * a system plus manual assembly line type definition (necessary for wormholes or hypothetical scenarios).
  *
  * IndustryModifier objects are passed as argument to the Blueprint methods calculating the industrial activity. They
  * can be reused.
