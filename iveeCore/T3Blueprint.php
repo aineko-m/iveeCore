@@ -93,7 +93,6 @@ class T3Blueprint extends InventableBlueprint
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if a wrong relicID is given
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor or if relicId isn't a Relic
-     * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if a non-matching decryptor is specified
      */
     public function inventFromRelic(IndustryModifier $iMod, $relicId, $decryptorID = null, $recursive = true)
     {
@@ -119,7 +118,6 @@ class T3Blueprint extends InventableBlueprint
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if a wrong relicID is given
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor or if relicId isn't a Relic
-     * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if a non-matching decryptor is specified
      */
     public function inventManufacture(IndustryModifier $iMod, $relicId, $decryptorID = null, $recursive = true)
     {

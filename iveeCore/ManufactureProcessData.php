@@ -85,42 +85,40 @@ class ManufactureProcessData extends ProcessData
     /**
      * Returns the the total cost per single produced unit.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalCostPerUnit($maxPriceDataAge = null, $regionId = null)
+    public function getTotalCostPerUnit(IndustryModifier $iMod)
     {
-        return $this->getTotalCost($maxPriceDataAge, $regionId) / $this->producesQuantity;
+        return $this->getTotalCost($iMod) / $this->producesQuantity;
     }
 
     /**
      * Returns the the total profit for batch. Considers sell tax.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalProfit($maxPriceDataAge = null, $regionId = null)
+    public function getTotalProfit(IndustryModifier $iMod)
     {
-        $defaultsClass = Config::getIveeClassName('Defaults');
-        $defaults = $defaultsClass::instance();
-
-        return (Type::getById($this->producesTypeID)->getRegionMarketData($regionId)->getSellPrice($maxPriceDataAge)
-            * $this->producesQuantity * $defaults->getDefaultSellTaxFactor())
-            - ($this->getTotalCost($maxPriceDataAge, $regionId));
+        return (Type::getById($this->producesTypeID)->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+                ->getSellPrice($iMod->getMaxPriceDataAge()) * $this->producesQuantity * $iMod->getSellTaxFactor()
+            ) - ($this->getTotalCost($iMod)
+        );
     }
 
     /**
      * Prints data about this process.
      *
+     * @param \iveeCore\IndustryModifier $iMod for industry context
+     *
      * @return void
      */
-    public function printData()
+    public function printData(IndustryModifier $iMod)
     {
         $utilClass = Config::getIveeClassName('Util');
 
@@ -132,12 +130,15 @@ class ManufactureProcessData extends ProcessData
         foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount)
             echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
 
-        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost())
+        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($iMod))
             . "ISK" . PHP_EOL;
-        echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;
-        echo "Total Cost: " . $utilClass::quantitiesToReadable($this->getTotalCost()) . "ISK" . PHP_EOL;
+        echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalProcessCost($iMod))
+            . "ISK" . PHP_EOL;
+        echo "Total Cost: " . $utilClass::quantitiesToReadable($this->getTotalCost($iMod))
+            . "ISK" . PHP_EOL;
         try {
-            echo "Total Profit: "        . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
+            echo "Total Profit: "        . $utilClass::quantitiesToReadable($this->getTotalProfit($iMod))
+                . "ISK" . PHP_EOL;
         } catch (Exceptions\NoPriceDataAvailableException $e) {
             echo "No profit calculation possible due to missing price data for product" . PHP_EOL;
         }

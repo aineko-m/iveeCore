@@ -237,48 +237,47 @@ class InventionProcessData extends ProcessData
     /**
      * Returns average material cost until success, without subprocesses.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      */
-    public function getSuccessMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
+    public function getSuccessMaterialBuyCost(IndustryModifier $iMod)
     {
-        return $this->getMaterialBuyCost($maxPriceDataAge, $regionId) / $this->probability;
+        return $this->getMaterialBuyCost($iMod) / $this->probability;
     }
 
     /**
      * Returns average material cost until success, including subprocesses.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      */
-    public function getTotalSuccessMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
+    public function getTotalSuccessMaterialBuyCost(IndustryModifier $iMod)
     {
-        return $this->getTotalMaterialBuyCost($maxPriceDataAge, $regionId) / $this->probability;
+        return $this->getTotalMaterialBuyCost($iMod) / $this->probability;
     }
 
     /**
      * Returns total average cost until success, including subprocesses.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      */
-    public function getTotalSuccessCost($maxPriceDataAge = null, $regionId = null)
+    public function getTotalSuccessCost(IndustryModifier $iMod)
     {
-        return $this->getTotalCost($maxPriceDataAge, $regionId) / $this->probability;
+        return $this->getTotalCost($iMod) / $this->probability;
     }
 
     /**
      * Prints data about this process.
      *
+     * @param \iveeCore\IndustryModifier $iMod for industry context
+     *
      * @return void
      */
-    public function printData()
+    public function printData(IndustryModifier $iMod)
     {
         $utilClass = Config::getIveeClassName('Util');
 
@@ -291,12 +290,12 @@ class InventionProcessData extends ProcessData
         }
 
         echo "Total average success material cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialBuyCost()) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialBuyCost($iMod)) . "ISK" . PHP_EOL;
         echo "Total average success slot cost: "
         . $utilClass::quantitiesToReadable($this->getTotalSuccessProcessCost()) . "ISK" . PHP_EOL;
         echo "Total average success cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalSuccessCost()) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalSuccessCost($iMod)) . "ISK" . PHP_EOL;
         echo "Total profit: "
-        . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalProfit($iMod)) . "ISK" . PHP_EOL;
     }
 }

@@ -268,36 +268,34 @@ class ProcessData
     /**
      * Returns material buy cost, without subprocesses.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
+    public function getMaterialBuyCost(IndustryModifier $iMod)
     {
         if (!isset($this->materials))
             return 0;
-        return $this->getMaterialMap()->getMaterialBuyCost($maxPriceDataAge, $regionId);
+        return $this->getMaterialMap()->getMaterialBuyCost($iMod);
     }
 
     /**
      * Returns material buy cost, including subprocesses.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
+    public function getTotalMaterialBuyCost(IndustryModifier $iMod)
     {
-        $sum = $this->getMaterialBuyCost($maxPriceDataAge);
+        $sum = $this->getMaterialBuyCost($iMod);
         foreach ($this->getSubProcesses() as $subProcessData) {
             if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessMaterialBuyCost($maxPriceDataAge, $regionId);
+                $sum += $subProcessData->getTotalSuccessMaterialBuyCost($iMod);
             else
-                $sum += $subProcessData->getTotalMaterialBuyCost($maxPriceDataAge, $regionId);
+                $sum += $subProcessData->getTotalMaterialBuyCost($iMod);
         }
         return $sum;
     }
@@ -305,15 +303,14 @@ class ProcessData
     /**
      * Returns total cost, including subprocesses.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalCost($maxPriceDataAge = null, $regionId = null)
+    public function getTotalCost(IndustryModifier $iMod)
     {
-        return $this->getTotalProcessCost() + $this->getTotalMaterialBuyCost($maxPriceDataAge, $regionId);
+        return $this->getTotalProcessCost($iMod) + $this->getTotalMaterialBuyCost($iMod);
     }
 
     /**
@@ -474,19 +471,18 @@ class ProcessData
     /**
      * Returns total profit for this batch (direct child ManufactureProcessData sub-processes).
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
-    public function getTotalProfit($maxPriceDataAge = null, $regionId = null)
+    public function getTotalProfit(IndustryModifier $iMod)
     {
         $sum = 0;
         foreach ($this->getSubProcesses() as $spd)
             if ($spd instanceof ManufactureProcessData)
-                $sum += $spd->getTotalProfit($maxPriceDataAge, $regionId);
+                $sum += $spd->getTotalProfit($iMod);
 
         return $sum;
     }
@@ -494,9 +490,11 @@ class ProcessData
     /**
      * Prints data about this process.
      *
+     * @param \iveeCore\IndustryModifier $iMod for industry context
+     *
      * @return void
      */
-    public function printData()
+    public function printData(IndustryModifier $iMod)
     {
         $utilClass = Config::getIveeClassName('Util');
         echo "Total slot time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
@@ -505,9 +503,9 @@ class ProcessData
         foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount)
             echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
 
-        echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost()) . "ISK" . PHP_EOL;
+        echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($iMod)) . "ISK" . PHP_EOL;
         echo "Slot cost: "     . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;
-        echo "Total cost: "    . $utilClass::quantitiesToReadable($this->getTotalCost()) . "ISK" . PHP_EOL;
-        echo "Total profit: "  . $utilClass::quantitiesToReadable($this->getTotalProfit()) . "ISK" . PHP_EOL;
+        echo "Total cost: "    . $utilClass::quantitiesToReadable($this->getTotalCost($iMod)) . "ISK" . PHP_EOL;
+        echo "Total profit: "  . $utilClass::quantitiesToReadable($this->getTotalProfit($iMod)) . "ISK" . PHP_EOL;
     }
 }

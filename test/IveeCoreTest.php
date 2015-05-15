@@ -71,18 +71,28 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(is_array($type->getMaterials()));
     }
 
+    /**
+     * @expectedException \iveeCore\Exceptions\KeyNotFoundInCacheException
+     */
     public function testGetTypeAndCache()
     {
-        //empty cache entry for type
+        //get cache object for direct calls
         $cacheClass = Config::getIveeClassName('Cache');
         $cacheInstance = $cacheClass::instance();
+        //empty cache entry for type
         $cacheInstance->deleteItem('iveeCore\Type_645');
 
-        //get type
+        //get type via Type
         $type = Type::getById(645);
         $this->assertTrue($type instanceof Manufacturable);
+        //fetch item directly from cache
         $this->assertTrue($type == $cacheInstance->getItem('iveeCore\Type_645'));
         $this->assertTrue($type == Type::getByName('Dominix'));
+
+        //test cache invalidation
+        Type::deleteFromCache(array(645));
+        //this should throw an exception
+        $cacheInstance->getItem('iveeCore\Type_645');
     }
 
     /**
@@ -133,14 +143,16 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 
     public function testReprocessing()
     {
-        $rmap = Type::getByName('Arkonor')->getReprocessingMaterialMap(100, 0.5, 0.95, 1.01);
+        //IndustryModifier for Itamo
+        $iMod = IndustryModifier::getBySystemIdForPos(30000119);
+        $rmap = Type::getByName('Arkonor')->getReprocessingMaterialMap($iMod, 100);
         $materialTarget = new MaterialMap;
-        $materialTarget->addMaterial(34, 14687);
-        $materialTarget->addMaterial(36, 1669);
-        $materialTarget->addMaterial(40, 214);
+        $materialTarget->addMaterial(34, 15919);
+        $materialTarget->addMaterial(36, 1809);
+        $materialTarget->addMaterial(40, 232);
         $this->assertTrue($rmap == $materialTarget);
 
-        $rmap = Type::getByName('Ark')->getReprocessingMaterialMap(1, 0.5, 1.0, 1.0);
+        $rmap = Type::getByName('Ark')->getReprocessingMaterialMap($iMod, 1);
         $materialTarget = new MaterialMap;
         $materialTarget->addMaterial(3828, 1238);
         $materialTarget->addMaterial(11399, 2063);
@@ -211,7 +223,8 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($reactionProduct->getReactionIDs() == array(17952, 32831));
 
         //test handling of alchemy reactions with refining + feedback
-        $rpd = Type::getByName('Unrefined Platinum Technite Reaction')->react(24 * 30, true, true, 0.5, 1);
+        $iMod = IndustryModifier::getBySystemIdForPos(30000119);
+        $rpd = Type::getByName('Unrefined Platinum Technite Reaction')->react(24 * 30, true, true, $iMod);
         $inTarget = new MaterialMap;
         $inTarget->addMaterial(16640, 72000);
         $inTarget->addMaterial(16644, 7200);

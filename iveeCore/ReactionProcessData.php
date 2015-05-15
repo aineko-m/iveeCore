@@ -131,39 +131,39 @@ class ReactionProcessData
     /**
      * Convenience function for getting the buy cost of the input materials.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getInputBuyCost($maxPriceDataAge = null)
+    public function getInputBuyCost(IndustryModifier $iMod)
     {
-        return $this->getInputMaterialMap()->getMaterialBuyCost($maxPriceDataAge);
+        return $this->getInputMaterialMap()->getMaterialBuyCost($iMod);
     }
 
     /**
      * Convenience function for getting the sell value of the input materials.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getOutputSellValue($maxPriceDataAge = null)
+    public function getOutputSellValue(IndustryModifier $iMod)
     {
-        return $this->getOutputMaterialMap()->getMaterialSellValue($maxPriceDataAge);
+        return $this->getOutputMaterialMap()->getMaterialSellValue($iMod);
     }
 
     /**
      * Convenience function for getting the profit from this reaction process.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getProfit($maxPriceDataAge = null)
+    public function getProfit(IndustryModifier $iMod)
     {
-        return $this->getOutputSellValue($maxPriceDataAge) - $this->getInputBuyCost($maxPriceDataAge);
+        return $this->getOutputSellValue($iMod) - $this->getInputBuyCost($iMod);
     }
 }

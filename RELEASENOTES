@@ -1,5 +1,14 @@
 This file lists major changes in iveeCore releases.
 
+Version 2.5 - May 15th, 2015
+----------------------------
+- Refactoring to remove Defaults by extending IndustryModifier with new functionality and adding CharacterModifier and BlueprintModifier. CharacterModifier allows for lookup of skills, time and implant factors, standings, taxes and efficiencies based on skills and standings. BlueprintModifier is used for blueprint research level lookup. These are now used throughout the code, making for a cleaner and more flexible API. Developers will likely want to customize those by extending them or implementing the appropriate interface.
+- Basic support for player built outposts and conquerable NPC stations.
+- DoctrineCacheWrapper, courtesy of Tarioch.
+- Replaced the AssemblyLine SQL additions for blueprint compatibility with logic in code.
+- Fixed cache invalidation.
+- Fixed multi-key cache invalidation under HHVM or memcached extension below version 2.0.0.
+
 Version 2.4.1 - May 3rd, 2015
 -----------------------------
 - Adapted to Mosaic release.

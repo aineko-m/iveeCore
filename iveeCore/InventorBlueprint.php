@@ -153,7 +153,6 @@ class InventorBlueprint extends Blueprint
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if the specified blueprint can't be invented from this
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor
-     * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if a non-matching decryptor is specified
      */
     public function invent(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null, $recursive = true)
     {
@@ -183,7 +182,7 @@ class InventorBlueprint extends Blueprint
         foreach ($inventableBpIDs as $inventableBpID) {
             $inventableBp = Type::getById($inventableBpID);
             if ($inventableBp instanceof InventableBlueprint) {
-                $baseCost += $inventableBp->getProductBaseCost();
+                $baseCost += $inventableBp->getProductBaseCost($iMod->getMaxPriceDataAge());
                 $numInventableBps++;
             }
         }
@@ -197,7 +196,7 @@ class InventorBlueprint extends Blueprint
                 $inventedBpID,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
-                $this->calcInventionProbability() * $decryptor->getProbabilityModifier(),
+                $this->calcInventionProbability($iMod->getCharacterModifier()) * $decryptor->getProbabilityModifier(),
                 $this->inventionOutputRuns + $decryptor->getRunModifier(),
                 -2 - $decryptor->getMEModifier(),
                 -4 - $decryptor->getTEModifier(),
@@ -210,7 +209,7 @@ class InventorBlueprint extends Blueprint
                 $inventedBpID,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
-                $this->calcInventionProbability(),
+                $this->calcInventionProbability($iMod->getCharacterModifier()),
                 $this->inventionOutputRuns,
                 -2,
                 -4,
@@ -238,7 +237,6 @@ class InventorBlueprint extends Blueprint
      *
      * @return \iveeCore\Decryptor
      * @throws \iveeCore\Exceptions\WrongTypeException if $decryptorID does not reference a Decryptor
-     * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if the Decryptor is not compatible with Blueprint
      */
     protected function getAndCheckDecryptor($decryptorID)
     {
@@ -247,10 +245,6 @@ class InventorBlueprint extends Blueprint
         //check if decryptorID is actually a decryptor
         if (!($decryptor instanceof Decryptor))
             self::throwException('WrongTypeException', 'typeID ' . $decryptorID . ' is not a Decryptor');
-
-        //check if decryptor group matches blueprint
-        if ($decryptor->getGroupID() != $this->decryptorGroupID)
-            self::throwException('InvalidDecryptorGroupException', 'Given decryptor does not match blueprint race');
 
         return $decryptor;
     }
@@ -383,17 +377,18 @@ class InventorBlueprint extends Blueprint
     /**
      * Calculates the invention chance considering skills.
      *
+     * @param \iveeCore\ICharacterModifier $charMod specific to a character
+     *
      * @return float
      */
-    public function calcInventionProbability()
+    public function calcInventionProbability(ICharacterModifier $charMod)
     {
-        $defaultsClass = Config::getIveeClassName('Defaults');
-        $defaults = $defaultsClass::instance();
-
-        return $this->getInventionProbability() * (1 +
-            ($defaults->getSkillLevel($this->datacoreSkillIDs[0])
-                + $defaults->getSkillLevel($this->datacoreSkillIDs[1])) / 30
-            + $defaults->getSkillLevel($this->encryptionSkillID) / 40
+        return $this->getInventionProbability() 
+            * (1 +
+                ($charMod->getSkillLevel($this->datacoreSkillIDs[0])
+                    + $charMod->getSkillLevel($this->datacoreSkillIDs[1])
+                ) / 30
+                + $charMod->getSkillLevel($this->encryptionSkillID) / 40
         );
     }
 }

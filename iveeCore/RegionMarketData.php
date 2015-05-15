@@ -134,10 +134,8 @@ class RegionMarketData extends CoreDataCommon
         if (!isset(static::$instancePool))
             static::init();
 
-        if(is_null($regionID)){
-            $defaultsClass = Config::getIveeClassName('Defaults');
-            $regionID = $defaultsClass::instance()->getDefaultRegionID();
-        }
+        if(is_null($regionID))
+            $regionID = Config::getDefaultMarketRegionId();
 
         try {
             return static::$instancePool->getItem(
@@ -274,7 +272,7 @@ class RegionMarketData extends CoreDataCommon
     /**
      * Returns the realistic buy price as estimated in \iveeCore\EMDR\PriceUpdate.
      *
-     * @param int $maxPriceDataAge optional parameter, specifies the maximum price data age in seconds.
+     * @param int $maxPriceDataAge specifies the maximum price data age in seconds, 0 for unlimited.
      *
      * @return float
      * @throws \iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
@@ -282,7 +280,7 @@ class RegionMarketData extends CoreDataCommon
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
-    public function getBuyPrice($maxPriceDataAge = null)
+    public function getBuyPrice($maxPriceDataAge)
     {
         if (is_null($this->buyPrice))
             self::throwException('NoPriceDataAvailableException', "No buy price available for "
@@ -297,7 +295,7 @@ class RegionMarketData extends CoreDataCommon
     /**
      * Returns the realistic sell price as estimated in EmdrPriceUpdate.
      *
-     * @param int $maxPriceDataAge optional parameter, specifies the maximum price data age in seconds.
+     * @param int $maxPriceDataAge specifies the maximum price data age in seconds, 0 for unlimited.
      *
      * @return float
      * @throws \iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
@@ -305,7 +303,7 @@ class RegionMarketData extends CoreDataCommon
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
-    public function getSellPrice($maxPriceDataAge = null)
+    public function getSellPrice($maxPriceDataAge)
     {
         if (is_null($this->sellPrice))
             self::throwException('NoPriceDataAvailableException', "No sell price available for "

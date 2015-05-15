@@ -492,74 +492,53 @@ class Type extends SdeType
     /**
      * Returns a MaterialMap object representing the reprocessing materials of the item.
      *
+     * @param \iveeCore\IndustryModifier $iMod for reprocessing context
      * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
-     * @param float $equipmentYield the reprocessing yield of the station or array
-     * @param float $taxFactor the tax imposed by station as factor (<1.0)
-     * @param float $implantBonusFactor the reprocessing bonus given by an implant as factor (>1.0)
      *
      * @return \iveeCore\MaterialMap
      * @throws \iveeCore\Exceptions\NotReprocessableException if item is not reprocessable
-     * @throws \iveeCore\Exceptions\InvalidParameterValueException if batchSize is not multiple of portionSize or if
-     * $equipmentYield or $implantBonusPercent is not sane
+     * @throws \iveeCore\Exceptions\InvalidParameterValueException if batchSize is not multiple of portionSize
      */
-    public function getReprocessingMaterialMap($batchSize, $equipmentYield = 0.5, $taxFactor = 0.95,
-        $implantBonusFactor = 1.0
-    ) {
+    public function getReprocessingMaterialMap(IndustryModifier $iMod, $batchSize)
+    {
         if (!$this->isReprocessable())
             self::throwException('NotReprocessableException', $this->name . ' is not reprocessable');
 
-        $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-        $defaultsClass = Config::getIveeClassName('Defaults');
-        $defaults = $defaultsClass::instance();
-
         if ($batchSize % $this->portionSize != 0)
-            throw new $exceptionClass('Reprocessing batch size needs to be multiple of ' . $this->portionSize);
-        if ($equipmentYield > 1)
-            throw new $exceptionClass('Equipment reprocessing yield can never be > 1.0');
-        if ($implantBonusFactor > 1.04)
-            throw new $exceptionClass('No implants has reprocessing bonus > 4%');
-        if ($taxFactor > 1)
-            throw new $exceptionClass('Reprocessing tax cannot be lower than 0%');
+            self::throwException ('InvalidParameterValueException',
+                'Reprocessing batch size needs to be multiple of ' . $this->portionSize);
+
+        //get station for reprocessing at
+        $station = $iMod->getBestReprocessingStation();
+        //the CharacterModifier
+        $charMod = $iMod->getCharacterModifier();
 
         //if (compressed) ore or ice
         if ($this->getCategoryID() == 25)
             //Reprocessing, Reprocessing Efficiency and specific Processing skills
-            $yield = $equipmentYield
-                * (1 + 0.03 * $defaults->getSkillLevel(3385)) //Reprocessing skill
-                * (1 + 0.02 * $defaults->getSkillLevel(3389)) //Reprocessing Efficiency skill
-                * (1 + 0.02 * $defaults->getSkillLevel($this->getReprocessingSkillID())) // specific skill
-                * $implantBonusFactor;
+            $yield = $station->getReprocessingEfficiency()
+                * (1 + 0.03 * $charMod->getSkillLevel(3385)) //Reprocessing skill
+                * (1 + 0.02 * $charMod->getSkillLevel(3389)) //Reprocessing Efficiency skill
+                * (1 + 0.02 * $charMod->getSkillLevel($this->getReprocessingSkillID())) // specific skill
+                * $charMod->getReprocessingImplantYieldFactor();
         //everything else
         else
-            $yield = $equipmentYield * (1 + 0.02 * $defaults->getSkillLevel(12196)); //Scrapmetal Processing skills
+            //Apply Scrapmetal Processing skill
+            $yield = $station->getReprocessingEfficiency() * (1 + 0.02 * $charMod->getSkillLevel(12196));
 
         $materialsClass = Config::getIveeClassName('MaterialMap');
         $rmat = new $materialsClass;
 
         $numPortions = $batchSize / $this->portionSize;
         foreach ($this->getMaterials() as $typeID => $quantity)
-            $rmat->addMaterial($typeID, round($quantity * $yield * $numPortions * $taxFactor));
+            $rmat->addMaterial(
+                $typeID,
+                round(
+                    $quantity * $yield * $numPortions * $charMod->getReprocessingTaxFactor(
+                        $station->getCorporationId()
+                    )
+                )
+            );
         return $rmat;
-    }
-
-    /**
-     * Calculates the tax factor for reprocessing in stations (5% tax = factor of 0.95).
-     *
-     * @param float $standings with the corporation of the station you are reprocessing at
-     *
-     * @return float reprocessing tax factor
-     * @throws \iveeCore\InvalidParameterValueException if invalid parameter values are given
-     */
-    public static function calcReprocessingTaxFactor($standings = 6.67)
-    {
-        //sanity checks
-        if ($standings < 0 OR $standings > 10)
-            self::throwException("InvalidParameterValueException", "Standing needs to be between 0.0 and 10.0");
-
-        //calculate tax factor
-        $tax = 0.05 - (0.0075 * $standings);
-        if($tax < 0) $tax = 0;
-
-        return 1 - $tax;
     }
 }

@@ -157,27 +157,17 @@ class MaterialMap
     /**
      * Replaces every reprocessable in the map with its reprocessed materials.
      *
-     * @param float $equipmentYield station dependant reprocessing yield (<1.0)
-     * @param float $reprocessingTaxFactor the standing dependant reprocessing tax factor (0.95 for 5% tax)
-     * @param float $implantBonusFactor reprocessing bonus factor from implant (>=1.0)
+     * @param \iveeCore\IndustryModifier $iMod as industry context
      *
      * @return void
      */
-    public function reprocessMaterials($equipmentYield = 0.5, $reprocessingTaxFactor = 0.95,
-        $implantBonusFactor = 1.0
-    ) {
+    public function reprocessMaterials(IndustryModifier $iMod)
+    {
         foreach ($this->materials as $typeID => $quantity) {
             $type = Type::getById($typeID);
             if ($type->isReprocessable()) {
                 unset($this->materials[$typeID]);
-                $this->addMaterialMap(
-                    $type->getReprocessingMaterialMap(
-                        $quantity,
-                        $equipmentYield,
-                        $reprocessingTaxFactor,
-                        $implantBonusFactor
-                    )
-                );
+                $this->addMaterialMap($type->getReprocessingMaterialMap($iMod, $quantity));
             }
         }
     }
@@ -197,27 +187,25 @@ class MaterialMap
     }
 
     /**
-     * Returns material buy cost, considering taxes.
+     * Returns material buy cost, considering station specific taxes. The best station (lowest tax) in system will be
+     * chosen for that.
+     * Items that are not on the market will be ignored.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionId of the market region to be used for price lookup. If none passed, default is are used.
+     * @param IndustryModifier $iMod used for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getMaterialBuyCost($maxPriceDataAge = null, $regionId = null)
+    public function getMaterialBuyCost(IndustryModifier $iMod)
     {
-        $defaultsClass = Config::getIveeClassName('Defaults');
-        $defaults = $defaultsClass::instance();
-
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $amount) {
             $type = Type::getById($typeID);
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getRegionMarketData($regionId)->getBuyPrice($maxPriceDataAge) * $amount
-                    * $defaults->getDefaultBuyTaxFactor();
+                $sum += $type->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+                    ->getBuyPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getBuyTaxFactor();
         }
         return $sum;
     }
@@ -225,25 +213,21 @@ class MaterialMap
     /**
      * Returns material sell value, considering taxes.
      *
-     * @param int $maxPriceDataAge maximum acceptable price data age in seconds. Optional.
-     * @param int $regionID of the market region to be used for price lookup. If none passed, default is are used.
+     * @param \iveeCore\IndustryModifier $iMod for industry context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getMaterialSellValue($maxPriceDataAge = null, $regionID = null)
+    public function getMaterialSellValue(IndustryModifier $iMod)
     {
-        $defaultsClass = Config::getIveeClassName('Defaults');
-        $defaults = $defaultsClass::instance();
-
         $sum = 0;
         foreach ($this->getMaterials() as $typeID => $amount) {
             $type = Type::getById($typeID);
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getRegionMarketData($regionID)->getSellPrice($maxPriceDataAge) * $amount
-                    * $defaults->getDefaultSellTaxFactor();
+                $sum += $type->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+                    ->getSellPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getSellTaxFactor();
         }
         return $sum;
     }

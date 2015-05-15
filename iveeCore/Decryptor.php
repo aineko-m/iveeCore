@@ -143,7 +143,6 @@ class Decryptor extends Type
      * @param int $groupID specifies the decryptor group to return
      *
      * @return int[] with the decryptor IDs
-     * @throws \iveeCore\Exceptions\InvalidDecryptorGroupException if decryptor group is not found
      */
     public static function getIDsFromGroup($groupID)
     {
@@ -160,9 +159,6 @@ class Decryptor extends Type
             while ($row = $res->fetch_assoc())
                 static::$decryptorGroups[(int) $row['groupID']][] = (int) $row['typeID'];
         }
-
-        if (!isset(static::$decryptorGroups[$groupID]))
-            self::throwException('InvalidDecryptorGroupException', "Decryptor group " . (int) $groupID . " not found");
 
         return static::$decryptorGroups[$groupID];
     }

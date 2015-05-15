@@ -1,20 +1,22 @@
 <?php
 /**
- * MemcachedWrapper class file.
+ * DoctrineCacheWrapper class file.
  *
  * PHP version 5.3
  *
  * @category IveeCore
  * @package  IveeCoreClasses
- * @author   Aineko Macx <ai@sknop.net>
+ * @author   Talos Katuma/Patrick Ruckstuhl <patrick@ch.tario.org>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MemcachedWrapper.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/DoctrineCacheWrapper.php
  */
 
 namespace iveeCore;
 
+use \Doctrine\Common\Cache\CacheProvider;
+
 /**
- * MemcachedWrapper provides caching functionality for iveeCore based on php5-memcached.
+ * DoctrineCacheWrapper provides caching functionality for iveeCore based on the Doctrine CacheProvider.
  *
  * Instantiating iveeCore objects that need to pull data from the SDE DB is a relatively expensive process. This is the
  * case for all Type objects and it's descendants, AssemblyLine, SolarSystem, Station and market data. Since these are
@@ -29,36 +31,31 @@ namespace iveeCore;
  *
  * @category IveeCore
  * @package  IveeCoreClasses
- * @author   Aineko Macx <ai@sknop.net>
+ * @author   Talos Katuma/Patrick Ruckstuhl <patrick@ch.tario.org>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/MemcachedWrapper.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/DoctrineCacheWrapper.php
  */
-class MemcachedWrapper implements ICache
+class DoctrineCacheWrapper implements ICache
 {
     /**
-     * @var \iveeCore\MemcachedWrapper $instance holds the singleton MemcachedWrapper object.
+     * @var \iveeCore\DoctrineCacheWrapper $instance holds the singleton DoctrineCacheWrapper object.
      */
     protected static $instance;
 
     /**
-     * @var \Memcached $memcached holds the Memcached connections.
+     * @var \Doctrine\Common\Cache\CacheProvider $cache holds the Doctrine Cache Provider.
      */
-    protected $memcached;
-
+    protected $cache;
+    
     /**
-     * @var int $hits stores the number of hits on memcached.
+     * @var int $hits stores the number of hits.
      */
     protected $hits = 0;
 
     /**
-     * @var bool $hasMultiDelete if the memcached extension supports the deleteMulti call.
-     */
-    protected $hasMultiDelete;
-
-    /**
-     * Returns MemcachedWrapper instance.
+     * Returns DoctrineCacheWrapper instance.
      *
-     * @return \iveeCore\MemcachedWrapper
+     * @return \iveeCore\DoctrineCacheWrapper
      */
     public static function instance()
     {
@@ -68,37 +65,31 @@ class MemcachedWrapper implements ICache
     }
 
     /**
-     * Constructor.
+     * Set the Doctrine Cache Provider.
+     * 
+     * @param \Doctrine\Common\Cache\CacheProvider $cache Doctrine Cache Provider to use.
+     *
+     * @return void
      */
-    protected function __construct()
+    public function setCache(CacheProvider $cache)
     {
-        $this->memcached = new \Memcached;
-        $this->memcached->addServer(Config::getCacheHost(), Config::getCachePort());
-        $this->memcached->setOption(\Memcached::OPT_PREFIX_KEY, Config::getCachePrefix());
-
-        //determine if deleteMulti() is supported
-        if (defined('HHVM_VERSION'))
-            $this->hasMultiDelete = false;
-        else {
-            $ext = new \ReflectionExtension('memcached');
-            $this->hasMultiDelete = version_compare($ext->getVersion(), '2.0.0', '>=');
-        }
+        $this->cache = $cache;
     }
 
     /**
-     * Stores item in Memcached.
+     * Stores item in Cache.
      *
      * @param \iveeCore\ICacheable $item to be stored
      *
-     * @return boolean true on success
+     * @return boolean true on success.
      */
     public function setItem(ICacheable $item)
     {
-        return $this->memcached->set($item->getKey(), $item, $item->getCacheTTL());
+        return $this->cache->save($item->getKey(), $item, $item->getCacheTTL());
     }
 
     /**
-     * Gets item from Memcached.
+     * Gets item from Cache.
      *
      * @param string $key under which the item is stored
      *
@@ -107,53 +98,51 @@ class MemcachedWrapper implements ICache
      */
     public function getItem($key)
     {
-        $item = $this->memcached->get($key);
-        if ($this->memcached->getResultCode() == \Memcached::RES_NOTFOUND) {
+        if (!$this->cache->contains($key)) {
             $exceptionClass = Config::getIveeClassName('KeyNotFoundInCacheException');
-            throw new $exceptionClass("Key not found in memcached.");
+            throw new $exceptionClass("Key not found in cache.");
         }
-        //count memcached hit
+        $item = $this->cache->fetch($key);
         $this->hits++;
         return $item;
     }
 
     /**
-     * Removes item from Memcached.
+     * Removes item from Cache.
      *
      * @param string $key of object to be removed
      *
-     * @return bool true on success or if memcached has been disabled
+     * @return bool true on success.
      */
     public function deleteItem($key)
     {
-        return $this->memcached->delete($key);
+        return $this->cache->delete($key);
     }
 
     /**
-     * Removes multiple items from Memcached.
+     * Removes multiple items from Cache.
      *
      * @param string[] $keys of items to be removed
      *
-     * @return bool true on success
+     * @return bool true on success.
      */
     public function deleteMulti(array $keys)
     {
-        if ($this->hasMultiDelete)
-            return $this->memcached->deleteMulti($keys);
-
-        foreach ($keys as $key)
-            $this->deleteItem ($key);
+        foreach ($keys as $key) {
+            if (!$this->cache->delete($key))
+                return false;
+        }
         return true;
     }
 
     /**
-     * Clears all stored items in memcached.
+     * Clears all stored items in Cache.
      *
-     * @return boolean true on success, also if memcached has been disabled.
+     * @return boolean true on success.
      */
     public function flushCache()
     {
-        return $this->memcached->flush();
+        return $this->cache->flushAll();
     }
 
     /**

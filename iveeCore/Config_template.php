@@ -26,6 +26,8 @@ namespace iveeCore;
  */
 class Config
 {
+    const VERSION = 'iveeCore/2.5';
+
     /////////////////////
     // Edit below here //
     /////////////////////
@@ -41,7 +43,6 @@ class Config
     protected static $iveeDbName = 'iveeCore';
 
     //Cache config
-    protected static $useCache    = true;
     protected static $cachePrefix = 'iveeCore_';
 
     //Memcached specific settings
@@ -55,8 +56,82 @@ class Config
     //EVE public CREST base URL. Needs trailing slash.
     protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
 
-    //change the application name in the parenthesis to your application. It is used when accessing the CREST API.
-    protected static $userAgent = 'iveeCore/2.4.1 (unknown application)';
+    //set the name of your application. It is used as part of the User Agent when accessing the CREST API.
+    protected static $applicationName = 'unknown application';
+
+    //Defines the region for pricing operations when no regionId is specified
+    protected static $defaultMarketRegionId = 10000002; //The Forge
+
+    //Defines the regions that will have their market data collected via EMDR
+    protected static $trackedMarketRegionIds = array(
+//        10000001, //Derelik
+        10000002, //The Forge
+//        10000003, //Vale of the Silent
+//        10000004, //UUA-F4
+//        10000005, //Detorid
+//        10000006, //Wicked Creek
+//        10000007, //Cache
+//        10000008, //Scalding Pass
+//        10000009, //Insmother
+//        10000010, //Tribute
+//        10000011, //Great Wildlands
+//        10000012, //Curse
+//        10000013, //Malpais
+//        10000014, //Catch
+//        10000015, //Venal
+//        10000016, //Lonetrek
+//        10000017, //J7HZ-F
+//        10000018, //The Spire
+//        10000019, //A821-A
+//        10000020, //Tash-Murkon
+//        10000021, //Outer Passage
+//        10000022, //Stain
+//        10000023, //Pure Blind
+//        10000025, //Immensea
+//        10000027, //Etherium Reach
+//        10000028, //Molden Heath
+//        10000029, //Geminate
+//        10000030, //Heimatar
+//        10000031, //Impass
+        10000032, //Sinq Laison
+//        10000033, //The Citadel
+//        10000034, //The Kalevala Expanse
+//        10000035, //Deklein
+//        10000036, //Devoid
+//        10000037, //Everyshore
+//        10000038, //The Bleak Lands
+//        10000039, //Esoteria
+//        10000040, //Oasa
+//        10000041, //Syndicate
+        10000042, //Metropolis
+        10000043, //Domain
+//        10000044, //Solitude
+//        10000045, //Tenal
+//        10000046, //Fade
+//        10000047, //Providence
+//        10000048, //Placid
+//        10000049, //Khanid
+//        10000050, //Querious
+//        10000051, //Cloud Ring
+//        10000052, //Kador
+//        10000053, //Cobalt Edge
+//        10000054, //Aridia
+//        10000055, //Branch
+//        10000056, //Feythabolis
+//        10000057, //Outer Ring
+//        10000058, //Fountain
+//        10000059, //Paragon Soul
+//        10000060, //Delve
+//        10000061, //Tenerifis
+//        10000062, //Omist
+//        10000063, //Period Basis
+//        10000064, //Essence
+//        10000065, //Kor-Azor
+//        10000066, //Perrigen Falls
+//        10000067, //Genesis
+//        10000068, //Verge Vendor
+//        10000069  //Black Rise
+    );
 
     //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
     //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
@@ -64,17 +139,16 @@ class Config
     protected static $classes = array(
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
+        'BlueprintModifier'      => '\iveeCore\BlueprintModifier',
         'Cache'                  => '\iveeCore\MemcachedWrapper',
-//        'Cache'                  => '\iveeCore\RedisWrapper',
+        //'Cache'                  => '\iveeCore\RedisWrapper',
         'CacheableArray'         => '\iveeCore\CacheableArray',
+        'CharacterModifier'      => '\iveeCore\CharacterModifier',
         'CoreDataCommon'         => '\iveeCore\CoreDataCommon',
         'CopyProcessData'        => '\iveeCore\CopyProcessData',
         'Decryptor'              => '\iveeCore\Decryptor',
-        'Defaults'               => '\iveeCoreExtensions\MyDefaults',
         'FitParser'              => '\iveeCore\FitParser',
         'GlobalPriceData'        => '\iveeCore\GlobalPriceData',
-        'ICache'                 => '\iveeCore\ICache',
-        'ICacheable'             => '\iveeCore\ICacheable',
         'IndustryModifier'       => '\iveeCore\IndustryModifier',
         'InstancePool'           => '\iveeCore\InstancePool',
         'InventionProcessData'   => '\iveeCore\InventionProcessData',
@@ -115,7 +189,6 @@ class Config
         'CrestException'                      => '\iveeCore\Exceptions\CrestException',
         'CurlException'                       => '\iveeCore\Exceptions\CurlException',
         'InvalidArgumentException'            => '\iveeCore\Exceptions\InvalidArgumentException',
-        'InvalidDecryptorGroupException'      => '\iveeCore\Exceptions\InvalidDecryptorGroupException',
         'InvalidParameterValueException'      => '\iveeCore\Exceptions\InvalidParameterValueException',
         'IveeCoreException'                   => '\iveeCore\Exceptions\IveeCoreException',
         'KeyNotFoundInCacheException'         => '\iveeCore\Exceptions\KeyNotFoundInCacheException',
@@ -180,7 +253,9 @@ class Config
     /**
      * Configure SDE database host.
      *
-     * @param string $sdeDbHost
+     * @param string $sdeDbHost for the SDE DB connection
+     *
+     * @return void
      */
     public static function setSdeDbHost($sdeDbHost)
     {
@@ -200,7 +275,9 @@ class Config
     /**
      * Configure SDE database port.
      *
-     * @param int $sdeDbPort
+     * @param int $sdeDbPort for the SDE DB connection
+     *
+     * @return void
      */
     public static function setSdeDbPort($sdeDbPort)
     {
@@ -220,7 +297,9 @@ class Config
     /**
      * Configure SDE database user.
      *
-     * @param string $sdeDbUser
+     * @param string $sdeDbUser for the SDE DB connection
+     *
+     * @return void
      */
     public static function setSdeDbUser($sdeDbUser)
     {
@@ -240,7 +319,9 @@ class Config
     /**
      * Configure SDE database password.
      *
-     * @param string $sdeDbPw
+     * @param string $sdeDbPw for the SDE DB connection
+     *
+     * @return void
      */
     public static function setSdeDbPw($sdeDbPw)
     {
@@ -260,7 +341,9 @@ class Config
     /**
      * Configure SDE database name.
      *
-     * @param string $sdeDbName
+     * @param string $sdeDbName for the SDE DB connection
+     *
+     * @return void
      */
     public static function setSdeDbName($sdeDbName)
     {
@@ -280,31 +363,13 @@ class Config
     /**
      * Configure iveeCore database name.
      *
-     * @param string $iveeDbName
+     * @param string $iveeDbName for the ivee DB connection
+     *
+     * @return void
      */
     public static function setIveeDbName($iveeDbName)
     {
         static::$iveeDbName = $iveeDbName;
-    }
-
-    /**
-     * Returns if cache use is configured or not.
-     *
-     * @return bool
-     */
-    public static function getUseCache()
-    {
-        return static::$useCache;
-    }
-
-    /**
-     * Configure whether to use cache or not.
-     *
-     * @param bool $useCache
-     */
-    public static function setUseCache($useCache)
-    {
-        static::$useCache = $useCache;
     }
 
     /**
@@ -320,7 +385,9 @@ class Config
     /**
      * Configure cache prefix for keys stored by iveeCore.
      *
-     * @param string $cachePrefix
+     * @param string $cachePrefix to be used
+     *
+     * @return void
      */
     public static function setCachePrefix($cachePrefix)
     {
@@ -340,7 +407,9 @@ class Config
     /**
      * Configure cache host name.
      *
-     * @param string $cacheHost
+     * @param string $cacheHost for the cache connection
+     *
+     * @return void
      */
     public static function setCacheHost($cacheHost)
     {
@@ -360,7 +429,9 @@ class Config
     /**
      * Configure cache port.
      *
-     * @param int $cachePort
+     * @param int $cachePort for the cache connection
+     *
+     * @return void
      */
     public static function setCachePort($cachePort)
     {
@@ -380,7 +451,9 @@ class Config
     /**
      * Configure EMDR URL.
      *
-     * @param string $emdrRelayUrl
+     * @param string $emdrRelayUrl for the EMDR relay connection
+     *
+     * @return void
      */
     public static function setEmdrRelayUrl($emdrRelayUrl)
     {
@@ -400,7 +473,9 @@ class Config
     /**
      * Configure CREST base URL.
      *
-     * @param string $crestBaseUrl
+     * @param string $crestBaseUrl for the CREST API
+     *
+     * @return void
      */
     public static function setCrestBaseUrl($crestBaseUrl)
     {
@@ -414,17 +489,63 @@ class Config
      */
     public static function getUserAgent()
     {
-        return static::$userAgent;
+        return static::VERSION . ' (' . static::$applicationName . ')';
     }
 
     /**
-     * Configure user agent to be used by the CREST client.
+     * Sets the name of your application. It is used as part of the User Agent when accessing the CREST API.
      *
-     * @param string $userAgent
+     * @param string $appName to be used
+     *
+     * @return void
      */
-    public static function setUserAgent($userAgent)
+    public static function setApplicationName($appName)
     {
-        static::$userAgent = $userAgent;
+        static::$applicationName = $appName;
+    }
+
+    /**
+     * Gets the default market region ID, which is used when no region ID is specified in pricing operations.
+     *
+     * @return int the region ID
+     */
+    public static function getDefaultMarketRegionId()
+    {
+        return static::$defaultMarketRegionId;
+    }
+
+    /**
+     * Sets the default market region ID.
+     *
+     * @param int $regionId of the region to be used as default
+     *
+     * @return void
+     */
+    public static function setDefaultMarketRegionId($regionId)
+    {
+        static::$defaultMarketRegionId = (int) $regionId;
+    }
+
+    /**
+     * Gets the tracked market region IDs, whose market data will be collected via EMDR
+     *
+     * @return array of region IDs
+     */
+    public static function getTrackedMarketRegionIds()
+    {
+        return static::$trackedMarketRegionIds;
+    }
+
+    /**
+     * Sets the tracked market region IDs, whose market data will be collected via EMDR
+     *
+     * @param array $regionIds to be set
+     *
+     * @return void
+     */
+    public static function setTracketMarketRegionIds(array $regionIds)
+    {
+        static::$trackedMarketRegionIds = $regionIds;
     }
 
     /**
@@ -449,9 +570,12 @@ class Config
      *
      * @param string $classNickname a short name for the class
      * @param string $className the full class name to use
+     *
+     * @return void
      */
     public static function setIveeClassName($classNickname, $className)
     {
         static::$classes[$classNickname] = $className;
     }
+
 }
