@@ -173,7 +173,11 @@ class SolarSystem extends SdeType
         $res = $sde->query(
             "SELECT stationID
             FROM staStations
-            WHERE solarSystemID = " . $this->id . ';'
+            WHERE solarSystemID = " . $this->id
+            . " UNION DISTINCT
+            SELECT facilityID as stationID
+            FROM " . Config::getIveeDbName() . ".iveeOutposts
+            WHERE solarSystemID = " . $this->id . ";"
         );
 
         while ($row = $res->fetch_assoc()) {
