@@ -192,7 +192,7 @@ class GlobalPriceData extends CoreDataCommon
                 'NoPriceDataAvailableException',
                 "No averagePrice available for " . $this->getType()->getName()
             );
-        elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
+        elseif ($maxPriceDataAge > 0 AND $this->isTooOld($maxPriceDataAge))
             self::throwException(
                 'PriceDataTooOldException',
                 'averagePrice data for ' . $this->getType()->getName() . ' is too old'
@@ -218,11 +218,28 @@ class GlobalPriceData extends CoreDataCommon
                 'NoPriceDataAvailableException',
                 "No adjustedPrice available for " . $this->getType()->getName()
             );
-        elseif ($maxPriceDataAge > 0 AND ($this->priceDate + $maxPriceDataAge) < time())
+        elseif ($maxPriceDataAge > 0 AND $this->isTooOld($maxPriceDataAge))
             self::throwException(
                 'PriceDataTooOldException',
                 'adjustedPrice data for ' . $this->getType()->getName() . ' is too old'
             );
         return $this->adjustedPrice;
+    }
+
+    /**
+     * Gets whether the current data is too old.
+     * Note that a date converted to timestamp is treated as midnight (start of day), therefore the date timestamp will
+     * lag up to a whole day + how long it takes to get the new data from CREST behind the current timestamp. An
+     * appropriate offset is automatically applied when performing the check.
+     *
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds
+     *
+     * @return bool
+     */
+    public function isTooOld($maxPriceDataAge)
+    {
+        //take the data timestamp, add a whole day as it is valid until the end of the current day.
+        //Then add whatever wiggle room we get from maxPriceDataAge.
+        return $this->priceDate + 86400 + $maxPriceDataAge < time();
     }
 }
