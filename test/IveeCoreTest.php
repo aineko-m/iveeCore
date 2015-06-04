@@ -305,7 +305,7 @@ Expanded Cargohold II
                 <shipType value="Abaddon"/>
                 <hardware slot="low slot 0" type="Damage Control II"/>
                 <hardware slot="low slot 1" type="Heat Sink II"/>
-                <hardware slot="low slot 2" type="1600mm Reinforced Rolled Tungsten Plates I"/>
+                <hardware slot="low slot 2" type="1600mm Rolled Tungsten Compact Plates"/>
                 <hardware slot="hi slot 7" type="Mega Pulse Laser II"/>
                 <hardware slot="rig slot 2" type="Large Trimark Armor Pump I"/>
                 <hardware qty="5" slot="drone bay" type="Hammerhead II"/>
