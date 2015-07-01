@@ -54,7 +54,7 @@ class Config
     protected static $emdrRelayUrl = 'tcp://relay-eu-germany-1.eve-emdr.com:8050';
 
     //EVE public CREST base URL. Needs trailing slash.
-    protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
+    protected static $crestBaseUrl = 'https://public-crest.eveonline.com/';
 
     //set the name of your application. It is used as part of the User Agent when accessing the CREST API.
     protected static $applicationName = 'unknown application';
