@@ -2,7 +2,7 @@
 /**
  * InstancePool class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,12 +25,12 @@ namespace iveeCore;
 class InstancePool
 {
     /**
-     * @var \iveeCore\ICache $cache object for caching external to PHP
+     * @var iveeCore\ICache $cache object for caching external to PHP
      */
     protected $cache;
 
     /**
-     * @var \iveeCore\ICacheable[] $keyToObj containing the pooled objects in the form key => obj
+     * @var iveeCore\ICacheable[] $keyToObj containing the pooled objects in the form key => obj
      */
     protected $keyToObj = array();
 
@@ -57,7 +57,7 @@ class InstancePool
     /**
      * Stores object in pool under its id, also in external cache.
      *
-     * @param \iveeCore\ICacheable $obj to be stored
+     * @param iveeCore\ICacheable $obj to be stored
      *
      * @return void
      */
@@ -80,7 +80,7 @@ class InstancePool
     {
         $this->nameToKey[$classKey] = $nameToKey;
         $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
-        $cacheableArray = new $cacheableArrayClass($classKey, 3600 * 24);
+        $cacheableArray = new $cacheableArrayClass($classKey, time() + 3600 * 24);
         $cacheableArray->data = $nameToKey;
 
         if ($this->cache instanceof ICache)
@@ -92,12 +92,12 @@ class InstancePool
      *
      * @param string $key of the object to be returned
      *
-     * @return \iveeCore\ICacheable
-     * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if the key cannot be found
+     * @return iveeCore\ICacheable
+     * @throws iveeCore\Exceptions\KeyNotFoundInCacheException if the key cannot be found
      */
     public function getItem($key)
     {
-        if (isset($this->keyToObj[$key])) {
+        if (isset($this->keyToObj[$key]) AND $this->keyToObj[$key]->getCacheExpiry() > time()) {
             $this->hits++;
             return $this->keyToObj[$key];
         } elseif ($this->cache instanceof ICache) {
@@ -116,9 +116,9 @@ class InstancePool
      * @param string $name for which the key should be returned
      *
      * @return string
-     * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if the names to key array isn't found in pool or cache
-     * @throws \iveeCore\Exceptions\TypeNameNotFoundException if the given name is not found in the mapping array
-     * @throws \iveeCore\Exceptions\WrongTypeException if object returned from cache is not CacheableArray
+     * @throws iveeCore\Exceptions\KeyNotFoundInCacheException if the names to key array isn't found in pool or cache
+     * @throws iveeCore\Exceptions\TypeNameNotFoundException if the given name is not found in the mapping array
+     * @throws iveeCore\Exceptions\WrongTypeException if object returned from cache is not CacheableArray
      */
     public function getKeyByName($classTypeNamesKey, $name)
     {

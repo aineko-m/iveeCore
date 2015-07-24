@@ -223,9 +223,12 @@ class Blueprint extends Type
      */
     public function getProductBaseCost($maxPriceDataAge)
     {
-        $baseCost = 0;
+        if (isset($this->productBaseCost))
+            return $this->productBaseCost;
+
+        $this->productBaseCost = 0.0;
         foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matID => $matData) {
-            if (isset($matData['c']))
+            if (isset($matData['c'])) //if the consume field is present, consume is not 1
                 continue;
             $baseCost += Type::getById($matID)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge) 
                 * $matData['q'];

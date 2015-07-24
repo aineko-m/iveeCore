@@ -2,7 +2,7 @@
 /**
  * MaterialMap class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -159,7 +159,7 @@ class MaterialMap
      *
      * @param \iveeCore\IndustryModifier $iMod as industry context
      *
-     * @return void
+     * @return \iveeCore\MaterialMap
      */
     public function reprocessMaterials(IndustryModifier $iMod)
     {
@@ -170,6 +170,7 @@ class MaterialMap
                 $this->addMaterialMap($type->getReprocessingMaterialMap($iMod, $quantity));
             }
         }
+        return $this;
     }
 
     /**
@@ -204,7 +205,7 @@ class MaterialMap
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionID())
                     ->getBuyPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getBuyTaxFactor();
         }
         return $sum;
@@ -226,7 +227,7 @@ class MaterialMap
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionID())
                     ->getSellPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getSellTaxFactor();
         }
         return $sum;

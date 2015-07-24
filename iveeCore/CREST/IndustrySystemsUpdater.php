@@ -2,7 +2,7 @@
 /**
  * IndustrySystemsUpdater class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreCrest
@@ -13,7 +13,7 @@
  */
 
 namespace iveeCore\CREST;
-use \iveeCore\Config;
+use iveeCore\Config, iveeCrest\EndpointHandler;
 
 /**
  * IndustrySystemsUpdater specific CREST data updater
@@ -28,19 +28,9 @@ use \iveeCore\Config;
 class IndustrySystemsUpdater extends CrestDataUpdater
 {
     /**
-     * @var string $path holds the CREST path
-     */
-    protected static $path = 'industry/systems/';
-
-    /**
-     * @var string $representationName holds the expected representation name returned by CREST
-     */
-    protected static $representationName = 'vnd.ccp.eve.IndustrySystemCollection-v1';
-
-    /**
      * Processes data objects to SQL
      *
-     * @param \stdClass $item to be processed
+     * @param stdClass $item to be processed
      *
      * @return string the SQL queries
      */
@@ -94,7 +84,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
 
         $sdeClass = Config::getIveeClassName('SDE');
 
-        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.iveeIndustrySystems', $insert, $update);
+        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.systemIndustryIndices', $insert, $update);
     }
 
     /**
@@ -106,5 +96,18 @@ class IndustrySystemsUpdater extends CrestDataUpdater
     {
         $assemblyLineClass  = Config::getIveeClassName('SolarSystem');
         $assemblyLineClass::deleteFromCache($this->updatedIDs);
+    }
+
+    /**
+     * Fetches the data from CREST.
+     *
+     * @param iveeCrest\EndpointHandler $eph to be used
+     *
+     * @return array
+     */
+    protected static function getData(EndpointHandler $eph)
+    {
+        //we dont set the cache flag because the data normally won't be read again
+        return $eph->getIndustrySystems(false);
     }
 }

@@ -2,7 +2,7 @@
 /**
  * Type class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -12,6 +12,7 @@
  */
 
 namespace iveeCore;
+use iveeCore\Exceptions\KeyNotFoundInCacheException;
 
 /**
  * Base class for all inventory Type subclasses.
@@ -32,7 +33,7 @@ class Type extends SdeType
     const CLASSNICK = 'Type';
 
     /**
-     * @var \iveeCore\InstancePool $instancePool used to pool (cache) Type and child objects
+     * @var iveeCore\InstancePool $instancePool used to pool (cache) Type and child objects
      */
     protected static $instancePool;
 
@@ -81,8 +82,8 @@ class Type extends SdeType
      *
      * @param int $id of requested Type
      *
-     * @return \iveeCore\Type the requested Type or subclass object
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
+     * @return iveeCore\Type the requested Type or subclass object
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
      */
     public static function getById($id)
     {
@@ -91,7 +92,7 @@ class Type extends SdeType
 
         try {
             return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int)$id);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+        } catch (KeyNotFoundInCacheException $e) {
             //go to DB
             $type = self::factory((int)$id);
             //store SdeType object in instance pool (and cache if configured)
@@ -142,8 +143,8 @@ class Type extends SdeType
      * @param int   $typeID of the Type object
      * @param array $subtypeInfo optional parameter with the DB data used to decide Type subclass
      *
-     * @return \iveeCore\Type the requested Type or subclass object
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
+     * @return iveeCore\Type the requested Type or subclass object
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
      */
     private static function factory($typeID, array $subtypeInfo = null)
     {
@@ -164,7 +165,7 @@ class Type extends SdeType
      * @param int $typeID of the Type object
      *
      * @return array with the type decision data from the SDE DB
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
      */
     private static function getSubtypeInfo($typeID)
     {
@@ -264,15 +265,16 @@ class Type extends SdeType
     }
 
     /**
-     * Constructor. Use \iveeCore\Type::getById() to instantiate Type objects instead.
+     * Constructor. Use iveeCore\Type::getById() to instantiate Type objects instead.
      *
      * @param int $id of the Type
      *
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
      */
     protected function __construct($id)
     {
         $this->id = (int) $id;
+        $this->setExpiry();
 
         //get data from SQL
         $row = $this->queryAttributes();
@@ -302,7 +304,7 @@ class Type extends SdeType
      * Gets all necessary data from SQL.
      *
      * @return array with attributes queried from DB
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
      */
     protected function queryAttributes()
     {
@@ -432,8 +434,8 @@ class Type extends SdeType
     /**
      * Returns the GlobalPriceData object for this Type.
      *
-     * @return \iveeCore\GlobalPriceData
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for this Type
+     * @return iveeCore\GlobalPriceData
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for this Type
      */
     public function getGlobalPriceData()
     {
@@ -442,18 +444,33 @@ class Type extends SdeType
     }
 
     /**
-     * Returns the RegionMarketData object for this Type.
+     * Returns the MarketPrices object for this Type.
      *
-     * @param int $regionID of the region to get market data for. If none passed, default is looked up.
+     * @param int $regionId of the region to get market data for. If none passed, default is looked up.
      *
-     * @return \iveeCore\RegionMarketData
-     * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     * @return iveeCore\MarketPrices
+     * @throws iveeCore\Exceptions\NotOnMarketException if requested type is not on market
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
-    public function getRegionMarketData($regionID = null)
+    public function getMarketPrices($regionId = null)
     {
-        $regionMarketDataClass = Config::getIveeClassName('RegionMarketData');
-        return $regionMarketDataClass::getByIdAndRegion($this->id, $regionID);
+        $marketPricesClass = Config::getIveeClassName('MarketPrices');
+        return $marketPricesClass::getByIdAndRegion($this->id, $regionId);
+    }
+
+    /**
+     * Returns the MarketHistory object for this Type.
+     *
+     * @param int $regionId of the region to get market data for. If none passed, default is looked up.
+     *
+     * @return iveeCore\MarketHistory
+     * @throws iveeCore\Exceptions\NotOnMarketException if requested type is not on market
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     */
+    public function getMarketHistory($regionId = null)
+    {
+        $marketHistoryClass = Config::getIveeClassName('MarketHistory');
+        return $marketHistoryClass::getByIdAndRegion($this->id, $regionId);
     }
 
     /**
@@ -492,12 +509,12 @@ class Type extends SdeType
     /**
      * Returns a MaterialMap object representing the reprocessing materials of the item.
      *
-     * @param \iveeCore\IndustryModifier $iMod for reprocessing context
+     * @param iveeCore\IndustryModifier $iMod for reprocessing context
      * @param int $batchSize number of items being reprocessed, needs to be multiple of portionSize
      *
-     * @return \iveeCore\MaterialMap
-     * @throws \iveeCore\Exceptions\NotReprocessableException if item is not reprocessable
-     * @throws \iveeCore\Exceptions\InvalidParameterValueException if batchSize is not multiple of portionSize
+     * @return iveeCore\MaterialMap
+     * @throws iveeCore\Exceptions\NotReprocessableException if item is not reprocessable
+     * @throws iveeCore\Exceptions\InvalidParameterValueException if batchSize is not multiple of portionSize
      */
     public function getReprocessingMaterialMap(IndustryModifier $iMod, $batchSize)
     {

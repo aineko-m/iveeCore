@@ -2,7 +2,7 @@
 /**
  * IndustryFacilitiesUpdater class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreCrest
@@ -12,7 +12,7 @@
  */
 
 namespace iveeCore\CREST;
-use \iveeCore\Config;
+use iveeCore\Config, iveeCrest\EndpointHandler, iveeCore\Station;
 
 /**
  * IndustryFacilities specific CREST data updater
@@ -26,19 +26,9 @@ use \iveeCore\Config;
 class IndustryFacilitiesUpdater extends CrestDataUpdater
 {
     /**
-     * @var string $path holds the CREST path
-     */
-    protected static $path = 'industry/facilities/';
-
-    /**
-     * @var string $representationName holds the expected representation name returned by CREST
-     */
-    protected static $representationName = 'vnd.ccp.eve.IndustryFacilityCollection-v1';
-
-    /**
      * Processes data for facilities (stations and player built outposts)
      *
-     * @param \stdClass $item to be processed
+     * @param stdClass $item to be processed
      *
      * @return string the UPSERT SQL queries
      */
@@ -55,19 +45,16 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
 
         if (!isset($item->owner))
             throw new $exceptionClass("owner missing from facilities CREST data");
-        $update['owner'] = (int) $item->owner->id;
+        $update['ownerID'] = (int) $item->owner->id;
 
-        //branch depending if station is conquerable
+        //only store if station is conquerable
         if ($facilityID >= 61000000 OR ($facilityID >= 60014861 AND $facilityID <= 60014928)) {
             $update['solarSystemID'] = (int) $item->solarSystem->id;
             $update['stationName']   = $item->name;
             $update['stationTypeID'] = (int) $item->type->id;
-            $table = Config::getIveeDbName() . '.iveeOutposts';
-        } else {
-            if (isset($item->tax))
-                $update['tax'] = (float) $item->tax;
-            $table = Config::getIveeDbName() . '.iveeFacilities';
-        }
+            $table = Config::getIveeDbName() . '.outposts';
+        } else
+            return '';
 
         $insert = $update;
         $insert['facilityID'] = $facilityID;
@@ -89,6 +76,19 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
         //we also need to invalidate the Station names cache as Outpost names can change
         $cacheClass = Config::getIveeClassName('Cache');
         $cache = $cacheClass::instance();
-        $cache->deleteItem(\iveeCore\Station::getClassHierarchyKeyPrefix() . 'Names');
+        $cache->deleteItem(Station::getClassHierarchyKeyPrefix() . 'Names');
+    }
+
+    /**
+     * Fetches the data from CREST.
+     *
+     * @param iveeCrest\EndpointHandler $eph to be used
+     *
+     * @return array
+     */
+    protected static function getData(EndpointHandler $eph)
+    {
+        //we dont set the cache flag because the data normally won't be read again
+        return $eph->getIndustryFacilities(false);
     }
 }

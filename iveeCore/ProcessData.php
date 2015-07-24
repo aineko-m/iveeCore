@@ -310,7 +310,7 @@ class ProcessData
      */
     public function getTotalCost(IndustryModifier $iMod)
     {
-        return $this->getTotalProcessCost($iMod) + $this->getTotalMaterialBuyCost($iMod);
+        return $this->getTotalProcessCost() + $this->getTotalMaterialBuyCost($iMod);
     }
 
     /**

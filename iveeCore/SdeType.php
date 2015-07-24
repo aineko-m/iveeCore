@@ -114,4 +114,15 @@ abstract class SdeType extends CoreDataCommon
     {
         return $this->name;
     }
+
+    /**
+     * Sets the expiry to the next downtime.
+     *
+     * @return void
+     */
+    protected function setExpiry()
+    {
+        $expiry = mktime(12, 5, 0);
+        $this->expiry = $expiry > time() ? $expiry : $expiry + 24 * 3600;
+    }
 }

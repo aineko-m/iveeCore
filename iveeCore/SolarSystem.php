@@ -2,7 +2,7 @@
 /**
  * SolarSystem class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -32,7 +32,7 @@ class SolarSystem extends SdeType
     const CLASSNICK = 'SolarSystem';
 
     /**
-     * @var \iveeCore\InstancePool $instancePool used to pool (cache) SolarSystem objects
+     * @var iveeCore\InstancePool $instancePool used to pool (cache) SolarSystem objects
      */
     protected static $instancePool;
 
@@ -105,15 +105,16 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Constructor. Use \iveeCore\SolarSystem::getSolarSystem() to instantiate SolarSystem objects instead.
+     * Constructor. Use iveeCore\SolarSystem::getSolarSystem() to instantiate SolarSystem objects instead.
      *
      * @param int $id of the SolarSystem
      *
-     * @throws \iveeCore\Exceptions\SolarSystemIdNotFoundException if solarSystemID is not found
+     * @throws iveeCore\Exceptions\SolarSystemIdNotFoundException if solarSystemID is not found
      */
     protected function __construct($id)
     {
         $this->id = (int) $id;
+        $this->setExpiry();
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
@@ -135,8 +136,8 @@ class SolarSystem extends SdeType
 
         $res = $sde->query(
             "SELECT systemID, UNIX_TIMESTAMP(date) as crestIndexDate, manufacturingIndex, teResearchIndex,
-            meResearchIndex, copyIndex, reverseIndex, inventionIndex
-            FROM " . Config::getIveeDbName() . ".iveeIndustrySystems
+            meResearchIndex, copyIndex, inventionIndex
+            FROM " . Config::getIveeDbName() . ".systemIndustryIndices
             WHERE systemID = " . $this->id . "
             ORDER BY date DESC LIMIT 1;"
         )->fetch_assoc();
@@ -152,8 +153,6 @@ class SolarSystem extends SdeType
                 $this->industryIndices[4] = (float) $res['meResearchIndex'];
             if (isset($res['copyIndex']))
                 $this->industryIndices[5] = (float) $res['copyIndex'];
-            if (isset($res['reverseIndex']))
-                $this->industryIndices[7] = (float) $res['reverseIndex'];
             if (isset($res['inventionIndex']))
                 $this->industryIndices[8] = (float) $res['inventionIndex'];
         }
@@ -164,7 +163,7 @@ class SolarSystem extends SdeType
     /**
      * Loads stationIDs in system.
      *
-     * @param \iveeCore\SDE $sde the SDE object
+     * @param iveeCore\SDE $sde the SDE object
      *
      * @return void
      */
@@ -176,7 +175,7 @@ class SolarSystem extends SdeType
             WHERE solarSystemID = " . $this->id
             . " UNION DISTINCT
             SELECT facilityID as stationID
-            FROM " . Config::getIveeDbName() . ".iveeOutposts
+            FROM " . Config::getIveeDbName() . ".outposts
             WHERE solarSystemID = " . $this->id . ";"
         );
 
@@ -238,7 +237,7 @@ class SolarSystem extends SdeType
     /**
      * Gets Stations in SolarSystem.
      *
-     * @return \iveeCore\Station[]
+     * @return iveeCore\Station[]
      */
     public function getStations()
     {
@@ -254,7 +253,7 @@ class SolarSystem extends SdeType
      *
      * @param int serviceId
      *
-     * @return \iveeCore\Station[] in the form stationId => Station
+     * @return iveeCore\Station[] in the form stationId => Station
      */
     public function getStationsWithService($serviceId)
     {
@@ -289,7 +288,7 @@ class SolarSystem extends SdeType
      * @param int $maxIndexDataAge maximum index data age in seconds
      *
      * @return float[] in the form activityID => float
-     * @throws \iveeCore\Exceptions\CrestDataTooOldException if given max index data age is exceeded
+     * @throws iveeCore\Exceptions\CrestDataTooOldException if given max index data age is exceeded
      */
     public function getIndustryIndices($maxIndexDataAge = 172800)
     {
@@ -306,7 +305,7 @@ class SolarSystem extends SdeType
      * @param int $maxIndexDataAge maximum index data age in seconds
      *
      * @return float
-     * @throws \iveeCore\Exceptions\ActivityIdNotFoundException if no index data is found for activityID in this system
+     * @throws iveeCore\Exceptions\ActivityIdNotFoundException if no index data is found for activityID in this system
      */
     public function getIndustryIndexForActivity($activityID, $maxIndexDataAge = 172800)
     {
@@ -340,7 +339,7 @@ class SolarSystem extends SdeType
      *
      * @param float $tax set on the POS
      *
-     * @return \iveeCore\IndustryModifier
+     * @return iveeCore\IndustryModifier
      */
     public function getIndustryModifierForPos($tax)
     {
@@ -351,7 +350,7 @@ class SolarSystem extends SdeType
     /**
      * Returns an IndustryModifier object for all NPC stations in this system.
      *
-     * @return \iveeCore\IndustryModifier
+     * @return iveeCore\IndustryModifier
      */
     public function getIndustryModifierForAllNpcStations()
     {

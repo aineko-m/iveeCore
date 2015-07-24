@@ -2,7 +2,7 @@
 /**
  * ManufactureProcessData class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -105,7 +105,7 @@ class ManufactureProcessData extends ProcessData
      */
     public function getTotalProfit(IndustryModifier $iMod)
     {
-        return (Type::getById($this->producesTypeID)->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+        return (Type::getById($this->producesTypeID)->getMarketPrices($iMod->getSolarSystem()->getRegionID())
                 ->getSellPrice($iMod->getMaxPriceDataAge()) * $this->producesQuantity * $iMod->getSellTaxFactor()
             ) - ($this->getTotalCost($iMod)
         );
@@ -132,7 +132,7 @@ class ManufactureProcessData extends ProcessData
 
         echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($iMod))
             . "ISK" . PHP_EOL;
-        echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalProcessCost($iMod))
+        echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalProcessCost())
             . "ISK" . PHP_EOL;
         echo "Total Cost: " . $utilClass::quantitiesToReadable($this->getTotalCost($iMod))
             . "ISK" . PHP_EOL;

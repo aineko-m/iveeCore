@@ -2,7 +2,7 @@
 /**
  * GlobalPriceData class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -12,6 +12,7 @@
  */
 
 namespace iveeCore;
+use iveeCore\Exceptions\KeyNotFoundInCacheException;
 
 /**
  * GlobalPriceData represents the global price data returned by public CREST.
@@ -32,7 +33,7 @@ class GlobalPriceData extends CoreDataCommon
     const CLASSNICK = 'GlobalPriceData';
 
     /**
-     * @var \iveeCore\InstancePool $instancePool used to pool (cache) objects
+     * @var iveeCore\InstancePool $instancePool used to pool (cache) objects
      */
     protected static $instancePool;
 
@@ -67,50 +68,58 @@ class GlobalPriceData extends CoreDataCommon
     /**
      * Retuns a GlobalPriceData object. Tries caches and instantiates new objects if necessary.
      *
-     * @param int $typeId of requested market data typeID
+     * @param int $typeId of requested market data typeId
+     * @param int $maxPriceDataAge maximum global price data age
      *
-     * @return \iveeCore\GlobalPriceData
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
+     * @return iveeCore\GlobalPriceData
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
      */
-    public static function getById($typeId)
+    public static function getById($typeId, $maxPriceDataAge = null)
     {
+        if (is_null($maxPriceDataAge))
+            $maxPriceDataAge = Config::getMaxPriceDataAge();
+
         if (!isset(static::$instancePool))
             static::init();
 
         try {
             return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int) $typeId);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+        } catch (KeyNotFoundInCacheException $e) {
             //go to DB
             $typeClass = Config::getIveeClassName(static::getClassNick());
-            $type = new $typeClass((int)$typeId);
-            //store object in instance pool (and cache if configured)
-            static::$instancePool->setItem($type);
+            $type = new $typeClass((int) $typeId, $maxPriceDataAge);
 
+            //store object in instance pool
+            static::$instancePool->setItem($type);
             return $type;
         }
     }
 
     /**
-     * Constructor. Use \iveeCore\GlobalPriceData::getById() to instantiate GlobalPriceData objects instead.
+     * Constructor. Use iveeCore\GlobalPriceData::getById() to instantiate GlobalPriceData objects instead.
      *
      * @param int $typeId of the market data type
+     * @param int $maxPriceDataAge maximum global price data age
      *
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
      */
-    protected function __construct($typeId)
+    protected function __construct($typeId, $maxPriceDataAge)
     {
         $this->id = (int) $typeId;
         //get data from SQL
         $row = $this->queryAttributes();
         //set data to object attributes
         $this->setAttributes($row);
+
+        //calc expiry as the next day + max price data age
+        $this->expiry = $this->priceDate + 24 * 3600 + $maxPriceDataAge;
     }
 
     /**
      * Gets all necessary data from SQL.
      *
      * @return array with attributes queried from DB
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException when a typeID is not found
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException when a typeID is not found
      */
     protected function queryAttributes()
     {
@@ -121,7 +130,7 @@ class GlobalPriceData extends CoreDataCommon
             "SELECT UNIX_TIMESTAMP(date) as priceDate,
             averagePrice,
             adjustedPrice
-            FROM " . Config::getIveeDbName() . ".iveeCrestPrices
+            FROM " . Config::getIveeDbName() . ".globalPrices
             WHERE typeID = " . $this->id . "
             ORDER BY date DESC LIMIT 1;"
         )->fetch_assoc();
@@ -152,7 +161,7 @@ class GlobalPriceData extends CoreDataCommon
     /**
      * Returns the type object this market data refers to.
      *
-     * @return \iveeCore\Type
+     * @return iveeCore\Type
      */
     public function getType()
     {
@@ -163,7 +172,7 @@ class GlobalPriceData extends CoreDataCommon
      * Gets the unix timestamp of the date of the last CREST price data update (day granularity).
      *
      * @return int
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
      */
     public function getPriceDate()
     {
@@ -178,11 +187,11 @@ class GlobalPriceData extends CoreDataCommon
     /**
      * Gets eve-wide average, as returned by CREST.
      *
-     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds, 0 for unlimited.
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds.
      *
      * @return float
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
+     * @throws iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST
      * price data is older
      */
     public function getAveragePrice($maxPriceDataAge)
@@ -192,7 +201,7 @@ class GlobalPriceData extends CoreDataCommon
                 'NoPriceDataAvailableException',
                 "No averagePrice available for " . $this->getType()->getName()
             );
-        elseif ($maxPriceDataAge > 0 AND $this->isTooOld($maxPriceDataAge))
+        elseif ($this->isTooOld($maxPriceDataAge))
             self::throwException(
                 'PriceDataTooOldException',
                 'averagePrice data for ' . $this->getType()->getName() . ' is too old'
@@ -204,11 +213,11 @@ class GlobalPriceData extends CoreDataCommon
     /**
      * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations.
      *
-     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds, 0 for unlimited.
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds.
      *
      * @return float
-     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
+     * @throws iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the CREST
      * price data is older
      */
     public function getAdjustedPrice($maxPriceDataAge)
@@ -218,7 +227,7 @@ class GlobalPriceData extends CoreDataCommon
                 'NoPriceDataAvailableException',
                 "No adjustedPrice available for " . $this->getType()->getName()
             );
-        elseif ($maxPriceDataAge > 0 AND $this->isTooOld($maxPriceDataAge))
+        elseif ($this->isTooOld($maxPriceDataAge))
             self::throwException(
                 'PriceDataTooOldException',
                 'adjustedPrice data for ' . $this->getType()->getName() . ' is too old'

@@ -2,7 +2,7 @@
 /**
  * IndustryModifier Class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -70,9 +70,9 @@ class IndustryModifier
     protected $preferredMarketStationId;
 
     /**
-     * @var int $maxPriceDataAge defines the maximum acceptable price data age in seconds. 0 for unlimited.
+     * @var int $maxPriceDataAge defines the maximum acceptable price data age in seconds.
      */
-    protected $maxPriceDataAge = 86400;
+    protected $maxPriceDataAge;
 
     /**
      * Returns a IndustryModifier object for a specific station or outpost.
@@ -251,6 +251,8 @@ class IndustryModifier
         
         $bpModClass = Config::getIveeClassName('BlueprintModifier');
         $this->blueprintModifier = new $bpModClass;
+
+        $this->maxPriceDataAge = Config::getMaxPriceDataAge();
     }
 
     /**
@@ -315,17 +317,19 @@ class IndustryModifier
     }
 
     /**
-     * Gets the maximum acceptable price data age in seconds. 0 for unlimited.
+     * Gets the maximum acceptable price data age in seconds.
      *
      * @return int
      */
     public function getMaxPriceDataAge()
     {
+        if ($this->maxPriceDataAge < 300)
+            return 300;
         return $this->maxPriceDataAge;
     }
 
     /**
-     * Sets the maximum acceptable price data age in seconds. 0 for unlimited.
+     * Sets the maximum acceptable price data age in seconds.
      *
      * @param int $maxPriceDataAge the time in seconds
      *

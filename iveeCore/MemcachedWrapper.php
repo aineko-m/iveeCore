@@ -2,7 +2,7 @@
 /**
  * MemcachedWrapper class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -18,14 +18,9 @@ namespace iveeCore;
  *
  * Instantiating iveeCore objects that need to pull data from the SDE DB is a relatively expensive process. This is the
  * case for all Type objects and it's descendants, AssemblyLine, SolarSystem, Station and market data. Since these are
- * immutable except when affected by updates from CREST or EMDR, using an object cache is the natural and easy way
- * to greatly improve performance of iveeCore. The EMDR client and CREST updaters automatically clear the cache for the
- * objects that have been update by them in the DB.
- *
- * Note that objects that have already been loaded in a running iveeCore program do not get updated by changes to
- * the DB or cache by another process or iveeCore script. This might be an issue for long running scripts. For web
- * applications it should be irrelevant, since they get instantiated and will fetch the objects from DB or cache on each
- * client request.
+ * immutable except when affected by updates from CREST, using an object cache is the natural and easy way to greatly
+ * improve performance of iveeCore. The CREST updaters automatically clear the cache for the objects that have had their
+ * DB entry updated, or the caching expiry time is set to reasonably short values.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -36,12 +31,12 @@ namespace iveeCore;
 class MemcachedWrapper implements ICache
 {
     /**
-     * @var \iveeCore\MemcachedWrapper $instance holds the singleton MemcachedWrapper object.
+     * @var iveeCore\MemcachedWrapper $instance holds the singleton MemcachedWrapper object.
      */
     protected static $instance;
 
     /**
-     * @var \Memcached $memcached holds the Memcached connections.
+     * @var Memcached $memcached holds the Memcached connections.
      */
     protected $memcached;
 
@@ -58,7 +53,7 @@ class MemcachedWrapper implements ICache
     /**
      * Returns MemcachedWrapper instance.
      *
-     * @return \iveeCore\MemcachedWrapper
+     * @return iveeCore\MemcachedWrapper
      */
     public static function instance()
     {
@@ -88,13 +83,16 @@ class MemcachedWrapper implements ICache
     /**
      * Stores item in Memcached.
      *
-     * @param \iveeCore\ICacheable $item to be stored
+     * @param iveeCore\ICacheable $item to be stored
      *
      * @return boolean true on success
      */
     public function setItem(ICacheable $item)
     {
-        return $this->memcached->set($item->getKey(), $item, $item->getCacheTTL());
+        $ttl = $item->getCacheExpiry() - time();
+        if ($ttl < 1)
+            return false;
+        return $this->memcached->set($item->getKey(), $item, $ttl);
     }
 
     /**
@@ -102,8 +100,8 @@ class MemcachedWrapper implements ICache
      *
      * @param string $key under which the item is stored
      *
-     * @return \iveeCore\ICacheable
-     * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
+     * @return iveeCore\ICacheable
+     * @throws iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
      */
     public function getItem($key)
     {

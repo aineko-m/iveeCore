@@ -101,6 +101,7 @@ class EndpointHandler
             //no path to the verify endpoint is exposed, so we need construct it
             str_replace('token', 'verify', $this->client->getRootEndpoint()->authEndpoint->href),
             true,
+            null,
             false
         );
     }

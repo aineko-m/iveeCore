@@ -2,7 +2,7 @@
 /**
  * CoreDataCommon class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -30,6 +30,11 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      * @var int $id of the CoreDataCommon.
      */
     protected $id;
+
+    /**
+     * @var int $expiry the objects absolute cache expiry as unix timestamp. Should be set during construction.
+     */
+    protected $expiry;
 
     /**
      * Returns the class short name which is used to lookup the configured FQDN classname in Config (for dynamic
@@ -104,13 +109,13 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     }
 
     /**
-     * Gets the objects cache time to live.
+     * Gets the objects absolute cache expiry time as unix timestamp.
      *
      * @return int
      */
-    public function getCacheTTL()
+    public function getCacheExpiry()
     {
-        return 24 * 3600;
+        return $this->expiry;
     }
 
     /**

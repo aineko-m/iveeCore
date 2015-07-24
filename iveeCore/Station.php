@@ -2,7 +2,7 @@
 /**
  * Station class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -32,7 +32,7 @@ class Station extends SdeType
     const CLASSNICK = 'Station';
 
     /**
-     * @var \iveeCore\InstancePool $instancePool used to pool (cache) Station objects
+     * @var iveeCore\InstancePool $instancePool used to pool (cache) Station objects
      */
     protected static $instancePool;
 
@@ -117,7 +117,7 @@ class Station extends SdeType
             FROM staStations
             UNION
             SELECT facilityID as stationID, stationName
-            FROM " . Config::getIveeDbName() . ".iveeOutposts;"
+            FROM " . Config::getIveeDbName() . ".outposts;"
         );
 
         $namesToIds = array();
@@ -165,7 +165,7 @@ class Station extends SdeType
                     }
                 }
                 $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
-                $cacheArray = new $cacheableArrayClass($key, 24 * 3600);
+                $cacheArray = new $cacheableArrayClass($key, time() + 24 * 3600);
                 $cacheArray->data = static::$operations;
                 static::$instancePool->setItem($cacheArray);
             }
@@ -194,7 +194,7 @@ class Station extends SdeType
                         static::$operationServices[(int) $row['operationID']][] = (int) $row['serviceID'];
 
                 $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
-                $cacheArray = new $cacheableArrayClass($key, 24 * 3600);
+                $cacheArray = new $cacheableArrayClass($key, time() + 24 * 3600);
                 $cacheArray->data = static::$operationServices;
                 static::$instancePool->setItem($cacheArray);
             }
@@ -223,7 +223,7 @@ class Station extends SdeType
                         static::$services[(int) $row['serviceID']] = $row['serviceName'];
 
                 $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
-                $cacheArray = new $cacheableArrayClass($key, 24 * 3600);
+                $cacheArray = new $cacheableArrayClass($key, time() + 24 * 3600);
                 $cacheArray->data = static::$services;
                 static::$instancePool->setItem($cacheArray);
             }
@@ -232,24 +232,25 @@ class Station extends SdeType
     }
 
     /**
-     * Constructor. Use \iveeCore\Station::getById() to instantiate Station objects instead.
+     * Constructor. Use iveeCore\Station::getById() to instantiate Station objects instead.
      *
      * @param int $id of the Station
      *
-     * @throws \iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
+     * @throws iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
      */
     protected function __construct($id)
     {
         $this->id = (int) $id;
+        $this->setExpiry();
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
         //regular Stations and Outposts need to be treated differently
         if ($this->id >= 61000000) {
             $row = $sde->query(
-                "SELECT io.stationTypeID, owner as playerCorpID, solarSystemID, stationName as playerStationName,
+                "SELECT io.stationTypeID, ownerID as playerCorpID, solarSystemID, stationName as playerStationName,
                     operationID, conquerable, reprocessingEfficiency
-                FROM " . Config::getIveeDbName() . ".iveeOutposts as io
+                FROM " . Config::getIveeDbName() . ".outposts as io
                 JOIN staStationTypes as sst ON sst.stationTypeID = io.stationTypeID
                 WHERE facilityID = " . $this->id . ';'
             )->fetch_assoc();
@@ -257,11 +258,11 @@ class Station extends SdeType
             $row = $sde->query(
                 "SELECT sta.operationID, sta.stationTypeID, sta.corporationID, sta.solarSystemID, sta.stationName,
                     io.stationName as playerStationName, sta.reprocessingEfficiency, reprocessingStationsTake,
-                    factionID, conquerable, io.owner as playerCorpID
+                    factionID, conquerable, io.ownerID as playerCorpID
                 FROM staStations as sta
                 JOIN crpNPCCorporations as corps ON corps.corporationID = sta.corporationID
                 JOIN staStationTypes as sst ON sst.stationTypeID = sta.stationTypeID
-                LEFT JOIN " . Config::getIveeDbName() . ".iveeOutposts as io ON io.facilityID = stationID
+                LEFT JOIN " . Config::getIveeDbName() . ".outposts as io ON io.facilityID = stationID
                 WHERE stationID = " . $this->id . ';'
             )->fetch_assoc();
         }
@@ -320,7 +321,7 @@ class Station extends SdeType
     /**
      * Gets SolarSystem.
      *
-     * @return \iveeCore\SolarSystem
+     * @return iveeCore\SolarSystem
      */
     public function getSolarSystem()
     {
@@ -428,7 +429,7 @@ class Station extends SdeType
      * @param float $tax the tax as factor
      *
      * @return void
-     * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost if none was set
+     * @throws iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost if none was set
      */
     public function setTax($tax)
     {
@@ -463,7 +464,7 @@ class Station extends SdeType
     /**
      * Returns an IndustryModifier object for this station.
      *
-     * @return \iveeCore\IndustryModifier
+     * @return iveeCore\IndustryModifier
      */
     public function getIndustryModifier()
     {

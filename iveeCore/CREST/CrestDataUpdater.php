@@ -2,7 +2,7 @@
 /**
  * CrestDataUpdater class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreCrest
@@ -12,7 +12,7 @@
  */
 
 namespace iveeCore\CREST;
-use \iveeCore\Config;
+use iveeCore\Config, iveeCrest\EndpointHandler;
 
 /**
  * Abstract base class for the specific CREST endpoint updaters.
@@ -26,17 +26,7 @@ use \iveeCore\Config;
 abstract class CrestDataUpdater
 {
     /**
-     * @var string $path holds the CREST path
-     */
-    protected static $path = '';
-
-    /**
-     * @var string $representationName holds the expected representation name returned by CREST
-     */
-    protected static $representationName = 'vnd.ccp.eve.Api-v3';
-
-    /**
-     * @var \stdClass $data holding the data received from CREST
+     * @var array $data holding the data received from CREST
      */
     protected $data;
 
@@ -48,9 +38,9 @@ abstract class CrestDataUpdater
     /**
      * Constructor.
      *
-     * @param \stdClass $data the data received from CREST
+     * @param array $data the data received from CREST
      */
-    public function __construct(\stdClass $data)
+    public function __construct(array $data)
     {
         $this->data = $data;
     }
@@ -68,10 +58,10 @@ abstract class CrestDataUpdater
         $sql = '';
         $count = 0;
 
-        foreach ($this->data->items as $item) {
+        foreach ($this->data as $item) {
             $sql .= $this->processDataItemToSQL($item);
             $count++;
-            if ($count % 100 == 0 OR $count == $this->data->totalCount) {
+            if ($count % 100 == 0 OR $count == count($this->data)) {
                 $sdeDb->multiQuery($sql . ' COMMIT;');
                 $sql = '';
             }
@@ -84,7 +74,7 @@ abstract class CrestDataUpdater
     /**
      * Processes data objects to SQL.
      *
-     * @param \stdClass $item to be processed
+     * @param stdClass $item to be processed
      *
      * @return string the SQL queries
      */
@@ -105,22 +95,37 @@ abstract class CrestDataUpdater
     /**
      * Perform the complete update.
      *
+     * @param iveeCrest\EndpointHandler $eph to be used
+     * @param bool $verbose whether info should be printed to console
+     *
      * @return void
      */
-    public static function doUpdate()
+    public static function doUpdate(EndpointHandler $eph, $verbose = true)
     {
-        //get CrestFetcher class name and instantiate
-        $crestFetcherClass = Config::getIveeClassName('CrestFetcher');
-        $cf = new $crestFetcherClass;
-        echo get_called_class() . ' getting data from CREST... ';
+        if ($verbose)
+            echo get_called_class() . ' getting data from CREST... ';
 
         //fetch the data, check returned representation name
-        $data = $cf->getCrestData(static::$path, static::$representationName);
-        echo "Done" . PHP_EOL . 'Saving data in DB... ';
+        $data = static::getData($eph);
+        if ($verbose)
+            echo "Done" . PHP_EOL . 'Saving data in DB... ';
 
         //store in DB
-        $citu = new static($data);
-        $citu->insertIntoDB();
-        echo 'Done' . PHP_EOL;
+        $cdu = new static($data);
+        $cdu->insertIntoDB();
+        if ($verbose)
+            echo 'Done' . PHP_EOL;
+    }
+
+    /**
+     * Fetch the data via CREST.
+     *
+     * @param iveeCrest\EndpointHandler $eph to be used
+     *
+     * @return array
+     */
+    protected static function getData(EndpointHandler $eph)
+    {
+        return array();
     }
 }

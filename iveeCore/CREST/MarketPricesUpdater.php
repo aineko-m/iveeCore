@@ -2,7 +2,7 @@
 /**
  * MarketPricesUpdater class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreCrest
@@ -12,10 +12,10 @@
  */
 
 namespace iveeCore\CREST;
-use \iveeCore\Config;
+use iveeCore\Config, iveeCrest\EndpointHandler;
 
 /**
- * MarketPricesUpdater specific CREST data updater.
+ * MarketPricesUpdater updates the data for the global average and adjusted prices from CREST (not orders or history).
  *
  * @category IveeCore
  * @package  IveeCoreCrest
@@ -26,19 +26,9 @@ use \iveeCore\Config;
 class MarketPricesUpdater extends CrestDataUpdater
 {
     /**
-     * @var string $path holds the CREST path
-     */
-    protected static $path = 'market/prices/';
-
-    /**
-     * @var string $representationName holds the expected representation name returned by CREST
-     */
-    protected static $representationName = 'vnd.ccp.eve.MarketTypePriceCollection-v1';
-
-    /**
-     * Processes data objects to SQL
+     * Processes data objects to SQL.
      *
-     * @param \stdClass $item to be processed
+     * @param stdClass $item to be processed
      *
      * @return string the SQL queries
      */
@@ -65,7 +55,7 @@ class MarketPricesUpdater extends CrestDataUpdater
 
         $sdeClass = Config::getIveeClassName('SDE');
 
-        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.iveeCrestPrices', $insert, $update);
+        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.globalPrices', $insert, $update);
     }
 
     /**
@@ -77,5 +67,18 @@ class MarketPricesUpdater extends CrestDataUpdater
     {
         $globalPriceDataClass = Config::getIveeClassName('GlobalPriceData');
         $globalPriceDataClass::deleteFromCache($this->updatedIDs);
+    }
+
+    /**
+     * Fetches the data from CREST.
+     *
+     * @param iveeCrest\EndpointHandler $eph to be used
+     *
+     * @return array
+     */
+    protected static function getData(EndpointHandler $eph)
+    {
+        //we dont set the cache flag because the data normally won't be read again
+        return $eph->getMarketPrices(false);
     }
 }

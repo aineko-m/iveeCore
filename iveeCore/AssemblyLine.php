@@ -33,7 +33,7 @@ class AssemblyLine extends SdeType
     const CLASSNICK = 'AssemblyLine';
 
     /**
-     * @var \iveeCore\InstancePool $instancePool used to pool (cache) AssemblyLine objects
+     * @var iveeCore\InstancePool $instancePool used to pool (cache) AssemblyLine objects
      */
     protected static $instancePool;
 
@@ -145,7 +145,7 @@ class AssemblyLine extends SdeType
      * @param string $name of requested AssemblyLine
      *
      * @return void
-     * @throws \iveeCore\Exceptions\IveeCoreException
+     * @throws iveeCore\Exceptions\IveeCoreException
      */
     public static function getIdByName($name)
     {
@@ -168,11 +168,12 @@ class AssemblyLine extends SdeType
      *
      * @param int $id of the AssemblyLine
      *
-     * @throws \iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeID is not found
+     * @throws iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeID is not found
      */
     protected function __construct($id)
     {
         $this->id = $id;
+        $this->setExpiry();
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
@@ -305,7 +306,7 @@ class AssemblyLine extends SdeType
      * @param Type $type the item to get the modifiers for
      *
      * @return float[] in the form ('c' => float, 'm' => float, 't' => float)
-     * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the given Type is not compatible
+     * @throws iveeCore\Exceptions\TypeNotCompatibleException if the given Type is not compatible
      */
     public function getModifiersForType(Type $type)
     {

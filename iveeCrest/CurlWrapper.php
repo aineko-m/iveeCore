@@ -53,7 +53,7 @@ class CurlWrapper
      * @param string $userAgent to be used in the HTTP requests
      * @param string $refreshToken used to isolate cached responses in a multi-character scenrio
      */
-    function __construct(ICache $cache, $userAgent, $refreshToken)
+    public function __construct(ICache $cache, $userAgent, $refreshToken)
     {
         $this->cache = $cache;
         $this->userAgent = $userAgent;
@@ -78,7 +78,7 @@ class CurlWrapper
      *
      * @return void
      */
-    function __destruct()
+    public function __destruct()
     {
         curl_close($this->ch);
     }
@@ -349,7 +349,7 @@ class CurlWrapper
     /**
      * Creates new curl handle and adds to curl multi handle. Also creates the corresponding Response object.
      * 
-     * @param curl_multi $multiHandle the CURL multi handle
+     * @param \curl_multi $multiHandle the CURL multi handle
      * @param string $href to be requested
      * @param string $key for the Response
      * @param array $stdOptions the CURL options to be set
