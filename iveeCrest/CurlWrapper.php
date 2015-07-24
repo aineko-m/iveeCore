@@ -7,11 +7,12 @@
  * @category IveeCrest
  * @package  IveeCrestClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCrest/CurlWrapper.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/CurlWrapper.php
  */
 
 namespace iveeCrest;
+use iveeCore\Config, iveeCore\ICache, iveeCore\Exceptions\KeyNotFoundInCacheException;
 
 /**
  * CurlWrapper is a CREST-specific wrapper around CURL. It handles GET, POST and OPTIONS requests. Parallel asynchronous
@@ -20,13 +21,13 @@ namespace iveeCrest;
  * @category IveeCrest
  * @package  IveeCrestClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCrest/CurlWrapper.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/CurlWrapper.php
  */
 class CurlWrapper
 {
     /**
-     * @var \iveeCrest\ICache $cache used to cache Response objects
+     * @var iveeCrest\ICache $cache used to cache Response objects
      */
     protected $cache;
 
@@ -41,16 +42,22 @@ class CurlWrapper
     protected $ch;
 
     /**
+     * @var string $refreshToken used to isolate cached responses in a multi-character scenrio
+     */
+    protected $refreshToken;
+
+    /**
      * Constructor.
      * 
-     * @param string $userAgent to be used in the requests to CREST.
-     * @param string $refreshToken related to the user/character. Used to ensure data separation in the cache.
-     *
-     * @return \iveeCrest\CurlWrapper
+     * @param iveeCore\ICache $cache object to be used
+     * @param string $userAgent to be used in the HTTP requests
+     * @param string $refreshToken used to isolate cached responses in a multi-character scenrio
      */
-    function __construct($userAgent, $refreshToken)
+    function __construct(ICache $cache, $userAgent, $refreshToken)
     {
+        $this->cache = $cache;
         $this->userAgent = $userAgent;
+        $this->refreshToken = $refreshToken;
         $this->ch = curl_init();
         
         //set standard CURL options
@@ -60,16 +67,14 @@ class CurlWrapper
                 CURLOPT_RETURNTRANSFER  => true,
                 CURLOPT_USERAGENT       => $this->userAgent,
                 CURLOPT_SSL_VERIFYPEER  => true,
-                CURLOPT_SSL_CIPHER_LIST => 'TLSv1', //prevent protocol negotiation fail
+                CURLOPT_SSL_CIPHER_LIST => 'TLSv1', //prevent protocol negotiation fail,
+                CURLOPT_ENCODING        => 'gzip' //request gzip compression
             )
         );
-
-        $cacheClass = Config::getIveeClassName('Cache');
-        $this->cache = new $cacheClass(get_called_class() . '_' . $refreshToken);
     }
 
     /**
-     * Destructor. Lets cleanly close the curl handle.
+     * Destructor. Cleanly close the curl handle.
      *
      * @return void
      */
@@ -85,15 +90,15 @@ class CurlWrapper
      * @param array $header to be used in http request
      * @param array $fields parameters to be passed in the request in the form param => value
      * 
-     * @return \iveeCrest\Response
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
+     * @return iveeCrest\Response
+     * @throws iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
     public function post($uri, array $header, array $fields)
     {
-        $responseKey = 'post:' . $uri;
+        $responseKey = md5($this->refreshToken . '_post:' . $uri);
         try {
             return $this->cache->getItem($responseKey);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+        } catch (KeyNotFoundInCacheException $e) {
             //url-ify the data for the POST
             $fields_string = '';
             foreach ($fields as $key => $value)
@@ -110,7 +115,7 @@ class CurlWrapper
                 CURLOPT_HTTPHEADER      => $header,
                 CURLOPT_HEADERFUNCTION  => array($response, 'handleCurlHeaderLine')
             );
-            $this->doRequest($curlOptions, $response);
+            $this->doRequest($curlOptions, $response, false);
             return $response;
         }
     }
@@ -120,16 +125,18 @@ class CurlWrapper
      * 
      * @param string $uri the URI to make the request to
      * @param string $header header to be passed in the request
+     * @param bool $cache whether the response should be cached. If using another caching layer, it is advisable to
+     * disabled it here to prevent redundant caching.
      * 
-     * @return \iveeCrest\Response
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
+     * @return iveeCrest\Response
+     * @throws iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
-    public function get($uri, array $header) 
+    public function get($uri, array $header, $cache = true) 
     {
-        $responseKey = 'get:' . $uri;
+        $responseKey = md5($this->refreshToken . '_get:' . $uri);
         try {
             return $this->cache->getItem($responseKey);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+        } catch (KeyNotFoundInCacheException $e) {
             $responseClass = Config::getIveeClassName('Response');
             $response = new $responseClass($responseKey);
             //the curl options
@@ -139,7 +146,7 @@ class CurlWrapper
                 CURLOPT_HTTPHEADER      => $header,
                 CURLOPT_HEADERFUNCTION  => array($response, 'handleCurlHeaderLine')
             );
-            $this->doRequest($curlOptions, $response);
+            $this->doRequest($curlOptions, $response, $cache);
             return $response;
         }
     }
@@ -149,15 +156,15 @@ class CurlWrapper
      * 
      * @param string $uri the URI to make the request to
      * 
-     * @return \iveeCrest\Response
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
+     * @return iveeCrest\Response
+     * @throws iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
     public function options($uri)
     {
-        $responseKey = 'options:' . $uri;
+        $responseKey = md5($this->refreshToken . '_options:' . $uri);
         try {
             return $this->cache->getItem($responseKey);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+        } catch (KeyNotFoundInCacheException $e) {
             $responseClass = Config::getIveeClassName('Response');
             $response = new $responseClass($responseKey);
             //set all the curl options
@@ -166,7 +173,7 @@ class CurlWrapper
                 CURLOPT_CUSTOMREQUEST   => 'OPTIONS',
                 CURLOPT_HEADERFUNCTION  => array($response, 'handleCurlHeaderLine')
             );
-            $this->doRequest($curlOptions, $response);
+            $this->doRequest($curlOptions, $response, true);
             return $response;
         }
     }
@@ -175,12 +182,14 @@ class CurlWrapper
      * Performs generic request.
      *
      * @param array $curlOptArray the options array for CURL
-     * @param \iveeCrest\Response $response object
+     * @param iveeCrest\Response $response object
+     * @param bool $cache whether the response should be cached. If using another caching layer, it is advisable to
+     * disabled it here to prevent redundant caching.
      *
      * @return void
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
+     * @throws iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
-    protected function doRequest(array $curlOptArray, Response $response)
+    protected function doRequest(array $curlOptArray, Response $response, $cache = true)
     {
         //set the curl options
         curl_setopt_array($this->ch, $curlOptArray);
@@ -205,44 +214,49 @@ class CurlWrapper
         }
 
         //set data to response and cache it
-        $response->setInfo($info);
-        $response->setContent($resBody);
-        $this->cache->setItem($response);
+        $response->setContentAndInfo($resBody, $info);
+        if ($cache)
+            $this->cache->setItem($response);
     }
 
     /**
-     * Performs parallel asynchronous GET requests.
+     * Performs parallel asynchronous GET requests using callbacks to process incoming responses.
      * 
      * @param array $hrefs the hrefs to request
      * @param array $header the header to be passed in all requests
-     * @param callable $getAuthHeader that returns an appropriate bearer authentication header line, for instance 
-     * Client::getBearerAuthHeader(). We do this on-the-fly as during large multi GET batches the access token might
+     * @param callable $getAuthHeader that returns an appropriate bearer authentication header, for instance 
+     * Client::getBearerAuthHeader(). We do this on-the-fly as during large multi-GET batches the access token might
      * expire.
-     * @param callable $callback a function expecting one \iveeCrest\Response object as argument, called for every
+     * @param callable $callback a function expecting one iveeCrest\Response object as argument, called for every
      * successful response
-     * @param callable $errCallback a function expecting one \iveeCrest\Response object as argument, called for every
+     * @param callable $errCallback a function expecting one iveeCrest\Response object as argument, called for every
      * non-successful response
-     * @param bool $cache whether the Responses should be cached
+     * @param bool $cache whether the individual Responses should be cached
      * 
      * @return void
-     * @throws \iveeCrest\Exceptions\IveeCrestException on general CURL error
+     * @throws iveeCrest\Exceptions\IveeCrestException on general CURL error
      */
     public function asyncMultiGet(array $hrefs, array $header, callable $getAuthHeader, callable $callback,
         callable $errCallback = null, $cache = true
     ) {
+        //This method is fairly complex in part due to the tricky and ugly interface of multi-curl and moving window
+        //logic. Ideas or patches how to make it nicer welcome!
+
         //separate hrefs that are already cached from those that need to be requested
         $hrefsToQuery = array();
+        $keysToQuery  = array();
         foreach ($hrefs as $href) {
-            $responseKey = 'get:' . $href;
+            $responseKey = md5($this->refreshToken . '_get:' . $href);
             try {
                 $callback($this->cache->getItem($responseKey));
-            } catch (Exceptions\KeyNotFoundInCacheException $e){
+            } catch (KeyNotFoundInCacheException $e) {
                 $hrefsToQuery[] = $href;
+                $keysToQuery[]  = $responseKey;
             }
         }
 
         // make sure the rolling window isn't greater than the number of hrefs
-        $rollingWindow = count($hrefsToQuery) > 8 ? 8 : count($hrefsToQuery);
+        $rollingWindow = count($hrefsToQuery) > 10 ? 10 : count($hrefsToQuery);
 
         //CURL options for all requests
         $stdOptions = array(
@@ -258,8 +272,17 @@ class CurlWrapper
         //setup the first batch of requests
         for ($i = 0; $i < $rollingWindow; $i++) {
             $href = $hrefsToQuery[$i];
-            $responses[$href] = $this->addHandleToMulti($master, $href, $stdOptions, $getAuthHeader, $header);
+            $responses[$href] = $this->addHandleToMulti(
+                $master,
+                $href,
+                $keysToQuery[$i],
+                $stdOptions,
+                $getAuthHeader,
+                $header
+            );
         }
+
+        $crestExceptionClass = Config::getIveeClassName('IveeCrestException');
 
         $running = false;
         do {
@@ -268,10 +291,8 @@ class CurlWrapper
                 $execrun = curl_multi_exec($master, $running);
             } while ($execrun == CURLM_CALL_MULTI_PERFORM);
 
-            if ($execrun != CURLM_OK) {
-                $crestExceptionClass = Config::getIveeClassName('IveeCrestException');
+            if ($execrun != CURLM_OK)
                 throw new $crestExceptionClass("CURL Multi-GET error", $execrun);
-            }
 
             //block until we have anything on at least one of the handles
             curl_multi_select($master);
@@ -284,8 +305,7 @@ class CurlWrapper
                 $res = $responses[$info['url']];
 
                 //set info and content to Response object
-                $res->setInfo($info);
-                $res->setContent(curl_multi_getcontent($done['handle']));
+                $res->setContentAndInfo(curl_multi_getcontent($done['handle']), $info);
 
                 //execute the callbacks passing the response as argument
                 if ($info['http_code'] == 200) {
@@ -295,14 +315,24 @@ class CurlWrapper
                     $callback($res);
                 } elseif (isset($errCallback))
                     $errCallback($res);
+                else
+                    throw new $crestExceptionClass('CREST http error ' . $info['http_code']);
                 
                 //remove the reference to response to conserve memory on large batches
                 $responses[$info['url']] = null;
                         
                 //start a new request (it's important to do this before removing the old one)
                 if ($i < count($hrefsToQuery)) {
-                    $href = $hrefsToQuery[$i++];
-                    $responses[$href] = $this->addHandleToMulti($master, $href, $stdOptions, $getAuthHeader, $header);
+                    $href = $hrefsToQuery[$i];
+                    $responses[$href] = $this->addHandleToMulti(
+                        $master,
+                        $href,
+                        $keysToQuery[$i],
+                        $stdOptions,
+                        $getAuthHeader,
+                        $header
+                    );
+                    $i++;
                 }
 
                 //remove the curl handle that just completed
@@ -310,6 +340,7 @@ class CurlWrapper
             }
             //don't waste too many CPU cycles on looping
             usleep(1000);
+            //TODO: implement proper rate limiting
         } while ($running > 0);
 
         curl_multi_close($master);
@@ -320,16 +351,18 @@ class CurlWrapper
      * 
      * @param curl_multi $multiHandle the CURL multi handle
      * @param string $href to be requested
+     * @param string $key for the Response
      * @param array $stdOptions the CURL options to be set
-     * @param callable $getAuthHeader that returns an appropriate bearer authentication header line, for instance 
+     * @param callable $getAuthHeader that returns an appropriate bearer authentication header, for instance 
      * Client::getBearerAuthHeader(). We do this on-the-fly as during large multi GET batches the access token might
      * expire.
      * @param array $header to be used in each request
      * 
-     * @return \iveeCrest\Response
+     * @return iveeCrest\Response
      */
-    protected function addHandleToMulti($multiHandle, $href, array $stdOptions, callable $getAuthHeader, array $header)
-    {
+    protected function addHandleToMulti($multiHandle, $href, $key, array $stdOptions, callable $getAuthHeader,
+        array $header
+    ) {
         $ch = curl_init();
         curl_setopt_array($ch, $stdOptions);
         curl_setopt($ch, CURLOPT_URL, $href);
@@ -339,7 +372,7 @@ class CurlWrapper
 
         //instantiate new Response object
         $responseClass = Config::getIveeClassName('Response');
-        $response = new $responseClass('get:' . $href);
+        $response = new $responseClass($key);
 
         //add the CURL header callback function
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, array($response, 'handleCurlHeaderLine'));

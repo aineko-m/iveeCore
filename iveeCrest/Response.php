@@ -7,11 +7,12 @@
  * @category IveeCrest
  * @package  IveeCrestClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCrest/Response.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/Response.php
  */
 
 namespace iveeCrest;
+use iveeCore\ICacheable;
 
 /**
  * Response encapsulates CREST-specific http responses.
@@ -19,8 +20,8 @@ namespace iveeCrest;
  * @category IveeCrest
  * @package  IveeCrestClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCrest/Response.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/Response.php
  */
 class Response implements ICacheable
 {
@@ -28,9 +29,14 @@ class Response implements ICacheable
      * @var string $key under which this response is cached
      */
     protected $key;
-    
+
     /**
-     * @var \stdClass $content decoded response json body
+     * @var int $expiry the objects absolute cache expiry as unix timestamp
+     */
+    protected $expiry;
+
+    /**
+     * @var stdClass $content decoded response json body
      */
     public $content;
 
@@ -48,36 +54,50 @@ class Response implements ICacheable
      * Constructor.
      * 
      * @param string $key under which this Response is cached
-     *
-     * @return \iveeCrest\Response
      */
     public function __construct($key)
     {
         $this->key = $key;
+        //set a default expiry. This is overriden once content and header are set to the object.
+        $this->expiry = time() + 3600;
     }
 
     /**
-     * Adds the content to the response, which will get JSON decoded first.
+     * Adds the content to the response, which will get JSON decoded and the curl info array.
      * 
      * @param string $content JSON encoded response content
+     * @param array $info the curl info array
      *
      * @return void
      */
-    public function setContent($content)
+    public function setContentAndInfo($content, array $info)
     {
         $this->content = json_decode($content);
-    }
-
-    /**
-     * Adds the CURL info array to response object.
-     * 
-     * @param array $info from CURL
-     *
-     * @return void
-     */
-    public function setInfo(array $info)
-    {
         $this->info = $info;
+
+        //for some reason curl sometimes fails to decompress gzipped responses, so we must do it manually
+        if(empty($this->content)
+            AND isset($this->header['Content-Encoding'])
+            AND $this->header['Content-Encoding'] == 'gzip'
+        )
+            $this->content = json_decode(gzdecode($content));
+
+        //add the response timestamp to the content
+        if (isset($this->header['Date']))
+            $this->content->dateTs = strtotime($this->header['Date']);
+
+        if (isset($this->content->access_token))
+            //we need to expire (and refresh) the access token before it expires on CCPs side, which appears to happen
+            //earlier than it should
+            $this->expiry = time() + (int) $this->content->expires_in - 20;
+        elseif (isset($this->content->expires_in))
+            $this->expiry = time() + (int) $this->content->expires_in;
+        elseif (isset($this->header['Cache-Control'])) {
+            foreach (explode(',', $this->header['Cache-Control']) as $frag) {
+                if (substr(trim($frag), 0, 8) == 'max-age=')
+                    $this->expiry = time() + (int) substr(trim($frag), 8);
+            }
+        }
     }
 
     /**
@@ -137,7 +157,7 @@ class Response implements ICacheable
      * Returns the next page href, if there is one.
      *
      * @return string
-     * @throws \iveeCres\Exceptions\IveeCrestException when the response has no next page
+     * @throws iveeCres\Exceptions\IveeCrestException when the response has no next page
      */
     public function getNextPageHref()
     {
@@ -164,7 +184,7 @@ class Response implements ICacheable
      * Returns the previous page href, if there is one.
      *
      * @return string
-     * @throws \iveeCres\Exceptions\IveeCrestException when the response has no previous page
+     * @throws iveeCres\Exceptions\IveeCrestException when the response has no previous page
      */
     public function getPreviousPageHref()
     {
@@ -218,25 +238,12 @@ class Response implements ICacheable
     }
 
     /**
-     * Gets the Response cache time to live. If it has an expires_in attribute in the body stdClass object, it will use
-     * this. Next it will try the Cache-Control value in the http response header. If none is provided it will use a 
-     * default.
+     * Gets the objects absolute cache expiry time as unix timestamp.
      *
      * @return int
      */
-    public function getCacheTTL()
+    public function getCacheExpiry()
     {
-        if (isset($this->content->expires_in))
-            return (int) $this->content->expires_in - 10;
-
-        if (isset($this->header['Cache-Control'])) {
-            foreach (explode(',', $this->header['Cache-Control']) as $frag) {
-                if (substr(trim($frag), 0, 8) == 'max-age=')
-                    return (int) substr(trim($frag), 8);
-            }
-        }
-
-        //default
-        return 3600;
+        return $this->expiry;
     }
 }

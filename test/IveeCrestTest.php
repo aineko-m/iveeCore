@@ -7,8 +7,8 @@
  * @category IveeCrest
  * @package  IveeCrestTests
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/test/IveeCrestTest.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/test/IveeCrestTest.php
  *
  */
 
@@ -16,7 +16,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 
 //include the iveeCrest init, expected in the iveeCrest directory, with absolute path
-require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCrestInit.php');
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php');
+
+use iveeCore\Config, iveeCore\ICache, iveeCrest\Client, iveeCrest\EndpointHandler;
 
 /**
  * PHPUnit test for iveeCrest
@@ -30,38 +32,38 @@ require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATO
  * @category IveeCore
  * @package  IveeCoreExtensions
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/test/IveeCoreTest.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/test/IveeCoreTest.php
  */
 class IveeCrestTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var \iveeCrest\Client $client
+     * @var iveeCrest\Client $client
      */
     protected $client;
 
     /**
-     * @var \iveeCrest\EndpointHandler $handler
+     * @var iveeCrest\EndpointHandler $handler
      */
     protected $handler;
 
     protected function setUp()
     {
-        $this->client = new iveeCrest\Client(
-            iveeCrest\Config::getCrestBaseUrl(),
-            iveeCrest\Config::getClientId(),
-            iveeCrest\Config::getClientSecret(),
-            iveeCrest\Config::getClientRefreshToken(),
-            iveeCrest\Config::getUserAgent()
+        $this->client = new Client(
+            Config::getAuthedCrestBaseUrl(),
+            Config::getCrestClientId(),
+            Config::getCrestClientSecret(),
+            Config::getCrestClientRefreshToken(),
+            Config::getUserAgent()
         );
 
-        $this->handler = new iveeCrest\EndpointHandler($this->client);
+        $this->handler = new EndpointHandler($this->client);
     }
 
     public function testClient()
     {
         $this->assertTrue($this->client->getRootEndpoint() instanceof stdClass);
-        $this->assertTrue($this->client->getCache() instanceof iveeCrest\ICache);
+        $this->assertTrue($this->client->getCache() instanceof ICache);
         $this->assertTrue($this->client->getOptions($this->client->getRootEndpointUrl()) instanceof stdClass);
     }
 

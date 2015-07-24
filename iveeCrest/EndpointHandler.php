@@ -7,11 +7,12 @@
  * @category IveeCrest
  * @package  IveeCrestClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCrest/EndpointHandler.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/EndpointHandler.php
  */
 
 namespace iveeCrest;
+use iveeCore\Config;
 
 /**
  * EndpointHandler implements methods for handling specific endpoints. All endpoints reachable from CREST root are
@@ -20,8 +21,8 @@ namespace iveeCrest;
  * @category IveeCrest
  * @package  IveeCrestClasses
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/iveeCrest/EndpointHandler.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/EndpointHandler.php
  */
 class EndpointHandler
 {
@@ -55,7 +56,7 @@ class EndpointHandler
     const WAR_REPRESENTATION                            = 'vnd.ccp.eve.War-v1+json';
 
     /**
-     * @var \iveeCrest\Client $client for CREST
+     * @var iveeCrest\Client $client for CREST
      */
     protected $client;
 
@@ -67,9 +68,7 @@ class EndpointHandler
     /**
      * Constructs an EndpointHandler.
      *
-     * @param \iveeCrest\Client $client to be used
-     *
-     * @return \iveeCrest\EndpointHandler
+     * @param iveeCrest\Client $client to be used
      */
     public function __construct(Client $client)
     {
@@ -94,21 +93,22 @@ class EndpointHandler
     /**
      * Verifies the access token, returning data about the character linked to it.
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function verifyAccessToken()
     {
         return $this->client->getEndpoint(
             //no path to the verify endpoint is exposed, so we need construct it
             str_replace('token', 'verify', $this->client->getRootEndpoint()->authEndpoint->href),
-            true
+            true,
+            false
         );
     }
 
     /**
      * "decodes" the access token, returning a href to the character endpoint.
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function tokenDecode()
     {
@@ -126,9 +126,9 @@ class EndpointHandler
      */
     public function getMarketTypes()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->marketTypes->href,
-            function ($marketType) {
+            function (\stdClass $marketType) {
                 return (int) $marketType->type->id;
             },
             null,
@@ -139,21 +139,22 @@ class EndpointHandler
     /**
      * Gathers the market types hrefs.
      *
-     * @return array in the form typeID => href
+     * @return array in the form typeId => href
      */
     public function getMarketTypeHrefs()
     {
         if (!isset($this->marketTypeHrefs)) {
             //gather all the hrefs into one compact array, indexed by item id
-            $this->marketTypeHrefs = $this->client->gatherCached(
+            $this->marketTypeHrefs = $this->client->gather(
                 $this->client->getRootEndpoint()->marketTypes->href,
-                function ($marketType) {
+                function (\stdClass $marketType) {
                     return (int) $marketType->type->id;
                 },
                 function ($marketType) {
                     return $marketType->type->href;
                 },
                 static::MARKET_TYPE_COLECTION_REPRESENTATION,
+                true,
                 86400,
                 'hrefsOnly'
             );
@@ -168,9 +169,9 @@ class EndpointHandler
      */
     public function getRegions()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->regions->href,
-            function ($region) {
+            function (\stdClass $region) {
                 return static::parseTrailingIdFromUrl($region->href);
             },
             null,
@@ -183,7 +184,7 @@ class EndpointHandler
      *
      * @param int $regionId of the region
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getRegion($regionId)
     {
@@ -211,7 +212,7 @@ class EndpointHandler
         $dataKey = 'gathered:constellationHrefs';
         try {
             $dataObj = $this->client->getCache()->getItem($dataKey);
-        } catch (Exceptions\KeyNotFoundInCacheException $e){
+        } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e){
             //get region hrefs
             $hrefs = array();
             foreach ($this->getRegions() as $region)
@@ -219,7 +220,7 @@ class EndpointHandler
 
             //instantiate Response object
             $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
-            $dataObj = new $cacheableArrayClass($dataKey, 24 * 3600);
+            $dataObj = new $cacheableArrayClass($dataKey, time() + 24 * 3600);
 
             //run the async queries
             $this->client->asyncGetMultiEndpointResponses(
@@ -242,7 +243,7 @@ class EndpointHandler
      *
      * @param int $constellationId of the constellation
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getConstellation($constellationId)
     {
@@ -272,10 +273,10 @@ class EndpointHandler
         $dataKey = 'gathered:solarSystemHrefs';
         try {
             $dataObj = $this->client->getCache()->getItem($dataKey);
-        } catch (Exceptions\KeyNotFoundInCacheException $e) {
+        } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e) {
             //instantiate data object
             $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
-            $dataObj = new $cacheableArrayClass($dataKey, 24 * 3600);
+            $dataObj = new $cacheableArrayClass($dataKey, time() + 24 * 3600);
 
             //run the async queries
             $this->client->asyncGetMultiEndpointResponses(
@@ -297,7 +298,7 @@ class EndpointHandler
      *
      * @param int $systemId of the solar system
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getSolarSystem($systemId)
     {
@@ -316,7 +317,7 @@ class EndpointHandler
      * @param int $typeId of the item type
      * @param int $regionId of the region
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getMarketOrders($typeId, $regionId)
     {
@@ -332,30 +333,32 @@ class EndpointHandler
             $region->marketSellOrders->href . '?type=' . $marketTypeHrefs[$typeId],
             null,
             null,
-            static::MARKET_ORDER_COLLECTION_REPRESENTATION
+            static::MARKET_ORDER_COLLECTION_REPRESENTATION,
+            false
         );
         $ret->buyOrders = $this->client->gather(
             $region->marketBuyOrders->href . '?type=' . $marketTypeHrefs[$typeId],
             null,
             null,
-            static::MARKET_ORDER_COLLECTION_REPRESENTATION
+            static::MARKET_ORDER_COLLECTION_REPRESENTATION,
+            false
         );
 
         return $ret;
     }
 
     /**
-     * Gets market orders for multiple types in a region asynchronously. If the data for each type/region is requested
-     * less frequently than the 5 minute TTL, it is advisable to disable caching via argument. Otherwise it will cause
-     * unnecessary cache trashing.
+     * Gets market orders for multiple types in a region asynchronously, using the passed callback functions for
+     * processing CREST responses. If the data for each type/region is requested less frequently than the 5 minute cache
+     * TTL, it is advisable to disable caching via argument. Otherwise it will cause unnecessary cache trashing.
      *
      * @param array $typeIds of the item types to be queried
      * @param int $regionId of the region to be queried
-     * @param callable $callback a function expecting one \iveeCrest\Response object as argument, called for every
+     * @param callable $callback a function expecting one iveeCrest\Response object as argument, called for every
      * successful response
-     * @param callable $errCallback a function expecting one \iveeCrest\Response object as argument, called for every
+     * @param callable $errCallback a function expecting one iveeCrest\Response object as argument, called for every
      * non-successful response
-     * @param bool $cache if the multi queries should be cached
+     * @param bool $cache if the individual query Responses should be cached
      *
      * @return void
      */
@@ -372,12 +375,11 @@ class EndpointHandler
         $region = $this->getRegion($regionId);
         $marketTypeHrefs = $this->getMarketTypeHrefs();
         $hrefs = array();
-        foreach ($typeIds as $typeId) {
+        foreach (array_unique($typeIds) as $typeId) {
             if (!isset($marketTypeHrefs[$typeId])) {
                 $invalidArgumentExceptionClass = Config::getIveeClassName('InvalidArgumentException');
                 throw new $invalidArgumentExceptionClass('TypeID=' . (int) $typeId . ' not found in market types');
             }
-
             $hrefs[] = $region->marketSellOrders->href . '?type=' . $marketTypeHrefs[$typeId];
             $hrefs[] = $region->marketBuyOrders->href  . '?type=' . $marketTypeHrefs[$typeId];
         }
@@ -397,42 +399,46 @@ class EndpointHandler
      *
      * @param int $typeId of the item type
      * @param int $regionId of the region
+     * @param bool $cache whether the result of this call should be cached. If another caching layer is present, caching
+     * in this call should be disabled
      *
      * @return array indexed by the midnight timestamp of each day
      */
-    public function getMarketHistory($typeId, $regionId)
+    public function getMarketHistory($typeId, $regionId, $cache = true)
     {
-        $ts = strtotime(date('Y-m-d')) + 300;
-        return $this->client->gatherCached(
+        $ttl = mktime(0, 5, 0) - time();
+        return $this->client->gather(
             //Here we have to construct the URL because there's no navigable way to reach this data from CREST root
-            $this->client->getRootEndpointUrl() . '/market/' . (int) $regionId . '/types/' . (int) $typeId
+            $this->client->getRootEndpointUrl() . 'market/' . (int) $regionId . '/types/' . (int) $typeId
             . '/history/',
-            function ($history) {
+            function (\stdClass $history) {
                 return strtotime($history->date);
             },
             null,
             static::MARKET_TYPE_HISTORY_COLLECTION_REPRESENTATION,
-            time() < $ts ? $ts : $ts + 24 * 3600 //time cache TTL to 5 minutes past midnight
+            $cache,
+            $ttl > 0 ? $ttl : $ttl + 24 * 3600 //time cache TTL to 5 minutes past midnight
         );
     }
 
     /**
-     * Gets market history for multiple types in a region asynchronously. If the market history for each type/region
-     * is only called once per day (for instance when persisted in a DB), it is advisable to disable caching via
-     * argument. Otherwise it can quickly overflow the cache.
+     * Gets market history for multiple types in a region asynchronously, using the passed callback functions for
+     * processing CREST responses. If the market history for each type/region is only called once per day (for instance
+     * when persisted in a DB), it is advisable to disable caching via argument. Otherwise it can quickly overflow the
+     * cache.
      *
      * @param array $typeIds of the item types
      * @param int $regionId of the region
-     * @param callable $callback a function expecting one \iveeCrest\Response object as argument, called for every
+     * @param callable $callback a function expecting one iveeCrest\Response object as argument, called for every
      * successful response
-     * @param callable $errCallback a function expecting one \iveeCrest\Response object as argument, called for every
+     * @param callable $errCallback a function expecting one iveeCrest\Response object as argument, called for every
      * non-successful response
-     * @param bool $cache if the multi queries should be cached
+     * @param bool $cache if the individual query Responses should be cached
      *
      * @return void
      */
-    public function getMultiMarketHistory(array $typeIds, $regionId, callable $callback,
-        callable $errCallback = null, $cache = true
+    public function getMultiMarketHistory(array $typeIds, $regionId, callable $callback, callable $errCallback = null,
+        $cache = true
     ) {
         //check for wormhole regions
         if ($regionId > 11000000) {
@@ -443,8 +449,8 @@ class EndpointHandler
         //Here we have to construct the URLs because there's no navigable way to reach this data from CREST root
         $hrefs = array();
         $rootUrl = $this->client->getRootEndpointUrl();
-        foreach ($typeIds as $typeId)
-            $hrefs[] = $rootUrl . '/market/' . (int) $regionId . '/types/' . (int) $typeId . '/history/';
+        foreach (array_unique($typeIds) as $typeId)
+            $hrefs[] = $rootUrl . 'market/' . (int) $regionId . '/types/' . (int) $typeId . '/history/';
 
         //run the async queries
         $this->client->asyncGetMultiEndpointResponses(
@@ -459,51 +465,60 @@ class EndpointHandler
     /**
      * Gets the endpoint for a industry systems, containing industry indices.
      *
+     * @param bool $cache whether the Response should be cached
+     *
      * @return array
      */
-    public function getIndustrySystems()
+    public function getIndustrySystems($cache = true)
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->industry->systems->href,
-            function ($system) {
+            function (\stdClass $system) {
                 return (int) $system->solarSystem->id;
             },
             null,
-            static::INDUSTRY_SYSTEM_COLLECTION_REPRESENTATION
+            static::INDUSTRY_SYSTEM_COLLECTION_REPRESENTATION,
+            $cache
         );
     }
 
     /**
-     * Gets the endpoint for a market prices, containing average and adjusted prices.
+     * Gets the endpoint for a market prices, containing global average and adjusted prices (not orders or history).
+     *
+     * @param bool $cache whether the Response should be cached
      *
      * @return array
      */
-    public function getMarketPrices()
+    public function getMarketPrices($cache = true)
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->marketPrices->href,
-            function ($price) {
+            function (\stdClass $price) {
                 return (int) $price->type->id;
             },
             null,
-            static::MARKET_TYPE_PRICE_COLLECTION_REPRESENTATION
+            static::MARKET_TYPE_PRICE_COLLECTION_REPRESENTATION,
+            $cache
         );
     }
 
     /**
      * Gets the endpoint for a industry facilities.
      *
+     * @param bool $cache whether the Response should be cached
+     *
      * @return array
      */
-    public function getIndustryFacilities()
+    public function getIndustryFacilities($cache = true)
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->industry->facilities->href,
-            function ($facility) {
+            function (\stdClass $facility) {
                 return (int) $facility->facilityID;
             },
             null,
-            static::INDUSTRY_FACILITY_COLLECTION_REPRESENTATION
+            static::INDUSTRY_FACILITY_COLLECTION_REPRESENTATION,
+            $cache
         );
     }
 
@@ -514,9 +529,9 @@ class EndpointHandler
      */
     public function getItemGroups()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->itemGroups->href,
-            function ($group) {
+            function (\stdClass $group) {
                 return static::parseTrailingIdFromUrl($group->href);
             },
             null,
@@ -529,7 +544,7 @@ class EndpointHandler
      *
      * @param int $groupId of the item group.
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getItemGroup($groupId)
     {
@@ -553,12 +568,12 @@ class EndpointHandler
      */
     public function getAlliances()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->alliances->href,
-            function ($alliance) {
+            function (\stdClass $alliance) {
                 return (int) $alliance->href->id;
             },
-            function ($alliance) {
+            function (\stdClass $alliance) {
                 return $alliance->href;
             },
             static::ALLIANCE_COLLECTION_REPRESENTATION
@@ -570,7 +585,7 @@ class EndpointHandler
      *
      * @param int $allianceId of the alliance
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getAlliance($allianceId)
     {
@@ -593,9 +608,9 @@ class EndpointHandler
      */
     public function getItemTypes()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->itemTypes->href,
-            function ($type) {
+            function (\stdClass $type) {
                 return static::parseTrailingIdFromUrl($type->href);
             },
             null,
@@ -608,7 +623,7 @@ class EndpointHandler
      *
      * @param int $typeId of the type
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getType($typeId)
     {
@@ -632,9 +647,9 @@ class EndpointHandler
      */
     public function getItemCategories()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->itemCategories->href,
-            function ($category) {
+            function (\stdClass $category) {
                 return static::parseTrailingIdFromUrl($category->href);
             },
             null,
@@ -647,7 +662,7 @@ class EndpointHandler
      *
      * @param int $categoryId of the category
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getItemCategory($categoryId)
     {
@@ -671,9 +686,9 @@ class EndpointHandler
      */
     public function getMarketGroups()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->marketGroups->href,
-            function ($group) {
+            function (\stdClass $group) {
                 return static::parseTrailingIdFromUrl($group->href);
             },
             null,
@@ -686,7 +701,7 @@ class EndpointHandler
      *
      * @param int $marketGroupId of the market group
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getMarketGroup($marketGroupId)
     {
@@ -714,9 +729,9 @@ class EndpointHandler
      */
     public function getMarketGroupTypes($marketGroupId)
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->getMarketGroup($marketGroupId)->types->href,
-            function ($type) {
+            function (\stdClass $type) {
                 return (int) $type->type->id;
             },
             null,
@@ -731,12 +746,12 @@ class EndpointHandler
      */
     public function getTournaments()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->tournaments->href,
-            function ($tournament) {
+            function (\stdClass $tournament) {
                 return static::parseTrailingIdFromUrl($tournament->href->href);
             },
-            function ($tournament) {
+            function (\stdClass $tournament) {
                 return $tournament->href;
             },
             static::TOURNAMENT_COLLECTION_REPRESENTATION
@@ -748,16 +763,16 @@ class EndpointHandler
      * the result exceeds the default maximum cacheable data size of memcached, which is 1MB. If you must use it,
      * consider increasing memcached max item size to 4MB by setting the option "-I 4m" in its configuration.
      *
-     * @return array in the form ID => href
+     * @return array in the form id => href
      */
     public function getWarHrefs()
     {
-        return $this->client->gatherCached(
+        return $this->client->gather(
             $this->client->getRootEndpoint()->wars->href,
-            function ($war) {
+            function (\stdClass $war) {
                 return (int) $war->id;
             },
-            function ($war) {
+            function (\stdClass $war) {
                 return $war->href;
             },
             static::WARS_COLLECTION_REPRESENTATION
@@ -769,7 +784,7 @@ class EndpointHandler
      *
      * @param int $warId of the war
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getWar($warId)
     {
@@ -802,7 +817,7 @@ class EndpointHandler
      * @param string $killmailHref in the form 
      * http://public-crest.eveonline.com/killmails/30290604/787fb3714062f1700560d4a83ce32c67640b1797/
      *
-     * @return \stdClass
+     * @return stdClass
      */
     public function getKillmail($killmailHref)
     {

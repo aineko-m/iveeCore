@@ -11,15 +11,15 @@
  * @category IveeCrest
  * @package  IveeCrestWeb
  * @author   Aineko Macx <ai@sknop.net>
- * @license  https://github.com/aineko-m/iveeCrest/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCrest/blob/master/www/getrefreshtoken.php
+ * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/www/getrefreshtoken.php
  */
 
 DEFINE('APPLICATION_MANAGEMENT_URL', 'https://developers.eveonline.com/applications');
 DEFINE('CREST_BASE_URL', 'https://login.eveonline.com');
 DEFINE('CREST_AUTH_URL', '/oauth/authorize');
 DEFINE('CREST_TOKEN_URL', '/oauth/token');
-DEFINE('USER_AGENT', 'iveeCrest/0.1 (GetRefreshToken)');
+DEFINE('USER_AGENT', 'iveeCore/2.6 (GetRefreshToken)');
 
 session_start();
 
