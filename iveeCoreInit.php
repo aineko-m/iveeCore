@@ -4,7 +4,7 @@
  * This is the single include file required for using iveeCore in web applications or command line scripts. All other
  * required classes are loaded via autoloader.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreInit
@@ -15,10 +15,8 @@
  */
 
 //Check PHP version
-//iveeCore makes use of namespaces and late static binding, thus version 5.3 is the minimum requirement.
-//Note that using 5.4 or later reduces memory usage by about a third compared to 5.3
-if (version_compare(PHP_VERSION, '5.3') < 0)
-    exit('PHP Version 5.3 or higher required. Currently ' . PHP_VERSION . PHP_EOL);
+if (version_compare(PHP_VERSION, '5.4') < 0)
+    exit('PHP Version 5.4 or higher required. Currently ' . PHP_VERSION . PHP_EOL);
 
 //Check for 64 bit PHP
 //Integers used in iveeCore can easily exceed the maximum 2^31 of 32 bit PHP

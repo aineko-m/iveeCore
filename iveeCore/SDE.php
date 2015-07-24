@@ -2,7 +2,7 @@
 /**
  * SDE Class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -209,7 +209,7 @@ class SDE
     }
 
     /**
-     * Makes "INSERT .. ON DUPLICATE KEY UPDATE" SQL query string.
+     * Makes INSERT or "INSERT .. ON DUPLICATE KEY UPDATE" SQL query string.
      *
      * @param string $table the name of the SQL table to be used
      * @param array $insert the data to be inserted in the form column => value, where value is an int, float or

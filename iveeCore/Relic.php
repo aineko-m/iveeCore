@@ -2,7 +2,7 @@
 /**
  * Relic class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -139,7 +139,7 @@ class Relic extends InventorBlueprint
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
 
-    public function getProductBaseCost($maxPriceDataAge = null)
+    public function getProductBaseCost($maxPriceDataAge)
     {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }

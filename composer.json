@@ -13,7 +13,7 @@
     ],
 
     "require": {
-        "php-64bit": ">=5.3"
+        "php-64bit": ">=5.4"
     },
 
     "support": {
