@@ -31,12 +31,12 @@ namespace iveeCore;
 class RedisWrapper implements ICache
 {
     /**
-     * @var \iveeCore\RedisWrapper $instance holds the singleton RedisWrapper object.
+     * @var iveeCore\RedisWrapper $instance holds the singleton RedisWrapper object.
      */
     protected static $instance;
 
     /**
-     * @var \Redis $redis holds the Redis object
+     * @var Redis $redis holds the Redis object
      */
     protected $redis;
 
@@ -48,7 +48,7 @@ class RedisWrapper implements ICache
     /**
      * Returns RedisWrapper instance.
      *
-     * @return \iveeCore\RedisWrapper
+     * @return iveeCore\RedisWrapper
      */
     public static function instance()
     {
@@ -70,7 +70,7 @@ class RedisWrapper implements ICache
     /**
      * Stores item in Redis.
      *
-     * @param \iveeCore\ICacheable $item to be stored
+     * @param iveeCore\ICacheable $item to be stored
      *
      * @return boolean true on success
      */
@@ -80,11 +80,11 @@ class RedisWrapper implements ICache
 
         if ($ttl < 1)
             return false;
-//TODO: add compression
+
         return $this->redis->setex(
             $item->getKey(),
             $ttl,
-            serialize($item)
+            gzencode(serialize($item))
         );
     }
 
@@ -93,8 +93,8 @@ class RedisWrapper implements ICache
      *
      * @param string $key under which the item is stored
      *
-     * @return \iveeCore\ICacheable
-     * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
+     * @return iveeCore\ICacheable
+     * @throws iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
      */
     public function getItem($key)
     {
@@ -105,7 +105,7 @@ class RedisWrapper implements ICache
         }
         //count hit
         $this->hits++;
-        return unserialize($item);
+        return unserialize(gzdecode($item));
     }
 
     /**
