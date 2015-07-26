@@ -72,6 +72,11 @@ class SolarSystem extends SdeType
     protected $stationIDs = array();
 
     /**
+     * @var iveeCore\Station[] lazy loaded
+     */
+    protected $stations;
+
+    /**
      * Loads all SolarSystem names from DB to PHP.
      *
      * @return void
@@ -241,11 +246,13 @@ class SolarSystem extends SdeType
      */
     public function getStations()
     {
-        $stations = array();
-        $stationClass = Config::getIveeClassName("Station");
-        foreach ($this->getStationIDs() as $stationID)
-            $stations[$stationID] = $stationClass::getById($stationID);
-        return $stations;
+        if (!isset($this->stations)) {
+            $this->stations = array();
+            $stationClass = Config::getIveeClassName("Station");
+            foreach ($this->getStationIDs() as $stationId)
+                $this->stations[$stationId] = $stationClass::getById($stationId);
+        }
+        return $this->stations;
     }
 
     /**
