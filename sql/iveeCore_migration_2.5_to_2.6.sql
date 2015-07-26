@@ -1,3 +1,8 @@
+-- !! ATTENTION !!
+-- Before running this schema migration make sure you stop all write activity to the iveeCore tables or the migration
+-- might fail due to foreign key errors. The migration itself might take a long time depending on how large the DB and
+-- how fast the storage backing the DB is.
+
 -- split iveePrices into marketHistory and marketPrices
 -- first create new table for history
 CREATE TABLE `marketHistory` (

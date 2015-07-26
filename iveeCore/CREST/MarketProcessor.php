@@ -313,8 +313,8 @@ class MarketProcessor
     /**
      * Gets the newest price data from CREST, also updating the DB in the process.
      *
-     * @param array $typeId of the market type
-     * @param array $regionId of the marget region
+     * @param int $typeId of the market type
+     * @param int $regionId of the marget region
      *
      * @return array
      */
