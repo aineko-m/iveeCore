@@ -49,6 +49,8 @@ class EndpointHandler
     const PLANET_REPRESENTATION                         = 'vnd.ccp.eve.Planet-v1+json';
     const REGION_COLLECTION_REPRESENTATION              = 'vnd.ccp.eve.RegionCollection-v1+json';
     const REGION_REPRESENTATION                         = 'vnd.ccp.eve.Region-v1+json';
+    const SOV_CAMPAIGNS_COLLECTION_REPRESENTATION       = 'vnd.ccp.eve.SovCampaignsCollection-v1+json';
+    const SOV_STRUCTURE_COLLECTION_REPRESENTATION       = 'vnd.ccp.eve.SovStructureCollection-v1+json';
     const SYSTEM_REPRESENTATION                         = 'vnd.ccp.eve.System-v1+json';
     const TOKEN_DECODE_REPRESENTATION                   = 'vnd.ccp.eve.TokenDecode-v1+json';
     const TOURNAMENT_COLLECTION_REPRESENTATION          = 'vnd.ccp.eve.TournamentCollection-v1+json';
@@ -808,6 +810,44 @@ class EndpointHandler
             $this->client->getRootEndpoint()->incursions->href,
             true,
             static::INCURSION_COLLECTION_REPRESENTATION
+        );
+    }
+
+    /**
+     * Gets the sovereignty campaigns endpoint.
+     *
+     * @return array
+     */
+    public function getSovCampaigns()
+    {
+        return $this->client->gather(
+            $this->client->getRootEndpoint()->sovereignty->campaigns->href,
+            function (\stdClass $campaign) {
+                return (int) $campaign->campaignID;
+            },
+            null,
+            static::SOV_CAMPAIGNS_COLLECTION_REPRESENTATION,
+            true,
+            300
+        );
+    }
+
+    /**
+     * Gets the sovereignty structures endpoint.
+     *
+     * @return array
+     */
+    public function getSovStructures()
+    {
+        return $this->client->gather(
+            $this->client->getRootEndpoint()->sovereignty->structures->href,
+            function (\stdClass $structure) {
+                return (int) $structure->structureID;
+            },
+            null,
+            static::SOV_STRUCTURE_COLLECTION_REPRESENTATION,
+            true,
+            300
         );
     }
 
