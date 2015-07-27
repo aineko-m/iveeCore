@@ -35,7 +35,7 @@ class InventableBlueprint extends Blueprint
      *
      * @param int $id of the InventableBlueprint object
      *
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
      */
     protected function __construct($id)
     {
@@ -52,7 +52,7 @@ class InventableBlueprint extends Blueprint
      * @param \iveeCore\SDE $sde the SDE object
      *
      * @return void
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeID
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeId
      */
     protected function loadOriginatingBlueprints(SDE $sde)
     {
@@ -97,28 +97,28 @@ class InventableBlueprint extends Blueprint
      * Convenience function for inventing starting from the inveted blueprint instead of inventor.
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $decryptorID the decryptor the be used, if any
+     * @param int $decryptorId the decryptor the be used, if any
      * @param boolean $recursive defines if manufacturables should be build recursively
      *
      * @return \iveeCore\InventionProcessData
      */
-    public function invent(IndustryModifier $iMod, $decryptorID = null, $recursive = true)
+    public function invent(IndustryModifier $iMod, $decryptorId = null, $recursive = true)
     {
-        return $this->getInventorBlueprint()->invent($iMod, $this->id, $decryptorID, $recursive);
+        return $this->getInventorBlueprint()->invent($iMod, $this->id, $decryptorId, $recursive);
     }
 
     /**
      * Convenience function to copy, invent T2 blueprint and manufacture from blueprint in one go.
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $decryptorID the decryptor the be used, if any
+     * @param int $decryptorId the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
      *
      * @return \iveeCore\ManufactureProcessData with cascaded \iveeCore\InventionProcessData and
      * \iveeCore\CopyProcessData objects
      */
-    public function copyInventManufacture(IndustryModifier $iMod, $decryptorID = null, $recursive = true)
+    public function copyInventManufacture(IndustryModifier $iMod, $decryptorId = null, $recursive = true)
     {
-        return $this->getInventorBlueprint()->copyInventManufacture($iMod, $this->id, $decryptorID, $recursive);
+        return $this->getInventorBlueprint()->copyInventManufacture($iMod, $this->id, $decryptorId, $recursive);
     }
 }

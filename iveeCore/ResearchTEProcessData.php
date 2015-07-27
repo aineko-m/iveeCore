@@ -26,9 +26,9 @@ namespace iveeCore;
 class ResearchTEProcessData extends ProcessData
 {
     /**
-     * @var int $activityID of this process.
+     * @var int $activityId of this process.
      */
-    protected $activityID = self::ACTIVITY_RESEARCH_TE;
+    protected $activityId = self::ACTIVITY_RESEARCH_TE;
 
     /**
      * @var int $startTELevel the initial TE level of the Blueprint
@@ -43,22 +43,22 @@ class ResearchTEProcessData extends ProcessData
     /**
      * Constructor.
      *
-     * @param int $researchedBpID of the Blueprint being researched
+     * @param int $researchedBpId of the Blueprint being researched
      * @param int $researchTime the time the process takes
      * @param float $processCost the cost of performing this reseach process
      * @param int $startTELevel the initial TE level of the Blueprint
      * @param int $endTELevel the TE level of the Blueprint after the research
-     * @param int $solarSystemID ID of the SolarSystem the research is performed
-     * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
+     * @param int $solarSystemId ID of the SolarSystem the research is performed
+     * @param int $assemblyLineId ID of the AssemblyLine where the research is being performed
      */
-    public function __construct($researchedBpID, $researchTime, $processCost, $startTELevel, $endTELevel,
-        $solarSystemID, $assemblyLineID
+    public function __construct($researchedBpId, $researchTime, $processCost, $startTELevel, $endTELevel,
+        $solarSystemId, $assemblyLineId
     ) {
-        parent::__construct($researchedBpID, 1, $researchTime, $processCost);
+        parent::__construct($researchedBpId, 1, $researchTime, $processCost);
         $this->startTELevel   = (int) $startTELevel;
         $this->endTELevel     = (int) $endTELevel;
-        $this->solarSystemID  = (int) $solarSystemID;
-        $this->assemblyLineID = (int) $assemblyLineID;
+        $this->solarSystemId  = (int) $solarSystemId;
+        $this->assemblyLineId = (int) $assemblyLineId;
     }
 
     /**

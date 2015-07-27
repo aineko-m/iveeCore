@@ -127,7 +127,7 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      * @param Exception $previous the previous exception used for chaining
      *
      * @return void
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeId is not found
      */
     protected static function throwException($exceptionName, $message = "", $code = 0, $previous = null)
     {

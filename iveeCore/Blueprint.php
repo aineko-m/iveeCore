@@ -38,20 +38,20 @@ class Blueprint extends Type
 
     /**
      * @var array $activityMaterials holds activity material requirements.
-     * $activityMaterials[$activityID][$typeID]['q'|'c'] for quantity and consume flag, respectively.
+     * $activityMaterials[$activityId][$typeId]['q'|'c'] for quantity and consume flag, respectively.
      * Array entries for consume flag are omitted if the value is 1.
      */
     protected $activityMaterials = array();
 
     /**
      * @var iveeCore\SkillMap[] $activitySkills holds activity skill requirements.
-     * $activitySkills[$activityID] => SkillMap
+     * $activitySkills[$activityId] => SkillMap
      */
     protected $activitySkills = array();
 
     /**
      * @var int[] $activityTimes holds activity time requirements.
-     * $activityTimes[$activityID] => int seconds
+     * $activityTimes[$activityId] => int seconds
      */
     protected $activityTimes = array();
 
@@ -82,7 +82,7 @@ class Blueprint extends Type
      *
      * @param int $id of the Blueprint object
      *
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
      */
     protected function __construct($id)
     {
@@ -172,7 +172,7 @@ class Blueprint extends Type
      * Gets all necessary data from SQL.
      *
      * @return array
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
      */
     protected function queryAttributes()
     {
@@ -232,10 +232,10 @@ class Blueprint extends Type
             return $this->productBaseCost;
 
         $this->productBaseCost = 0.0;
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matID => $matData) {
+        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matId => $matData) {
             if (isset($matData['c'])) //if the consume field is present, consume is not 1
                 continue;
-            $this->productBaseCost += Type::getById($matID)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge) 
+            $this->productBaseCost += Type::getById($matId)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge) 
                 * $matData['q'];
         }
         return $this->productBaseCost;
@@ -289,8 +289,8 @@ class Blueprint extends Type
             $this->getProductBaseCost($iMod->getMaxPriceDataAge()) * $numPortions * $modifier['c'],
             $bpME,
             $bpTE,
-            $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID']
+            $modifier['solarSystemId'],
+            $modifier['assemblyLineTypeId']
         );
 
         //add skills
@@ -338,8 +338,8 @@ class Blueprint extends Type
             $runs,
             ceil($this->getBaseTimeForActivity(ProcessData::ACTIVITY_COPYING) * $totalRuns * $modifier['t']),
             $this->getProductBaseCost($iMod->getMaxPriceDataAge()) * 0.02 * $totalRuns * $modifier['c'],
-            $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID']
+            $modifier['solarSystemId'],
+            $modifier['assemblyLineTypeId']
         );
 
         $cdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_COPYING));
@@ -390,8 +390,8 @@ class Blueprint extends Type
             $researchMultiplier * $modifier['c'] * $this->getProductBaseCost($iMod->getMaxPriceDataAge()) * 0.02,
             - $startME,
             - $endME,
-            $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID']
+            $modifier['solarSystemId'],
+            $modifier['assemblyLineTypeId']
         );
 
         $rmdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_ME));
@@ -437,8 +437,8 @@ class Blueprint extends Type
             $scaleModifier * $modifier['c'] * $this->getProductBaseCost($iMod->getMaxPriceDataAge()) * 0.02,
             - $startTE,
             - $endTE,
-            $modifier['solarSystemID'],
-            $modifier['assemblyLineTypeID']
+            $modifier['solarSystemId'],
+            $modifier['assemblyLineTypeId']
         );
 
         $rtdata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_RESEARCH_TE));
@@ -471,14 +471,14 @@ class Blueprint extends Type
     protected function addActivityMaterials(IndustryModifier $iMod, ProcessData $pdata, $activityId, $materialFactor,
         $numPortions, $recursive
     ) {
-        foreach ($this->getMaterialsForActivity($activityId) as $matID => $matData) {
+        foreach ($this->getMaterialsForActivity($activityId) as $matId => $matData) {
             //if consume flag is set to 0, add to needed mats with quantity 0
             if (isset($matData['c']) and $matData['c'] == 0) {
-                $pdata->addMaterial($matID, 0);
+                $pdata->addMaterial($matId, 0);
                 continue;
             }
 
-            $mat = Type::getById($matID);
+            $mat = Type::getById($matId);
             $amount = $matData['q'] * $materialFactor * $numPortions;
 
             //calculate total quantity needed, applying all modifiers
@@ -501,14 +501,14 @@ class Blueprint extends Type
             if ($recursive AND $mat instanceof Manufacturable)
                 $pdata->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
             else
-                $pdata->addMaterial($matID, $totalNeeded);
+                $pdata->addMaterial($matId, $totalNeeded);
         }
     }
 
     /**
      * Returns raw activity material requirements.
      *
-     * @return array with the requirements in the form activityID => materialID => array ('q' => ... , 'c' => ...)
+     * @return array with the requirements in the form activityId => materialId => array ('q' => ... , 'c' => ...)
      */
     protected function getActivityMaterials()
     {
@@ -518,14 +518,14 @@ class Blueprint extends Type
     /**
      * Returns raw activity material requirements for activity.
      *
-     * @param int $activityID specifies for which activity the requirements should be returned.
+     * @param int $activityId specifies for which activity the requirements should be returned.
      *
-     * @return array in the form materialID => array ('q' => ... , 'c' => ...)
+     * @return array in the form materialId => array ('q' => ... , 'c' => ...)
      */
-    protected function getMaterialsForActivity($activityID)
+    protected function getMaterialsForActivity($activityId)
     {
-        if (isset($this->activityMaterials[(int) $activityID]))
-            return $this->activityMaterials[(int) $activityID];
+        if (isset($this->activityMaterials[(int) $activityId]))
+            return $this->activityMaterials[(int) $activityId];
         else
             return array();
     }
@@ -553,14 +553,14 @@ class Blueprint extends Type
     /**
      * Returns SkillMap of minimum skill requirements for activity.
      *
-     * @param int $activityID of the desired activity. See ProcessData constants.
+     * @param int $activityId of the desired activity. See ProcessData constants.
      *
      * @return iveeCore\SkillMap
      */
-    protected function getSkillMapForActivity($activityID)
+    protected function getSkillMapForActivity($activityId)
     {
-        if (isset($this->activitySkills[(int) $activityID]))
-            return clone $this->activitySkills[(int) $activityID];
+        if (isset($this->activitySkills[(int) $activityId]))
+            return clone $this->activitySkills[(int) $activityId];
         else {
             $skillMapClass = Config::getIveeClassName('SkillMap');
             return new $skillMapClass;
@@ -570,17 +570,17 @@ class Blueprint extends Type
     /**
      * Returns the base activity time.
      *
-     * @param int $activityID of the desired activity. See ProcessData constants.
+     * @param int $activityId of the desired activity. See ProcessData constants.
      *
      * @return int base activity time in seconds
      * @throws iveeCore\Exceptions\ActivityIdNotFoundException if activity is not possible with Blueprint
      */
-    protected function getBaseTimeForActivity($activityID)
+    protected function getBaseTimeForActivity($activityId)
     {
-        if (isset($this->activityTimes[(int) $activityID]))
-            return $this->activityTimes[(int) $activityID];
+        if (isset($this->activityTimes[(int) $activityId]))
+            return $this->activityTimes[(int) $activityId];
         else
-            self::throwException('ActivityIdNotFoundException', "ActivityID " . (int) $activityID . " not found.");
+            self::throwException('ActivityIdNotFoundException', "ActivityId " . (int) $activityId . " not found.");
     }
 
     /**

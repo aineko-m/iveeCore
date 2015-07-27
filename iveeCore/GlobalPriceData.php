@@ -119,7 +119,7 @@ class GlobalPriceData extends CoreDataCommon
      * Gets all necessary data from SQL.
      *
      * @return array with attributes queried from DB
-     * @throws iveeCore\Exceptions\NoPriceDataAvailableException when a typeID is not found
+     * @throws iveeCore\Exceptions\NoPriceDataAvailableException when a typeId is not found
      */
     protected function queryAttributes()
     {
@@ -138,7 +138,7 @@ class GlobalPriceData extends CoreDataCommon
         if (empty($row))
             self::throwException(
                 'NoPriceDataAvailableException', "No global price data for " . $this->getType()->getName()
-                    . " (typeID=" . $this->id . ") found"
+                    . " (typeId=" . $this->id . ") found"
             );
 
         return $row;

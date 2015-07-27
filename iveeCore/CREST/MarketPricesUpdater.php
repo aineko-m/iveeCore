@@ -38,19 +38,19 @@ class MarketPricesUpdater extends CrestDataUpdater
 
         if (!isset($item->type->id))
             throw new $exceptionClass('typeID missing in Market Prices CREST data');
-        $typeID = (int) $item->type->id;
-        $this->updatedIDs[] = $typeID;
+        $typeId = (int) $item->type->id;
+        $this->updatedIds[] = $typeId;
         $update = array();
 
         if (!isset($item->adjustedPrice))
-            throw new $exceptionClass('Missing adjustedPrice in CREST MarketPrices data for typeID ' . $typeID);
+            throw new $exceptionClass('Missing adjustedPrice in CREST MarketPrices data for typeID ' . $typeId);
         $update['adjustedPrice'] = (float) $item->adjustedPrice;
 
         if (isset($item->averagePrice))
             $update['averagePrice'] = (float) $item->averagePrice;
 
         $insert = $update;
-        $insert['typeID'] = $typeID;
+        $insert['typeID'] = $typeId;
         $insert['date'] = date('Y-m-d');
 
         $sdeClass = Config::getIveeClassName('SDE');
@@ -66,7 +66,7 @@ class MarketPricesUpdater extends CrestDataUpdater
     protected function invalidateCaches()
     {
         $globalPriceDataClass = Config::getIveeClassName('GlobalPriceData');
-        $globalPriceDataClass::deleteFromCache($this->updatedIDs);
+        $globalPriceDataClass::deleteFromCache($this->updatedIds);
     }
 
     /**

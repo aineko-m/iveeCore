@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * TypeIdNotFoundException, thrown when a given typeID is not found
+ * TypeIdNotFoundException, thrown when a given typeId is not found
  *
  * @category IveeCore
  * @package  IveeCoreExceptions

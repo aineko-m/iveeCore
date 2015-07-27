@@ -38,14 +38,14 @@ class Type extends SdeType
     protected static $instancePool;
 
     /**
-     * @var int $groupID the groupID of this Type.
+     * @var int $groupId the groupId of this Type.
      */
-    protected $groupID;
+    protected $groupId;
 
     /**
-     * @var int $categoryID the categoryID of this Type.
+     * @var int $categoryId the categoryId of this Type.
      */
-    protected $categoryID;
+    protected $categoryId;
 
     /**
      * @var float $volume the space the item occupies
@@ -63,9 +63,9 @@ class Type extends SdeType
     protected $basePrice;
 
     /**
-     * @var int $marketGroupID the marketGroupID of this Type
+     * @var int $marketGroupId the marketGroupId of this Type
      */
-    protected $marketGroupID;
+    protected $marketGroupId;
 
     /**
      * @var array $materials holds data from invTypeMaterials, which is used in reprocessing only
@@ -73,9 +73,9 @@ class Type extends SdeType
     protected $materials;
 
     /**
-     * @var int $reprocessingSkillID holds the ID of the specialized reprocessing skill if Type is an ore or ice
+     * @var int $reprocessingSkillId holds the ID of the specialized reprocessing skill if Type is an ore or ice
      */
-    protected $reprocessingSkillID;
+    protected $reprocessingSkillId;
 
     /**
      * Main function for getting Type objects. Tries caches and instantiates new objects if necessary.
@@ -83,7 +83,7 @@ class Type extends SdeType
      * @param int $id of requested Type
      *
      * @return iveeCore\Type the requested Type or subclass object
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
      */
     public static function getById($id)
     {
@@ -140,34 +140,34 @@ class Type extends SdeType
      * Instantiates type objects without caching logic.
      * This method shouldn't be called directly. Use Type::getById() instead.
      *
-     * @param int   $typeID of the Type object
+     * @param int   $typeId of the Type object
      * @param array $subtypeInfo optional parameter with the DB data used to decide Type subclass
      *
      * @return iveeCore\Type the requested Type or subclass object
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeId is not found
      */
-    private static function factory($typeID, array $subtypeInfo = null)
+    private static function factory($typeId, array $subtypeInfo = null)
     {
         //get type decision data if not given
         if (is_null($subtypeInfo))
-            $subtypeInfo = self::getSubtypeInfo((int) $typeID);
+            $subtypeInfo = self::getSubtypeInfo((int) $typeId);
 
         //decide type
         $subtype = self::decideType($subtypeInfo);
 
         //instantiate the appropriate Type or subclass object
-        return new $subtype((int) $typeID);
+        return new $subtype((int) $typeId);
     }
 
     /**
      * Helper method that returns data to be used to determine as which class to instantiate a certain type ID.
      *
-     * @param int $typeID of the Type object
+     * @param int $typeId of the Type object
      *
      * @return array with the type decision data from the SDE DB
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeId is not found
      */
-    private static function getSubtypeInfo($typeID)
+    private static function getSubtypeInfo($typeId)
     {
         $sdeClass = Config::getIveeClassName('SDE');
         $row = $sdeClass::instance()->query(
@@ -186,7 +186,7 @@ class Type extends SdeType
                 SELECT productTypeID
                 FROM industryActivityProducts as iap
                 JOIN invTypes as it ON it.typeID = iap.typeID
-                WHERE iap.productTypeID = " . (int) $typeID . "
+                WHERE iap.productTypeID = " . (int) $typeId . "
                 AND iap.activityID = 1
                 AND it.published = 1
                 LIMIT 1
@@ -194,34 +194,34 @@ class Type extends SdeType
             LEFT JOIN (
                 SELECT typeID
                 FROM industryActivity
-                WHERE typeID = " . (int) $typeID . "
+                WHERE typeID = " . (int) $typeId . "
                 AND activityID != 7
                 LIMIT 1
             ) as bp ON it.typeID = bp.typeID
             LEFT JOIN (
                 SELECT activityID, typeID
                 FROM industryActivityProbabilities
-                WHERE typeID = " . (int) $typeID . "
+                WHERE typeID = " . (int) $typeId . "
                 LIMIT 1
             ) as inventor ON it.typeID = inventor.typeID
             LEFT JOIN (
                 SELECT productTypeID, activityID
                 FROM industryActivityProbabilities as prob
-                WHERE prob.productTypeID = " . (int) $typeID . "
+                WHERE prob.productTypeID = " . (int) $typeId . "
                 LIMIT 1
             ) as inventable ON it.typeID = inventable.productTypeID
             LEFT JOIN (
                 SELECT ir.typeID
                 FROM invTypeReactions as ir
                 JOIN invTypes ON ir.reactionTypeID = invTypes.typeID
-                WHERE ir.typeID = " . (int) $typeID . " AND input = 0 AND published = 1
+                WHERE ir.typeID = " . (int) $typeId . " AND input = 0 AND published = 1
                 LIMIT 1
             ) as rp ON rp.typeID = it.typeID
-            WHERE it.typeID = " . (int) $typeID . ";"
+            WHERE it.typeID = " . (int) $typeId . ";"
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('TypeIdNotFoundException', "typeID " . (int) $typeID . " not found");
+            self::throwException('TypeIdNotFoundException', "typeId " . (int) $typeId . " not found");
 
         return $row;
     }
@@ -237,7 +237,7 @@ class Type extends SdeType
     {
         $subtype = '';
         if (empty($subtypeInfo))
-            self::throwException('TypeIdNotFoundException', "typeID not found");
+            self::throwException('TypeIdNotFoundException', "typeId not found");
         elseif ($subtypeInfo['categoryID'] == 24)
             $subtype = 'Reaction';
         elseif (!empty($subtypeInfo['reactionProduct']))
@@ -269,7 +269,7 @@ class Type extends SdeType
      *
      * @param int $id of the Type
      *
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException if typeId is not found
      */
     protected function __construct($id)
     {
@@ -304,7 +304,7 @@ class Type extends SdeType
      * Gets all necessary data from SQL.
      *
      * @return array with attributes queried from DB
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeID is not found
+     * @throws iveeCore\Exceptions\TypeIdNotFoundException when a typeId is not found
      */
     protected function queryAttributes()
     {
@@ -334,7 +334,7 @@ class Type extends SdeType
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('TypeIdNotFoundException', "typeID " . $this->id . " not found");
+            self::throwException('TypeIdNotFoundException', "typeId " . $this->id . " not found");
 
         return $row;
     }
@@ -348,36 +348,36 @@ class Type extends SdeType
      */
     protected function setAttributes(array $row)
     {
-        $this->groupID     = (int) $row['groupID'];
-        $this->categoryID  = (int) $row['categoryID'];
+        $this->groupId     = (int) $row['groupID'];
+        $this->categoryId  = (int) $row['categoryID'];
         $this->name        = $row['typeName'];
         $this->volume      = (float) $row['volume'];
         $this->portionSize = (int) $row['portionSize'];
         $this->basePrice   = (float) $row['basePrice'];
         if (isset($row['marketGroupID']))
-            $this->marketGroupID = (int) $row['marketGroupID'];
+            $this->marketGroupId = (int) $row['marketGroupID'];
         if (isset($row['reprocessingSkillID']))
-            $this->reprocessingSkillID = (int) $row['reprocessingSkillID'];
+            $this->reprocessingSkillId = (int) $row['reprocessingSkillID'];
     }
 
     /**
-     * Gets the groupID of the Type.
+     * Gets the groupId of the Type.
      *
      * @return int
      */
-    public function getGroupID()
+    public function getGroupId()
     {
-        return $this->groupID;
+        return $this->groupId;
     }
 
     /**
-     * Gets the categoryID of the Type.
+     * Gets the categoryId of the Type.
      *
      * @return int
      */
-    public function getCategoryID()
+    public function getCategoryId()
     {
-        return $this->categoryID;
+        return $this->categoryId;
     }
 
     /**
@@ -412,13 +412,13 @@ class Type extends SdeType
     }
 
     /**
-     * Gets marketGroupID.
+     * Gets marketGroupId.
      *
-     * @return int marketGroupID
+     * @return int marketGroupId
      */
-    public function getMarketGroupID()
+    public function getMarketGroupId()
     {
-        return $this->marketGroupID;
+        return $this->marketGroupId;
     }
 
     /**
@@ -428,7 +428,7 @@ class Type extends SdeType
      */
     public function onMarket()
     {
-        return isset($this->marketGroupID);
+        return isset($this->marketGroupId);
     }
 
     /**
@@ -486,7 +486,7 @@ class Type extends SdeType
     /**
      * Returns the materials for Type. Since Crius this is only relevant for reprocessing.
      *
-     * @return int[] in the form typeID => quantity
+     * @return int[] in the form typeId => quantity
      */
     public function getMaterials()
     {
@@ -501,9 +501,9 @@ class Type extends SdeType
      *
      * @return int
      */
-    public function getReprocessingSkillID()
+    public function getReprocessingSkillId()
     {
-        return $this->reprocessingSkillID;
+        return $this->reprocessingSkillId;
     }
 
     /**
@@ -531,12 +531,12 @@ class Type extends SdeType
         $charMod = $iMod->getCharacterModifier();
 
         //if (compressed) ore or ice
-        if ($this->getCategoryID() == 25)
+        if ($this->getCategoryId() == 25)
             //Reprocessing, Reprocessing Efficiency and specific Processing skills
             $yield = $station->getReprocessingEfficiency()
                 * (1 + 0.03 * $charMod->getSkillLevel(3385)) //Reprocessing skill
                 * (1 + 0.02 * $charMod->getSkillLevel(3389)) //Reprocessing Efficiency skill
-                * (1 + 0.02 * $charMod->getSkillLevel($this->getReprocessingSkillID())) // specific skill
+                * (1 + 0.02 * $charMod->getSkillLevel($this->getReprocessingSkillId())) // specific skill
                 * $charMod->getReprocessingImplantYieldFactor();
         //everything else
         else
@@ -547,9 +547,9 @@ class Type extends SdeType
         $rmat = new $materialsClass;
 
         $numPortions = $batchSize / $this->portionSize;
-        foreach ($this->getMaterials() as $typeID => $quantity)
+        foreach ($this->getMaterials() as $typeId => $quantity)
             $rmat->addMaterial(
-                $typeID,
+                $typeId,
                 round(
                     $quantity * $yield * $numPortions * $charMod->getReprocessingTaxFactor(
                         $station->getCorporationId()

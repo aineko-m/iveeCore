@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * AssemblyLineTypeIdNotFoundException, thrown when a specified assemblyLineTypeID can't be found
+ * AssemblyLineTypeIdNotFoundException, thrown when a specified assemblyLineTypeId can't be found
  *
  * @category IveeCore
  * @package  IveeCoreExceptions

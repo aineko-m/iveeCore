@@ -52,29 +52,29 @@ class Station extends SdeType
     protected static $services;
 
     /**
-     * @var int $solarSystemID the ID of SolarSystem this Station is in.
+     * @var int $solarSystemId the ID of SolarSystem this Station is in.
      */
-    protected $solarSystemID;
+    protected $solarSystemId;
 
     /**
-     * @var int $operationID the ID of operation for this Station, this implies the available station services.
+     * @var int $operationId the ID of operation for this Station, this implies the available station services.
      */
-    protected $operationID;
+    protected $operationId;
 
     /**
-     * @var int $stationTypeID the ID of type of station.
+     * @var int $stationTypeId the ID of type of station.
      */
-    protected $stationTypeID;
+    protected $stationTypeId;
 
     /**
-     * @var int $corporationID the ID of owning corporation.
+     * @var int $corporationId the ID of owning corporation.
      */
-    protected $corporationID;
+    protected $corporationId;
 
     /**
-     * @var int $factionID the ID of the faction of the owning corporation.
+     * @var int $factionId the ID of the faction of the owning corporation.
      */
-    protected $factionID;
+    protected $factionId;
 
     /**
      * @var bool $conquerable if the station is conquerable.
@@ -97,10 +97,10 @@ class Station extends SdeType
     protected $tax;
 
     /**
-     * @var array $assemblyLineTypeIDs the IDs of the available assemblyLineTypes, this determines possible industrial
+     * @var array $assemblyLineTypeIds the IDs of the available assemblyLineTypes, this determines possible industrial
      * activities (depending on the activity output item) as well as bonuses.
      */
-    protected $assemblyLineTypeIDs = array();
+    protected $assemblyLineTypeIds = array();
 
     /**
      * Loads all Station names from DB to PHP.
@@ -140,7 +140,7 @@ class Station extends SdeType
 
     /**
      * Returns an array with details about a specific station operation.
-     * Note that "activityID" in the returned array is not comparable to industry activity IDs.
+     * Note that "activityId" in the returned array is not comparable to industry activity IDs.
      *
      * @return array
      */
@@ -149,7 +149,11 @@ class Station extends SdeType
         if (!isset(static::$operations)) {
             $key = static::getClassHierarchyKeyPrefix() . 'operations';
             try {
-                static::$operations = static::$instancePool->getItem($key)->data;
+                $ops = static::$instancePool->getItem($key);
+                if ($ops instanceof CacheableArray)
+                    static::$operations = $ops->data;
+                else
+                    static::throwException('IveeCoreException');
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
                 static::$operations = array();
                 $sdeClass = Config::getIveeClassName('SDE');
@@ -183,7 +187,11 @@ class Station extends SdeType
         if (!isset(static::$operationServices)) {
             $key = static::getClassHierarchyKeyPrefix() . 'operationServices';
             try {
-                static::$operationServices = static::$instancePool->getItem($key)->data;
+                $opsServ = static::$instancePool->getItem($key);
+                if ($opsServ instanceof CacheableArray)
+                    static::$operationServices = $opsServ->data;
+                else
+                    static::throwException('IveeCoreException');
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
                 static::$operationServices = array();
                 $sdeClass = Config::getIveeClassName('SDE');
@@ -212,7 +220,11 @@ class Station extends SdeType
         if (!isset(static::$services)) {
             $key = static::getClassHierarchyKeyPrefix() . 'services';
             try {
-                static::$services = static::$instancePool->getItem($key)->data;
+                $serv = static::$instancePool->getItem($key);
+                if ($serv instanceof CacheableArray)
+                    static::$services = $serv->data;
+                else
+                    static::throwException('IveeCoreException');
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
                 static::$services = array();
                 $sdeClass = Config::getIveeClassName('SDE');
@@ -272,17 +284,17 @@ class Station extends SdeType
 
         //set data to attributes
         $this->conquerable   = (bool) $row['conquerable'];
-        $this->solarSystemID = (int) $row['solarSystemID'];
-        $this->stationTypeID = (int) $row['stationTypeID'];
-        $this->corporationID = ($this->conquerable AND isset($row['playerCorpID']))
+        $this->solarSystemId = (int) $row['solarSystemID'];
+        $this->stationTypeId = (int) $row['stationTypeID'];
+        $this->corporationId = ($this->conquerable AND isset($row['playerCorpID']))
             ? (int) $row['playerCorpID'] : (int) $row['corporationID'];
         $this->name          = ($this->conquerable AND isset($row['playerStationName']))
             ? $row['playerStationName'] : $row['stationName'];
-        $this->operationID   = (int) $row['operationID'];
+        $this->operationId   = (int) $row['operationID'];
         $this->reprocessingEfficiency   = (float) $row['reprocessingEfficiency'];
 
         if ($this->id < 61000000) {
-            $this->factionID     = (int) $row['factionID'];
+            $this->factionId     = (int) $row['factionID'];
             $this->reprocessingStationsTake = (float) $row['reprocessingStationsTake'];
         }
 
@@ -291,7 +303,7 @@ class Station extends SdeType
                 "SELECT ritc.assemblyLineTypeID, activityID
                 FROM ramInstallationTypeContents as ritc
                 JOIN ramAssemblyLineTypes as ralt ON ritc.assemblyLineTypeID = ralt.assemblyLineTypeID
-                WHERE installationTypeID = " . $this->stationTypeID . ';'
+                WHERE installationTypeID = " . $this->stationTypeId . ';'
             );
         } else {
             //get assembly lines in station
@@ -304,7 +316,7 @@ class Station extends SdeType
         }
 
         while ($row = $res->fetch_assoc()) {
-            $this->assemblyLineTypeIDs[$row['activityID']][] = $row['assemblyLineTypeID'];
+            $this->assemblyLineTypeIds[$row['activityID']][] = $row['assemblyLineTypeID'];
         }
     }
 
@@ -313,9 +325,9 @@ class Station extends SdeType
      *
      * @return int
      */
-    public function getSolarSystemID()
+    public function getSolarSystemId()
     {
-        return $this->solarSystemID;
+        return $this->solarSystemId;
     }
 
     /**
@@ -326,17 +338,17 @@ class Station extends SdeType
     public function getSolarSystem()
     {
         $systemClass = Config::getIveeClassName('SolarSystem');
-        return $systemClass::getSolarSystem($this->getSolarSystemID());
+        return $systemClass::getSolarSystem($this->getSolarSystemId());
     }
 
     /**
-     * Gets operationID.
+     * Gets operationId.
      *
      * @return int
      */
-    public function getOperationID()
+    public function getOperationId()
     {
-        return $this->operationID;
+        return $this->operationId;
     }
 
     /**
@@ -346,7 +358,7 @@ class Station extends SdeType
      */
     public function getOperationDetails()
     {
-        return static::getStaticOperationDetails($this->getOperationID());
+        return static::getStaticOperationDetails($this->getOperationId());
     }
 
     /**
@@ -356,27 +368,27 @@ class Station extends SdeType
      */
     public function getServiceIds()
     {
-        return static::getStaticOperationServices($this->getOperationID());
+        return static::getStaticOperationServices($this->getOperationId());
     }
 
     /**
-     * Gets stationTypeID.
+     * Gets stationTypeId.
      *
      * @return int
      */
     public function getStationTypeId()
     {
-        return $this->stationTypeID;
+        return $this->stationTypeId;
     }
 
     /**
-     * Gets owning corporationID.
+     * Gets owning corporationId.
      *
      * @return int
      */
     public function getCorporationId()
     {
-        return $this->corporationID;
+        return $this->corporationId;
     }
 
     /**
@@ -388,7 +400,7 @@ class Station extends SdeType
     {
         if ($this->id >= 61000000)
             static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
-        return $this->corporationID;
+        return $this->corporationId;
     }
 
     /**
@@ -437,26 +449,26 @@ class Station extends SdeType
     }
 
     /**
-     * Gets a stations assemblyLineTypeIDs.
+     * Gets a stations assemblyLineTypeIds.
      *
-     * @return array $activityID => array(id1, id2...)
+     * @return array $activityId => array(id1, id2...)
      */
-    public function getAssemblyLineTypeIDs()
+    public function getAssemblyLineTypeIds()
     {
-        return $this->assemblyLineTypeIDs;
+        return $this->assemblyLineTypeIds;
     }
 
     /**
-     * Gets a stations assemblyLineTypeIDs.
+     * Gets a stations assemblyLineTypeIds.
      *
-     * @param int $activityID to get assemblyLineTypeIDs for
+     * @param int $activityId to get assemblyLineTypeIds for
      *
      * @return array in the form array(id1, id2...)
      */
-    public function getAssemblyLineTypeIDsForActivity($activityID)
+    public function getAssemblyLineTypeIdsForActivity($activityId)
     {
-        if (isset($this->assemblyLineTypeIDs[$activityID]))
-            return $this->assemblyLineTypeIDs[$activityID];
+        if (isset($this->assemblyLineTypeIds[$activityId]))
+            return $this->assemblyLineTypeIds[$activityId];
         else
             return array();
     }
@@ -469,6 +481,6 @@ class Station extends SdeType
     public function getIndustryModifier()
     {
         $industryModifierClass = Config::getIveeClassName('IndustryModifier');
-        return $industryModifierClass::getByStationID($this->id);
+        return $industryModifierClass::getByStationId($this->id);
     }
 }

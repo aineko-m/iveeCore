@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * StationIdNotFoundException, thrown when a given stationID is not found
+ * StationIdNotFoundException, thrown when a given stationId is not found
  *
  * @category IveeCore
  * @package  IveeCoreExceptions

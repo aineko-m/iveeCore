@@ -40,17 +40,17 @@ class IndustrySystemsUpdater extends CrestDataUpdater
 
         if (!isset($item->solarSystem->id))
             throw new $exceptionClass('systemID missing in Industry Systems CREST data');
-        $systemID = (int) $item->solarSystem->id;
+        $systemId = (int) $item->solarSystem->id;
 
         $update = array();
 
         foreach ($item->systemCostIndices as $indexObj) {
             if (!isset($indexObj->activityID))
                 throw new $exceptionClass(
-                    'activityID missing in Industry Systems CREST data for systemID ' . $systemID);
+                    'activityID missing in Industry Systems CREST data for systemID ' . $systemId);
             if (!isset($indexObj->costIndex))
                 throw new $exceptionClass(
-                    'costIndex missing in Industry Systems CREST data for systemID ' . $systemID);
+                    'costIndex missing in Industry Systems CREST data for systemID ' . $systemId);
 
             switch ($indexObj->activityID) {
             case 1:
@@ -73,14 +73,14 @@ class IndustrySystemsUpdater extends CrestDataUpdater
                 break;
             default :
                 throw new $exceptionClass(
-                    'Unknown activityID received from Industry Systems CREST data for systemID ' . $systemID);
+                    'Unknown activityID received from Industry Systems CREST data for systemID ' . $systemId);
             }
         }
         $insert = $update;
-        $insert['systemID'] = $systemID;
+        $insert['systemID'] = $systemId;
         $insert['date'] = date('Y-m-d');
 
-        $this->updatedIDs[] = $systemID;
+        $this->updatedIds[] = $systemId;
 
         $sdeClass = Config::getIveeClassName('SDE');
 
@@ -95,7 +95,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
     protected function invalidateCaches()
     {
         $assemblyLineClass  = Config::getIveeClassName('SolarSystem');
-        $assemblyLineClass::deleteFromCache($this->updatedIDs);
+        $assemblyLineClass::deleteFromCache($this->updatedIds);
     }
 
     /**

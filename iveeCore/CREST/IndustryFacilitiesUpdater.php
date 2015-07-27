@@ -41,14 +41,14 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
 
         if (!isset($item->facilityID))
             throw new $exceptionClass("facilityID missing from facilities CREST data");
-        $facilityID = (int) $item->facilityID;
+        $facilityId = (int) $item->facilityID;
 
         if (!isset($item->owner))
             throw new $exceptionClass("owner missing from facilities CREST data");
         $update['ownerID'] = (int) $item->owner->id;
 
         //only store if station is conquerable
-        if ($facilityID >= 61000000 OR ($facilityID >= 60014861 AND $facilityID <= 60014928)) {
+        if ($facilityId >= 61000000 OR ($facilityId >= 60014861 AND $facilityId <= 60014928)) {
             $update['solarSystemID'] = (int) $item->solarSystem->id;
             $update['stationName']   = $item->name;
             $update['stationTypeID'] = (int) $item->type->id;
@@ -57,8 +57,8 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
             return '';
 
         $insert = $update;
-        $insert['facilityID'] = $facilityID;
-        $this->updatedIDs[] = $facilityID;
+        $insert['facilityID'] = $facilityId;
+        $this->updatedIds[] = $facilityId;
 
         return $sdeClass::makeUpsertQuery($table, $insert, $update);
     }
@@ -71,7 +71,7 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
     protected function invalidateCaches()
     {
         $assemblyLineClass  = Config::getIveeClassName('AssemblyLine');
-        $assemblyLineClass::deleteFromCache($this->updatedIDs);
+        $assemblyLineClass::deleteFromCache($this->updatedIds);
 
         //we also need to invalidate the Station names cache as Outpost names can change
         $cacheClass = Config::getIveeClassName('Cache');

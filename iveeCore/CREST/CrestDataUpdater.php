@@ -31,9 +31,9 @@ abstract class CrestDataUpdater
     protected $data;
 
     /**
-     * @var int[] $updatedIDs holding the updated IDs
+     * @var int[] $updatedIds holding the updated IDs
      */
-    protected $updatedIDs = array();
+    protected $updatedIds = array();
 
     /**
      * Constructor.
@@ -68,7 +68,7 @@ abstract class CrestDataUpdater
         }
 
         $this->invalidateCaches();
-        $this->updatedIDs = array();
+        $this->updatedIds = array();
     }
 
     /**

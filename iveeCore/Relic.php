@@ -35,7 +35,7 @@ class Relic extends InventorBlueprint
      * Gets all necessary data from SQL.
      *
      * @return array
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeID is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
      */
     protected function queryAttributes()
     {
@@ -69,18 +69,18 @@ class Relic extends InventorBlueprint
      * Returns an InventionProcessData object describing the invention process.
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $inventedBpID the ID if the T3Blueprint to be invented. If left null, it is set to the first
+     * @param int $inventedBpId the ID if the T3Blueprint to be invented. If left null, it is set to the first
      * inventable blueprint ID
-     * @param int $decryptorID the decryptor the be used, if any
+     * @param int $decryptorId the decryptor the be used, if any
      * @param boolean $recursive defines if manufacturables should be build recursively
      *
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if the specified blueprint can't be invented from this
-     * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor
+     * @throws \iveeCore\Exceptions\WrongTypeException if decryptorId isn't a decryptor
      */
-    public function invent(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null, $recursive = true)
+    public function invent(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null, $recursive = true)
     {
-        $id = parent::invent($iMod, $inventedBpID, $decryptorID, $recursive);
+        $id = parent::invent($iMod, $inventedBpId, $decryptorId, $recursive);
         $id->addMaterial($this->getId(), 1);
         return $id;
     }
@@ -89,22 +89,22 @@ class Relic extends InventorBlueprint
      * Invent T3Blueprint and manufacture from it in one go.
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $inventedBpID the ID of the T3Blueprint to be invented. If left null it will default to the first
-     * blueprint defined in inventsBlueprintID
-     * @param int $decryptorID the decryptor the be used, if any
+     * @param int $inventedBpId the ID of the T3Blueprint to be invented. If left null it will default to the first
+     * blueprint defined in inventsBlueprintId
+     * @param int $decryptorId the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
      *
      * @return \iveeCore\ManufactureProcessData with cascaded InventionProcessData object
      * @throws \iveeCore\Exceptions\WrongTypeException if product is no an InventableBlueprint
      */
-    public function inventManufacture(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null,
+    public function inventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
         $recursive = true
     ) {
         //run the invention
         $inventionData = $this->invent(
             $iMod,
-            $inventedBpID,
-            $decryptorID,
+            $inventedBpId,
+            $decryptorId,
             $recursive
         );
 
@@ -133,7 +133,7 @@ class Relic extends InventorBlueprint
      * iveeCore is ever moved to PHP 5.4, this could be solved via Traits.
      */
 
-    public function copyInventManufacture(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null,
+    public function copyInventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
         $recursive = true
     ) {
         self::throwException('IveeCoreException', "Relics do not support this method");

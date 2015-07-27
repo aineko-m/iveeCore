@@ -40,7 +40,7 @@ class Starbase extends Manufacturable
      *
      * @param int $id of the Type
      *
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeId is not found
      */
     protected function __construct($id)
     {

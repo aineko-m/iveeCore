@@ -257,8 +257,8 @@ class MarketPrices extends CoreDataCommon
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('NoPriceDataAvailableException', "No region market data for typeID=" . $this->id
-                . " and regionID=" . $this->regionId . " found");
+            self::throwException('NoPriceDataAvailableException', "No region market data for typeId=" . $this->id
+                . " and regionId=" . $this->regionId . " found");
         return $row;
     }
 

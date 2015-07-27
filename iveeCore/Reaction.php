@@ -45,7 +45,7 @@ class Reaction extends Type
      *
      * @param int $id of the Reaction object
      *
-     * @throws Exception if typeID is not found
+     * @throws Exception if typeId is not found
      */
     protected function __construct($id)
     {

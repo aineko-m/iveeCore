@@ -26,14 +26,14 @@ namespace iveeCore;
 class InventorBlueprint extends Blueprint
 {
     /**
-     * @var int[] $inventsBlueprintID holds the inventable blueprint ID(s)
+     * @var int[] $inventsBlueprintId holds the inventable blueprint ID(s)
      */
-    protected $inventsBlueprintIDs = array();
+    protected $inventsBlueprintIds = array();
 
     /**
-     * @var array $inventsBlueprintIDsByRaceID raceID => Blueprint IDs
+     * @var array $inventsBlueprintIdsByRaceId raceId => Blueprint IDs
      */
-    protected $inventsBlueprintIDsByRaceID = array();
+    protected $inventsBlueprintIdsByRaceId = array();
 
     /**
      * @var float $inventionProbability the base invention chance
@@ -46,26 +46,26 @@ class InventorBlueprint extends Blueprint
     protected $inventionOutputRuns;
 
     /**
-     * @var int $decryptorGroupID groupID of compatible decryptors
+     * @var int $decryptorGroupId groupId of compatible decryptors
      */
-    protected $decryptorGroupID = 1304;
+    protected $decryptorGroupId = 1304;
 
     /**
-     * @var int $encryptionSkillID the relevant decryptor skillID
+     * @var int $encryptionSkillId the relevant decryptor skillId
      */
-    protected $encryptionSkillID;
+    protected $encryptionSkillId;
 
     /**
-     * @var int[] $datacoreSkillIDs the relevant datacore skillIDs
+     * @var int[] $datacoreSkillIds the relevant datacore skillIds
      */
-    protected $datacoreSkillIDs;
+    protected $datacoreSkillIds;
 
     /**
      * Constructor. Use \iveeCore\Type::getById() to instantiate InventorBlueprint objects instead.
      *
      * @param int $id of the InventorBlueprint object
      *
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeId is not found
      */
     protected function __construct($id)
     {
@@ -83,7 +83,7 @@ class InventorBlueprint extends Blueprint
      * @param \iveeCore\SDE $sde the SDE object
      *
      * @return void
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeID
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeId
      */
     protected function loadInventionStats(SDE $sde)
     {
@@ -106,8 +106,8 @@ class InventorBlueprint extends Blueprint
             );
 
         while ($row = $res->fetch_assoc()) {
-            $this->inventsBlueprintIDs[(int) $row['resultBpID']] = 1;
-            $this->inventsBlueprintIDsByRaceID[(int) $row['raceID']][] = $row['resultBpID'];
+            $this->inventsBlueprintIds[(int) $row['resultBpID']] = 1;
+            $this->inventsBlueprintIdsByRaceId[(int) $row['raceID']][] = $row['resultBpID'];
             $this->inventionProbability = (float) $row['probability'];
             $this->inventionOutputRuns  = (int) $row['quantity'];
         }
@@ -132,12 +132,12 @@ class InventorBlueprint extends Blueprint
             . implode(', ', array_keys($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING)->getSkills()))
             . ");"
         );
-        $this->datacoreSkillIDs = array();
+        $this->datacoreSkillIds = array();
         while ($row = $res->fetch_assoc()) {
             if ($row['groupID'] == 333)
-                $this->datacoreSkillIDs[] = $row['skillID'];
+                $this->datacoreSkillIds[] = $row['skillID'];
             elseif ($row['groupID'] == 716)
-                $this->encryptionSkillID = $row['skillID'];
+                $this->encryptionSkillId = $row['skillID'];
         }
     }
 
@@ -145,33 +145,33 @@ class InventorBlueprint extends Blueprint
      * Returns an InventionProcessData object describing the invention process.
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $inventedBpID the ID if the blueprint to be invented. If left null, it is set to the first
+     * @param int $inventedBpId the ID if the blueprint to be invented. If left null, it is set to the first
      * inventable blueprint ID
-     * @param int $decryptorID the decryptor the be used, if any
+     * @param int $decryptorId the decryptor the be used, if any
      * @param boolean $recursive defines if manufacturables should be build recursively
      *
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if the specified blueprint can't be invented from this
-     * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor
+     * @throws \iveeCore\Exceptions\WrongTypeException if decryptorId isn't a decryptor
      */
-    public function invent(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null, $recursive = true)
+    public function invent(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null, $recursive = true)
     {
         $inventionDataClass = Config::getIveeClassName('InventionProcessData');
-        $inventableBpIDs = $this->getInventableBlueprintIDs();
+        $inventableBpIds = $this->getInventableBlueprintIds();
 
-        //if no inventedBpID given, set to first inventable BP ID
-         if (is_null($inventedBpID))
-             $inventedBpID = $inventableBpIDs[0];
+        //if no inventedBpId given, set to first inventable BP ID
+         if (is_null($inventedBpId))
+             $inventedBpId = $inventableBpIds[0];
 
         //check if the given BP can be invented from this
-        elseif (!isset($this->inventsBlueprintIDs[$inventedBpID]))
+        elseif (!isset($this->inventsBlueprintIds[$inventedBpId]))
             self::throwException(
                 'NotInventableException',
                 "Specified blueprint can't be invented from this inventor blueprint."
             );
 
         //get invented BP
-        $inventedBp = Type::getById($inventedBpID);
+        $inventedBp = Type::getById($inventedBpId);
 
         //get modifiers and test if inventing is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_INVENTING, $inventedBp->getProduct());
@@ -179,8 +179,8 @@ class InventorBlueprint extends Blueprint
         //calculate base cost, its the average of all possible invented BP's product base cost
         $baseCost = 0;
         $numInventableBps = 0;
-        foreach ($inventableBpIDs as $inventableBpID) {
-            $inventableBp = Type::getById($inventableBpID);
+        foreach ($inventableBpIds as $inventableBpId) {
+            $inventableBp = Type::getById($inventableBpId);
             if ($inventableBp instanceof InventableBlueprint) {
                 $baseCost += $inventableBp->getProductBaseCost($iMod->getMaxPriceDataAge());
                 $numInventableBps++;
@@ -190,31 +190,31 @@ class InventorBlueprint extends Blueprint
         $baseCost = $baseCost / $numInventableBps;
 
         //with decryptor
-        if ($decryptorID > 0) {
-            $decryptor = $this->getAndCheckDecryptor($decryptorID);
+        if ($decryptorId > 0) {
+            $decryptor = $this->getAndCheckDecryptor($decryptorId);
             $idata = new $inventionDataClass(
-                $inventedBpID,
+                $inventedBpId,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
                 $this->calcInventionProbability($iMod->getCharacterModifier()) * $decryptor->getProbabilityModifier(),
                 $this->inventionOutputRuns + $decryptor->getRunModifier(),
                 -2 - $decryptor->getMEModifier(),
                 -4 - $decryptor->getTEModifier(),
-                $modifier['solarSystemID'],
-                $modifier['assemblyLineTypeID']
+                $modifier['solarSystemId'],
+                $modifier['assemblyLineTypeId']
             );
-            $idata->addMaterial($decryptorID, 1);
+            $idata->addMaterial($decryptorId, 1);
         } else { //without decryptor
             $idata = new $inventionDataClass(
-                $inventedBpID,
+                $inventedBpId,
                 $this->getBaseTimeForActivity(ProcessData::ACTIVITY_INVENTING) * $modifier['t'],
                 $baseCost * 0.02 * $modifier['c'],
                 $this->calcInventionProbability($iMod->getCharacterModifier()),
                 $this->inventionOutputRuns,
                 -2,
                 -4,
-                $modifier['solarSystemID'],
-                $modifier['assemblyLineTypeID']
+                $modifier['solarSystemId'],
+                $modifier['assemblyLineTypeId']
             );
         }
         $idata->addSkillMap($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING));
@@ -231,20 +231,20 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * For a given typeID, checks if its a compatible decryptor and returns a Decryptor object.
+     * For a given typeId, checks if its a compatible decryptor and returns a Decryptor object.
      *
-     * @param int $decryptorID the decryptorID to be checked
+     * @param int $decryptorId the decryptorId to be checked
      *
      * @return \iveeCore\Decryptor
-     * @throws \iveeCore\Exceptions\WrongTypeException if $decryptorID does not reference a Decryptor
+     * @throws \iveeCore\Exceptions\WrongTypeException if $decryptorId does not reference a Decryptor
      */
-    protected function getAndCheckDecryptor($decryptorID)
+    protected function getAndCheckDecryptor($decryptorId)
     {
-        $decryptor = Type::getById($decryptorID);
+        $decryptor = Type::getById($decryptorId);
 
-        //check if decryptorID is actually a decryptor
+        //check if decryptorId is actually a decryptor
         if (!($decryptor instanceof Decryptor))
-            self::throwException('WrongTypeException', 'typeID ' . $decryptorID . ' is not a Decryptor');
+            self::throwException('WrongTypeException', 'typeId ' . $decryptorId . ' is not a Decryptor');
 
         return $decryptor;
     }
@@ -253,15 +253,15 @@ class InventorBlueprint extends Blueprint
      * Copy, invent T2 blueprint and manufacture from it in one go.
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
-     * @param int $inventedBpID the ID of the blueprint to be invented. If left null it will default to the first
-     * blueprint defined in inventsBlueprintID
-     * @param int $decryptorID the decryptor the be used, if any
+     * @param int $inventedBpId the ID of the blueprint to be invented. If left null it will default to the first
+     * blueprint defined in inventsBlueprintId
+     * @param int $decryptorId the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
      *
      * @return \iveeCore\ManufactureProcessData with cascaded InventionProcessData and CopyProcessData objects
      * @throws \iveeCore\Exceptions\WrongTypeException if product is no an InventableBlueprint
      */
-    public function copyInventManufacture(IndustryModifier $iMod, $inventedBpID = null, $decryptorID = null,
+    public function copyInventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
         $recursive = true
     ) {
         //make one BP copy
@@ -270,8 +270,8 @@ class InventorBlueprint extends Blueprint
         //run the invention
         $inventionData = $this->invent(
             $iMod,
-            $inventedBpID,
-            $decryptorID,
+            $inventedBpId,
+            $decryptorId,
             $recursive
         );
 
@@ -302,9 +302,9 @@ class InventorBlueprint extends Blueprint
      *
      * @return int[]
      */
-    public function getInventableBlueprintIDs()
+    public function getInventableBlueprintIds()
     {
-        return array_keys($this->inventsBlueprintIDs);
+        return array_keys($this->inventsBlueprintIds);
     }
 
     /**
@@ -315,7 +315,7 @@ class InventorBlueprint extends Blueprint
     public function getInventableBlueprints()
     {
         $ret = array();
-        foreach($this->getInventableBlueprintIDs() as $bpId)
+        foreach($this->getInventableBlueprintIds() as $bpId)
             $ret[$bpId] = Type::getById($bpId);
         return $ret;
     }
@@ -333,15 +333,15 @@ class InventorBlueprint extends Blueprint
     /**
      * Returns the inventable BPC IDs of a given race.
      *
-     * @param int $raceID the race for which the blueprints should be looked up. See table chrRaces for IDs.
+     * @param int $raceId the race for which the blueprints should be looked up. See table chrRaces for IDs.
      *
      * @return int[]
      */
-    public function getInventableBlueprintIDsByRaceID($raceID)
+    public function getInventableBlueprintIdsByRaceId($raceId)
     {
-        if (!isset($this->inventsBlueprintIDsByRaceID[$raceID]))
+        if (!isset($this->inventsBlueprintIdsByRaceId[$raceId]))
             return array();
-        return $this->inventsBlueprintIDsByRaceID[$raceID];
+        return $this->inventsBlueprintIdsByRaceId[$raceId];
     }
 
     /**
@@ -355,13 +355,13 @@ class InventorBlueprint extends Blueprint
     }
 
     /**
-     * Returns the groupID of compatible Decryptors.
+     * Returns the groupId of compatible Decryptors.
      *
      * @return int
      */
-    public function getDecryptorGroupID()
+    public function getDecryptorGroupId()
     {
-        return $this->decryptorGroupID;
+        return $this->decryptorGroupId;
     }
 
     /**
@@ -369,9 +369,9 @@ class InventorBlueprint extends Blueprint
      *
      * @return int[]
      */
-    public function getDecryptorIDs()
+    public function getDecryptorIds()
     {
-        return Decryptor::getIDsFromGroup($this->getDecryptorGroupID());
+        return Decryptor::getIdsFromGroup($this->getDecryptorGroupId());
     }
 
     /**
@@ -385,10 +385,10 @@ class InventorBlueprint extends Blueprint
     {
         return $this->getInventionProbability() 
             * (1 +
-                ($charMod->getSkillLevel($this->datacoreSkillIDs[0])
-                    + $charMod->getSkillLevel($this->datacoreSkillIDs[1])
+                ($charMod->getSkillLevel($this->datacoreSkillIds[0])
+                    + $charMod->getSkillLevel($this->datacoreSkillIds[1])
                 ) / 30
-                + $charMod->getSkillLevel($this->encryptionSkillID) / 40
+                + $charMod->getSkillLevel($this->encryptionSkillId) / 40
         );
     }
 }

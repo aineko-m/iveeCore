@@ -28,7 +28,7 @@ namespace iveeCore;
  * IndustryModifier objects are passed as argument to the Blueprint methods calculating the industrial activity. They
  * can be reused.
  *
- * For a given industry activityID and Type object, IndustryModifier objects can calculate the cost, material and time
+ * For a given industry activityId and Type object, IndustryModifier objects can calculate the cost, material and time
  * factors, considering all of the modifiers.
  *
  * @category IveeCore
@@ -40,7 +40,7 @@ namespace iveeCore;
 class IndustryModifier
 {
     /**
-     * @var array $assemblyLines holds the available AssemblyLine objects by activityID
+     * @var array $assemblyLines holds the available AssemblyLine objects by activityId
      */
     protected $assemblyLines;
 
@@ -84,23 +84,23 @@ class IndustryModifier
      * Note that for player built outposts no programatically accessible data tells about upgrades or taxes, thus they
      * have to be set manually. For this the optional arguments assemblyLineTypeIds and tax exist.
      *
-     * @param int $stationID of Station to use to get all the data
+     * @param int $stationId of Station to use to get all the data
      * @param array $assemblyLineTypeIds per activityId, overrides Ids defined in SDE, useful for upgraded outposts
      * @param float $tax the industry tax, used only for instantiating player built outpost, ignored otherwise
      *
      * @return iveeCore\IndustryModifier
-     * @throws iveeCore\Exceptions\StationIdNotFoundException if the stationID is not found
+     * @throws iveeCore\Exceptions\StationIdNotFoundException if the stationId is not found
      */
-    public static function getByStationID($stationID, array $assemblyLineTypeIds = null, $tax = 0.0)
+    public static function getByStationId($stationId, array $assemblyLineTypeIds = null, $tax = 0.0)
     {
         $stationClass = Config::getIveeClassName('Station');
         //instantiate station from ID
-        $station = $stationClass::getById($stationID);
+        $station = $stationClass::getById($stationId);
 
         return static::getBySystemIdWithAssembly(
-            $station->getSolarSystemID(),
-            is_null($assemblyLineTypeIds) ? $station->getAssemblyLineTypeIDs() : $assemblyLineTypeIds,
-            $stationID > 61000000 ? $tax : $station->getTax()
+            $station->getSolarSystemId(),
+            is_null($assemblyLineTypeIds) ? $station->getAssemblyLineTypeIds() : $assemblyLineTypeIds,
+            $stationId > 61000000 ? $tax : $station->getTax()
         );
     }
 
@@ -109,60 +109,60 @@ class IndustryModifier
      * assembly arrays (i.e. AssemblyLines) will be set, respecting system security limits, for instance, no capital
      * manufacturing in hisec.
      *
-     * @param int $solarSystemID of the SolarSystem to get data for
+     * @param int $solarSystemId of the SolarSystem to get data for
      * @param float $tax if the POS has a tax set, in the form "0.1" as 10%
      *
      * @return iveeCore\IndustryModifier
-     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemID is not found
+     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
      */
-    public static function getBySystemIdForPos($solarSystemID, $tax = 0.0)
+    public static function getBySystemIdForPos($solarSystemId, $tax = 0.0)
     {
         $systemClass       = Config::getIveeClassName('SolarSystem');
         $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
         //instantiate system from ID
-        $system = $systemClass::getById($solarSystemID);
+        $system = $systemClass::getById($solarSystemId);
 
         return static::getBySystemIdWithAssembly(
-            $solarSystemID,
-            $assemblyLineClass::getBestPosAssemblyLineTypeIDs($system->getSecurity()),
+            $solarSystemId,
+            $assemblyLineClass::getBestPosAssemblyLineTypeIds($system->getSecurity()),
             $tax
         );
     }
 
     /**
-     * Similar to getByStationID(...), but returns a IndustryModifier object with the AssembyLines of all NPC
+     * Similar to getByStationId(...), but returns a IndustryModifier object with the AssembyLines of all NPC
      * stations in the system.
      *
-     * @param int $solarSystemID of the SolarSystem to get data for
+     * @param int $solarSystemId of the SolarSystem to get data for
      *
      * @return iveeCore\IndustryModifier
-     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemID is not found
+     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
      */
-    public static function getBySystemIdForAllNpcStations($solarSystemID)
+    public static function getBySystemIdForAllNpcStations($solarSystemId)
     {
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
-        //get the assemblyLineTypeIDs in system
+        //get the assemblyLineTypeIds in system
         $res = $sde->query(
             "SELECT DISTINCT rals.assemblyLineTypeID, activityID
             FROM ramAssemblyLineStations as rals
             JOIN ramAssemblyLineTypes as ralt ON ralt.assemblyLineTypeID = rals.assemblyLineTypeID
-            WHERE solarSystemID = " . (int) $solarSystemID . ";"
+            WHERE solarSystemID = " . (int) $solarSystemId . ";"
         );
 
         if ($res->num_rows < 1) {
             $exceptionClass = Config::getIveeClassName('AssemblyLineTypeIdNotFoundException');
-            throw new $exceptionClass("No assembly lines found for solarSystemID=" . (int) $solarSystemID);
+            throw new $exceptionClass("No assembly lines found for solarSystemId=" . (int) $solarSystemId);
         }
 
-        $assemblyLineTypeIDs = array();
+        $assemblyLineTypeIds = array();
         while ($row = $res->fetch_assoc())
-            $assemblyLineTypeIDs[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
+            $assemblyLineTypeIds[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
 
         return static::getBySystemIdWithAssembly(
-            $solarSystemID,
-            $assemblyLineTypeIDs,
+            $solarSystemId,
+            $assemblyLineTypeIds,
             0.1
         );
     }
@@ -170,37 +170,37 @@ class IndustryModifier
     /**
      * Returns an IndustryModifier object with AssemblyLines of a certain installationType (e.g. a player owned stationType)
      *
-     * @param int $solarSystemID of the SolarSystem to get data for
-     * @param int $installationTypeID of the installation (e.g. a stationTypeID)
+     * @param int $solarSystemId of the SolarSystem to get data for
+     * @param int $installationTypeId of the installation (e.g. a stationTypeId)
      * @param float $tax to use
      *
      * @return iveeCore\IndustryModifier
      */
-    public static function getBySystemIdForInstallationType($solarSystemID, $installationTypeID, $tax = 0.0)
+    public static function getBySystemIdForInstallationType($solarSystemId, $installationTypeId, $tax = 0.0)
     {
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
-        // get the assemblyLineTypeIDs for the stationTypeID
+        // get the assemblyLineTypeIds for the stationTypeId
         $res = $sde->query(
             "SELECT DISTINCT ralt.assemblyLineTypeID, activityID
             FROM ramInstallationTypeContents ritc
             JOIN ramAssemblyLineTypes as ralt ON ralt.assemblyLineTypeID = ritc.assemblyLineTypeID
-            WHERE installationTypeID = " . (int) $installationTypeID . ";"
+            WHERE installationTypeID = " . (int) $installationTypeId . ";"
         );
 
         if ($res->num_rows < 1) {
             $exceptionClass = Config::getIveeClassName('AssemblyLineTypeIdNotFoundException');
-            throw new $exceptionClass("No assembly lines found for installationTypeID=" . (int) $installationTypeID);
+            throw new $exceptionClass("No assembly lines found for installationTypeId=" . (int) $installationTypeId);
         }
 
-        $assemblyLineTypeIDs = array();
+        $assemblyLineTypeIds = array();
         while ($row = $res->fetch_assoc())
-            $assemblyLineTypeIDs[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
+            $assemblyLineTypeIds[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
 
         return static::getBySystemIdWithAssembly(
-            $solarSystemID,
-            $assemblyLineTypeIDs,
+            $solarSystemId,
+            $assemblyLineTypeIds,
             $tax
         );
     }
@@ -210,26 +210,26 @@ class IndustryModifier
      * This is required for player built outposts or wormholes. The latter will additionally require manually setting
      * the system industry indices, as no data for them is provided by CREST.
      *
-     * @param int $solarSystemID of the SolarSystem to get data for
-     * @param array $assemblyLineTypeIDs IDs of the type of AssemblyLine to set by activityID
+     * @param int $solarSystemId of the SolarSystem to get data for
+     * @param array $assemblyLineTypeIds IDs of the type of AssemblyLine to set by activityId
      * @param float $tax if the POS has a tax set, in the form "0.1" as 10%
      *
      * @return iveeCore\IndustryModifier
-     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemID is not found
+     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
      */
-    public static function getBySystemIdWithAssembly($solarSystemID, array $assemblyLineTypeIDs, $tax = 0.1)
+    public static function getBySystemIdWithAssembly($solarSystemId, array $assemblyLineTypeIds, $tax = 0.1)
     {
         $systemClass       = Config::getIveeClassName('SolarSystem');
         $assemblyLineClass = Config::getIveeClassName('AssemblyLine');
 
         //instantiate system from ID
-        $system = $systemClass::getById($solarSystemID);
+        $system = $systemClass::getById($solarSystemId);
 
         //instantiate AssemblyLines from IDs
         $assemblyLines = array();
-        foreach ($assemblyLineTypeIDs as $activity => $activityAssemblyLineTypeIDs)
-            foreach ($activityAssemblyLineTypeIDs as $assemblyLineTypeID)
-                $assemblyLines[$activity][$assemblyLineTypeID] = $assemblyLineClass::getById($assemblyLineTypeID);
+        foreach ($assemblyLineTypeIds as $activity => $activityAssemblyLineTypeIds)
+            foreach ($activityAssemblyLineTypeIds as $assemblyLineTypeId)
+                $assemblyLines[$activity][$assemblyLineTypeId] = $assemblyLineClass::getById($assemblyLineTypeId);
 
         return new static(
             $system,
@@ -242,7 +242,7 @@ class IndustryModifier
      * Constructor. Note available convenience functions for helping with instantiation.
      *
      * @param iveeCore\SolarSystem $system which this IndustryModifier is being instantiated for
-     * @param array[] $assemblyLines the available AssemblyLines by activityID
+     * @param array[] $assemblyLines the available AssemblyLines by activityId
      * @param float $tax in the form "0.1" for 10% tax
      */
     public function __construct(SolarSystem $system, array $assemblyLines, $tax)
@@ -314,7 +314,7 @@ class IndustryModifier
      */
     public function setPreferredMarketStation($stationId)
     {
-        if (!in_array($stationId, $this->getSolarSystem()->getStationIDs())) {
+        if (!in_array($stationId, $this->getSolarSystem()->getStationIds())) {
             $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
             throw new $exceptionClass((int) $stationId . ' is not a Station in this SolarSystem');
         }
@@ -348,7 +348,7 @@ class IndustryModifier
     /**
      * Returns all available AssemblyLines.
      *
-     * @return array in the form activityID => assemblyLineTypeID => AssemblyLine
+     * @return array in the form activityId => assemblyLineTypeId => AssemblyLine
      */
     public function getAssemblyLines()
     {
@@ -356,16 +356,16 @@ class IndustryModifier
     }
 
     /**
-     * Returns all available AssemblyLines for a given activityID.
+     * Returns all available AssemblyLines for a given activityId.
      *
-     * @param int $activityID the activity to get AssemblyLines for
+     * @param int $activityId the activity to get AssemblyLines for
      *
-     * @return iveeCore\AssemblyLine[] in the form assemblyLineTypeID => AssemblyLine
+     * @return iveeCore\AssemblyLine[] in the form assemblyLineTypeId => AssemblyLine
      */
-    public function getAssemblyLinesForActivity($activityID)
+    public function getAssemblyLinesForActivity($activityId)
     {
-        if (isset($this->assemblyLines[$activityID]))
-            return $this->assemblyLines[$activityID];
+        if (isset($this->assemblyLines[$activityId]))
+            return $this->assemblyLines[$activityId];
         else
             return array();
     }
@@ -405,17 +405,17 @@ class IndustryModifier
      * It's always the final output item that needs to be checked. This means that for manufacturing, its the Blueprint
      * product; for copying its the Blueprint itself; for invention it is the product of the invented blueprint.
      *
-     * @param int $activityID the activity to check
+     * @param int $activityId the activity to check
      * @param Type $type the item to check
      *
      * @return bool
      */
-    public function isActivityPossible($activityID, Type $type)
+    public function isActivityPossible($activityId, Type $type)
     {
-        if (!isset($this->assemblyLines[$activityID]))
+        if (!isset($this->assemblyLines[$activityId]))
             return false;
 
-        foreach ($this->assemblyLines[$activityID] as $assemblyLine)
+        foreach ($this->assemblyLines[$activityId] as $assemblyLine)
             if ($assemblyLine->isTypeCompatible($type))
                 return true;
 
@@ -426,35 +426,35 @@ class IndustryModifier
      * Gets the total combined modifiers for cost, materials and time for a given activity and Type considering all the
      * variables.
      *
-     * @param int $activityID ID of the activity to get modifiers for
+     * @param int $activityId ID of the activity to get modifiers for
      * @param iveeCore\Type $type It's the final output item that needs to be given for checking. This means that for
      * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product
      * of the invented blueprint. Only for reverse engineering the input Relic must be checked.
      *
      * @return float[]
      */
-    public function getModifier($activityID, Type $type)
+    public function getModifier($activityId, Type $type)
     {
-        $activityID = (int) $activityID;
-        if (!$this->isActivityPossible($activityID, $type)) {
+        $activityId = (int) $activityId;
+        if (!$this->isActivityPossible($activityId, $type)) {
             $exceptionClass = Config::getIveeClassName('TypeNotCompatibleException');
-            throw new $exceptionClass("No compatible assemblyLine for activityID=" . $activityID . " with "
+            throw new $exceptionClass("No compatible assemblyLine for activityId=" . $activityId . " with "
                 . $type->getName() . " found in the given IndustryModifier object");
         }
 
         //get the compatible assembly line with the best bonuses. Where ME > TE > cost bonus.
-        $bestAssemblyLine = $this->getBestAssemblyLineForActivity($activityID, $type);
+        $bestAssemblyLine = $this->getBestAssemblyLineForActivity($activityId, $type);
 
         $modifiers = $bestAssemblyLine->getModifiersForType($type);
-        $modifiers['assemblyLineTypeID'] = $bestAssemblyLine->getId();
-        $modifiers['solarSystemID'] = $this->getSolarSystem()->getId();
+        $modifiers['assemblyLineTypeId'] = $bestAssemblyLine->getId();
+        $modifiers['solarSystemId'] = $this->getSolarSystem()->getId();
         //get initial cost factor as system industry index and tax
         $modifiers['c'] = $modifiers['c']
-            * $this->getSolarSystem()->getIndustryIndexForActivity($activityID) * $this->getTaxFactor();
+            * $this->getSolarSystem()->getIndustryIndexForActivity($activityId) * $this->getTaxFactor();
 
         //apply skill and implant time factors
-        $modifiers['t'] = $modifiers['t'] * $this->characterModifier->getIndustrySkillTimeFactor($activityID)
-            * $this->characterModifier->getIndustryImplantTimeFactor($activityID);
+        $modifiers['t'] = $modifiers['t'] * $this->characterModifier->getIndustrySkillTimeFactor($activityId)
+            * $this->characterModifier->getIndustryImplantTimeFactor($activityId);
 
         return $modifiers;
     }
@@ -463,19 +463,19 @@ class IndustryModifier
      * Gets the best compatible assemblyLine for the activity and Type.
      * Bonuses are ranked as material bonus > time bonus > cost bonus.
      *
-     * @param int $activityID the ID of the activity to get AssemblyLines for
+     * @param int $activityId the ID of the activity to get AssemblyLines for
      * @param iveeCore\Type $type It's always the final output item that needs to be given. This means that for
      * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product
      * of the invented blueprint.
      *
      * @return iveeCore\AssemblyLine|null
      */
-    public function getBestAssemblyLineForActivity($activityID, Type $type)
+    public function getBestAssemblyLineForActivity($activityId, Type $type)
     {
         $bestAssemblyLine = null;
         $bestModifier = null;
 
-        foreach ($this->getAssemblyLinesForActivity($activityID) as $candidateAssemblyLine) {
+        foreach ($this->getAssemblyLinesForActivity($activityId) as $candidateAssemblyLine) {
             //skip incompatible assemblyLines
             if (!$candidateAssemblyLine->isTypeCompatible($type))
                 continue;

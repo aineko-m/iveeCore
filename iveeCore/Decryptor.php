@@ -138,13 +138,13 @@ class Decryptor extends Type
     }
 
     /**
-     * Returns the compatible decryptor IDs for a given groupID.
+     * Returns the compatible decryptor IDs for a given groupId.
      *
-     * @param int $groupID specifies the decryptor group to return
+     * @param int $groupId specifies the decryptor group to return
      *
      * @return int[] with the decryptor IDs
      */
-    public static function getIDsFromGroup($groupID)
+    public static function getIdsFromGroup($groupId)
     {
         //lazy load data from DB
         if (empty(static::$decryptorGroups)) {
@@ -160,7 +160,7 @@ class Decryptor extends Type
                 static::$decryptorGroups[(int) $row['groupID']][] = (int) $row['typeID'];
         }
 
-        return static::$decryptorGroups[$groupID];
+        return static::$decryptorGroups[$groupId];
     }
 
     /**

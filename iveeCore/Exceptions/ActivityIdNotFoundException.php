@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * ActivityIdNotFoundException, thrown when a specified activity ID can't be found
+ * ActivityIdNotFoundException, thrown when a specified activityId can't be found
  *
  * @category IveeCore
  * @package  IveeCoreExceptions
