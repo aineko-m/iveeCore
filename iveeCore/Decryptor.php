@@ -48,10 +48,10 @@ class Decryptor extends Type
     /**
      * @var array to hold the decryptor groups which in turn hold the decryptor IDs
      */
-    protected static $decryptorGroups = array();
+    protected static $decryptorGroups = [];
 
     /**
-     * Constructor. Use \iveeCore\Type::getById() to instantiate Decryptor objects instead.
+     * Constructor. Use iveeCore\Type::getById() to instantiate Decryptor objects instead.
      *
      * @param int $id of the Decryptor object
      *

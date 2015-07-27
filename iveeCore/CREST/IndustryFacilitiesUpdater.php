@@ -37,7 +37,7 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
         $exceptionClass = Config::getIveeClassName('CrestException');
         $sdeClass = Config::getIveeClassName('SDE');
 
-        $update = array();
+        $update = [];
 
         if (!isset($item->facilityID))
             throw new $exceptionClass("facilityID missing from facilities CREST data");
@@ -82,7 +82,7 @@ class IndustryFacilitiesUpdater extends CrestDataUpdater
     /**
      * Fetches the data from CREST.
      *
-     * @param iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\EndpointHandler $eph to be used
      *
      * @return array
      */

@@ -75,14 +75,14 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     /**
      * Invalidate instancePool and cache entries.
      *
-     * @param string[] $keys
+     * @param string[] $keys to be deleted
      *
      * @return void
      */
     public static function deleteFromCache(array $keys)
     {
         $classPrefix = static::getClassHierarchyKeyPrefix();
-        $fullKeys = array();
+        $fullKeys = [];
         foreach ($keys as $key) {
             $fullKeys[] = $classPrefix . $key;
         }
@@ -104,7 +104,8 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      *
      * @return string
      */
-    public function getKey() {
+    public function getKey()
+    {
         return static::getClassHierarchyKeyPrefix() . $this->getId();
     }
 
@@ -124,7 +125,7 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      * @param string $exceptionName nickname of the exception as configured in Config
      * @param string $message to be passed to the exception
      * @param int $code the exception code
-     * @param Exception $previous the previous exception used for chaining
+     * @param \Exception $previous the previous exception used for chaining
      *
      * @return void
      * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeId is not found

@@ -31,7 +31,7 @@ class Client
     const ROOT_REPRESENTATION = 'vnd.ccp.eve.Api-v3+json';
 
     /**
-     * @var iveeCore\ICache $cache for data objects
+     * @var \iveeCore\ICache $cache for data objects
      */
     protected $cache;
 
@@ -68,7 +68,7 @@ class Client
     protected $charAccessTokenExpiry;
 
     /**
-     * @var iveeCrest\CurlWrapper $cw holds the object handling CURL.
+     * @var \iveeCrest\CurlWrapper $cw holds the object handling CURL.
      */
     protected $cw;
 
@@ -125,7 +125,7 @@ class Client
     /**
      * Returns the used cache object.
      *
-     * @return iveeCrest\ICache
+     * @return \iveeCrest\ICache
      */
     public function getCache()
     {
@@ -220,14 +220,14 @@ class Client
      * @param string $accept the requested representation
      * @param bool $cache whether the response should be cached or not
      *
-     * @return iveeCrest\Response
+     * @return \iveeCrest\Response
      */
     public function getEndpointResponse($url, $auth = false, $accept = null, $cache = true)
     {
         if($auth)
             $header = $this->getBearerAuthHeader();
         else
-            $header = array();
+            $header = [];
 
         if(isset($accept))
             $header[] = 'Accept: application/' . $accept;
@@ -308,7 +308,7 @@ class Client
     protected function gather2($endpointHref, callable $indexFunc = null, callable $elementFunc = null, $accept = null,
         $cache = true)
     {
-        $ret = array();
+        $ret = [];
         $href = $endpointHref;
 
         while (true) {
@@ -356,12 +356,12 @@ class Client
      * @param bool $cache whether the individual Responses should be cached.
      *
      * @return void
-     * @throws iveeCrest\Exceptions\IveeCrestException on general CURL error
+     * @throws \iveeCrest\Exceptions\IveeCrestException on general CURL error
      */
     public function asyncGetMultiEndpointResponses(array $hrefs, callable $callback, callable $errCallback = null,
         $accept = null, $cache = true
     ) {
-        $header = array();
+        $header = [];
         if(isset($accept))
             $header[] = 'Accept: application/' . $accept;
 
@@ -369,7 +369,7 @@ class Client
         return $this->cw->asyncMultiGet(
             array_unique($hrefs),
             $header,
-            function() {
+            function () {
                 return $this->getBearerAuthHeader(); //little trick to avoid having to make the method public
             },
             $callback,

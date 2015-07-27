@@ -30,7 +30,7 @@ session_start();
  *  - 2: Receiving a code via redirected user browser from CREST, use it to retrieve refresh token
  *  - 3: Showing refresh token
  */
-if (isset($_SESSION['refresh_token'])){
+if (isset($_SESSION['refresh_token'])) {
     //we already have a refresh token
     $_SESSION['step'] = 3;
     renderHtml();
@@ -53,6 +53,8 @@ session_write_close();
 
 /**
  * This function represents step 1, processing the form POST data and redirecting the user client browser to CREST auth.
+ *
+ * @return void
  */
 function handlePost()
 {
@@ -82,6 +84,8 @@ function handlePost()
 
 /**
  * This function represents step 2, receiving the code from CREST and use it to retrieve the refresh token.
+ *
+ * @return void
  */
 function retrieveToken()
 {
@@ -133,6 +137,8 @@ function retrieveToken()
 
 /**
  * This function outputs the basic HTML skeleton and calls content().
+ *
+ * @return void
  */
 function renderHtml()
 {
@@ -157,6 +163,8 @@ function renderHtml()
 
 /**
  * This function outputs step dependant HTML content.
+ *
+ * @return void
  */
 function content()
 {
@@ -220,6 +228,8 @@ function content()
 
 /**
  * Helper function to determine the current script URL.
+ *
+ * @return string
  */
 function get_current_url()
 {

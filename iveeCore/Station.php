@@ -32,7 +32,7 @@ class Station extends SdeType
     const CLASSNICK = 'Station';
 
     /**
-     * @var iveeCore\InstancePool $instancePool used to pool (cache) Station objects
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) Station objects
      */
     protected static $instancePool;
 
@@ -100,7 +100,7 @@ class Station extends SdeType
      * @var array $assemblyLineTypeIds the IDs of the available assemblyLineTypes, this determines possible industrial
      * activities (depending on the activity output item) as well as bonuses.
      */
-    protected $assemblyLineTypeIds = array();
+    protected $assemblyLineTypeIds = [];
 
     /**
      * Loads all Station names from DB to PHP.
@@ -120,7 +120,7 @@ class Station extends SdeType
             FROM " . Config::getIveeDbName() . ".outposts;"
         );
 
-        $namesToIds = array();
+        $namesToIds = [];
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['stationName']] = (int) $row['stationID'];
 
@@ -142,6 +142,8 @@ class Station extends SdeType
      * Returns an array with details about a specific station operation.
      * Note that "activityId" in the returned array is not comparable to industry activity IDs.
      *
+     * @param int $operationId to fetch details for
+     *
      * @return array
      */
     protected static function getStaticOperationDetails($operationId)
@@ -155,7 +157,7 @@ class Station extends SdeType
                 else
                     static::throwException('IveeCoreException');
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                static::$operations = array();
+                static::$operations = [];
                 $sdeClass = Config::getIveeClassName('SDE');
                 $sde = $sdeClass::instance();
                 $res = $sde->query('SELECT operationID, activityID, operationName, description FROM staOperations;');
@@ -180,6 +182,8 @@ class Station extends SdeType
     /**
      * Returns an array with the serviceIDs for a given station operation.
      *
+     * @param int $operationId to fetch operations for
+     *
      * @return array
      */
     protected static function getStaticOperationServices($operationId)
@@ -193,7 +197,7 @@ class Station extends SdeType
                 else
                     static::throwException('IveeCoreException');
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                static::$operationServices = array();
+                static::$operationServices = [];
                 $sdeClass = Config::getIveeClassName('SDE');
                 $sde = $sdeClass::instance();
                 $res = $sde->query('SELECT * FROM staOperationServices;');
@@ -213,6 +217,8 @@ class Station extends SdeType
     /**
      * Returns a name for a specific station service.
      *
+     * @param int $serviceId to get the name for
+     *
      * @return string
      */
     public static function getServiceName($serviceId)
@@ -226,7 +232,7 @@ class Station extends SdeType
                 else
                     static::throwException('IveeCoreException');
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
-                static::$services = array();
+                static::$services = [];
                 $sdeClass = Config::getIveeClassName('SDE');
                 $sde = $sdeClass::instance();
                 $res = $sde->query('SELECT * FROM staServices;');
@@ -248,7 +254,7 @@ class Station extends SdeType
      *
      * @param int $id of the Station
      *
-     * @throws iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
+     * @throws \iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
      */
     protected function __construct($id)
     {
@@ -333,7 +339,7 @@ class Station extends SdeType
     /**
      * Gets SolarSystem.
      *
-     * @return iveeCore\SolarSystem
+     * @return \iveeCore\SolarSystem
      */
     public function getSolarSystem()
     {
@@ -441,7 +447,7 @@ class Station extends SdeType
      * @param float $tax the tax as factor
      *
      * @return void
-     * @throws iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost if none was set
+     * @throws \iveeCore\Exceptions\IveeCoreException if trying to get tax from player built outpost if none was set
      */
     public function setTax($tax)
     {
@@ -470,13 +476,13 @@ class Station extends SdeType
         if (isset($this->assemblyLineTypeIds[$activityId]))
             return $this->assemblyLineTypeIds[$activityId];
         else
-            return array();
+            return [];
     }
 
     /**
      * Returns an IndustryModifier object for this station.
      *
-     * @return iveeCore\IndustryModifier
+     * @return \iveeCore\IndustryModifier
      */
     public function getIndustryModifier()
     {

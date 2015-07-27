@@ -33,7 +33,7 @@ abstract class CrestDataUpdater
     /**
      * @var int[] $updatedIds holding the updated IDs
      */
-    protected $updatedIds = array();
+    protected $updatedIds = [];
 
     /**
      * Constructor.
@@ -68,7 +68,7 @@ abstract class CrestDataUpdater
         }
 
         $this->invalidateCaches();
-        $this->updatedIds = array();
+        $this->updatedIds = [];
     }
 
     /**
@@ -95,7 +95,7 @@ abstract class CrestDataUpdater
     /**
      * Perform the complete update.
      *
-     * @param iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\EndpointHandler $eph to be used
      * @param bool $verbose whether info should be printed to console
      *
      * @return void
@@ -120,12 +120,12 @@ abstract class CrestDataUpdater
     /**
      * Fetch the data via CREST.
      *
-     * @param iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\EndpointHandler $eph to be used
      *
      * @return array
      */
     protected static function getData(EndpointHandler $eph)
     {
-        return array();
+        return [];
     }
 }

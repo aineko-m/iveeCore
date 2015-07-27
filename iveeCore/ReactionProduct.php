@@ -29,10 +29,10 @@ class ReactionProduct extends Type
      * @var int[] $productOfReactionIds the typeId(s) of the reactions this product can be produced from. Includes
      * alchemy reactions.
      */
-    protected $productOfReactionIds = array();
+    protected $productOfReactionIds = [];
 
     /**
-     * Constructor. Use \iveeCore\Type::getById() to instantiate ReactionProduct objects instead.
+     * Constructor. Use iveeCore\Type::getById() to instantiate ReactionProduct objects instead.
      *
      * @param int $id of the ReactionProduct object
      *
@@ -78,7 +78,7 @@ class ReactionProduct extends Type
      */
     public function getReactions()
     {
-        $ret = array();
+        $ret = [];
         foreach ($this->productOfReactionIds as $reactionId)
             $ret[$reactionId] = Type::getById($reactionId);
 

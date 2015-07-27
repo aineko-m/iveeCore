@@ -33,7 +33,7 @@ class AssemblyLine extends SdeType
     const CLASSNICK = 'AssemblyLine';
 
     /**
-     * @var iveeCore\InstancePool $instancePool used to pool (cache) AssemblyLine objects
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) AssemblyLine objects
      */
     protected static $instancePool;
 
@@ -61,13 +61,13 @@ class AssemblyLine extends SdeType
      * @var array $groupModifiers defines which groupIds can be used with this AssemblyLine and also stores additional
      * multipliers.
      */
-    protected $groupModifiers = array();
+    protected $groupModifiers = [];
 
     /**
      * @var array $categoryModifiers defines which categoryIds can be used with this AssemblyLine and also stores
      * additional multipliers.
      */
-    protected $categoryModifiers = array();
+    protected $categoryModifiers = [];
 
     /**
      * Gets the assemblyLineTypeIds for the best installable labs and assembly arrays for POSes depending on system
@@ -145,7 +145,7 @@ class AssemblyLine extends SdeType
      * @param string $name of requested AssemblyLine
      *
      * @return void
-     * @throws iveeCore\Exceptions\IveeCoreException
+     * @throws \iveeCore\Exceptions\IveeCoreException
      */
     public static function getIdByName($name)
     {
@@ -168,7 +168,7 @@ class AssemblyLine extends SdeType
      *
      * @param int $id of the AssemblyLine
      *
-     * @throws iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeId is not found
+     * @throws \iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeId is not found
      */
     protected function __construct($id)
     {
@@ -228,7 +228,7 @@ class AssemblyLine extends SdeType
         //Instead, the bonuses have been merge into the base bonuses of ramAssemblyLineTypes and all blueprints are
         //allowed for research, copying and invention activities. Here we add neutral compatibility data for those
         //blueprint activities, so the compatibility checking doesn't need special casing.
-        if(in_array($this->activityId, array(3, 4, 5, 8))){
+        if (in_array($this->activityId, [3, 4, 5, 8])) {
             $this->categoryModifiers[9] = array(
                 't' => 1,
                 'm' => 1,
@@ -306,7 +306,7 @@ class AssemblyLine extends SdeType
      * @param Type $type the item to get the modifiers for
      *
      * @return float[] in the form ('c' => float, 'm' => float, 't' => float)
-     * @throws iveeCore\Exceptions\TypeNotCompatibleException if the given Type is not compatible
+     * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the given Type is not compatible
      */
     public function getModifiersForType(Type $type)
     {

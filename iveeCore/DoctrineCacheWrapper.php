@@ -13,7 +13,7 @@
 
 namespace iveeCore;
 
-use \Doctrine\Common\Cache\CacheProvider;
+use Doctrine\Common\Cache\CacheProvider;
 
 /**
  * DoctrineCacheWrapper provides caching functionality for iveeCore based on the Doctrine CacheProvider.
@@ -62,7 +62,7 @@ class DoctrineCacheWrapper implements ICache
     /**
      * Set the Doctrine Cache Provider.
      * 
-     * @param \Doctrine\Common\Cache\CacheProvider $cache Doctrine Cache Provider to use.
+     * @param Doctrine\Common\Cache\CacheProvider $cache Doctrine Cache Provider to use.
      *
      * @return void
      */

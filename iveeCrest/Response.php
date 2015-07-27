@@ -43,7 +43,7 @@ class Response implements ICacheable
     /**
      * @var array $header of http response
      */
-    protected $header = array();
+    protected $header = [];
 
     /**
      * @var array $info from curl
@@ -157,7 +157,7 @@ class Response implements ICacheable
      * Returns the next page href, if there is one.
      *
      * @return string
-     * @throws iveeCres\Exceptions\IveeCrestException when the response has no next page
+     * @throws \iveeCres\Exceptions\IveeCrestException when the response has no next page
      */
     public function getNextPageHref()
     {
@@ -184,7 +184,7 @@ class Response implements ICacheable
      * Returns the previous page href, if there is one.
      *
      * @return string
-     * @throws iveeCres\Exceptions\IveeCrestException when the response has no previous page
+     * @throws \iveeCres\Exceptions\IveeCrestException when the response has no previous page
      */
     public function getPreviousPageHref()
     {

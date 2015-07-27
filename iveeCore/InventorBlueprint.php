@@ -28,12 +28,12 @@ class InventorBlueprint extends Blueprint
     /**
      * @var int[] $inventsBlueprintId holds the inventable blueprint ID(s)
      */
-    protected $inventsBlueprintIds = array();
+    protected $inventsBlueprintIds = [];
 
     /**
      * @var array $inventsBlueprintIdsByRaceId raceId => Blueprint IDs
      */
-    protected $inventsBlueprintIdsByRaceId = array();
+    protected $inventsBlueprintIdsByRaceId = [];
 
     /**
      * @var float $inventionProbability the base invention chance
@@ -61,7 +61,7 @@ class InventorBlueprint extends Blueprint
     protected $datacoreSkillIds;
 
     /**
-     * Constructor. Use \iveeCore\Type::getById() to instantiate InventorBlueprint objects instead.
+     * Constructor. Use iveeCore\Type::getById() to instantiate InventorBlueprint objects instead.
      *
      * @param int $id of the InventorBlueprint object
      *
@@ -132,7 +132,7 @@ class InventorBlueprint extends Blueprint
             . implode(', ', array_keys($this->getSkillMapForActivity(ProcessData::ACTIVITY_INVENTING)->getSkills()))
             . ");"
         );
-        $this->datacoreSkillIds = array();
+        $this->datacoreSkillIds = [];
         while ($row = $res->fetch_assoc()) {
             if ($row['groupID'] == 333)
                 $this->datacoreSkillIds[] = $row['skillID'];
@@ -314,7 +314,7 @@ class InventorBlueprint extends Blueprint
      */
     public function getInventableBlueprints()
     {
-        $ret = array();
+        $ret = [];
         foreach($this->getInventableBlueprintIds() as $bpId)
             $ret[$bpId] = Type::getById($bpId);
         return $ret;
@@ -340,7 +340,7 @@ class InventorBlueprint extends Blueprint
     public function getInventableBlueprintIdsByRaceId($raceId)
     {
         if (!isset($this->inventsBlueprintIdsByRaceId[$raceId]))
-            return array();
+            return [];
         return $this->inventsBlueprintIdsByRaceId[$raceId];
     }
 

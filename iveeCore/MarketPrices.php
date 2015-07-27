@@ -33,12 +33,12 @@ class MarketPrices extends CoreDataCommon
     const CLASSNICK = 'MarketPrices';
 
     /**
-     * @var iveeCore\InstancePool $instancePool used to pool (cache) objects
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) objects
      */
     protected static $instancePool;
 
     /**
-     * @var iveeCore\CrestMarketProcessor $crestMarketProcessor used for processing market data from CREST
+     * @var \iveeCore\CrestMarketProcessor $crestMarketProcessor used for processing market data from CREST
      */
     protected static $crestMarketProcessor;
    
@@ -117,9 +117,9 @@ class MarketPrices extends CoreDataCommon
      * @param int $regionId of the region. If none passed, default is looked up.
      * @param int $maxPriceDataAge for the maximum acceptable market data age. Use 0 to force update from CREST.
      *
-     * @return iveeCore\MarketPrices
-     * @throws iveeCore\Exceptions\NotOnMarketException if requested type is not on market
-     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     * @return \iveeCore\MarketPrices
+     * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
     public static function getByIdAndRegion($typeId, $regionId = null, $maxPriceDataAge = null)
     {
@@ -141,7 +141,8 @@ class MarketPrices extends CoreDataCommon
                 return static::$instancePool->getItem(
                     static::getClassHierarchyKeyPrefix() . (int) $regionId . '_' . (int) $typeId
                 );
-            } catch (KeyNotFoundInCacheException $e) {}
+            } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
+            }
         }
 
         $mpClass = Config::getIveeClassName(static::getClassNick());
@@ -156,7 +157,8 @@ class MarketPrices extends CoreDataCommon
                     static::$instancePool->setItem($mp);
                     return $mp;
                 }
-            } catch (NoPriceDataAvailableException $e) {}
+            } catch (NoPriceDataAvailableException $e) { //empty as we are using Exceptions for flow control here
+            }
         }
 
         if (is_null(static::$crestMarketProcessor)) {
@@ -181,11 +183,11 @@ class MarketPrices extends CoreDataCommon
      *
      * @param int $typeId of type
      * @param int $regionId of the region
-     * @param int $maxPriceDataAge
-     * @param array $data
+     * @param int $maxPriceDataAge for the market prices, used for setting cache expiry
+     * @param array $data to be used instead of DB lookup
      *
-     * @throws iveeCore\Exceptions\NotOnMarketException if requested type is not on market
-     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
     protected function __construct($typeId, $regionId, $maxPriceDataAge, array $data = null)
     {
@@ -230,7 +232,7 @@ class MarketPrices extends CoreDataCommon
      * Fetches the data from DB.
      *
      * @return array
-     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
     protected function getDataFromDb()
     {
@@ -257,8 +259,10 @@ class MarketPrices extends CoreDataCommon
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('NoPriceDataAvailableException', "No region market data for typeId=" . $this->id
-                . " and regionId=" . $this->regionId . " found");
+            self::throwException(
+                'NoPriceDataAvailableException', "No region market data for typeId=" . $this->id . " and regionId="
+                . $this->regionId . " found"
+            );
         return $row;
     }
 
@@ -317,7 +321,7 @@ class MarketPrices extends CoreDataCommon
     /**
      * Returns the type object this market data refers to.
      *
-     * @return iveeCore\Type
+     * @return \iveeCore\Type
      */
     public function getType()
     {
@@ -330,19 +334,21 @@ class MarketPrices extends CoreDataCommon
      * @param int $maxPriceDataAge specifies the maximum price data age in seconds.
      *
      * @return float
-     * @throws iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
-     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no buy price available
-     * @throws iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
+     * @throws \iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no buy price available
+     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
     public function getBuyPrice($maxPriceDataAge)
     {
         if (is_null($this->buyPrice))
-            self::throwException('NoPriceDataAvailableException', "No buy price available for "
-                . $this->getType()->getName());
+            self::throwException(
+                'NoPriceDataAvailableException', "No buy price available for " . $this->getType()->getName()
+            );
         elseif ($this->isTooOld($maxPriceDataAge))
-            self::throwException('PriceDataTooOldException', 'Price data for ' . $this->getType()->getName()
-                . ' is too old');
+            self::throwException(
+                'PriceDataTooOldException', 'Price data for ' . $this->getType()->getName() . ' is too old'
+            );
 
         return $this->buyPrice;
     }
@@ -353,19 +359,21 @@ class MarketPrices extends CoreDataCommon
      * @param int $maxPriceDataAge specifies the maximum price data age in seconds.
      *
      * @return float
-     * @throws iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
-     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no buy price available
-     * @throws iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
+     * @throws \iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no buy price available
+     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
     public function getSellPrice($maxPriceDataAge)
     {
         if (is_null($this->sellPrice))
-            self::throwException('NoPriceDataAvailableException', "No sell price available for "
-                . $this->getType()->getName());
+            self::throwException(
+                'NoPriceDataAvailableException', "No sell price available for " . $this->getType()->getName()
+            );
         elseif ($this->isTooOld($maxPriceDataAge))
-            self::throwException('PriceDataTooOldException', 'Price data for ' . $this->getType()->getName()
-                . ' is too old');
+            self::throwException(
+                'PriceDataTooOldException', 'Price data for ' . $this->getType()->getName() . ' is too old'
+            );
 
         return $this->sellPrice;
     }
@@ -435,8 +443,10 @@ class MarketPrices extends CoreDataCommon
     /**
      * Throws NotOnMarketException.
      *
+     * @paran iveeCore\SdeType $type that isn't on the market
+     *
      * @return void
-     * @throws iveeCore\Exceptions\NotOnMarketException
+     * @throws \iveeCore\Exceptions\NotOnMarketException
      */
     protected function throwNotOnMarketException(SdeType $type)
     {

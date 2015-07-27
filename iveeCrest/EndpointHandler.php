@@ -58,7 +58,7 @@ class EndpointHandler
     const WAR_REPRESENTATION                            = 'vnd.ccp.eve.War-v1+json';
 
     /**
-     * @var iveeCrest\Client $client for CREST
+     * @var \iveeCrest\Client $client for CREST
      */
     protected $client;
 
@@ -70,7 +70,7 @@ class EndpointHandler
     /**
      * Constructs an EndpointHandler.
      *
-     * @param iveeCrest\Client $client to be used
+     * @param \iveeCrest\Client $client to be used
      */
     public function __construct(Client $client)
     {
@@ -217,7 +217,7 @@ class EndpointHandler
             $dataObj = $this->client->getCache()->getItem($dataKey);
         } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e){
             //get region hrefs
-            $hrefs = array();
+            $hrefs = [];
             foreach ($this->getRegions() as $region)
                 $hrefs[] = $region->href;
 
@@ -377,7 +377,7 @@ class EndpointHandler
         //get the necessary hrefs
         $region = $this->getRegion($regionId);
         $marketTypeHrefs = $this->getMarketTypeHrefs();
-        $hrefs = array();
+        $hrefs = [];
         foreach (array_unique($typeIds) as $typeId) {
             if (!isset($marketTypeHrefs[$typeId])) {
                 $invalidArgumentExceptionClass = Config::getIveeClassName('InvalidArgumentException');
@@ -450,7 +450,7 @@ class EndpointHandler
         }
 
         //Here we have to construct the URLs because there's no navigable way to reach this data from CREST root
-        $hrefs = array();
+        $hrefs = [];
         $rootUrl = $this->client->getRootEndpointUrl();
         foreach (array_unique($typeIds) as $typeId)
             $hrefs[] = $rootUrl . 'market/' . (int) $regionId . '/types/' . (int) $typeId . '/history/';

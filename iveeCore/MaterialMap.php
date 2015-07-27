@@ -28,7 +28,7 @@ class MaterialMap
      * @var int[]|float[] $materials holds the data in the form $typeId => $quantity
      * Note that quantities of 0 may indicate that an item is required, but not consumed
      */
-    protected $materials = array();
+    protected $materials = [];
 
     /**
      * Add required material and amount to total material array.

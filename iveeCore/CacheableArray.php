@@ -37,7 +37,7 @@ class CacheableArray extends \stdClass implements ICacheable
     /**
      * @var array $data payload
      */
-    public $data = array();
+    public $data = [];
 
     /**
      * Construct a CacheableArray object.

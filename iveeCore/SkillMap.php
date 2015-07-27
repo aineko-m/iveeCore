@@ -27,7 +27,7 @@ class SkillMap
     /**
      * @var array $skills holds the data in the form $skillId => $level
      */
-    protected $skills = array();
+    protected $skills = [];
 
     /**
      * Sanity checks a skill level (verify it's an integer between 0 and 5).

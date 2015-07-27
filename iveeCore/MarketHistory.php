@@ -34,12 +34,12 @@ class MarketHistory extends CoreDataCommon
     const CLASSNICK = 'MarketHistory';
 
     /**
-     * @var iveeCore\InstancePool $instancePool used to pool (cache) objects
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) objects
      */
     protected static $instancePool;
 
     /**
-     * @var iveeCore\CrestMarketProcessor $crestMarketProcessor used for processing market data from CREST
+     * @var \iveeCore\CrestMarketProcessor $crestMarketProcessor used for processing market data from CREST
      */
     protected static $crestMarketProcessor;
 
@@ -66,63 +66,63 @@ class MarketHistory extends CoreDataCommon
     /**
      * @var int[] $vol the market volume over time, keyed by date as unix timestamp
      */
-    protected $vol = array();
+    protected $vol = [];
 
     /**
      * @var int[] $tx the market transactions over time, keyed by date as unix timestamp
      */
-    protected $tx = array();
+    protected $tx = [];
 
     /**
      * @var float[] $low market "low", as returned by EVEs history over time, keyed by date as unix timestamp
      */
-    protected $low = array();
+    protected $low = [];
 
     /**
      * @var float[] $high market "high", as returned by EVEs history over time, keyed by date as unix timestamp
      */
-    protected $high = array();
+    protected $high = [];
 
     /**
      * @var float[] $avg market "avg", as returned by EVEs history over time, keyed by date as unix timestamp
      */
-    protected $avg = array();
+    protected $avg = [];
 
     /**
      * @var float[] $sell realistic sell price as calculated by the PriceEstimator over time, keyed by date as unix
      * timestamp
      */
-    protected $sell = array();
+    protected $sell = [];
 
     /**
      * @var float[] $buy realistic buy price as calculated by the PriceEstimator over time, keyed by date as unix
      * timestamp
      */
-    protected $buy = array();
+    protected $buy = [];
 
     /**
      * @var int[] $supplyIn5 the volume available in sell orders within 5% of the sell price over time, keyed by date as
      * unix timestamp
      */
-    protected $supplyIn5 = array();
+    protected $supplyIn5 = [];
 
     /**
      * @var int[] $supplyIn5 the volume demanded by buy orders within 5% of the sell price over time, keyed by date as
      * unix timestamp
      */
-    protected $demandIn5 = array();
+    protected $demandIn5 = [];
 
     /**
      * @var int[] $avgSell5OrderAge average time passed since update to sell orders within 5% of the sell price over
      * time, keyed by date as unix timestamp. A measure of competition and activity.
      */
-    protected $avgSell5OrderAge = array();
+    protected $avgSell5OrderAge = [];
 
     /**
      * @var int[] $avgBuy5OrderAge average time passed since update to buy orders within 5% of the buy price over time,
      * keyed by date as unix timestamp. A measure of competition and activity.
      */
-    protected $avgBuy5OrderAge = array();
+    protected $avgBuy5OrderAge = [];
 
     /**
      * Returns a string that is used as cache key prefix specific to a hierarchy of SdeType classes. Example:
@@ -143,9 +143,9 @@ class MarketHistory extends CoreDataCommon
      * @param int $maxPriceDataAge for the maximum acceptable market data age. Use 0 to force update from CREST.
      * @param bool $cache whether this object should be cached. Note that it can be quite large, so chose carefully.
      *
-     * @return iveeCore\MarketHistory
-     * @throws iveeCore\Exceptions\NotOnMarketException if requested type is not on market
-     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     * @return \iveeCore\MarketHistory
+     * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
     public static function getByIdAndRegion($typeId, $regionId = null, $maxPriceDataAge = null, $cache = true)
     {
@@ -167,7 +167,8 @@ class MarketHistory extends CoreDataCommon
                 return static::$instancePool->getItem(
                     static::getClassHierarchyKeyPrefix() . (int) $regionId . '_' . (int) $typeId
                 );
-            } catch (KeyNotFoundInCacheException $e) {}
+            } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
+            }
         }
 
         $mhClass = Config::getIveeClassName(static::getClassNick());
@@ -182,7 +183,8 @@ class MarketHistory extends CoreDataCommon
                     static::$instancePool->setItem($mh);
                     return $mh;
                 }
-            } catch (NoPriceDataAvailableException $e) {}
+            } catch (NoPriceDataAvailableException $e) { //empty as we are using Exceptions for flow control here
+            }
         }
 
         if (is_null(static::$crestMarketProcessor)) {
@@ -209,8 +211,8 @@ class MarketHistory extends CoreDataCommon
      * @param int $typeId of type
      * @param int $regionId of the region
      *
-     * @throws iveeCore\Exceptions\NotOnMarketException if requested type is not on market
-     * @throws iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
     protected function __construct($typeId, $regionId)
     {
@@ -338,7 +340,7 @@ class MarketHistory extends CoreDataCommon
     /**
      * Returns the type object this market data refers to.
      *
-     * @return iveeCore\Type
+     * @return \iveeCore\Type
      */
     public function getType()
     {
@@ -399,7 +401,7 @@ class MarketHistory extends CoreDataCommon
      */
     public function getValuesForDate($dateTs)
     {
-        $ret = array();
+        $ret = [];
         if (isset($this->vol[$dateTs]))
             $ret['vol'] = $this->vol[$dateTs];
         if (isset($this->tx[$dateTs]))
@@ -538,6 +540,8 @@ class MarketHistory extends CoreDataCommon
     }
     /**
      * Throws NotOnMarketException.
+     *
+     * @param \iveeCore\SdeType $type that isn't on the market
      *
      * @return void
      * @throws \iveeCore\Exceptions\NotOnMarketException

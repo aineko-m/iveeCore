@@ -32,7 +32,7 @@ class SolarSystem extends SdeType
     const CLASSNICK = 'SolarSystem';
 
     /**
-     * @var iveeCore\InstancePool $instancePool used to pool (cache) SolarSystem objects
+     * @var \iveeCore\InstancePool $instancePool used to pool (cache) SolarSystem objects
      */
     protected static $instancePool;
 
@@ -64,15 +64,15 @@ class SolarSystem extends SdeType
     /**
      * @var array $industryIndices the system industry indices $activityId => float
      */
-    protected $industryIndices = array();
+    protected $industryIndices = [];
 
     /**
      * @var array $stationIds the IDs of Stations present in this SolarSystem
      */
-    protected $stationIds = array();
+    protected $stationIds = [];
 
     /**
-     * @var iveeCore\Station[] lazy loaded
+     * @var \iveeCore\Station[] lazy loaded
      */
     protected $stations;
 
@@ -91,7 +91,7 @@ class SolarSystem extends SdeType
             FROM mapSolarSystems;"
         );
 
-        $namesToIds = array();
+        $namesToIds = [];
         while ($row = $res->fetch_assoc())
             $namesToIds[$row['solarSystemName']] = (int) $row['solarSystemID'];
 
@@ -114,7 +114,7 @@ class SolarSystem extends SdeType
      *
      * @param int $id of the SolarSystem
      *
-     * @throws iveeCore\Exceptions\SolarSystemIdNotFoundException if solarSystemId is not found
+     * @throws \iveeCore\Exceptions\SolarSystemIdNotFoundException if solarSystemId is not found
      */
     protected function __construct($id)
     {
@@ -168,7 +168,7 @@ class SolarSystem extends SdeType
     /**
      * Loads stationIds in system.
      *
-     * @param iveeCore\SDE $sde the SDE object
+     * @param \iveeCore\SDE $sde the SDE object
      *
      * @return void
      */
@@ -242,12 +242,12 @@ class SolarSystem extends SdeType
     /**
      * Gets Stations in SolarSystem.
      *
-     * @return iveeCore\Station[]
+     * @return \iveeCore\Station[]
      */
     public function getStations()
     {
         if (!isset($this->stations)) {
-            $this->stations = array();
+            $this->stations = [];
             $stationClass = Config::getIveeClassName("Station");
             foreach ($this->getStationIds() as $stationId)
                 $this->stations[$stationId] = $stationClass::getById($stationId);
@@ -258,13 +258,13 @@ class SolarSystem extends SdeType
     /**
      * Gets the Stations in SolarSystem with a specific service.
      *
-     * @param int serviceId
+     * @param int $serviceId to be searched for
      *
-     * @return iveeCore\Station[] in the form stationId => Station
+     * @return \iveeCore\Station[] in the form stationId => Station
      */
     public function getStationsWithService($serviceId)
     {
-        $ret = array();
+        $ret = [];
         foreach ($this->getStations() as $station)
             if(in_array($serviceId, $station->getServiceIds()))
                $ret[$station->getId()] = $station;
@@ -295,7 +295,7 @@ class SolarSystem extends SdeType
      * @param int $maxIndexDataAge maximum index data age in seconds
      *
      * @return float[] in the form activityId => float
-     * @throws iveeCore\Exceptions\CrestDataTooOldException if given max index data age is exceeded
+     * @throws \iveeCore\Exceptions\CrestDataTooOldException if given max index data age is exceeded
      */
     public function getIndustryIndices($maxIndexDataAge = 172800)
     {
@@ -312,7 +312,7 @@ class SolarSystem extends SdeType
      * @param int $maxIndexDataAge maximum index data age in seconds
      *
      * @return float
-     * @throws iveeCore\Exceptions\ActivityIdNotFoundException if no index data is found for activityId in this system
+     * @throws \iveeCore\Exceptions\ActivityIdNotFoundException if no index data is found for activityId in this system
      */
     public function getIndustryIndexForActivity($activityId, $maxIndexDataAge = 172800)
     {
@@ -346,7 +346,7 @@ class SolarSystem extends SdeType
      *
      * @param float $tax set on the POS
      *
-     * @return iveeCore\IndustryModifier
+     * @return \iveeCore\IndustryModifier
      */
     public function getIndustryModifierForPos($tax)
     {
@@ -357,7 +357,7 @@ class SolarSystem extends SdeType
     /**
      * Returns an IndustryModifier object for all NPC stations in this system.
      *
-     * @return iveeCore\IndustryModifier
+     * @return \iveeCore\IndustryModifier
      */
     public function getIndustryModifierForAllNpcStations()
     {

@@ -31,7 +31,7 @@ class InventableBlueprint extends Blueprint
     protected $inventedFrom;
 
     /**
-     * Constructor. Use \iveeCore\Type::getById() to instantiate InventableBlueprint objects instead.
+     * Constructor. Use iveeCore\Type::getById() to instantiate InventableBlueprint objects instead.
      *
      * @param int $id of the InventableBlueprint object
      *
@@ -114,8 +114,8 @@ class InventableBlueprint extends Blueprint
      * @param int $decryptorId the decryptor the be used, if any
      * @param bool $recursive defines if manufacturables should be build recursively
      *
-     * @return \iveeCore\ManufactureProcessData with cascaded \iveeCore\InventionProcessData and
-     * \iveeCore\CopyProcessData objects
+     * @return \iveeCore\ManufactureProcessData with cascaded iveeCore\InventionProcessData and
+     * iveeCore\CopyProcessData objects
      */
     public function copyInventManufacture(IndustryModifier $iMod, $decryptorId = null, $recursive = true)
     {

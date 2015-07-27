@@ -42,7 +42,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
             throw new $exceptionClass('systemID missing in Industry Systems CREST data');
         $systemId = (int) $item->solarSystem->id;
 
-        $update = array();
+        $update = [];
 
         foreach ($item->systemCostIndices as $indexObj) {
             if (!isset($indexObj->activityID))
@@ -101,7 +101,7 @@ class IndustrySystemsUpdater extends CrestDataUpdater
     /**
      * Fetches the data from CREST.
      *
-     * @param iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\EndpointHandler $eph to be used
      *
      * @return array
      */

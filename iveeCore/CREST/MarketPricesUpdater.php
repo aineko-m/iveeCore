@@ -72,7 +72,7 @@ class MarketPricesUpdater extends CrestDataUpdater
     /**
      * Fetches the data from CREST.
      *
-     * @param iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\EndpointHandler $eph to be used
      *
      * @return array
      */

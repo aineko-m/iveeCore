@@ -26,7 +26,7 @@ namespace iveeCore;
 class SDE
 {
     /**
-     * @var SDE $instance holds the singleton SDE object.
+     * @var \iveeCore\SDE $instance holds the singleton SDE object.
      */
     protected static $instance;
 
@@ -60,7 +60,7 @@ class SDE
     }
 
     /**
-     * Constructor. Get singleton instance via \iveeCore\SDE::instance() instead.
+     * Constructor. Get singleton instance via iveeCore\SDE::instance() instead.
      *
      * @param \mysqli $db is an optional reference to an existing DB connection object
      */
@@ -84,7 +84,7 @@ class SDE
     /**
      * Returns a new mysqli connection object.
      *
-     * @return \mysqli
+     * @return mysqli
      */
     protected function connectDb()
     {
@@ -102,7 +102,7 @@ class SDE
      *
      * @param string $sql the query to be sent to the DB
      *
-     * @return \mysql_result
+     * @return mysql_result
      * @throws \iveeCore\Exceptions\SQLErrorException when the query execution errors out
      */
     public function query($sql)
@@ -268,8 +268,8 @@ class SDE
      */
     public static function makeUpdateQuery($table, array $update, array $where)
     {
-        $data = array();
-        $condition = array();
+        $data = [];
+        $condition = [];
         $exceptionClass = Config::getIveeClassName('InvalidArgumentException');
 
         foreach ($update as $col => $val) {

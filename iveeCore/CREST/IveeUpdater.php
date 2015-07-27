@@ -26,12 +26,12 @@ use iveeCore\Config;
 class IveeUpdater
 {
     /**
-     * @var iveeCrest\EndpointHandler $endpointHandler instance to be used
+     * @var \iveeCrest\EndpointHandler $endpointHandler instance to be used
      */
     protected $endpointHandler;
 
     /**
-     * @var iveeCrest\MarketPricessor $marketProcessor instance to be used
+     * @var \iveeCrest\MarketPricessor $marketProcessor instance to be used
      */
     protected $marketProcessor;
 
@@ -105,7 +105,7 @@ class IveeUpdater
             $charData = $this->endpointHandler->verifyAccessToken();
             echo "Test OK" . PHP_EOL;
             print_r($charData);
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             echo "Test failed" . PHP_EOL
             . get_class($ex) . ': ' . $ex->getMessage();
             exit();
@@ -231,7 +231,7 @@ class IveeUpdater
                 AND " . $dateColumn . " > '" . date('Y-m-d H:i:s', $cutoffTs) . "'
             );"
         );
-        $ret = array();
+        $ret = [];
         while ($tmp = $res->fetch_array(MYSQL_NUM))
             $ret[] = (int) $tmp[0];
         return $ret;

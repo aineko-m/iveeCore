@@ -34,7 +34,7 @@ class Manufacturable extends Type
      * Gets all necessary data from SQL.
      *
      * @return array
-     * @throws \iveCore\Exceptions\TypeIdNotFoundException when a typeId is not found
+     * @throws iveCore\Exceptions\TypeIdNotFoundException when a typeId is not found
      */
     protected function queryAttributes()
     {

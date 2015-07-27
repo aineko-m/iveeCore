@@ -40,12 +40,12 @@ namespace iveeCore;
 class IndustryModifier
 {
     /**
-     * @var array $assemblyLines holds the available AssemblyLine objects by activityId
+     * @var array $assemblyLines holds the available AssemblyLine objects by activityId in arrays
      */
     protected $assemblyLines;
 
     /**
-     * @var SolarSystem $solarSystem
+     * @var \iveeCore\SolarSystem $solarSystem
      */
     protected $solarSystem;
 
@@ -55,17 +55,17 @@ class IndustryModifier
     protected $tax;
 
     /**
-     * @var iveeCore\ICharacterModifier $characterModifier holding the character specific data like skills and implants
+     * @var \iveeCore\ICharacterModifier $characterModifier holding the character specific data like skills and implants
      */
     protected $characterModifier;
 
     /**
-     * @var iveeCore\IBlueprintModifier $blueprintModifier holding the blueprint specific research levels
+     * @var \iveeCore\IBlueprintModifier $blueprintModifier holding the blueprint specific research levels
      */
     protected $blueprintModifier;
 
     /**
-     * @var iveeCore\Station[] $marketStations all stations in system with market service, lazy loaded
+     * @var \iveeCore\Station[] $marketStations all stations in system with market service, lazy loaded
      */
     protected $marketStations;
 
@@ -88,8 +88,8 @@ class IndustryModifier
      * @param array $assemblyLineTypeIds per activityId, overrides Ids defined in SDE, useful for upgraded outposts
      * @param float $tax the industry tax, used only for instantiating player built outpost, ignored otherwise
      *
-     * @return iveeCore\IndustryModifier
-     * @throws iveeCore\Exceptions\StationIdNotFoundException if the stationId is not found
+     * @return \iveeCore\IndustryModifier
+     * @throws \iveeCore\Exceptions\StationIdNotFoundException if the stationId is not found
      */
     public static function getByStationId($stationId, array $assemblyLineTypeIds = null, $tax = 0.0)
     {
@@ -112,8 +112,8 @@ class IndustryModifier
      * @param int $solarSystemId of the SolarSystem to get data for
      * @param float $tax if the POS has a tax set, in the form "0.1" as 10%
      *
-     * @return iveeCore\IndustryModifier
-     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
+     * @return \iveeCore\IndustryModifier
+     * @throws \iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
      */
     public static function getBySystemIdForPos($solarSystemId, $tax = 0.0)
     {
@@ -135,8 +135,8 @@ class IndustryModifier
      *
      * @param int $solarSystemId of the SolarSystem to get data for
      *
-     * @return iveeCore\IndustryModifier
-     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
+     * @return \iveeCore\IndustryModifier
+     * @throws \iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
      */
     public static function getBySystemIdForAllNpcStations($solarSystemId)
     {
@@ -156,7 +156,7 @@ class IndustryModifier
             throw new $exceptionClass("No assembly lines found for solarSystemId=" . (int) $solarSystemId);
         }
 
-        $assemblyLineTypeIds = array();
+        $assemblyLineTypeIds = [];
         while ($row = $res->fetch_assoc())
             $assemblyLineTypeIds[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
 
@@ -174,7 +174,7 @@ class IndustryModifier
      * @param int $installationTypeId of the installation (e.g. a stationTypeId)
      * @param float $tax to use
      *
-     * @return iveeCore\IndustryModifier
+     * @return \iveeCore\IndustryModifier
      */
     public static function getBySystemIdForInstallationType($solarSystemId, $installationTypeId, $tax = 0.0)
     {
@@ -194,7 +194,7 @@ class IndustryModifier
             throw new $exceptionClass("No assembly lines found for installationTypeId=" . (int) $installationTypeId);
         }
 
-        $assemblyLineTypeIds = array();
+        $assemblyLineTypeIds = [];
         while ($row = $res->fetch_assoc())
             $assemblyLineTypeIds[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
 
@@ -214,8 +214,8 @@ class IndustryModifier
      * @param array $assemblyLineTypeIds IDs of the type of AssemblyLine to set by activityId
      * @param float $tax if the POS has a tax set, in the form "0.1" as 10%
      *
-     * @return iveeCore\IndustryModifier
-     * @throws iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
+     * @return \iveeCore\IndustryModifier
+     * @throws \iveeCore\Exceptions\SystemIdNotFoundException if the systemId is not found
      */
     public static function getBySystemIdWithAssembly($solarSystemId, array $assemblyLineTypeIds, $tax = 0.1)
     {
@@ -226,7 +226,7 @@ class IndustryModifier
         $system = $systemClass::getById($solarSystemId);
 
         //instantiate AssemblyLines from IDs
-        $assemblyLines = array();
+        $assemblyLines = [];
         foreach ($assemblyLineTypeIds as $activity => $activityAssemblyLineTypeIds)
             foreach ($activityAssemblyLineTypeIds as $assemblyLineTypeId)
                 $assemblyLines[$activity][$assemblyLineTypeId] = $assemblyLineClass::getById($assemblyLineTypeId);
@@ -241,8 +241,8 @@ class IndustryModifier
     /**
      * Constructor. Note available convenience functions for helping with instantiation.
      *
-     * @param iveeCore\SolarSystem $system which this IndustryModifier is being instantiated for
-     * @param array[] $assemblyLines the available AssemblyLines by activityId
+     * @param \iveeCore\SolarSystem $system which this IndustryModifier is being instantiated for
+     * @param array $assemblyLines the available AssemblyLines by activityId
      * @param float $tax in the form "0.1" for 10% tax
      */
     public function __construct(SolarSystem $system, array $assemblyLines, $tax)
@@ -263,7 +263,7 @@ class IndustryModifier
     /**
      * Gets the set ICharacterModifier object.
      *
-     * @return iveeCore\ICharacterModifier
+     * @return \iveeCore\ICharacterModifier
      */
     public function getCharacterModifier()
     {
@@ -273,7 +273,7 @@ class IndustryModifier
     /**
      * Sets a new ICharacterModifier.
      *
-     * @param iveeCore\ICharacterModifier $charMod
+     * @param \iveeCore\ICharacterModifier $charMod to be set
      *
      * @return void
      */
@@ -285,7 +285,7 @@ class IndustryModifier
     /**
      * Gets the set IBlueprintModifier object.
      *
-     * @return iveeCore\IBlueprintModifier
+     * @return \iveeCore\IBlueprintModifier
      */
     public function getBlueprintModifier()
     {
@@ -295,7 +295,7 @@ class IndustryModifier
     /**
      * Sets a new IBlueprintModifier.
      *
-     * @param iveeCore\IBlueprintModifier $bpMod
+     * @param \iveeCore\IBlueprintModifier $bpMod to be set
      *
      * @return void
      */
@@ -310,7 +310,7 @@ class IndustryModifier
      * @param int $stationId to be used
      *
      * @return void
-     * @throws iveeCore\Exceptions\InvalidParameterValueException when an invalid stationId is given
+     * @throws \iveeCore\Exceptions\InvalidParameterValueException when an invalid stationId is given
      */
     public function setPreferredMarketStation($stationId)
     {
@@ -360,14 +360,14 @@ class IndustryModifier
      *
      * @param int $activityId the activity to get AssemblyLines for
      *
-     * @return iveeCore\AssemblyLine[] in the form assemblyLineTypeId => AssemblyLine
+     * @return \iveeCore\AssemblyLine[] in the form assemblyLineTypeId => AssemblyLine
      */
     public function getAssemblyLinesForActivity($activityId)
     {
         if (isset($this->assemblyLines[$activityId]))
             return $this->assemblyLines[$activityId];
         else
-            return array();
+            return [];
     }
 
     /**
@@ -427,7 +427,7 @@ class IndustryModifier
      * variables.
      *
      * @param int $activityId ID of the activity to get modifiers for
-     * @param iveeCore\Type $type It's the final output item that needs to be given for checking. This means that for
+     * @param \iveeCore\Type $type It's the final output item that needs to be given for checking. This means that for
      * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product
      * of the invented blueprint. Only for reverse engineering the input Relic must be checked.
      *
@@ -464,11 +464,11 @@ class IndustryModifier
      * Bonuses are ranked as material bonus > time bonus > cost bonus.
      *
      * @param int $activityId the ID of the activity to get AssemblyLines for
-     * @param iveeCore\Type $type It's always the final output item that needs to be given. This means that for
+     * @param \iveeCore\Type $type It's always the final output item that needs to be given. This means that for
      * manufacturing, its the Blueprint product; for copying its the Blueprint itself; for invention it is the product
      * of the invented blueprint.
      *
-     * @return iveeCore\AssemblyLine|null
+     * @return \iveeCore\AssemblyLine|null
      */
     public function getBestAssemblyLineForActivity($activityId, Type $type)
     {
@@ -514,8 +514,8 @@ class IndustryModifier
      * from it's corporation and faction to the character. If multiple stations have the same effective tax, the first
      * of those is returned. If a preferred market station has been set, it is returned.
      *
-     * @return iveeCore\Station
-     * @throws iveeCore\Exceptions\NoRelevantDataException when there is no station with Market service (64) in system
+     * @return \iveeCore\Station
+     * @throws \iveeCore\Exceptions\NoRelevantDataException when there is no station with Market service (64) in system
      */
     public function getBestMarketStation()
     {
@@ -547,8 +547,8 @@ class IndustryModifier
      * reprocessing efficiency and the standings from it's corporation to the character. If multiple stations have the
      * same yield, the first of those is returned.
      *
-     * @return iveeCore\Station
-     * @throws iveeCore\Exceptions\NoRelevantDataException when there is no station with Reprocessing Plant (16)
+     * @return \iveeCore\Station
+     * @throws \iveeCore\Exceptions\NoRelevantDataException when there is no station with Reprocessing Plant (16)
      * service in system
      */
     public function getBestReprocessingStation()

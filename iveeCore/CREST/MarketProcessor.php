@@ -29,29 +29,29 @@ use iveeCore\Config, iveeCrest\EndpointHandler, iveeCrest\Response;
 class MarketProcessor
 {
     /**
-     * @var iveeCore\SDE $sde instance for quicker access
+     * @var \iveeCore\SDE $sde instance for quicker access
      */
     protected static $sde;
 
     /**
      * @var array $marketTypes holds typeId => typeName
      */
-    protected static $marketTypes = array();
+    protected static $marketTypes = [];
 
     /**
      * @var array $regions holds regionId => regionName
      */
-    protected static $regions = array();
+    protected static $regions = [];
 
     /**
-     * @var iveeCrest\EndpointHandler $endpointHandler instance
+     * @var \iveeCrest\EndpointHandler $endpointHandler instance
      */
     protected $endpointHandler;
 
     /**
      * @var array $orderResponseBuffer used to match buy and sell order response data pairs before processing them
      */
-    protected $orderResponseBuffer = array();
+    protected $orderResponseBuffer = [];
 
     /**
      * @var bool $verboseBatch controls whether the batch update function should print info to the console
@@ -71,7 +71,7 @@ class MarketProcessor
     /**
      * Constructor.
      *
-     * @param iveeCrest\EndpointHandler $endpointHandler to be used, optional.
+     * @param \iveeCrest\EndpointHandler $endpointHandler to be used, optional.
      */
     public function __construct(EndpointHandler $endpointHandler = null)
     {
@@ -125,10 +125,10 @@ class MarketProcessor
             $this->endpointHandler->getMultiMarketHistory(
                 $typeIds,
                 $regionId,
-                function(Response $response){
+                function (Response $response) {
                     $this->processHistoryResponse($response);
                 },
-                function(Response $response){
+                function (Response $response) {
                     print_r($response); //TODO
                 },
                 false
@@ -140,10 +140,10 @@ class MarketProcessor
      * Processes a single market history CREST response, updating the DB and returning the history values for the latest
      * day. It is assumed this method will only be called in batch mode.
      *
-     * @param iveeCrest\Response $response to be processed
+     * @param \iveeCrest\Response $response to be processed
      *
      * @return array with the latest history values
-     * @throws iveeCore\Exceptions\UnexpectedDataException if Response with wrong representation is passed
+     * @throws \iveeCore\Exceptions\UnexpectedDataException if Response with wrong representation is passed
      */
     protected function processHistoryResponse(Response $response)
     {
@@ -159,7 +159,7 @@ class MarketProcessor
         //guarrantee the requests will be answered in order, so we can't rely on the order of ids in the passed arrays.
         //Instead we have to extract it from the url. 
         $pathComponents = explode('/', parse_url($response->getInfo()['url'], PHP_URL_PATH));
-        $data = array();
+        $data = [];
 
         //rewrite array index with date timestamps as keys
         foreach ($response->content->items as $item)
@@ -172,8 +172,8 @@ class MarketProcessor
      * Processes history data, updating the DB and returning the history values for the latest day.
      *
      * @param array $data in the form dateTimestamp => array with values
-     * @param int $typeId
-     * @param int $regionId
+     * @param int $typeId of the type
+     * @param int $regionId of the region
      *
      * @return array with the latest history values
      */
@@ -234,7 +234,7 @@ class MarketProcessor
                     );
 
                     //keep latest date data for return
-                    if($dateTs == $latestDate) {
+                    if ($dateTs == $latestDate) {
                         $ret = $updateData;
                         $ret['date'] = $dateTs;
                     }
@@ -259,7 +259,7 @@ class MarketProcessor
                     );
 
                     //keep latest date data for return
-                    if($dateTs == $latestDate) {
+                    if ($dateTs == $latestDate) {
                         $ret = $insertData;
                         $ret['date'] = $dateTs;
                     }
@@ -268,11 +268,13 @@ class MarketProcessor
         }
 
         //add stored procedure call to complete the update
-        $this->submitSql("CALL " . $iveeDbName . ".completeHistoryUpdate(" . $typeId . ", "
-            . $regionId . ", '" . date('Y-m-d H:i:s') . "');");
+        $this->submitSql(
+            "CALL " . $iveeDbName . ".completeHistoryUpdate(" . $typeId . ", "
+            . $regionId . ", '" . date('Y-m-d H:i:s') . "');"
+        );
 
         if ($this->verboseBatch)
-            static::printTypeAndRegion ('H', $typeId, $regionId);
+            static::printTypeAndRegion('H', $typeId, $regionId);
 
         //TODO: Decide if we should invalidate caches or not.
 
@@ -293,7 +295,7 @@ class MarketProcessor
      */
     protected function getExistingHistoryDates($iveeDbName, $typeId, $regionId, $latestDate, $oldestDate)
     {
-        $existingDates = array();
+        $existingDates = [];
         $res = static::$sde->query(
             "SELECT UNIX_TIMESTAMP(date)
             FROM " . $iveeDbName . ".marketHistory
@@ -345,16 +347,16 @@ class MarketProcessor
             $this->endpointHandler->getMultiMarketOrders(
                 $typeIds,
                 $regionId,
-                function(Response $response) {
+                function (Response $response) {
                     $this->processOrderResponse($response);
                 },
-                function(Response $response){
+                function (Response $response) {
                     print_r($response); //TODO
                 },
                 false
             );
             //overwrite existing array to ensure cleanup of potentially unprocessed single responses
-            $this->orderResponseBuffer = array();
+            $this->orderResponseBuffer = [];
         }
         $this->commitSql();
     }
@@ -366,10 +368,10 @@ class MarketProcessor
      * deal with partial DB updates). Async CREST calls can return in any order, so we must pair each buy order to its
      * matching sell order or vice versa by buffering whichever response comes first before processing them atomically.
      *
-     * @param iveeCore\Response $response
+     * @param \iveeCore\Response $response to be processed
      *
      * @return void
-     * @throws iveeCore\Exceptions\UnexpectedDataException if Response with wrong representation is passed
+     * @throws \iveeCore\Exceptions\UnexpectedDataException if Response with wrong representation is passed
      */
     protected function processOrderResponse(Response $response)
     {
@@ -413,9 +415,9 @@ class MarketProcessor
     /**
      * Processes order data, calculating realistic prices and other values and doing the DB upsert.
      *
-     * @param stdClass $odata with both buy and sell order items
-     * @param int $typeId
-     * @param int $regionId
+     * @param \stdClass $odata with both buy and sell order items
+     * @param int $typeId of the type
+     * @param int $regionId of the region
      *
      * @return array with the calculated values
      */
@@ -483,11 +485,10 @@ class MarketProcessor
         }
 
         //add stored procedure call to complete the update
-        $this->submitSql("CALL " . Config::getIveeDbName() . ".completePriceUpdate("
-            . (int) $typeId . ", "
-            . (int) $regionId . ", '"
-            . date('Y-m-d H:i:s', time())
-            . "');");
+        $this->submitSql(
+            "CALL " . Config::getIveeDbName() . ".completePriceUpdate("
+            . (int) $typeId . ", " . (int) $regionId . ", '" . date('Y-m-d H:i:s', time()) . "');"
+        );
 
         if ($this->verboseBatch)
             static::printTypeAndRegion('P', $typeId, $regionId);

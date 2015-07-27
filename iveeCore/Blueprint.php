@@ -41,19 +41,19 @@ class Blueprint extends Type
      * $activityMaterials[$activityId][$typeId]['q'|'c'] for quantity and consume flag, respectively.
      * Array entries for consume flag are omitted if the value is 1.
      */
-    protected $activityMaterials = array();
+    protected $activityMaterials = [];
 
     /**
-     * @var iveeCore\SkillMap[] $activitySkills holds activity skill requirements.
+     * @var \iveeCore\SkillMap[] $activitySkills holds activity skill requirements.
      * $activitySkills[$activityId] => SkillMap
      */
-    protected $activitySkills = array();
+    protected $activitySkills = [];
 
     /**
      * @var int[] $activityTimes holds activity time requirements.
      * $activityTimes[$activityId] => int seconds
      */
-    protected $activityTimes = array();
+    protected $activityTimes = [];
 
     /**
      * @var float $productBaseCost, lazy loaded
@@ -82,7 +82,7 @@ class Blueprint extends Type
      *
      * @param int $id of the Blueprint object
      *
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
      */
     protected function __construct($id)
     {
@@ -101,7 +101,7 @@ class Blueprint extends Type
     /**
      * Loads activity material requirements, if any.
      *
-     * @param iveeCore\SDE $sde the SDE object
+     * @param \iveeCore\SDE $sde the SDE object
      *
      * @return void
      */
@@ -128,7 +128,7 @@ class Blueprint extends Type
     /**
      * Loads activity skill requirements, if any.
      *
-     * @param iveeCore\SDE $sde the SDE object
+     * @param \iveeCore\SDE $sde the SDE object
      *
      * @return void
      */
@@ -152,7 +152,7 @@ class Blueprint extends Type
     /**
      * Loads activity times.
      *
-     * @param iveeCore\SDE $sde the SDE object
+     * @param \iveeCore\SDE $sde the SDE object
      *
      * @return void
      */
@@ -172,7 +172,7 @@ class Blueprint extends Type
      * Gets all necessary data from SQL.
      *
      * @return array
-     * @throws iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if the typeId is not found
      */
     protected function queryAttributes()
     {
@@ -252,8 +252,8 @@ class Blueprint extends Type
      * @param int $bpTE level of the BP; if left null, get from IBlueprintModifier contained in IndustryModifier
      * @param bool $recursive defines if components should be manufactured recursively
      *
-     * @return iveeCore\ManufactureProcessData describing the manufacturing process
-     * @throws iveeCore\Exceptions\TypeNotCompatibleException if the product cannot be manufactured in any of the
+     * @return \iveeCore\ManufactureProcessData describing the manufacturing process
+     * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the product cannot be manufactured in any of the
      * assemblyLines given in the IndustryModifier object
      */
     public function manufacture(IndustryModifier $iMod, $units = 1, $bpME = null, $bpTE = null, $recursive = true)
@@ -317,7 +317,7 @@ class Blueprint extends Type
      * @param int|string $runs the number of runs on each copy. Use 'max' for the maximum possible number of runs.
      * @param bool $recursive defines if used materials should be manufactured recursively
      *
-     * @return iveeCore\CopyProcessData describing the copy process
+     * @return \iveeCore\CopyProcessData describing the copy process
      */
     public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $recursive = true)
     {
@@ -364,7 +364,7 @@ class Blueprint extends Type
      * @param int $endME the ME level after the research
      * @param bool $recursive defines if used materials should be manufactured recursively
      *
-     * @return iveeCore\ResearchMEProcessData describing the research process
+     * @return \iveeCore\ResearchMEProcessData describing the research process
      */
     public function researchME(IndustryModifier $iMod, $startME, $endME, $recursive = true)
     {
@@ -416,7 +416,7 @@ class Blueprint extends Type
      * @param int $endTE the TE level after the research
      * @param bool $recursive defines if used materials should be manufactured recursively
      *
-     * @return iveeCore\ResearchTEProcessData describing the research process
+     * @return \iveeCore\ResearchTEProcessData describing the research process
      */
     public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $recursive = true)
     {
@@ -527,7 +527,7 @@ class Blueprint extends Type
         if (isset($this->activityMaterials[(int) $activityId]))
             return $this->activityMaterials[(int) $activityId];
         else
-            return array();
+            return [];
     }
 
     /**
@@ -543,7 +543,7 @@ class Blueprint extends Type
     /**
      * Returns an Manufacturable object representing the item produced by this Blueprint.
      *
-     * @return iveeCore\Manufacturable
+     * @return \iveeCore\Manufacturable
      */
     public function getProduct()
     {
@@ -555,7 +555,7 @@ class Blueprint extends Type
      *
      * @param int $activityId of the desired activity. See ProcessData constants.
      *
-     * @return iveeCore\SkillMap
+     * @return \iveeCore\SkillMap
      */
     protected function getSkillMapForActivity($activityId)
     {
@@ -573,7 +573,7 @@ class Blueprint extends Type
      * @param int $activityId of the desired activity. See ProcessData constants.
      *
      * @return int base activity time in seconds
-     * @throws iveeCore\Exceptions\ActivityIdNotFoundException if activity is not possible with Blueprint
+     * @throws \iveeCore\Exceptions\ActivityIdNotFoundException if activity is not possible with Blueprint
      */
     protected function getBaseTimeForActivity($activityId)
     {

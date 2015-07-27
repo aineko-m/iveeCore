@@ -552,7 +552,7 @@ class Config
     /**
      * Sets the CREST user specific refresh token.
      *
-     * @param string $crestClientRefreshToken
+     * @param string $crestClientRefreshToken to be set
      *
      * @return void
      */

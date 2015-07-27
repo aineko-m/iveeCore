@@ -166,7 +166,7 @@ class ProcessData
     public function addSubProcessData(ProcessData $subProcessData)
     {
         if (!isset($this->subProcessData))
-            $this->subProcessData = array();
+            $this->subProcessData = [];
         $this->subProcessData[] = $subProcessData;
     }
 
@@ -214,7 +214,7 @@ class ProcessData
     public function getSubProcesses()
     {
         if (!isset($this->subProcessData))
-            return array();
+            return [];
         return $this->subProcessData;
     }
 

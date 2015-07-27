@@ -16,7 +16,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 
 //include the iveeCrest init, expected in the iveeCrest directory, with absolute path
-require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php');
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
 
 use iveeCore\Config, iveeCore\ICache, iveeCrest\Client, iveeCrest\EndpointHandler;
 
@@ -38,12 +38,12 @@ use iveeCore\Config, iveeCore\ICache, iveeCrest\Client, iveeCrest\EndpointHandle
 class IveeCrestTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @var iveeCrest\Client $client
+     * @var \iveeCrest\Client $client
      */
     protected $client;
 
     /**
-     * @var iveeCrest\EndpointHandler $handler
+     * @var \iveeCrest\EndpointHandler $handler
      */
     protected $handler;
 

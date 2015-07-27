@@ -31,12 +31,12 @@ namespace iveeCore;
 class MemcachedWrapper implements ICache
 {
     /**
-     * @var iveeCore\MemcachedWrapper $instance holds the singleton MemcachedWrapper object.
+     * @var \iveeCore\MemcachedWrapper $instance holds the singleton MemcachedWrapper object.
      */
     protected static $instance;
 
     /**
-     * @var Memcached $memcached holds the Memcached connections.
+     * @var \Memcached $memcached holds the Memcached connections.
      */
     protected $memcached;
 
@@ -53,7 +53,7 @@ class MemcachedWrapper implements ICache
     /**
      * Returns MemcachedWrapper instance.
      *
-     * @return iveeCore\MemcachedWrapper
+     * @return \iveeCore\MemcachedWrapper
      */
     public static function instance()
     {
@@ -83,7 +83,7 @@ class MemcachedWrapper implements ICache
     /**
      * Stores item in Memcached.
      *
-     * @param iveeCore\ICacheable $item to be stored
+     * @param \iveeCore\ICacheable $item to be stored
      *
      * @return boolean true on success
      */
@@ -100,8 +100,8 @@ class MemcachedWrapper implements ICache
      *
      * @param string $key under which the item is stored
      *
-     * @return iveeCore\ICacheable
-     * @throws iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
+     * @return \iveeCore\ICacheable
+     * @throws \iveeCore\Exceptions\KeyNotFoundInCacheException if key is not found
      */
     public function getItem($key)
     {
@@ -140,7 +140,7 @@ class MemcachedWrapper implements ICache
             return $this->memcached->deleteMulti($keys);
 
         foreach ($keys as $key)
-            $this->deleteItem ($key);
+            $this->deleteItem($key);
         return true;
     }
 

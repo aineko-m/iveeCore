@@ -28,19 +28,19 @@ use iveeCore\Config;
 class PriceEstimator
 {
     /**
-     * @var iveeCore\SDE $sde instance for quicker access
+     * @var \iveeCore\SDE $sde instance for quicker access
      */
     protected static $sde;
 
     /**
-     * @var iveeCore\MarketProcessor $marketProcessor for access to additional CREST market data
+     * @var \iveeCore\CREST\MarketProcessor $marketProcessor for access to additional CREST market data
      */
     protected $marketProcessor;
 
     /**
      * Constructor.
      *
-     * @param iveeCore\CREST\MarketProcessor $cmp for access to additional CREST market data
+     * @param \iveeCore\CREST\MarketProcessor $cmp for access to additional CREST market data
      */
     public function __construct(MarketProcessor $cmp)
     {
@@ -62,7 +62,7 @@ class PriceEstimator
      */
     public function calcValues(\stdClass $odata, $typeId, $regionId)
     {
-       $averages = $this->getWeeklyAverages($typeId, $regionId);
+        $averages = $this->getWeeklyAverages($typeId, $regionId);
 
         return array_merge(
             $this->processSellOrderData($odata->sellOrders, $averages['avgVol']),
@@ -132,7 +132,7 @@ class PriceEstimator
         );
 
         $priceStats = static::getPriceStats($data, $avgVol);
-        $ret = array();
+        $ret = [];
         if (isset($priceStats['realisticPrice'])) {
             $ret['sell'] = $priceStats['realisticPrice'];
             $ret['avgSell5OrderAge'] = $priceStats['avgOrderAge'];
@@ -177,7 +177,7 @@ class PriceEstimator
         );
 
         $priceStats = static::getPriceStats($data, $avgVol);
-        $ret = array();
+        $ret = [];
         if (isset($priceStats['realisticPrice'])) {
             $ret['buy'] = $priceStats['realisticPrice'];
             $ret['avgBuy5OrderAge'] = $priceStats['avgOrderAge'];
@@ -212,7 +212,7 @@ class PriceEstimator
     protected static function getPriceStats(array $odata, $avgVol)
     {
         if (count($odata) < 1)
-            return array();
+            return [];
 
         $volsum   = 0;
         $pricesum = 0;

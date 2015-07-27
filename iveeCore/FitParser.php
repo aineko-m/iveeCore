@@ -83,7 +83,7 @@ class FitParser
     /**
      * Parses fits in EvE or EFT XML format to MaterialParseResult.
      *
-     * @param \DOMDocument $fitDom the XML DOM to be parsed
+     * @param DOMDocument $fitDom the XML DOM to be parsed
      *
      * @return \iveeCore\MaterialParseResult
      */

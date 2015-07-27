@@ -14,16 +14,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 
-use \iveeCore\Config;
-use \iveeCore\SDE;
-use \iveeCore\Type;
-use \iveeCore\Manufacturable;
-use \iveeCore\Blueprint;
-use \iveeCore\IndustryModifier;
-use \iveeCore\AssemblyLine;
-use \iveeCore\MaterialMap;
-use \iveeCore\ReactionProduct;
-use \iveeCore\FitParser;
+use iveeCore\Config, iveeCore\SDE, iveeCore\Type, iveeCore\Manufacturable, iveeCore\Blueprint,
+    iveeCore\IndustryModifier, iveeCore\AssemblyLine, iveeCore\MaterialMap, iveeCore\ReactionProduct,
+    iveeCore\FitParser;
 
 //include the iveeCore init, expected in the iveeCore directory, with absolute path
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
@@ -72,7 +65,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \iveeCore\Exceptions\KeyNotFoundInCacheException
+     * @expectedException iveeCore\Exceptions\KeyNotFoundInCacheException
      */
     public function testGetTypeAndCache()
     {
@@ -132,7 +125,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 
     /**
      * Test that a supercapital cannot be built in a Capital Ship Assembly Array
-     * @expectedException \iveeCore\Exceptions\TypeNotCompatibleException
+     * @expectedException iveeCore\Exceptions\TypeNotCompatibleException
      */
     public function testAssemblyLineException()
     {
@@ -197,7 +190,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
             array_diff(
                 $cimpd->getTotalMaterialMap()->getMaterials(),
                 $materialTarget->getMaterials()
-            ) == array()
+            ) == []
         );
     }
 
