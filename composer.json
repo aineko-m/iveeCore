@@ -1,7 +1,7 @@
 {
     "name": "aineko-m/ivee-core",
-    "version": "2.5",
-    "description": "PHP engine for calculations of EVE Online industrial activities",
+    "version": "2.6",
+    "description": "PHP engine for calculations of EVE Online industrial activities and CREST library",
     "type": "library",
     "keywords": ["EVE Online", "EVE API", "CREST", "ivee", "iveeCore"],
     "homepage": "https://github.com/aineko-m/iveeCore",
@@ -13,7 +13,7 @@
     ],
 
     "require": {
-        "php-64bit": ">=5.3"
+        "php-64bit": ">=5.4"
     },
 
     "support": {

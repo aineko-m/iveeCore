@@ -2,7 +2,7 @@
 /**
  * IndustrySystemsUpdater class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreCrest
@@ -13,7 +13,7 @@
  */
 
 namespace iveeCore\CREST;
-use \iveeCore\Config;
+use iveeCore\Config, iveeCrest\EndpointHandler;
 
 /**
  * IndustrySystemsUpdater specific CREST data updater
@@ -28,19 +28,9 @@ use \iveeCore\Config;
 class IndustrySystemsUpdater extends CrestDataUpdater
 {
     /**
-     * @var string $path holds the CREST path
-     */
-    protected static $path = 'industry/systems/';
-
-    /**
-     * @var string $representationName holds the expected representation name returned by CREST
-     */
-    protected static $representationName = 'vnd.ccp.eve.IndustrySystemCollection-v1';
-
-    /**
      * Processes data objects to SQL
      *
-     * @param \stdClass $item to be processed
+     * @param stdClass $item to be processed
      *
      * @return string the SQL queries
      */
@@ -50,17 +40,17 @@ class IndustrySystemsUpdater extends CrestDataUpdater
 
         if (!isset($item->solarSystem->id))
             throw new $exceptionClass('systemID missing in Industry Systems CREST data');
-        $systemID = (int) $item->solarSystem->id;
+        $systemId = (int) $item->solarSystem->id;
 
-        $update = array();
+        $update = [];
 
         foreach ($item->systemCostIndices as $indexObj) {
             if (!isset($indexObj->activityID))
                 throw new $exceptionClass(
-                    'activityID missing in Industry Systems CREST data for systemID ' . $systemID);
+                    'activityID missing in Industry Systems CREST data for systemID ' . $systemId);
             if (!isset($indexObj->costIndex))
                 throw new $exceptionClass(
-                    'costIndex missing in Industry Systems CREST data for systemID ' . $systemID);
+                    'costIndex missing in Industry Systems CREST data for systemID ' . $systemId);
 
             switch ($indexObj->activityID) {
             case 1:
@@ -83,18 +73,18 @@ class IndustrySystemsUpdater extends CrestDataUpdater
                 break;
             default :
                 throw new $exceptionClass(
-                    'Unknown activityID received from Industry Systems CREST data for systemID ' . $systemID);
+                    'Unknown activityID received from Industry Systems CREST data for systemID ' . $systemId);
             }
         }
         $insert = $update;
-        $insert['systemID'] = $systemID;
+        $insert['systemID'] = $systemId;
         $insert['date'] = date('Y-m-d');
 
-        $this->updatedIDs[] = $systemID;
+        $this->updatedIds[] = $systemId;
 
         $sdeClass = Config::getIveeClassName('SDE');
 
-        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.iveeIndustrySystems', $insert, $update);
+        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.systemIndustryIndices', $insert, $update);
     }
 
     /**
@@ -105,6 +95,19 @@ class IndustrySystemsUpdater extends CrestDataUpdater
     protected function invalidateCaches()
     {
         $assemblyLineClass  = Config::getIveeClassName('SolarSystem');
-        $assemblyLineClass::deleteFromCache($this->updatedIDs);
+        $assemblyLineClass::deleteFromCache($this->updatedIds);
+    }
+
+    /**
+     * Fetches the data from CREST.
+     *
+     * @param \iveeCrest\EndpointHandler $eph to be used
+     *
+     * @return array
+     */
+    protected static function getData(EndpointHandler $eph)
+    {
+        //we dont set the cache flag because the data normally won't be read again
+        return $eph->getIndustrySystems(false);
     }
 }

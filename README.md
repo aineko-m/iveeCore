@@ -1,5 +1,5 @@
 # iveeCore
-a PHP engine for calculations of EVE Online industrial activities
+a PHP engine for calculations of EVE Online industrial activities and CREST library
 
 Copyright (C)2013-2015 by Aineko Macx
 All rights reserved.
@@ -11,7 +11,7 @@ See the file LICENSE included with the distribution.
 
 
 ## Purpose and target audience
-The goal of this project is to provide its users with a simple but powerful API to get information about industrial activities in EVE Online such as bill of materials, activity cost and profit or skill requirements. By hiding the complexities of EvE's Static Data Export, iveeCore helps developers to quickly prototype scripts or develop full blown (web) applications.
+The goal of this project is to provide its users with a simple but powerful API to get information about industrial activities in EVE Online such as bill of materials, activity cost and profit or skill requirements. By hiding the complexities of EvE's Static Data Export, iveeCore helps developers to quickly prototype scripts or develop complex applications. iveeCore now includes a full-fledged CREST client which further increases its utility.
 
 iveeCore will likely be most useful for developers with at least basic PHP knowledge wanting to create their own industry related tools.
 
@@ -32,31 +32,38 @@ These are a few example questions that can be answered with a few lines of code 
 - An API that strives to be "good", with high power-to-weight ratio
 - Strong object oriented design and class model for inventory types
 - Classes for representing manufacturing, copying, T2 & T3 invention, research and reaction activities, with recursive component building
-- Market data gathering via EMDR (soon via CREST) with realistic price estimation and profit calculation
+- Market data gathering via CREST with realistic price estimation and profit calculation
 - CREST data fetcher handling system industry indices, market prices and facilities
 - Parsers for EFT-style and EvE XML ship fittings descriptions as well as cargo and ship scanning results
 - Caching support for Memcached or Redis (via PhpRedis)
 - Extensible via configurable subclassing
 - A well documented and mostly PSR compliant codebase
 
+The CREST portion of the engine (formerly the iveeCrest library) can be used in conjunction with iveeCore or independently. Some of its features include:
+- Authenticated CREST based
+- Methods for most endpoints reachable from CREST root are available, plus a few deeper endpoints. Easily expanded to support more (pull requests welcome!)
+- Gathering of multipage responses
+- Supports parallel GET requests with high performance asynchronous processing
+- Multilayer cache design
+- The index-less collections returned by CREST are properly re-indexed by IDs
+- Includes a self-contained web-script to retrieve a refresh token
+
 
 ## Requirements
 For basic usage, iveeCore requires:
-- PHP >= 5.3 CLI/Web (64 bit). PHP 5.5 64 bit recommended.
-- Memcached or Redis
-- MySQL >= 5.5 or derivate. [MariaDB 10](https://mariadb.org/) recommended.
-- Steve Ronuken's EVE Static Data Export (SDE) in MySQL format with industry tables
+- PHP >= 5.4 CLI/Web (64 bit) or HHVM >= 3.6. [Newest HHVM](https://github.com/facebook/hhvm/wiki/Prebuilt%20Packages%20for%20HHVM) recommended
+- One of the following: Memcached + php5-memcached OR Redis + php5-redis ([phpredis](https://github.com/phpredis/phpredis))
+- MySQL >= 5.5 or derivate. [MariaDB 10](https://mariadb.org/) recommended
+- Steve Ronuken's EVE Static Data Export (SDE) in MySQL format
 
-However, with just that you won't have access to the EMDR market data feed and thus lack any pricing and cost/profit calculation capabilities, as it requires the ZMQ PHP bindings. Since ZMQ is a not a standard module you'll need (at least terminal) root access to whatever box you plan on running the EMDR client on. Note that EMDR is being phased out in favor of CREST in an upcoming release.
+If using PHP prior to version 5.5 also using the APC opcode cache is recommended for quicker application startup. Using HHVM instead of the standard PHP interpreter will provide a nice speed improvement and a significant reduction in memory use.
 
-With long running batch scripts iveeCore can consume more RAM than what is typically configured on shared hosting offers for PHP, so a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
+You'll probably want root access to whatever box you plan on running iveeCore on, but this isn't strictly required. As for the resource use, a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
 
-Using PHP 5.4 or newer will reduce memory usage of iveeCore by about a third compared to 5.3. If using PHP prior to version 5.5 also using the APC opcode cache is recommended for quicker application startup.
+The largest chunk of used DB space will come from the (CREST enabled) market history and with time also market prices. Expect each of those tables to consume roughly 1MB per day per region (if fetching all relevant market items).
 
-With increasing number of tracked regional markets, the database size and load from the EMDR client also increases.
+The necessary amount of cache memory to avoid hot data being evicted is strongly dependant on the usage pattern. Users should carefully monitor their caches (and review their applications data requirements) before trying to cache objects that won't be read again before expiry, potentially causing cache thrashing.
 
-iveeCore works with the [HipHop Virtual Machine](http://en.wikipedia.org/wiki/HHVM), except for the EMDR client due to the ZMQ binding requirement. For long running scripts it can bring some speed improvements and significant memory savings. 
-Pre-built HHVM packages can be found [here](https://github.com/facebook/hhvm/wiki/Prebuilt%20Packages%20for%20HHVM).
 
 ## Installation
 - Setting up the environment
@@ -64,36 +71,20 @@ Pre-built HHVM packages can be found [here](https://github.com/facebook/hhvm/wik
 These steps assume an Ubuntu Server 14.04 as environment, which is where the author develops and uses iveeCore. Other can probably work too, but are untested.
 Run the following command with root privileges to install the required packages:
 ```
-apt-get install build-essential git mysql-server-5.6 php5-dev php5-cli phpunit php5-mysqlnd php5-curl php5-memcached php5-json libzmq3 libzmq3-dev memcached re2c pkg-config
+apt-get install git mysql-server-5.6 php5-cli phpunit php5-mysqlnd php5-curl php5-memcached php5-json memcached
 ```
 
-If you are using MariaDB or another MySQL derivate, or have a different setup and know what your are doing, adapt the command as required. If you want to use Redis instead of memcached, replace the memcached packages with 
+If you are using MariaDB or another MySQL derivate, or HHVM instead of PHP, or have a different setup and know what your are doing, adapt the command as required. If you want to use Redis instead of memcached, replace the memcached packages with 
 ```
 redis-server redis-tools php5-redis
 ```
 
-### Compile PHP ZMQ binding
-
-To install the PHP ZMQ binding, follow the "Building from Github" instructions found here:
-[http://zeromq.org/bindings:php](http://zeromq.org/bindings:php)
-
-Enable the freshly built extension in PHP by creating the file
-/etc/php5/cli/conf.d/zmq.ini with the following content:
-```
-extension=zmq.so
-```
-Test it by running the command:
-```
-php -i | grep zmq
-```
-If everything went well, you should see a line with the libzmq version.
-
 ### Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to helpful 3rd party developer Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&t=421276](https://forums.eveonline.com/default.aspx?g=posts&t=421276)
+[https://forums.eveonline.com/default.aspx?g=posts&t=433747](https://forums.eveonline.com/default.aspx?g=posts&t=433747)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_mos10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_aeg11". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 Then create a second database, naming it "iveeCore" and giving the same user as before full privileges to it.
 
 ### Setup iveeCore
@@ -111,22 +102,38 @@ Make a copy of the file iveeCore/Config_template.php, naming it Config.php and e
 
 iveeCore comes with a lot of variables pre-set to reasonable (but not universal) default values, so with time adjustments will be needed. Apart from the parameters in Config.php there are many things that can be set on IndustryModifier objects, which provide context data for industry and pricing processes. Developers will also surely want to customize the CharacterModifier and BlueprintModifier classes via subclassing, so skills, standings and BP research levels match their setup or scenario.
 
-To test the setup try running the EMDR client:
-```
-php emdr.php
-```
-If everything is fine, you should see IDs of items and regions for which price and history market data is being updated as it comes in. Ctrl+C to cancel.
-You'll want to setup this script to run in the background to have up-to-date market data available in iveeCore at all times. The EMDR client tends to become zombified if it doesn't receive data for a while so occasionally you'll have to kill the existing process and restart it. restart_emdr.sh is a bash script that does this. You can set up a cronjob to run it on a hourly basis, for instance. The job needs to run under a user with the necessary rights, but not root!
+If you are using the CREST functionality, you'll need to setup the credentials for your application. To pull data from authenticated CREST, we'll need to acquire a refresh token, which is tied to your application and the character that authorized it's data to be used.
 
-During the first few days of market data collection the load on the DB will be higher, especially if multiple regions are tracked, due to the large number of inserts for the market history of items. By default, the EMDR client only tracks "The Forge", "Sinq Laison", "Domain" and "Metropolis" market regions. This can be changed in Config.php, also at runtime.
+iveeCore comes with a self-contained web-script that does just this. It can be found under www/getrefreshtoken.php.
+Simply copy that file to a webserver and point your web browser to it. The script will take you through the steps. You'll be asked to register your application at [https://developers.eveonline.com/applications](https://developers.eveonline.com/applications) if you haven't already, selecting "CREST Access" and the "publicData" scope.
 
-Note that EMDR relays can change, so visit https://eve-market-data-relay.readthedocs.org/en/latest/access.html and pick the one nearest to you and change iveeCore/Config.php accordingly.
+In the script form you'll then need to enter application ID, secret and redirect URL (filled automatically). When you submit the form you'll be redirected to the CREST authentication page where you'll need to authorize your app to access your characters data. With that done your browser will be redirected back to the script and it'll be able to pull the refresh token and display it. Take note.
 
-Now test the CREST client:
+Edit Config.php to enter your CREST client ID, secret and refresh token. These are used at runtime to fetch an ephemeral access token, which is then used to fetch authenticated data from CREST.
+
+To test the CREST setup run the script under cli/updater.php from the console:
 ```
-php update_crest.php
+php updater.php -test
 ```
-This will fetch the newest relevant data from CREST. This script should be run every few hours so especially your system industry indices are up-to-date. They do change over the course of a day.
+If everything is fine, it should see the CREST response to an access token verify call, which shows some data about your character.
+The script offers various flags that control its operation (multiple can be specified):
+"-industry" updates the system industry indices and the global (adjusted, average) prices.
+"-facilities" updates the information on conquerable stations.
+"-history" runs a market history update of all relevant market items for all regions configured in Config::$trackedMarketRegionIds. Note that even on a fast internet connection this will take at least 20 minutes per region.
+"-prices" runs a market prices update of all relevant market items for all regions configured in Config::$trackedMarketRegionIds. Note that even on a fast internet connection this will take at least 20 minutes per region.
+"-all" runs all of the above updates.
+"-s" sets silent operation (except errors)
+
+You'll probably want to setup this script to run with the -all flag automatically (cronjob) at least once a day. Note that history will only be update once per day. The price update respects the Config::$maxPriceDataAge setting and will ignore items whose price data hasn't reached that age. Therefor $maxPriceData age should be set to a matching value, i.e. if you run the update every 6 hours, set the variable to 21600 (6*60*60) or slightly less. Cache expiry of price objects is also controlled via this variable.
+
+The history update should be run before the price update because some history statistics are used when estimating the realistic buy/sell prices. It would fetch the history on demand, but it would not be asynchronous, thus slower overall than if fetching history explicitly first (which runs multiple requests in parallel asynchronously).
+
+For the applications that make use of iveeCore it might be undesirable to have it pull market data on-demand when it encounters old data, potentially incurring substantial delays thanks to CREST. To solve this, the recommended way is setting a much higher $maxPriceDataAge at runtime, thus it won't trigger a live fetch, while batched updates will run normally.
+
+On the first history update run the DB load will be higher because non-trivial amounts of data is being inserted (~1GB for 6 regions). Subsequent runs should be quicker. By default, the CREST updater only tracks "The Forge", "Lonetrek", "Heimatar", "Sinq Laison", "Domain" and "Metropolis" market regions. This can be changed in Config.php, also at runtime.
+
+During tests on a fast line with a SSD backed DB on runs over 6 regions I've seen averages of 50 item history updates per second. Price data is smaller, but two calls are required per item (buy and sell), in the end averaging at 45 item price updates per second (90 reqs/s). Although steps have been taken to try to minimize the I/O load of the update process, having slower storage like a mechanical disk backing the DB reduces the speed somewhat. Tuning the mysql configuration can have a positive impact on the performance.
+
 
 ### Setup iveeCore using Composer
 
@@ -152,7 +159,7 @@ Whenever you want to upgrade to another SDE, the following steps are recommended
 - If using cache, flush it
 - It is good practice to run the provided unit test to check if everything is working as intended
 - Possibly an updated iveeCore version is required to become compatible to changes, check the forum thread.
-- Restart the EMDR client and any long running scripts you might have
+- Restart the any long running scripts you might have
 
 
 ## Upgrading iveeCore
@@ -218,7 +225,6 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - For profit calculations, it is assumed you buy items using buy orders; you sell your products with sell orders with competitive pricing.
 - The prices of items that can't be sold on the market also can't be determined. This includes BPCs (The _cost_ of copying, inventing or researching a BPC can and is calculated for processes, however).
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
-- The EMDR client does some basic filtering on the incoming market data, but there is no measure against malicious clients uploading fake data. This isn't known to have caused any problems, but should be considered.
 - When automatically picking AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
 
 Generals notes:
@@ -236,8 +242,9 @@ To extend iveeCore to your needs without changing the code, the suggested way of
 
 
 ## Future Plans
-With the release of the new market price API endpoint via authenticated CREST, EMDR and cache scraping will become obsolete; an authenticated CREST client will be introduced. Something for calculating ore compression would be nice. 
-I'll try to keep improving iveeCores structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
+A simplex algorithm based ore compression calculator is in the works, which will allow you to define the target amounts of minerals and the calculator will give you the quantities of (compressed) ores to buy to get these numbers while minimizing price.
+
+I'll try to keep improving iveeCores structuring, CREST endpoint support, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
 
 
 ## FAQ
@@ -250,9 +257,6 @@ A: I wanted to share something back to the eve developer community. I also see i
 
 Q: Are you going to release ivee proper?
 A: No.
-
-Q: Why not use a library like [Perry](https://github.com/3rdpartyeve/perry) for CREST access?
-A: I wanted to avoid more dependencies and the CREST functionality required by iveeCore is very simple, so I made a minimal implementation for it. This is going to be superseded by the upcoming iveeCrest.
 
 
 ## Acknowledgements

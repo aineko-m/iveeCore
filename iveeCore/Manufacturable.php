@@ -2,7 +2,7 @@
 /**
  * Manufacturable class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -26,15 +26,15 @@ namespace iveeCore;
 class Manufacturable extends Type
 {
     /**
-     * @var int $producedFromBlueprintID the of the blueprint this item can be manufactured from
+     * @var int $producedFromBlueprintId the of the blueprint this item can be manufactured from
      */
-    protected $producedFromBlueprintID;
+    protected $producedFromBlueprintId;
 
     /**
      * Gets all necessary data from SQL.
      *
      * @return array
-     * @throws \iveCore\Exceptions\TypeIdNotFoundException when a typeID is not found
+     * @throws iveCore\Exceptions\TypeIdNotFoundException when a typeId is not found
      */
     protected function queryAttributes()
     {
@@ -58,7 +58,7 @@ class Manufacturable extends Type
         )->fetch_assoc();
 
         if (empty($row))
-            self::throwException('TypeIdNotFoundException', "typeID " . $this->id . " not found");
+            self::throwException('TypeIdNotFoundException', "typeId " . $this->id . " not found");
 
         return $row;
     }
@@ -74,7 +74,7 @@ class Manufacturable extends Type
     {
         parent::setAttributes($row);
         if (isset($row['blueprintTypeID']))
-            $this->producedFromBlueprintID = (int) $row['blueprintTypeID'];
+            $this->producedFromBlueprintId = (int) $row['blueprintTypeID'];
     }
 
     /**
@@ -84,7 +84,7 @@ class Manufacturable extends Type
      */
     public function getBlueprintId()
     {
-        return $this->producedFromBlueprintID;
+        return $this->producedFromBlueprintId;
     }
 
     /**
@@ -94,6 +94,6 @@ class Manufacturable extends Type
      */
     public function getBlueprint()
     {
-        return Type::getById($this->producedFromBlueprintID);
+        return Type::getById($this->producedFromBlueprintId);
     }
 }

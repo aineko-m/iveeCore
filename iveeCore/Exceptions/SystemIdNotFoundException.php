@@ -2,7 +2,7 @@
 /**
  * SystemIdNotFoundException class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreExceptions
@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * SystemIdNotFoundException, thrown when a given systemID is not found
+ * SystemIdNotFoundException, thrown when a given systemId is not found
  *
  * @category IveeCore
  * @package  IveeCoreExceptions

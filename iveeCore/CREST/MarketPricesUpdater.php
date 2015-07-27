@@ -2,7 +2,7 @@
 /**
  * MarketPricesUpdater class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreCrest
@@ -12,10 +12,10 @@
  */
 
 namespace iveeCore\CREST;
-use \iveeCore\Config;
+use iveeCore\Config, iveeCrest\EndpointHandler;
 
 /**
- * MarketPricesUpdater specific CREST data updater.
+ * MarketPricesUpdater updates the data for the global average and adjusted prices from CREST (not orders or history).
  *
  * @category IveeCore
  * @package  IveeCoreCrest
@@ -26,19 +26,9 @@ use \iveeCore\Config;
 class MarketPricesUpdater extends CrestDataUpdater
 {
     /**
-     * @var string $path holds the CREST path
-     */
-    protected static $path = 'market/prices/';
-
-    /**
-     * @var string $representationName holds the expected representation name returned by CREST
-     */
-    protected static $representationName = 'vnd.ccp.eve.MarketTypePriceCollection-v1';
-
-    /**
-     * Processes data objects to SQL
+     * Processes data objects to SQL.
      *
-     * @param \stdClass $item to be processed
+     * @param stdClass $item to be processed
      *
      * @return string the SQL queries
      */
@@ -48,24 +38,24 @@ class MarketPricesUpdater extends CrestDataUpdater
 
         if (!isset($item->type->id))
             throw new $exceptionClass('typeID missing in Market Prices CREST data');
-        $typeID = (int) $item->type->id;
-        $this->updatedIDs[] = $typeID;
+        $typeId = (int) $item->type->id;
+        $this->updatedIds[] = $typeId;
         $update = array();
 
         if (!isset($item->adjustedPrice))
-            throw new $exceptionClass('Missing adjustedPrice in CREST MarketPrices data for typeID ' . $typeID);
+            throw new $exceptionClass('Missing adjustedPrice in CREST MarketPrices data for typeID ' . $typeId);
         $update['adjustedPrice'] = (float) $item->adjustedPrice;
 
         if (isset($item->averagePrice))
             $update['averagePrice'] = (float) $item->averagePrice;
 
         $insert = $update;
-        $insert['typeID'] = $typeID;
+        $insert['typeID'] = $typeId;
         $insert['date'] = date('Y-m-d');
 
         $sdeClass = Config::getIveeClassName('SDE');
 
-        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.iveeCrestPrices', $insert, $update);
+        return $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.globalPrices', $insert, $update);
     }
 
     /**
@@ -76,6 +66,19 @@ class MarketPricesUpdater extends CrestDataUpdater
     protected function invalidateCaches()
     {
         $globalPriceDataClass = Config::getIveeClassName('GlobalPriceData');
-        $globalPriceDataClass::deleteFromCache($this->updatedIDs);
+        $globalPriceDataClass::deleteFromCache($this->updatedIds);
+    }
+
+    /**
+     * Fetches the data from CREST.
+     *
+     * @param \iveeCrest\EndpointHandler $eph to be used
+     *
+     * @return array
+     */
+    protected static function getData(EndpointHandler $eph)
+    {
+        //we dont set the cache flag because the data normally won't be read again
+        return $eph->getMarketPrices(false);
     }
 }

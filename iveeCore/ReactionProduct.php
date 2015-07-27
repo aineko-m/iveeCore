@@ -2,7 +2,7 @@
 /**
  * ReactionProduct class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -26,17 +26,17 @@ namespace iveeCore;
 class ReactionProduct extends Type
 {
     /**
-     * @var int[] $productOfReactionIDs the typeID(s) of the reactions this product can be produced from. Includes
+     * @var int[] $productOfReactionIds the typeId(s) of the reactions this product can be produced from. Includes
      * alchemy reactions.
      */
-    protected $productOfReactionIDs = array();
+    protected $productOfReactionIds = [];
 
     /**
-     * Constructor. Use \iveeCore\Type::getById() to instantiate ReactionProduct objects instead.
+     * Constructor. Use iveeCore\Type::getById() to instantiate ReactionProduct objects instead.
      *
      * @param int $id of the ReactionProduct object
      *
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeId is not found
      */
     protected function __construct($id)
     {
@@ -68,7 +68,7 @@ class ReactionProduct extends Type
             static::throwException('TypeIdNotFoundException', "ReactionProduct ID=". $this->id . " not found");
 
         while ($row = $res->fetch_assoc())
-            $this->productOfReactionIDs[] = (int) $row['reactionTypeID'];
+            $this->productOfReactionIds[] = (int) $row['reactionTypeID'];
     }
 
     /**
@@ -78,9 +78,9 @@ class ReactionProduct extends Type
      */
     public function getReactions()
     {
-        $ret = array();
-        foreach ($this->productOfReactionIDs as $reactionID)
-            $ret[$reactionID] = Type::getById($reactionID);
+        $ret = [];
+        foreach ($this->productOfReactionIds as $reactionId)
+            $ret[$reactionId] = Type::getById($reactionId);
 
         return $ret;
     }
@@ -90,8 +90,8 @@ class ReactionProduct extends Type
      *
      * @return int[] with Reaction ID(s)
      */
-    public function getReactionIDs()
+    public function getReactionIds()
     {
-        return $this->productOfReactionIDs;
+        return $this->productOfReactionIds;
     }
 }

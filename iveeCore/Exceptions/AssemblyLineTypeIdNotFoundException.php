@@ -2,7 +2,7 @@
 /**
  * AssemblyLineTypeIdNotFoundException class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreExceptions
@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * AssemblyLineTypeIdNotFoundException, thrown when a specified assemblyLineTypeID can't be found
+ * AssemblyLineTypeIdNotFoundException, thrown when a specified assemblyLineTypeId can't be found
  *
  * @category IveeCore
  * @package  IveeCoreExceptions

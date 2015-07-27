@@ -2,7 +2,7 @@
 /**
  * CacheableArray class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -30,35 +30,35 @@ class CacheableArray extends \stdClass implements ICacheable
     protected $key;
 
     /**
-     * @var int $ttl the cache time to live in seconds
+     * @var int $expiry the objects absolute cache expiry as unix timestamp. Should be set during construction.
      */
-    protected $ttl;
+    protected $expiry;
 
     /**
      * @var array $data payload
      */
-    public $data = array();
+    public $data = [];
 
     /**
      * Construct a CacheableArray object.
      *
      * @param string $key under which the object will be stored in cache
-     * @param int $ttl the cache time to live in seconds
+     * @param int $expiry the absolute cache expiry time as unix timestamp
      */
-    public function __construct($key, $ttl)
+    public function __construct($key, $expiry)
     {
         $this->key = $key;
-        $this->ttl = (int) $ttl;    
+        $this->expiry = (int) $expiry;
     }
 
     /**
-     * Returns the cache time to live in seconds.
+     * Gets the objects absolute cache expiry time as unix timestamp.
      *
      * @return int
      */
-    public function getCacheTTL()
+    public function getCacheExpiry()
     {
-        return $this->ttl;
+        return $this->expiry;
     }
 
     /**

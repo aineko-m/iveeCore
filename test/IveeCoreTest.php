@@ -2,7 +2,7 @@
 /**
  * iveeCore PHPUnit testfile
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreTests
@@ -14,16 +14,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 
-use \iveeCore\Config;
-use \iveeCore\SDE;
-use \iveeCore\Type;
-use \iveeCore\Manufacturable;
-use \iveeCore\Blueprint;
-use \iveeCore\IndustryModifier;
-use \iveeCore\AssemblyLine;
-use \iveeCore\MaterialMap;
-use \iveeCore\ReactionProduct;
-use \iveeCore\FitParser;
+use iveeCore\Config, iveeCore\SDE, iveeCore\Type, iveeCore\Manufacturable, iveeCore\Blueprint,
+    iveeCore\IndustryModifier, iveeCore\AssemblyLine, iveeCore\MaterialMap, iveeCore\ReactionProduct,
+    iveeCore\FitParser;
 
 //include the iveeCore init, expected in the iveeCore directory, with absolute path
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
@@ -66,13 +59,13 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($type->getName() == 'Arkonor');
         $this->assertTrue($type->getVolume() == 16);
         $this->assertTrue($type->getPortionSize() == 100);
-        $this->assertTrue($type->getBasePrice() == 2745440.0);
+        $this->assertTrue($type->getBasePrice() == 3068504.0);
         $this->assertTrue($type->isReprocessable());
         $this->assertTrue(is_array($type->getMaterials()));
     }
 
     /**
-     * @expectedException \iveeCore\Exceptions\KeyNotFoundInCacheException
+     * @expectedException iveeCore\Exceptions\KeyNotFoundInCacheException
      */
     public function testGetTypeAndCache()
     {
@@ -132,7 +125,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 
     /**
      * Test that a supercapital cannot be built in a Capital Ship Assembly Array
-     * @expectedException \iveeCore\Exceptions\TypeNotCompatibleException
+     * @expectedException iveeCore\Exceptions\TypeNotCompatibleException
      */
     public function testAssemblyLineException()
     {
@@ -197,7 +190,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
             array_diff(
                 $cimpd->getTotalMaterialMap()->getMaterials(),
                 $materialTarget->getMaterials()
-            ) == array()
+            ) == []
         );
     }
 
@@ -305,7 +298,7 @@ Expanded Cargohold II
                 <shipType value="Abaddon"/>
                 <hardware slot="low slot 0" type="Damage Control II"/>
                 <hardware slot="low slot 1" type="Heat Sink II"/>
-                <hardware slot="low slot 2" type="1600mm Reinforced Rolled Tungsten Plates I"/>
+                <hardware slot="low slot 2" type="1600mm Rolled Tungsten Compact Plates"/>
                 <hardware slot="hi slot 7" type="Mega Pulse Laser II"/>
                 <hardware slot="rig slot 2" type="Large Trimark Armor Pump I"/>
                 <hardware qty="5" slot="drone bay" type="Hammerhead II"/>

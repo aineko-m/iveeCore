@@ -2,7 +2,7 @@
 /**
  * InstancePool class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -32,12 +32,12 @@ class InstancePool
     /**
      * @var \iveeCore\ICacheable[] $keyToObj containing the pooled objects in the form key => obj
      */
-    protected $keyToObj = array();
+    protected $keyToObj = [];
 
     /**
      * @var string[] $nameToKey containing the name => key mapping
      */
-    protected $nameToKey = array();
+    protected $nameToKey = [];
 
     /**
      * @var int $hits counter for object pool hits
@@ -80,7 +80,7 @@ class InstancePool
     {
         $this->nameToKey[$classKey] = $nameToKey;
         $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
-        $cacheableArray = new $cacheableArrayClass($classKey, 3600 * 24);
+        $cacheableArray = new $cacheableArrayClass($classKey, time() + 3600 * 24);
         $cacheableArray->data = $nameToKey;
 
         if ($this->cache instanceof ICache)
@@ -97,7 +97,7 @@ class InstancePool
      */
     public function getItem($key)
     {
-        if (isset($this->keyToObj[$key])) {
+        if (isset($this->keyToObj[$key]) AND $this->keyToObj[$key]->getCacheExpiry() > time()) {
             $this->hits++;
             return $this->keyToObj[$key];
         } elseif ($this->cache instanceof ICache) {

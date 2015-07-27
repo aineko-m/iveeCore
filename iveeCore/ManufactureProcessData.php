@@ -2,7 +2,7 @@
 /**
  * ManufactureProcessData class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -36,30 +36,30 @@ class ManufactureProcessData extends ProcessData
     protected $bpTeLevel;
 
     /**
-     * @var int $activityID of this process.
+     * @var int $activityId of this process.
      */
-    protected $activityID = self::ACTIVITY_MANUFACTURING;
+    protected $activityId = self::ACTIVITY_MANUFACTURING;
 
     /**
      * Constructor.
      *
-     * @param int $producesTypeID typeID of the item manufactured in this process
+     * @param int $producesTypeId typeId of the item manufactured in this process
      * @param int $producesQuantity the number of produces items
      * @param int $processTime the time this process takes in seconds
      * @param float $processCost the cost of performing this reseach process
      * @param int $bpMeLevel the ME level of the blueprint used in this process
      * @param int $bpTeLevel the TE level of the blueprint used in this process
-     * @param int $solarSystemID ID of the SolarSystem the research is performed
-     * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
+     * @param int $solarSystemId ID of the SolarSystem the research is performed
+     * @param int $assemblyLineId ID of the AssemblyLine where the research is being performed
      */
-    public function __construct($producesTypeID, $producesQuantity, $processTime, $processCost, $bpMeLevel,
-        $bpTeLevel, $solarSystemID, $assemblyLineID
+    public function __construct($producesTypeId, $producesQuantity, $processTime, $processCost, $bpMeLevel,
+        $bpTeLevel, $solarSystemId, $assemblyLineId
     ) {
-        parent::__construct($producesTypeID, $producesQuantity, $processTime, $processCost);
+        parent::__construct($producesTypeId, $producesQuantity, $processTime, $processCost);
         $this->bpMeLevel      = (int) $bpMeLevel;
         $this->bpTeLevel      = (int) $bpTeLevel;
-        $this->solarSystemID  = (int) $solarSystemID;
-        $this->assemblyLineID = (int) $assemblyLineID;
+        $this->solarSystemId  = (int) $solarSystemId;
+        $this->assemblyLineId = (int) $assemblyLineId;
     }
 
     /**
@@ -105,7 +105,7 @@ class ManufactureProcessData extends ProcessData
      */
     public function getTotalProfit(IndustryModifier $iMod)
     {
-        return (Type::getById($this->producesTypeID)->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+        return (Type::getById($this->producesTypeId)->getMarketPrices($iMod->getSolarSystem()->getRegionId())
                 ->getSellPrice($iMod->getMaxPriceDataAge()) * $this->producesQuantity * $iMod->getSellTaxFactor()
             ) - ($this->getTotalCost($iMod)
         );
@@ -124,15 +124,15 @@ class ManufactureProcessData extends ProcessData
 
         echo "Total Slot Time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
         echo "Total Materials for " . $this->producesQuantity . "x "
-            . Type::getById($this->producesTypeID)->getName() . ":" . PHP_EOL;
+            . Type::getById($this->producesTypeId)->getName() . ":" . PHP_EOL;
 
         //iterate over materials
-        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount)
-            echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
+        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount)
+            echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
 
         echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($iMod))
             . "ISK" . PHP_EOL;
-        echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalProcessCost($iMod))
+        echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalProcessCost())
             . "ISK" . PHP_EOL;
         echo "Total Cost: " . $utilClass::quantitiesToReadable($this->getTotalCost($iMod))
             . "ISK" . PHP_EOL;

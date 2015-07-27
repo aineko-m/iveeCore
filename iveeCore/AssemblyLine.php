@@ -2,7 +2,7 @@
 /**
  * AssemblyLine class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -53,34 +53,34 @@ class AssemblyLine extends SdeType
     protected $baseCostMultiplier;
 
     /**
-     * @var int $activityID the ID of the activity that can be performed with this AssemblyLine
+     * @var int $activityId the ID of the activity that can be performed with this AssemblyLine
      */
-    protected $activityID;
+    protected $activityId;
 
     /**
-     * @var array $groupModifiers defines which groupIDs can be used with this AssemblyLine and also stores additional
+     * @var array $groupModifiers defines which groupIds can be used with this AssemblyLine and also stores additional
      * multipliers.
      */
-    protected $groupModifiers = array();
+    protected $groupModifiers = [];
 
     /**
-     * @var array $categoryModifiers defines which categoryIDs can be used with this AssemblyLine and also stores
+     * @var array $categoryModifiers defines which categoryIds can be used with this AssemblyLine and also stores
      * additional multipliers.
      */
-    protected $categoryModifiers = array();
+    protected $categoryModifiers = [];
 
     /**
-     * Gets the assemblyLineTypeIDs for the best installable labs and assembly arrays for POSes depending on system
+     * Gets the assemblyLineTypeIds for the best installable labs and assembly arrays for POSes depending on system
      * security. These IDs are hardcoded as currently the SDE lacks the necessary information to map from labs and
-     * assembly arrays to assemblyLineTypeIDs.
+     * assembly arrays to assemblyLineTypeIds.
      *
      * @param float $systemSecurity defining the system security status
      *
-     * @return int[] in the form activityID => assemblyLineTypeIDs[]
+     * @return int[] in the form activityId => assemblyLineTypeIds[]
      */
-    public static function getBestPosAssemblyLineTypeIDs($systemSecurity = 1.0)
+    public static function getBestPosAssemblyLineTypeIds($systemSecurity = 1.0)
     {
-        $assemblyLineTypeIDs = array(
+        $assemblyLineTypeIds = array(
             1 => array(
                 17, //Small Ship Assembly Array
                 18, //Adv. Small Ship Assembly Array
@@ -112,23 +112,23 @@ class AssemblyLine extends SdeType
         );
 
         if ($systemSecurity < 0.45 AND $systemSecurity > 0.0) {
-            $assemblyLineTypeIDs[1][] = 21; //Capital Ship Assembly Array
-            $assemblyLineTypeIDs[1][] = 171; //Thukker Component Assembly Array
+            $assemblyLineTypeIds[1][] = 21; //Capital Ship Assembly Array
+            $assemblyLineTypeIds[1][] = 171; //Thukker Component Assembly Array
         }
 
         if ($systemSecurity <= 0.0) {
-            $assemblyLineTypeIDs[1][] = 10; //Supercapital Ship Assembly Array
-            $assemblyLineTypeIDs[1][] = 21; //Capital Ship Assembly Array
+            $assemblyLineTypeIds[1][] = 10; //Supercapital Ship Assembly Array
+            $assemblyLineTypeIds[1][] = 21; //Capital Ship Assembly Array
         }
-        return $assemblyLineTypeIDs;
+        return $assemblyLineTypeIds;
     }
 
     /**
-     * Gets the assemblyLineTypeIDs for the generic hisec station.
+     * Gets the assemblyLineTypeIds for the generic hisec station.
      *
-     * @return int[] in the form activityID => assemblyLineTypeIDs[]
+     * @return int[] in the form activityId => assemblyLineTypeIds[]
      */
-    public static function getHisecStationAssemlyLineTypeIDs()
+    public static function getHisecStationAssemlyLineTypeIds()
     {
         return array(
             1 => array(35),
@@ -168,11 +168,12 @@ class AssemblyLine extends SdeType
      *
      * @param int $id of the AssemblyLine
      *
-     * @throws \iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeID is not found
+     * @throws \iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException if the $assemblyLineTypeId is not found
      */
     protected function __construct($id)
     {
         $this->id = $id;
+        $this->setExpiry();
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
@@ -193,7 +194,7 @@ class AssemblyLine extends SdeType
         $this->baseTimeMultiplier     = (float) $row['baseTimeMultiplier'];
         $this->baseMaterialMultiplier = (float) $row['baseMaterialMultiplier'];
         $this->baseCostMultiplier     = (float) $row['baseCostMultiplier'];
-        $this->activityID             = (int) $row['activityID'];
+        $this->activityId             = (int) $row['activityID'];
 
         //get category bonuses
         $res = $sde->query(
@@ -227,7 +228,7 @@ class AssemblyLine extends SdeType
         //Instead, the bonuses have been merge into the base bonuses of ramAssemblyLineTypes and all blueprints are
         //allowed for research, copying and invention activities. Here we add neutral compatibility data for those
         //blueprint activities, so the compatibility checking doesn't need special casing.
-        if(in_array($this->activityID, array(3, 4, 5, 8))){
+        if (in_array($this->activityId, [3, 4, 5, 8])) {
             $this->categoryModifiers[9] = array(
                 't' => 1,
                 'm' => 1,
@@ -272,9 +273,9 @@ class AssemblyLine extends SdeType
      *
      * @return int
      */
-    public function getActivityID()
+    public function getActivityId()
     {
-        return $this->activityID;
+        return $this->activityId;
     }
 
     /**
@@ -324,14 +325,14 @@ class AssemblyLine extends SdeType
         );
 
         //apply group modifiers if available, taking precedence over category modifiers
-        if (isset($this->groupModifiers[$type->getGroupID()]))
-            foreach ($this->groupModifiers[$type->getGroupID()] as $modifierType => $modifier)
+        if (isset($this->groupModifiers[$type->getGroupId()]))
+            foreach ($this->groupModifiers[$type->getGroupId()] as $modifierType => $modifier)
                 //base and group modifiers are multiplied together
                 $mods[$modifierType] = $mods[$modifierType] * $modifier;
 
         //apply category modifiers if available
-        elseif (isset($this->categoryModifiers[$type->getCategoryID()]))
-            foreach ($this->categoryModifiers[$type->getCategoryID()] as $modifierType => $modifier)
+        elseif (isset($this->categoryModifiers[$type->getCategoryId()]))
+            foreach ($this->categoryModifiers[$type->getCategoryId()] as $modifierType => $modifier)
                 //base and category modifiers are multiplied together
                 $mods[$modifierType] = $mods[$modifierType] * $modifier;
 
@@ -349,10 +350,10 @@ class AssemblyLine extends SdeType
      */
     public function isTypeCompatible(Type $type)
     {
-        //the type is compatible if its groupID or categoryID is listet in the modifiers array
+        //the type is compatible if its groupId or categoryId is listet in the modifiers array
         return (
-            isset($this->groupModifiers[$type->getGroupID()])
-            OR isset($this->categoryModifiers[$type->getCategoryID()])
+            isset($this->groupModifiers[$type->getGroupId()])
+            OR isset($this->categoryModifiers[$type->getCategoryId()])
         );
     }
 }

@@ -2,7 +2,7 @@
 /**
  * MaterialMap class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,69 +25,69 @@ namespace iveeCore;
 class MaterialMap
 {
     /**
-     * @var int[]|float[] $materials holds the data in the form $typeID => $quantity
+     * @var int[]|float[] $materials holds the data in the form $typeId => $quantity
      * Note that quantities of 0 may indicate that an item is required, but not consumed
      */
-    protected $materials = array();
+    protected $materials = [];
 
     /**
      * Add required material and amount to total material array.
      *
-     * @param int $typeID of the material
+     * @param int $typeId of the material
      * @param int $quantity of the material
      *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException
      */
-    public function addMaterial($typeID, $quantity)
+    public function addMaterial($typeId, $quantity)
     {
         if ($quantity < 0) {
             $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
             throw new $exceptionClass("Can't add negative material amounts to MaterialMap");
         }
 
-        if (isset($this->materials[(int) $typeID]))
-            $this->materials[(int) $typeID] += $quantity;
+        if (isset($this->materials[(int) $typeId]))
+            $this->materials[(int) $typeId] += $quantity;
         else
-            $this->materials[(int) $typeID] = $quantity;
+            $this->materials[(int) $typeId] = $quantity;
     }
 
     /**
      * Add required materials and amounts to total material array.
      *
-     * @param int[]|float[] $materials in the form $typeID => $quantity
+     * @param int[]|float[] $materials in the form $typeId => $quantity
      *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException
      */
     public function addMaterials(array $materials)
     {
-        foreach ($materials as $typeID => $quantity)
-            $this->addMaterial($typeID, $quantity);
+        foreach ($materials as $typeId => $quantity)
+            $this->addMaterial($typeId, $quantity);
     }
 
     /**
      * Subtracts materials from the total material array.
      *
-     * @param int $typeID of the material
+     * @param int $typeId of the material
      * @param int $quantity of the material
      *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException
      */
-    public function subtractMaterial($typeID, $quantity)
+    public function subtractMaterial($typeId, $quantity)
     {
         $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-        if (!isset($this->materials[$typeID]))
-            throw new $exceptionClass('Trying to subtract materials of typeID ' . (int) $typeID
+        if (!isset($this->materials[$typeId]))
+            throw new $exceptionClass('Trying to subtract materials of typeId ' . (int) $typeId
                 . " from MaterialMap, which doesn't occur");
-        elseif ($quantity > $this->materials[$typeID])
-            throw new $exceptionClass('Trying to subtract more materials of typeID ' . (int) $typeID
+        elseif ($quantity > $this->materials[$typeId])
+            throw new $exceptionClass('Trying to subtract more materials of typeId ' . (int) $typeId
             . " from MaterialMap than is available");
 
-        $this->materials[$typeID] -= $quantity;
-        if ($this->materials[$typeID] == 0)
-            unset($this->materials[$typeID]);
+        $this->materials[$typeId] -= $quantity;
+        if ($this->materials[$typeId] == 0)
+            unset($this->materials[$typeId]);
     }
 
     /**
@@ -102,14 +102,14 @@ class MaterialMap
     public static function symmetricDifference(MaterialMap $m1, MaterialMap $m2)
     {
         $mats1 = $m1->getMaterials();
-        foreach ($m2->getMaterials() as $typeID => $quantity) {
+        foreach ($m2->getMaterials() as $typeId => $quantity) {
             //check if type occurs in both
-            if (isset($mats1[$typeID])) {
+            if (isset($mats1[$typeId])) {
                 //get the smaller quantity value
-                $subVal = ($quantity > $mats1[$typeID] ? $mats1[$typeID] : $quantity);
+                $subVal = ($quantity > $mats1[$typeId] ? $mats1[$typeId] : $quantity);
                 //subtract from both maps
-                $m1->subtractMaterial($typeID, $subVal);
-                $m2->subtractMaterial($typeID, $subVal);
+                $m1->subtractMaterial($typeId, $subVal);
+                $m2->subtractMaterial($typeId, $subVal);
             }
         }
     }
@@ -123,12 +123,12 @@ class MaterialMap
      */
     public function addMaterialMap(MaterialMap $materials)
     {
-        foreach ($materials->getMaterials() as $typeID => $quantity)
-            $this->addMaterial($typeID, $quantity);
+        foreach ($materials->getMaterials() as $typeId => $quantity)
+            $this->addMaterial($typeId, $quantity);
     }
 
     /**
-     * Returns the materials as array $typeID => $quantity.
+     * Returns the materials as array $typeId => $quantity.
      *
      * @return int[]|float[]
      */
@@ -148,8 +148,8 @@ class MaterialMap
     {
         $materialMapClass = Config::getIveeClassName('MaterialMap');
         $multipleMaterialMap = new $materialMapClass;
-        foreach ($this->getMaterials() as $typeID => $quantity)
-            $multipleMaterialMap->addMaterial($typeID, $quantity * $factor);
+        foreach ($this->getMaterials() as $typeId => $quantity)
+            $multipleMaterialMap->addMaterial($typeId, $quantity * $factor);
 
         return $multipleMaterialMap;
     }
@@ -159,17 +159,18 @@ class MaterialMap
      *
      * @param \iveeCore\IndustryModifier $iMod as industry context
      *
-     * @return void
+     * @return \iveeCore\MaterialMap
      */
     public function reprocessMaterials(IndustryModifier $iMod)
     {
-        foreach ($this->materials as $typeID => $quantity) {
-            $type = Type::getById($typeID);
+        foreach ($this->materials as $typeId => $quantity) {
+            $type = Type::getById($typeId);
             if ($type->isReprocessable()) {
-                unset($this->materials[$typeID]);
+                unset($this->materials[$typeId]);
                 $this->addMaterialMap($type->getReprocessingMaterialMap($iMod, $quantity));
             }
         }
+        return $this;
     }
 
     /**
@@ -180,8 +181,8 @@ class MaterialMap
     public function getMaterialVolume()
     {
         $sum = 0;
-        foreach ($this->getMaterials() as $typeID => $quantity)
-            $sum += Type::getById($typeID)->getVolume() * $quantity;
+        foreach ($this->getMaterials() as $typeId => $quantity)
+            $sum += Type::getById($typeId)->getVolume() * $quantity;
 
         return $sum;
     }
@@ -199,12 +200,12 @@ class MaterialMap
     public function getMaterialBuyCost(IndustryModifier $iMod)
     {
         $sum = 0;
-        foreach ($this->getMaterials() as $typeID => $amount) {
-            $type = Type::getById($typeID);
+        foreach ($this->getMaterials() as $typeId => $amount) {
+            $type = Type::getById($typeId);
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionId())
                     ->getBuyPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getBuyTaxFactor();
         }
         return $sum;
@@ -221,12 +222,12 @@ class MaterialMap
     public function getMaterialSellValue(IndustryModifier $iMod)
     {
         $sum = 0;
-        foreach ($this->getMaterials() as $typeID => $amount) {
-            $type = Type::getById($typeID);
+        foreach ($this->getMaterials() as $typeId => $amount) {
+            $type = Type::getById($typeId);
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getRegionMarketData($iMod->getSolarSystem()->getRegionID())
+                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionId())
                     ->getSellPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getSellTaxFactor();
         }
         return $sum;

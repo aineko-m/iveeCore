@@ -2,7 +2,7 @@
 /**
  * SkillMap class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -25,9 +25,9 @@ namespace iveeCore;
 class SkillMap
 {
     /**
-     * @var array $skills holds the data in the form $skillID => $level
+     * @var array $skills holds the data in the form $skillId => $level
      */
-    protected $skills = array();
+    protected $skills = [];
 
     /**
      * Sanity checks a skill level (verify it's an integer between 0 and 5).
@@ -49,22 +49,22 @@ class SkillMap
     /**
      * Add required skill to the total skill array.
      *
-     * @param int $skillID of the skill
+     * @param int $skillId of the skill
      * @param int $level of the skill
      *
      * @return void
      * @throws \iveeCore\Exception\InvalidParameterValueException if the skill level is not a valid integer between 0
      * and 5
      */
-    public function addSkill($skillID, $level)
+    public function addSkill($skillId, $level)
     {
         static::sanityCheckSkillLevel($level);
-        if (isset($this->skills[(int) $skillID])) {
+        if (isset($this->skills[(int) $skillId])) {
             //overwrite existing skill if $level is higher
-            if ($this->skills[(int) $skillID] < $level)
-                $this->skills[(int) $skillID] = (int) $level;
+            if ($this->skills[(int) $skillId] < $level)
+                $this->skills[(int) $skillId] = (int) $level;
         } else
-            $this->skills[(int) $skillID] = (int) $level;
+            $this->skills[(int) $skillId] = (int) $level;
     }
 
     /**
@@ -76,12 +76,12 @@ class SkillMap
      */
     public function addSkillMap(SkillMap $skillMap)
     {
-        foreach ($skillMap->getSkills() as $skillID => $level)
-            $this->addSkill($skillID, $level);
+        foreach ($skillMap->getSkills() as $skillId => $level)
+            $this->addSkill($skillId, $level);
     }
 
     /**
-     * Returns the skills as array $skillID => $level.
+     * Returns the skills as array $skillId => $level.
      *
      * @return int[]
      */

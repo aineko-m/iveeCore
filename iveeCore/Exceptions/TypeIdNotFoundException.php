@@ -2,7 +2,7 @@
 /**
  * TypeIdNotFoundException class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreExceptions
@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * TypeIdNotFoundException, thrown when a given typeID is not found
+ * TypeIdNotFoundException, thrown when a given typeId is not found
  *
  * @category IveeCore
  * @package  IveeCoreExceptions

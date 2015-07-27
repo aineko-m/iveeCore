@@ -1,5 +1,28 @@
 This file lists major changes in iveeCore releases.
 
+Version 2.6 - July 27th, 2015
+-----------------------------
+- Full-fledged CREST client by merging of iveeCrest.
+- Bumped minimum PHP version to 5.4 as we are now using some of it's features.
+- Removed all EMDR and previous (minimalistic) CREST related code.
+- With removal of EMDR and the required ZeroMQ PHP extension iveeCore is now completely HHVM compatible.
+- Added CREST based price and industry data updaters with CLI tool.
+- DB schema updates (migration provided):
+  - Split iveePrices table into marketHistory and marketPrices, this also allowed to solve a performance issue with the stored procedures.
+  - Removal of reverse engineering system indices column (unused since 2.1, Phoebe release).
+  - Dropped iveeFacilities table (conquerable stations data is still stored in outposts).
+  - Renaming of all iveeCore tables.
+  - Updated stored procedures to reflect all the changes.
+- Refactored RegionMarketData class into separate MarketPrices and MarketHistory.
+- Caching now always uses absolute timestamps for TTL.
+- Use compression in RedisWrapper.
+- Adapted to Aegis release.
+- Added sovereignty endpoints to EndpointHandler.
+- Consider outposts when loading station IDs.
+- Optimized some code hotspots found through profiler.
+- Renamed "someID" to "someId" in method and variable names for consistency.
+- Code style improvements.
+
 Version 2.5 - May 15th, 2015
 ----------------------------
 - Refactoring to remove Defaults by extending IndustryModifier with new functionality and adding CharacterModifier and BlueprintModifier. CharacterModifier allows for lookup of skills, time and implant factors, standings, taxes and efficiencies based on skills and standings. BlueprintModifier is used for blueprint research level lookup. These are now used throughout the code, making for a cleaner and more flexible API. Developers will likely want to customize those by extending them or implementing the appropriate interface.

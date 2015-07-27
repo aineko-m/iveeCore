@@ -2,7 +2,7 @@
 /**
  * InventionProcessData class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -30,9 +30,9 @@ namespace iveeCore;
 class InventionProcessData extends ProcessData
 {
     /**
-     * @var int $activityID of this process.
+     * @var int $activityId of this process.
      */
-    protected $activityID = self::ACTIVITY_INVENTING;
+    protected $activityId = self::ACTIVITY_INVENTING;
 
     /**
      * @var float $probability chance of success for invention.
@@ -57,26 +57,26 @@ class InventionProcessData extends ProcessData
     /**
      * Constructor.
      *
-     * @param int $inventedBpID typeID of the invented blueprint
+     * @param int $inventedBpId typeId of the invented blueprint
      * @param int $inventTime the invention takes in seconds
      * @param float $processCost the cost of performing this reseach process
      * @param float $probability  chance of success for invention
      * @param int $resultRuns the number of runs on the resulting T2 BPC if invention is successful
      * @param int $resultME the ME level on the resulting T2 BPC if invention is successful
      * @param int $resultTE the TE level on the resulting T2 BPC if invention is successful
-     * @param int $solarSystemID ID of the SolarSystem the research is performed
-     * @param int $assemblyLineID ID of the AssemblyLine where the research is being performed
+     * @param int $solarSystemId ID of the SolarSystem the research is performed
+     * @param int $assemblyLineId ID of the AssemblyLine where the research is being performed
      */
-    public function __construct($inventedBpID, $inventTime, $processCost, $probability, $resultRuns,
-        $resultME, $resultTE, $solarSystemID, $assemblyLineID
+    public function __construct($inventedBpId, $inventTime, $processCost, $probability, $resultRuns,
+        $resultME, $resultTE, $solarSystemId, $assemblyLineId
     ) {
-        parent::__construct($inventedBpID, 1, $inventTime, $processCost);
+        parent::__construct($inventedBpId, 1, $inventTime, $processCost);
         $this->probability     = (float) $probability;
         $this->resultRuns      = (int) $resultRuns;
         $this->resultME        = (int) $resultME;
         $this->resultTE        = (int) $resultTE;
-        $this->solarSystemID   = (int) $solarSystemID;
-        $this->assemblyLineID  = (int) $assemblyLineID;
+        $this->solarSystemId   = (int) $solarSystemId;
+        $this->assemblyLineId  = (int) $assemblyLineId;
     }
 
     /**
@@ -154,11 +154,11 @@ class InventionProcessData extends ProcessData
             static::ACTIVITY_INVENTING => 0.0
         );
 
-        $sum[$this->activityID] = $this->processTime / $this->probability;
+        $sum[$this->activityId] = $this->processTime / $this->probability;
 
         foreach ($this->getSubProcesses() as $subProcessData)
-            foreach ($subProcessData->getTotalTimes() as $activityID => $time)
-                $sum[$activityID] += $time / $this->probability;
+            foreach ($subProcessData->getTotalTimes() as $activityId => $time)
+                $sum[$activityId] += $time / $this->probability;
 
         return $sum;
     }
@@ -173,8 +173,8 @@ class InventionProcessData extends ProcessData
         $materialsClass = Config::getIveeClassName('MaterialMap');
         $smat = new $materialsClass;
         if (isset($this->materials))
-            foreach ($this->getMaterialMap()->getMaterials() as $typeID => $quantity)
-                $smat->addMaterial($typeID, $quantity / $this->probability);
+            foreach ($this->getMaterialMap()->getMaterials() as $typeId => $quantity)
+                $smat->addMaterial($typeId, $quantity / $this->probability);
 
         return $smat;
     }
@@ -188,8 +188,8 @@ class InventionProcessData extends ProcessData
     {
         $smat = $this->getSuccessMaterialMap();
         foreach ($this->getSubProcesses() as $subProcessData)
-            foreach ($subProcessData->getTotalMaterialMap()->getMaterials() as $typeID => $quantity)
-                $smat->addMaterial($typeID, $quantity / $this->probability);
+            foreach ($subProcessData->getTotalMaterialMap()->getMaterials() as $typeId => $quantity)
+                $smat->addMaterial($typeId, $quantity / $this->probability);
 
         return $smat;
     }
@@ -285,8 +285,8 @@ class InventionProcessData extends ProcessData
         print_r($this->getTotalSuccessTimes());
 
         echo "Average total success materials:" . PHP_EOL;
-        foreach ($this->getTotalSuccessMaterialMap()->getMaterials() as $typeID => $amount) {
-            echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
+        foreach ($this->getTotalSuccessMaterialMap()->getMaterials() as $typeId => $amount) {
+            echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
         }
 
         echo "Total average success material cost: "

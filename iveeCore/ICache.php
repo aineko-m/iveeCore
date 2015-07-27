@@ -2,7 +2,7 @@
 /**
  * ICache interface file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreInterfaces

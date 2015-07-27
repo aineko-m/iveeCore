@@ -2,7 +2,7 @@
 /**
  * StationIdNotFoundException class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreExceptions
@@ -15,7 +15,7 @@
 namespace iveeCore\Exceptions;
 
 /**
- * StationIdNotFoundException, thrown when a given stationID is not found
+ * StationIdNotFoundException, thrown when a given stationId is not found
  *
  * @category IveeCore
  * @package  IveeCoreExceptions

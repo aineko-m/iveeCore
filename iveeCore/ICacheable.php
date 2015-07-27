@@ -2,7 +2,7 @@
 /**
  * ICacheable interface file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreInterfaces
@@ -32,9 +32,9 @@ interface ICacheable
     public function getKey();
 
     /**
-    * Gets the objects cache time to live.
+    * Gets the objects absolute cache expiry time as unix timestamp.
     *
     * @return int
     */
-    public function getCacheTTL();
+    public function getCacheExpiry();
 }

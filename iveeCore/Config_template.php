@@ -4,7 +4,7 @@
  *
  * Copy and edit this file according to your environment. The edited file should be saved as Config.php
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -16,7 +16,7 @@
 namespace iveeCore;
 
 /**
- * The Config class holds the basic iveeCore configuration for database, cache, classnames, EMDR and CREST.
+ * The Config class holds the basic iveeCore configuration for database, cache, classnames and CREST.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -26,7 +26,7 @@ namespace iveeCore;
  */
 class Config
 {
-    const VERSION = 'iveeCore/2.5';
+    const VERSION = 'iveeCore/2.6';
 
     /////////////////////
     // Edit below here //
@@ -49,12 +49,11 @@ class Config
     protected static $cacheHost   = 'localhost';
     protected static $cachePort   = 11211; //memcached default: 11211, redis default: 6379
 
-    //EMDR config
-    //https://eve-market-data-relay.readthedocs.org/en/latest/access.html
-    protected static $emdrRelayUrl = 'tcp://relay-eu-germany-1.eve-emdr.com:8050';
-
-    //EVE public CREST base URL. Needs trailing slash.
-    protected static $crestBaseUrl = 'http://public-crest.eveonline.com/';
+    //CREST config
+    protected static $authedCrestBaseUrl      = 'https://crest-tq.eveonline.com/';
+    protected static $crestClientId           = 'myclientid';
+    protected static $crestClientSecret       = 'myclientsecret';
+    protected static $crestClientRefreshToken = 'myclientrefreshtoken';
 
     //set the name of your application. It is used as part of the User Agent when accessing the CREST API.
     protected static $applicationName = 'unknown application';
@@ -62,7 +61,14 @@ class Config
     //Defines the region for pricing operations when no regionId is specified
     protected static $defaultMarketRegionId = 10000002; //The Forge
 
-    //Defines the regions that will have their market data collected via EMDR
+    /**
+     * Defines the maximum acceptable price data age in seconds.
+     * When using pricing methods and there is no relevant price data available or its age is greater than this value,
+     * it will trigger a lookup to CREST.
+     */
+    protected static $maxPriceDataAge = 21600;
+
+    //Defines the regions that will have their market data collected via CREST
     protected static $trackedMarketRegionIds = array(
 //        10000001, //Derelik
         10000002, //The Forge
@@ -79,7 +85,7 @@ class Config
 //        10000013, //Malpais
 //        10000014, //Catch
 //        10000015, //Venal
-//        10000016, //Lonetrek
+        10000016, //Lonetrek
 //        10000017, //J7HZ-F
 //        10000018, //The Spire
 //        10000019, //A821-A
@@ -91,7 +97,7 @@ class Config
 //        10000027, //Etherium Reach
 //        10000028, //Molden Heath
 //        10000029, //Geminate
-//        10000030, //Heimatar
+        10000030, //Heimatar
 //        10000031, //Impass
         10000032, //Sinq Laison
 //        10000033, //The Citadel
@@ -156,13 +162,15 @@ class Config
         'InventableBlueprint'    => '\iveeCore\InventableBlueprint',
         'Manufacturable'         => '\iveeCore\Manufacturable',
         'ManufactureProcessData' => '\iveeCore\ManufactureProcessData',
+        'MarketHistory'          => '\iveeCore\MarketHistory',
+        'MarketPrices'           => '\iveeCore\MarketPrices',
+        'MarketProcessor'        => '\iveeCore\CREST\MarketProcessor',
         'MaterialMap'            => '\iveeCore\MaterialMap',
         'MaterialParseResult'    => '\iveeCore\MaterialParseResult',
         'ProcessData'            => '\iveeCore\ProcessData',
         'Reaction'               => '\iveeCore\Reaction',
         'ReactionProcessData'    => '\iveeCore\ReactionProcessData',
         'ReactionProduct'        => '\iveeCore\ReactionProduct',
-        'RegionMarketData'       => '\iveeCore\RegionMarketData',
         'Relic'                  => '\iveeCore\Relic',
         'ResearchMEProcessData'  => '\iveeCore\ResearchMEProcessData',
         'ResearchTEProcessData'  => '\iveeCore\ResearchTEProcessData',
@@ -176,13 +184,12 @@ class Config
         'Type'                   => '\iveeCore\Type',
         'Util'                   => '\iveeCore\Util',
         'CrestDataUpdate'                => '\iveeCore\CREST\CrestDataUpdater',
-        'CrestFetcher'                   => '\iveeCore\CREST\Fetcher',
         'CrestIndustryFacilitiesUpdater' => '\iveeCore\CREST\IndustryFacilitiesUpdater',
         'CrestIndustrySystemsUpdater'    => '\iveeCore\CREST\IndustrySystemsUpdater',
+        'CrestIveeUpdater'               => '\iveeCore\CREST\IveeUpdater',
         'CrestMarketPricesUpdater'       => '\iveeCore\CREST\MarketPricesUpdater',
-        'EmdrConsumer'       => '\iveeCore\EMDR\Consumer',
-        'EmdrPriceUpdater'   => '\iveeCore\EMDR\PriceUpdater',
-        'EmdrHistoryUpdater' => '\iveeCore\EMDR\HistoryUpdater',
+        'CrestMarketProcessor'           => '\iveeCore\CREST\MarketProcessor',
+        'CrestPriceEstimator'            => '\iveeCore\CREST\PriceEstimator',
         'ActivityIdNotFoundException'         => '\iveeCore\Exceptions\ActivityIdNotFoundException',
         'AssemblyLineTypeIdNotFoundException' => '\iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException',
         'CrestDataTooOldException'            => '\iveeCore\Exceptions\CrestDataTooOldException',
@@ -214,7 +221,13 @@ class Config
         'TypeNameNotFoundException'           => '\iveeCore\Exceptions\TypeNameNotFoundException',
         'TypeNotCompatibleException'          => '\iveeCore\Exceptions\TypeNotCompatibleException',
         'UnexpectedDataException'             => '\iveeCore\Exceptions\UnexpectedDataException',
-        'WrongTypeException'                  => '\iveeCore\Exceptions\WrongTypeException'
+        'WrongTypeException'                  => '\iveeCore\Exceptions\WrongTypeException',
+
+        'Client'                => '\iveeCrest\Client',
+        'CurlWrapper'           => '\iveeCrest\CurlWrapper',
+        'EndpointHandler'       => '\iveeCrest\EndpointHandler',
+        'Response'              => '\iveeCrest\Response',
+        'IveeCrestException'    => '\iveeCrest\Exceptions\IveeCrestException'
     );
 
     ////////////////////////////
@@ -439,28 +452,6 @@ class Config
     }
 
     /**
-     * Returns configured EMDR URL.
-     *
-     * @return string
-     */
-    public static function getEmdrRelayUrl()
-    {
-        return static::$emdrRelayUrl;
-    }
-
-    /**
-     * Configure EMDR URL.
-     *
-     * @param string $emdrRelayUrl for the EMDR relay connection
-     *
-     * @return void
-     */
-    public static function setEmdrRelayUrl($emdrRelayUrl)
-    {
-        static::$emdrRelayUrl = $emdrRelayUrl;
-    }
-
-    /**
      * Returns configured CREST base URL.
      *
      * @return string
@@ -480,6 +471,94 @@ class Config
     public static function setCrestBaseUrl($crestBaseUrl)
     {
         static::$crestBaseUrl = $crestBaseUrl;
+    }
+
+    /**
+     * Returns configured authed CREST base URL.
+     *
+     * @return string
+     */
+    public static function getAuthedCrestBaseUrl()
+    {
+        return static::$authedCrestBaseUrl;
+    }
+
+    /**
+     * Sets the authed CREST base URL.
+     *
+     * @param string $authedCrestBaseUrl the URL
+     *
+     * @return void
+     */
+    public static function setAuthedCrestBaseUrl($authedCrestBaseUrl)
+    {
+        static::$authedCrestBaseUrl = $authedCrestBaseUrl;
+    }
+
+    /**
+     * Returns configured CREST client ID.
+     *
+     * @return string
+     */
+    public static function getCrestClientId()
+    {
+        return static::$crestClientId;
+    }
+
+    /**
+     * Sets the CREST client id.
+     *
+     * @param string $crestClientId the client id
+     *
+     * @return void
+     */
+    public static function setCrestClientId($crestClientId)
+    {
+        static::$crestClientId = $crestClientId;
+    }
+
+    /**
+     * Returns configured CREST client secret.
+     *
+     * @return string
+     */
+    public static function getCrestClientSecret()
+    {
+        return static::$crestClientSecret;
+    }
+
+    /**
+     * Sets the CREST client secret.
+     *
+     * @param string $crestClientSecret the client secret
+     *
+     * @return void
+     */
+    public static function setCrestClientSecret($crestClientSecret)
+    {
+        return static::$crestClientSecret = $crestClientSecret;
+    }
+
+    /**
+     * Returns configured CREST user specific refresh token.
+     *
+     * @return string
+     */
+    public static function getCrestClientRefreshToken()
+    {
+        return static::$crestClientRefreshToken;
+    }
+
+    /**
+     * Sets the CREST user specific refresh token.
+     *
+     * @param string $crestClientRefreshToken to be set
+     *
+     * @return void
+     */
+    public static function setCrestClientRefreshToken($crestClientRefreshToken)
+    {
+        return static::$crestClientRefreshToken = $crestClientRefreshToken;
     }
 
     /**
@@ -527,7 +606,31 @@ class Config
     }
 
     /**
-     * Gets the tracked market region IDs, whose market data will be collected via EMDR
+     * Returns the maximum price data age in seconds, which is at least 5 minutes long.
+     *
+     * @return int
+     */
+    public static function getMaxPriceDataAge()
+    {
+        if (static::$maxPriceDataAge < 300)
+            return 300;
+        return static::$maxPriceDataAge;
+    }
+
+    /**
+     * Sets the maximum price data age in seconds.
+     *
+     * @param int $maxPriceDataAge the max age in seconds, 0 for unlimited
+     *
+     * @return void
+     */
+    public static function setMaxPriceDataAge($maxPriceDataAge)
+    {
+        static::$maxPriceDataAge = $maxPriceDataAge;
+    }
+
+    /**
+     * Gets the tracked market region IDs, whose market data will be collected via CREST
      *
      * @return array of region IDs
      */
@@ -537,7 +640,7 @@ class Config
     }
 
     /**
-     * Sets the tracked market region IDs, whose market data will be collected via EMDR
+     * Sets the tracked market region IDs, whose market data will be collected via CREST
      *
      * @param array $regionIds to be set
      *

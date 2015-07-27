@@ -2,7 +2,7 @@
 /**
  * Starbase class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -28,19 +28,19 @@ class Starbase extends Manufacturable
     /**
      * @var int[] $onlineCycleFuelReq holding raw fuel requirement data.
      */
-    protected $onlineCycleFuelReq = array();
+    protected $onlineCycleFuelReq = [];
 
     /**
      * @var int[] $reinforcedCycleFuelReq holding raw reinforcement fuel requirement data.
      */
-    protected $reinforcedCycleFuelReq = array();
+    protected $reinforcedCycleFuelReq = [];
 
     /**
-     * Constructor. Use \iveeCore\Type::getById() to instantiate Starbase objects instead.
+     * Constructor. Use iveeCore\Type::getById() to instantiate Starbase objects instead.
      *
      * @param int $id of the Type
      *
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeId is not found
      */
     protected function __construct($id)
     {

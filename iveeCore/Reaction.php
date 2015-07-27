@@ -2,7 +2,7 @@
 /**
  * Reaction class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -28,12 +28,12 @@ class Reaction extends Type
     /**
      * @var int[] $cycleInputMaterials contains the consumed materials for one reaction cycle
      */
-    protected $cycleInputMaterials = array();
+    protected $cycleInputMaterials = [];
 
     /**
      * @var int[] $cycleOutputMaterials contains the output materials for one reaction cycle
      */
-    protected $cycleOutputMaterials = array();
+    protected $cycleOutputMaterials = [];
 
     /**
      * @var bool $isAlchemy defines if this reaction is an alchemy reaction
@@ -41,11 +41,11 @@ class Reaction extends Type
     protected $isAlchemy = false;
 
     /**
-     * Constructor. Use \iveeCore\Type::getById() to instantiate Reaction objects.
+     * Constructor. Use iveeCore\Type::getById() to instantiate Reaction objects.
      *
      * @param int $id of the Reaction object
      *
-     * @throws Exception if typeID is not found
+     * @throws Exception if typeId is not found
      */
     protected function __construct($id)
     {

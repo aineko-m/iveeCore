@@ -2,7 +2,7 @@
 /**
  * CoreDataCommon class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -30,6 +30,11 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      * @var int $id of the CoreDataCommon.
      */
     protected $id;
+
+    /**
+     * @var int $expiry the objects absolute cache expiry as unix timestamp. Should be set during construction.
+     */
+    protected $expiry;
 
     /**
      * Returns the class short name which is used to lookup the configured FQDN classname in Config (for dynamic
@@ -70,14 +75,14 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     /**
      * Invalidate instancePool and cache entries.
      *
-     * @param string[] $keys
+     * @param string[] $keys to be deleted
      *
      * @return void
      */
     public static function deleteFromCache(array $keys)
     {
         $classPrefix = static::getClassHierarchyKeyPrefix();
-        $fullKeys = array();
+        $fullKeys = [];
         foreach ($keys as $key) {
             $fullKeys[] = $classPrefix . $key;
         }
@@ -99,18 +104,19 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      *
      * @return string
      */
-    public function getKey() {
+    public function getKey()
+    {
         return static::getClassHierarchyKeyPrefix() . $this->getId();
     }
 
     /**
-     * Gets the objects cache time to live.
+     * Gets the objects absolute cache expiry time as unix timestamp.
      *
      * @return int
      */
-    public function getCacheTTL()
+    public function getCacheExpiry()
     {
-        return 24 * 3600;
+        return $this->expiry;
     }
 
     /**
@@ -119,10 +125,10 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      * @param string $exceptionName nickname of the exception as configured in Config
      * @param string $message to be passed to the exception
      * @param int $code the exception code
-     * @param Exception $previous the previous exception used for chaining
+     * @param \Exception $previous the previous exception used for chaining
      *
      * @return void
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeID is not found
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if typeId is not found
      */
     protected static function throwException($exceptionName, $message = "", $code = 0, $previous = null)
     {

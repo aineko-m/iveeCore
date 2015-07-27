@@ -2,7 +2,7 @@
 /**
  * ProcessData class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -37,14 +37,14 @@ class ProcessData
     const ACTIVITY_INVENTING     = 8;
 
     /**
-     * @var int $activityID of this process.
+     * @var int $activityId of this process.
      */
-    protected $activityID = 0;
+    protected $activityId = 0;
 
     /**
-     * @var int $producesTypeID the resulting item of this process.
+     * @var int $producesTypeId the resulting item of this process.
      */
-    protected $producesTypeID;
+    protected $producesTypeId;
 
     /**
      * @var int $producesQuantity the resulting quantity of this process.
@@ -62,14 +62,14 @@ class ProcessData
     protected $processCost = 0;
 
     /**
-     * @var int $assemblyLineID the type of AssemblyLine being used in this process
+     * @var int $assemblyLineId the type of AssemblyLine being used in this process
      */
-    protected $assemblyLineID;
+    protected $assemblyLineId;
 
     /**
-     * @var int $solarSystemID the ID of the SolarSystem the process is being performed
+     * @var int $solarSystemId the ID of the SolarSystem the process is being performed
      */
-    protected $solarSystemID;
+    protected $solarSystemId;
 
     /**
      * @var \iveeCore\SkillMap $skills an object defining the minimum required skills to perform this activity.
@@ -89,14 +89,14 @@ class ProcessData
     /**
      * Constructor.
      *
-     * @param int $producesTypeID typeID of the item resulting from this process
+     * @param int $producesTypeId typeId of the item resulting from this process
      * @param int $producesQuantity the number of produces items
      * @param int $processTime the time this process takes in seconds
      * @param float $processCost the cost of performing this activity (without material cost or subprocesses)
      */
-    public function __construct($producesTypeID = -1, $producesQuantity = 0, $processTime = 0, $processCost = 0.0)
+    public function __construct($producesTypeId = -1, $producesQuantity = 0, $processTime = 0, $processCost = 0.0)
     {
-        $this->producesTypeID   = (int) $producesTypeID;
+        $this->producesTypeId   = (int) $producesTypeId;
         $this->producesQuantity = (int) $producesQuantity;
         $this->processTime      = (int) $processTime;
         $this->processCost      = (float) $processCost;
@@ -105,37 +105,37 @@ class ProcessData
     /**
      * Add required material and amount to total material array.
      *
-     * @param int $typeID of the material
+     * @param int $typeId of the material
      * @param int $amount of the material
      *
      * @return void
      */
-    public function addMaterial($typeID, $amount)
+    public function addMaterial($typeId, $amount)
     {
         if (!isset($this->materials)) {
             $materialClass = Config::getIveeClassName('MaterialMap');
             $this->materials = new $materialClass;
         }
-        $this->getMaterialMap()->addMaterial($typeID, $amount);
+        $this->getMaterialMap()->addMaterial($typeId, $amount);
     }
 
     /**
      * Add required skill to the total skill map.
      *
-     * @param int $skillID of the skill
+     * @param int $skillId of the skill
      * @param int $level of the skill
      *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException if the skill level is not a valid integer between
      * 0 and 5
      */
-    public function addSkill($skillID, $level)
+    public function addSkill($skillId, $level)
     {
         if (!isset($this->skills)) {
             $skillClass = Config::getIveeClassName('SkillMap');
             $this->skills = new $skillClass;
         }
-        $this->getSkillMap()->addSkill($skillID, $level);
+        $this->getSkillMap()->addSkill($skillId, $level);
     }
 
     /**
@@ -166,18 +166,18 @@ class ProcessData
     public function addSubProcessData(ProcessData $subProcessData)
     {
         if (!isset($this->subProcessData))
-            $this->subProcessData = array();
+            $this->subProcessData = [];
         $this->subProcessData[] = $subProcessData;
     }
 
     /**
-     * Returns the activityID of the process.
+     * Returns the activityId of the process.
      *
      * @return int
      */
-    public function getActivityID()
+    public function getActivityId()
     {
-        return $this->activityID;
+        return $this->activityId;
     }
 
     /**
@@ -188,11 +188,11 @@ class ProcessData
      */
     public function getProducedType()
     {
-        if ($this->producesTypeID < 0) {
+        if ($this->producesTypeId < 0) {
             $exceptionClass = Config::getIveeClassName('NoOutputItemException');
             throw new $exceptionClass("This process results in no new item");
         } else {
-            return Type::getById($this->producesTypeID);
+            return Type::getById($this->producesTypeId);
         }
     }
 
@@ -214,7 +214,7 @@ class ProcessData
     public function getSubProcesses()
     {
         if (!isset($this->subProcessData))
-            return array();
+            return [];
         return $this->subProcessData;
     }
 
@@ -233,9 +233,9 @@ class ProcessData
      *
      * @return int
      */
-    public function getSolarSystemID()
+    public function getSolarSystemId()
     {
-        return $this->solarSystemID;
+        return $this->solarSystemId;
     }
 
     /**
@@ -243,9 +243,9 @@ class ProcessData
      *
      * @return int
      */
-    public function getAssemblyLineTypeID()
+    public function getAssemblyLineTypeId()
     {
-        return $this->assemblyLineID;
+        return $this->assemblyLineId;
     }
 
     /**
@@ -310,7 +310,7 @@ class ProcessData
      */
     public function getTotalCost(IndustryModifier $iMod)
     {
-        return $this->getTotalProcessCost($iMod) + $this->getTotalMaterialBuyCost($iMod);
+        return $this->getTotalProcessCost() + $this->getTotalMaterialBuyCost($iMod);
     }
 
     /**
@@ -442,7 +442,7 @@ class ProcessData
     /**
      * Returns array with process times summed by activity, in seconds, including sub-processes.
      *
-     * @return float[] in the form activityID => float
+     * @return float[] in the form activityId => float
      */
     public function getTotalTimes()
     {
@@ -455,15 +455,15 @@ class ProcessData
         );
 
         if ($this->processTime > 0)
-            $sum[$this->activityID] = $this->processTime;
+            $sum[$this->activityId] = $this->processTime;
 
         foreach ($this->getSubProcesses() as $subProcessData) {
             if ($subProcessData instanceof InventionProcessData)
-                foreach ($subProcessData->getTotalSuccessTimes() as $activityID => $time)
-                    $sum[$activityID] += $time;
+                foreach ($subProcessData->getTotalSuccessTimes() as $activityId => $time)
+                    $sum[$activityId] += $time;
             else
-                foreach ($subProcessData->getTotalTimes() as $activityID => $time)
-                    $sum[$activityID] += $time;
+                foreach ($subProcessData->getTotalTimes() as $activityId => $time)
+                    $sum[$activityId] += $time;
         }
         return $sum;
     }
@@ -500,8 +500,8 @@ class ProcessData
         echo "Total slot time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
 
         //iterate over materials
-        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeID => $amount)
-            echo $amount . 'x ' . Type::getById($typeID)->getName() . PHP_EOL;
+        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount)
+            echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
 
         echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($iMod)) . "ISK" . PHP_EOL;
         echo "Slot cost: "     . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;

@@ -2,7 +2,7 @@
 /**
  * T3Blueprint class file.
  *
- * PHP version 5.3
+ * PHP version 5.4
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -37,7 +37,7 @@ class T3Blueprint extends InventableBlueprint
      * @param \iveeCore\SDE $sde the SDE object
      *
      * @return void
-     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeID
+     * @throws \iveeCore\Exceptions\TypeIdNotFoundException if expected data is not found for this typeId
      */
     protected function loadOriginatingBlueprints(SDE $sde)
     {
@@ -53,7 +53,7 @@ class T3Blueprint extends InventableBlueprint
                 "Reverse Engineering data for T3Blueprint ID=" . $this->id ." not found"
             );
 
-        $this->inventedFrom = array();
+        $this->inventedFrom = [];
         while ($row = $res->fetch_assoc())
             $this->inventedFrom[] = (int) $row['typeID'];
     }
@@ -63,7 +63,7 @@ class T3Blueprint extends InventableBlueprint
      *
      * @return int[]
      */
-    public function getInventionRelicIDs()
+    public function getInventionRelicIds()
     {
         return $this->inventedFrom;
     }
@@ -75,9 +75,9 @@ class T3Blueprint extends InventableBlueprint
      */
     public function getInventionRelics()
     {
-        $relics = array();
-        foreach ($this->getInventionRelicIDs() as $relicId)
-            $relics[$relicId] = \iveeCore\Type::getById($relicId);
+        $relics = [];
+        foreach ($this->getInventionRelicIds() as $relicId)
+            $relics[$relicId] = Type::getById($relicId);
 
         return $relics;
     }
@@ -87,24 +87,25 @@ class T3Blueprint extends InventableBlueprint
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $relicId the ID of the Relic to be used for invention
-     * @param int $decryptorID the decryptor the be used, if any
+     * @param int $decryptorId the decryptor the be used, if any
      * @param boolean $recursive defines if manufacturables should be build recursively
      *
      * @return \iveeCore\InventionProcessData
-     * @throws \iveeCore\Exceptions\NotInventableException if a wrong relicID is given
-     * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor or if relicId isn't a Relic
+     * @throws \iveeCore\Exceptions\NotInventableException if a wrong relicId is given
+     * @throws \iveeCore\Exceptions\WrongTypeException if decryptorId isn't a decryptor or if relicId isn't a Relic
      */
-    public function inventFromRelic(IndustryModifier $iMod, $relicId, $decryptorID = null, $recursive = true)
+    public function inventFromRelic(IndustryModifier $iMod, $relicId, $decryptorId = null, $recursive = true)
     {
         if(!in_array($relicId, $this->inventedFrom))
-            self::throwException('NotInventableException', "Can't use Relic ID=" . (int) $relicId
-                . " to invent this T3Blueprint");
+            self::throwException(
+                'NotInventableException', "Can't use Relic ID=" . (int) $relicId . " to invent this T3Blueprint"
+            );
 
         $relic = Type::getById($relicId);
         if(!$relic instanceof Relic)
-            self::throwException ('WrongTypeException', 'Given object is not instance of Relic');
+            self::throwException('WrongTypeException', 'Given object is not instance of Relic');
 
-        return $relic->invent($iMod, $this->getId(), $decryptorID, $recursive);
+        return $relic->invent($iMod, $this->getId(), $decryptorId, $recursive);
     }
 
     /**
@@ -112,24 +113,25 @@ class T3Blueprint extends InventableBlueprint
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $relicId the ID of the Relic to be used for invention
-     * @param int $decryptorID the decryptor the be used, if any
+     * @param int $decryptorId the decryptor the be used, if any
      * @param boolean $recursive defines if manufacturables should be build recursively
      *
      * @return \iveeCore\InventionProcessData
-     * @throws \iveeCore\Exceptions\NotInventableException if a wrong relicID is given
-     * @throws \iveeCore\Exceptions\WrongTypeException if decryptorID isn't a decryptor or if relicId isn't a Relic
+     * @throws \iveeCore\Exceptions\NotInventableException if a wrong relicId is given
+     * @throws \iveeCore\Exceptions\WrongTypeException if decryptorId isn't a decryptor or if relicId isn't a Relic
      */
-    public function inventManufacture(IndustryModifier $iMod, $relicId, $decryptorID = null, $recursive = true)
+    public function inventManufacture(IndustryModifier $iMod, $relicId, $decryptorId = null, $recursive = true)
     {
         if(!in_array($relicId, $this->inventedFrom))
-            self::throwException('NotInventableException', "Can't use Relic ID=" . (int) $relicId
-                . " to invent this T3Blueprint");
+            self::throwException(
+                'NotInventableException', "Can't use Relic ID=" . (int) $relicId . " to invent this T3Blueprint"
+            );
    
         $relic = Type::getById($relicId);
         if(!$relic instanceof Relic)
-            self::throwException ('WrongTypeException', 'Given object is not instance of Relic');
+            self::throwException('WrongTypeException', 'Given object is not instance of Relic');
 
-        return $relic->inventManufacture($iMod, $this->getId(), $decryptorID, $recursive);
+        return $relic->inventManufacture($iMod, $this->getId(), $decryptorId, $recursive);
     }
 
     /**
@@ -138,14 +140,14 @@ class T3Blueprint extends InventableBlueprint
      * shared code. If iveeCore is ever moved to PHP 5.4, this could be solved via Traits.
      */
 
-    public function copyInventManufacture(IndustryModifier $iMod, $decryptorID = null, $recursive = true)
+    public function copyInventManufacture(IndustryModifier $iMod, $decryptorId = null, $recursive = true)
     {
         self::throwException('IveeCoreException', "Use inventManufacture()");
     }
 
     public function getInventorBlueprintId()
     {
-        self::throwException('IveeCoreException', "T3Blueprints are invented from Relics, use getInventionRelicIDs()");
+        self::throwException('IveeCoreException', "T3Blueprints are invented from Relics, use getInventionRelicIds()");
     }
 
     public function getInventorBlueprint()
@@ -153,7 +155,7 @@ class T3Blueprint extends InventableBlueprint
         self::throwException('IveeCoreException', "T3Blueprints are invented from Relics");
     }
 
-    public function invent(IndustryModifier $iMod, $decryptorID = null, $recursive = true)
+    public function invent(IndustryModifier $iMod, $decryptorId = null, $recursive = true)
     {
         self::throwException('IveeCoreException', "Use inventFromRelic()");
     }
