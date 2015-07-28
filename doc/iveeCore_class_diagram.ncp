@@ -1343,7 +1343,7 @@ omitted</Text>
         <Size width="267" height="179" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected string key</Member>
-        <Member type="Field">protected int ttl</Member>
+        <Member type="Field">protected int expiry</Member>
         <Member type="Field">public array data</Member>
         <Member type="Method">public CacheableArray __construct(string key, int ttl)</Member>
         <Member type="Method">public int getCacheExpiry()</Member>

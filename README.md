@@ -11,9 +11,9 @@ See the file LICENSE included with the distribution.
 
 
 ## Purpose and target audience
-The goal of this project is to provide its users with a simple but powerful API to get information about industrial activities in EVE Online such as bill of materials, activity cost and profit or skill requirements. By hiding the complexities of EvE's Static Data Export, iveeCore helps developers to quickly prototype scripts or develop complex applications. iveeCore now includes a full-fledged CREST client which further increases its utility.
+The goal of this project is to provide its users with a simple but powerful API to get information about industrial activities in EVE Online such as bill of materials, activity cost and profit or skill requirements. By providing solutions for dealing with EvE's Static Data Export and CREST API, abstracting from their complexities and quirks, iveeCore helps developers to quickly prototype scripts or develop full blown (web) applications.
 
-iveeCore will likely be most useful for developers with at least basic PHP knowledge wanting to create their own industry related tools.
+iveeCore will likely be most useful for developers with at least basic PHP knowledge wanting to create their own industry related or CREST powered tools.
 
 These are a few example questions that can be answered with a few lines of code using iveeCore:
 - "What is the profit of buying this item in Jita and selling in Dodixie?"
@@ -87,6 +87,7 @@ The SDE dump in MySQL format can usually be found in the Technology Lab section 
 Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_aeg11". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 Then create a second database, naming it "iveeCore" and giving the same user as before full privileges to it.
 
+
 ### Setup iveeCore
 
 You'll probably want to git clone iveeCore directly into your project:
@@ -102,7 +103,26 @@ Make a copy of the file iveeCore/Config_template.php, naming it Config.php and e
 
 iveeCore comes with a lot of variables pre-set to reasonable (but not universal) default values, so with time adjustments will be needed. Apart from the parameters in Config.php there are many things that can be set on IndustryModifier objects, which provide context data for industry and pricing processes. Developers will also surely want to customize the CharacterModifier and BlueprintModifier classes via subclassing, so skills, standings and BP research levels match their setup or scenario.
 
-If you are using the CREST functionality, you'll need to setup the credentials for your application. To pull data from authenticated CREST, we'll need to acquire a refresh token, which is tied to your application and the character that authorized it's data to be used.
+
+### Setup iveeCore using Composer
+
+As an alternative, you can use Composer to install iveeCore, the package name is 'aineko-m/ivee-core'. See https://getcomposer.org/ for how to get started with composer.
+To configure iveeCore, you can do this during runtime using
+
+```php
+use iveeCore\Config;
+
+Config::setSdeDbUser('ivee');
+Config::setSdeDbPw('supersecret');
+Config::setSdeDbName('eve');
+Config::setIveeDbName('ivee_core');
+```
+If using this method you don't have to create Config.php based on a copy of Config_template.php. If the file Config.php doesn't exist, it will use the template file.
+
+
+### Setup CREST
+
+To enable access to CREST, you'll need to setup the credentials for your application. To pull data from authenticated CREST, we'll need to acquire a refresh token, which is tied to your application and the character that authorized it's data to be used.
 
 iveeCore comes with a self-contained web-script that does just this. It can be found under www/getrefreshtoken.php.
 Simply copy that file to a webserver and point your web browser to it. The script will take you through the steps. You'll be asked to register your application at [https://developers.eveonline.com/applications](https://developers.eveonline.com/applications) if you haven't already, selecting "CREST Access" and the "publicData" scope.
@@ -124,7 +144,7 @@ The script offers various flags that control its operation (multiple can be spec
 "-all" runs all of the above updates.
 "-s" sets silent operation (except errors)
 
-You'll probably want to setup this script to run with the -all flag automatically (cronjob) at least once a day. Note that history will only be update once per day. The price update respects the Config::$maxPriceDataAge setting and will ignore items whose price data hasn't reached that age. Therefor $maxPriceData age should be set to a matching value, i.e. if you run the update every 6 hours, set the variable to 21600 (6*60*60) or slightly less. Cache expiry of price objects is also controlled via this variable.
+You'll probably want to setup this script to run with the -all flag automatically (cronjob) at least once a day. Note that history will only be update once per day. The price update respects the Config::$maxPriceDataAge setting and will ignore items whose price data hasn't reached that age. Therefor $maxPriceData age should be set to a matching value, i.e. if you run the update every 6 hours, set the variable to 21600 (6x60x60) or slightly less. Cache expiry of price objects is also controlled via this variable.
 
 The history update should be run before the price update because some history statistics are used when estimating the realistic buy/sell prices. It would fetch the history on demand, but it would not be asynchronous, thus slower overall than if fetching history explicitly first (which runs multiple requests in parallel asynchronously).
 
@@ -134,21 +154,6 @@ On the first history update run the DB load will be higher because non-trivial a
 
 During tests on a fast line with a SSD backed DB on runs over 6 regions I've seen averages of 50 item history updates per second. Price data is smaller, but two calls are required per item (buy and sell), in the end averaging at 45 item price updates per second (90 reqs/s). Although steps have been taken to try to minimize the I/O load of the update process, having slower storage like a mechanical disk backing the DB reduces the speed somewhat. Tuning the mysql configuration can have a positive impact on the performance.
 
-
-### Setup iveeCore using Composer
-
-You can use composer to install iveeCore, the package name is 'aineko-m/ivee-core'. See https://getcomposer.org/ for how to get started with composer.
-To configure iveeCore, you can do this during runtime using
-
-```php
-use iveeCore\Config;
-
-Config::setSdeDbUser('ivee');
-Config::setSdeDbPw('supersecret');
-Config::setSdeDbName('eve');
-Config::setIveeDbName('ivee_core');
-```
-If using this method you don't have to create Config.php based on a copy of Config_template.php. If the file Config.php doesn't exist, it will use the template file.
 
 ## Upgrading the SDE
 Whenever you want to upgrade to another SDE, the following steps are recommended:
@@ -172,7 +177,7 @@ Again, running the provided unit test to check for problems is a good idea.
 
 
 ## Usage
-Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.pdf](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf) and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have run update_crest.php at least once before any of the industry methods will work.
+Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.pdf](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf) and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have run "cli/updater.php -all" at least once before any of the industry methods will work.
 ```php
 <?php
 //initialize iveeCore. Adapt path as required.
@@ -218,7 +223,7 @@ $reaction = Type::getByName('Unrefined Hyperflurite Reaction');
 $reactionProcessData = $reaction->react(24 * 30, true, true, $iMod);
 echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit($sMod) . PHP_EOL;
 ```
-The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the engine are Type and its child classes, ProcessData and its child classes and IndustryModifier.
+The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the engine are type, process and industry context classes.
 
 ## Notes
 Although I tried to make iveeCore as configurable as possible, there are still a number of underlying assumptions made and caveats:
