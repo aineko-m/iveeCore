@@ -273,11 +273,12 @@ class InventionProcessData extends ProcessData
     /**
      * Prints data about this process.
      *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * @param \iveeCore\IndustryModifier $buyContext for buying context
+     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext ist used.
      *
      * @return void
      */
-    public function printData(IndustryModifier $iMod)
+    public function printData(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
         $utilClass = Config::getIveeClassName('Util');
 
@@ -290,12 +291,12 @@ class InventionProcessData extends ProcessData
         }
 
         echo "Total average success material cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialBuyCost($iMod)) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialBuyCost($buyContext)) . "ISK" . PHP_EOL;
         echo "Total average success slot cost: "
         . $utilClass::quantitiesToReadable($this->getTotalSuccessProcessCost()) . "ISK" . PHP_EOL;
         echo "Total average success cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalSuccessCost($iMod)) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalSuccessCost($buyContext)) . "ISK" . PHP_EOL;
         echo "Total profit: "
-        . $utilClass::quantitiesToReadable($this->getTotalProfit($iMod)) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalProfit($buyContext, $sellContext)) . "ISK" . PHP_EOL;
     }
 }

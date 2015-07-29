@@ -192,12 +192,12 @@ class MaterialMap
      * chosen for that unless another preferred station is set on the IndustryModifier object.
      * Items that are not on the market will be ignored.
      *
-     * @param IndustryModifier $iMod used for market context
+     * @param IndustryModifier $buyContext used for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getMaterialBuyCost(IndustryModifier $iMod)
+    public function getMaterialBuyCost(IndustryModifier $buyContext)
     {
         $sum = 0;
         foreach ($this->getMaterials() as $typeId => $amount) {
@@ -205,23 +205,25 @@ class MaterialMap
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionId(), $iMod->getMaxPriceDataAge())
-                    ->getBuyPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getBuyTaxFactor();
+                $sum += $type->getMarketPrices(
+                    $buyContext->getSolarSystem()->getRegionId(),
+                    $buyContext->getMaxPriceDataAge()
+                )->getBuyPrice($buyContext->getMaxPriceDataAge()) * $amount * $buyContext->getBuyTaxFactor();
         }
         return $sum;
     }
 
     /**
-     * Returns material sell value, considering specific taxes taxes. The best station (lowest tax) in system will be
+     * Returns material sell value, considering specific taxes. The best station (lowest tax) in system will be
      * chosen for that unless another preferred station is set on the IndustryModifier object.
      * Items that are not on the market will be ignored.
      *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * @param \iveeCore\IndustryModifier $sellContext for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getMaterialSellValue(IndustryModifier $iMod)
+    public function getMaterialSellValue(IndustryModifier $sellContext)
     {
         $sum = 0;
         foreach ($this->getMaterials() as $typeId => $amount) {
@@ -229,9 +231,30 @@ class MaterialMap
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionId(), $iMod->getMaxPriceDataAge())
-                    ->getSellPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getSellTaxFactor();
+                $sum += $type->getMarketPrices(
+                    $sellContext->getSolarSystem()->getRegionId(),
+                    $sellContext->getMaxPriceDataAge()
+                )->getSellPrice($sellContext->getMaxPriceDataAge()) * $amount * $sellContext->getSellTaxFactor();
         }
         return $sum;
+    }
+
+    /**
+     * Returns the profit for buying and reselling the materials, considering specific taxes. The best station (lowest
+     * tax) in each system will be chosen for that unless another preferred station is set on the IndustryModifier
+     * objects. Items that are not on the market will be ignored. Different IndustryModifiers can be used for buy and
+     * sell, allowing the calculation of cross-station trading profits.
+     *
+     * @param \iveeCore\IndustryModifier $buyContext for buying market context
+     * @param \iveeCore\IndustryModifier $sellContext for selling market context, optional. If not given, the buy
+     * context is used.
+     *
+     * @return float
+     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
+     */
+    public function getMaterialBuySellProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
+    {
+        return $this->getMaterialSellValue(is_null($sellContext) ? $buyContext : $sellContext)
+            - $this->getMaterialBuyCost($buyContext);
     }
 }

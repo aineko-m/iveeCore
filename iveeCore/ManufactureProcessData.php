@@ -98,27 +98,36 @@ class ManufactureProcessData extends ProcessData
     /**
      * Returns the the total profit for batch. Considers sell tax.
      *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * @param \iveeCore\IndustryModifier $buyContext for buying context
+     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext will be
+     * used.
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalProfit(IndustryModifier $iMod)
+    public function getTotalProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
-        $product = $this->getProducedType();
-        $marketPrices = $product->getMarketPrices($iMod->getSolarSystem()->getRegionId(), $iMod->getMaxPriceDataAge());
-        return $marketPrices->getSellPrice($iMod->getMaxPriceDataAge()) * $this->producesQuantity
-            * $iMod->getSellTaxFactor() - $this->getTotalCost($iMod);
+        if (is_null($sellContext))
+            $sellContext = $buyContext;
+
+        $marketPrices = $this->getProducedType()->getMarketPrices(
+            $sellContext->getSolarSystem()->getRegionId(),
+            $sellContext->getMaxPriceDataAge()
+        );
+
+        return $marketPrices->getSellPrice($sellContext->getMaxPriceDataAge()) * $this->producesQuantity
+            * $sellContext->getSellTaxFactor() - $this->getTotalCost($buyContext);
     }
 
     /**
      * Prints data about this process.
      *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * @param \iveeCore\IndustryModifier $buyContext for buying context
+     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext ist used.
      *
      * @return void
      */
-    public function printData(IndustryModifier $iMod)
+    public function printData(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
         $utilClass = Config::getIveeClassName('Util');
 
@@ -130,14 +139,14 @@ class ManufactureProcessData extends ProcessData
         foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount)
             echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
 
-        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($iMod))
+        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($buyContext))
             . "ISK" . PHP_EOL;
         echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalProcessCost())
             . "ISK" . PHP_EOL;
-        echo "Total Cost: " . $utilClass::quantitiesToReadable($this->getTotalCost($iMod))
+        echo "Total Cost: " . $utilClass::quantitiesToReadable($this->getTotalCost($buyContext))
             . "ISK" . PHP_EOL;
         try {
-            echo "Total Profit: "        . $utilClass::quantitiesToReadable($this->getTotalProfit($iMod))
+            echo "Total Profit: " . $utilClass::quantitiesToReadable($this->getTotalProfit($buyContext, $sellContext))
                 . "ISK" . PHP_EOL;
         } catch (Exceptions\NoPriceDataAvailableException $e) {
             echo "No profit calculation possible due to missing price data for product" . PHP_EOL;

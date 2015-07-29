@@ -631,6 +631,8 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="5" second="15">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -643,6 +645,8 @@ omitted</Text>
         <EndMultiplicity>0..1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="5" second="6">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="False">
@@ -671,8 +675,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="14" second="16">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -702,6 +704,8 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="16" second="17">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -725,8 +729,6 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="5" second="22">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -777,7 +779,7 @@ omitted</Text>
         <Name>InventionProcessData</Name>
         <Access>Public</Access>
         <Location left="435" top="868" />
-        <Size width="330" height="451" />
+        <Size width="330" height="468" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected float probability</Member>
         <Member type="Field">protected int resultRuns</Member>
@@ -801,12 +803,13 @@ omitted</Text>
         <Member type="Method">public float getSuccessMaterialBuyCost(IndustryModifier iMod)</Member>
         <Member type="Method">public float getTotalSuccessMaterialBuyCost(IndustryModifier iMod)</Member>
         <Member type="Method">public float getTotalSuccessCost(IndustryModifier iMod)</Member>
+        <Member type="Method">public void printData(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>CopyProcessData</Name>
         <Access>Public</Access>
-        <Location left="50" top="1158" />
+        <Location left="50" top="1183" />
         <Size width="272" height="145" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int outputRuns</Member>
@@ -876,7 +879,7 @@ omitted</Text>
         <Name>ManufactureProcessData</Name>
         <Access>Public</Access>
         <Location left="50" top="868" />
-        <Size width="272" height="196" />
+        <Size width="272" height="213" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int bpMeLevel</Member>
         <Member type="Field">protected int bpPeLevel</Member>
@@ -884,7 +887,8 @@ omitted</Text>
         <Member type="Method">public int getMeLevel()</Member>
         <Member type="Method">public int getPeLevel()</Member>
         <Member type="Method">public float getTotalCostPerUnit(IndustryModifier iMod)</Member>
-        <Member type="Method">public float getTotalProfit(IndustryModifier iMod)</Member>
+        <Member type="Method">public float getTotalProfit(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
+        <Member type="Method">public void printData(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -938,7 +942,7 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
           <X>339</X>
-          <Y>1116</Y>
+          <Y>1141</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
           <X>380</X>
@@ -954,6 +958,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="3" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1190,6 +1196,8 @@ omitted</Text>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="2" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1202,6 +1210,8 @@ omitted</Text>
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1217,6 +1227,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="0">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1228,8 +1240,6 @@ omitted</Text>
         <EndMultiplicity>1..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="3" second="0">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1261,6 +1271,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="1" second="7">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1268,6 +1280,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="6">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1296,7 +1310,7 @@ omitted</Text>
         <Name>MaterialMap</Name>
         <Access>Public</Access>
         <Location left="70" top="56" />
-        <Size width="337" height="281" />
+        <Size width="337" height="298" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array materials</Member>
         <Member type="Method">public void addMaterial(int typeId, int quatity)</Member>
@@ -1308,14 +1322,15 @@ omitted</Text>
         <Member type="Method">public MaterialMap getMultipliedMaterialMap(float factor)</Member>
         <Member type="Method">public void reprocessMaterials(IndustryModifier iMod)</Member>
         <Member type="Method">public float getMaterialVolume()</Member>
-        <Member type="Method">public float getMaterialBuyCost(IndustryModifier iMod, int maxPriceDataAge)</Member>
-        <Member type="Method">public float getMaterialSellValue(IndustryModifier iMod, int maxPriceDataAge)</Member>
+        <Member type="Method">public float getMaterialBuyCost(IndustryModifier buyContext)</Member>
+        <Member type="Method">public float getMaterialSellValue(IndustryModifier sellContext)</Member>
+        <Member type="Method">public float getMaterialBuySellProfit(IndustryMofidier buyContext, IndustryModifier sellContext)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
         <Name>MaterialParseResult</Name>
         <Access>Public</Access>
-        <Location left="118" top="400" />
+        <Location left="118" top="421" />
         <Size width="239" height="128" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array unparseables</Member>
@@ -1339,7 +1354,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>CacheableArray</Name>
         <Access>Public</Access>
-        <Location left="498" top="355" />
+        <Location left="500" top="368" />
         <Size width="267" height="179" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected string key</Member>
@@ -1353,13 +1368,13 @@ omitted</Text>
       <Entity type="Interface">
         <Name>ICacheable</Name>
         <Access>Public</Access>
-        <Location left="848" top="379" />
+        <Location left="850" top="392" />
         <Size width="162" height="77" />
         <Collapsed>False</Collapsed>
       </Entity>
       <Entity type="Comment">
         <Text>ICacheable repeated on this page for completeness</Text>
-        <Location left="868" top="263" />
+        <Location left="870" top="276" />
         <Size width="133" height="63" />
       </Entity>
       <Entity type="Comment">
@@ -1520,8 +1535,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="4" second="5">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1529,8 +1542,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="6" second="5">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1538,6 +1549,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="4" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1717,6 +1730,8 @@ omitted</Text>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="0" second="1">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1725,6 +1740,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="0" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1733,6 +1750,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1741,6 +1760,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="2" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1756,6 +1777,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="4" second="0">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>

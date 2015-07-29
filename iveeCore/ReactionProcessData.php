@@ -157,13 +157,15 @@ class ReactionProcessData
     /**
      * Convenience function for getting the profit from this reaction process.
      *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * @param \iveeCore\IndustryModifier $buyContext for buying context
+     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext is used.
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getProfit(IndustryModifier $iMod)
+    public function getProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
-        return $this->getOutputSellValue($iMod) - $this->getInputBuyCost($iMod);
+        return $this->getOutputSellValue(is_null($sellContext) ? $buyContext : $sellContext)
+            - $this->getInputBuyCost($buyContext);
     }
 }

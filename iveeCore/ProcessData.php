@@ -471,18 +471,20 @@ class ProcessData
     /**
      * Returns total profit for this batch (direct child ManufactureProcessData sub-processes).
      *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * @param \iveeCore\IndustryModifier $buyContext for buying context
+     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext will be
+     * used. Only relevant for manufacturing (activities with a product that can be sold on the market).
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
-    public function getTotalProfit(IndustryModifier $iMod)
+    public function getTotalProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
         $sum = 0;
         foreach ($this->getSubProcesses() as $spd)
             if ($spd instanceof ManufactureProcessData)
-                $sum += $spd->getTotalProfit($iMod);
+                $sum += $spd->getTotalProfit($buyContext, $sellContext);
 
         return $sum;
     }
@@ -490,11 +492,13 @@ class ProcessData
     /**
      * Prints data about this process.
      *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * @param \iveeCore\IndustryModifier $buyContext for buying context
+     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext will be
+     * used.
      *
      * @return void
      */
-    public function printData(IndustryModifier $iMod)
+    public function printData(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
         $utilClass = Config::getIveeClassName('Util');
         echo "Total slot time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
@@ -503,9 +507,11 @@ class ProcessData
         foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount)
             echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
 
-        echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($iMod)) . "ISK" . PHP_EOL;
+        echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($buyContext)) . "ISK"
+            . PHP_EOL;
         echo "Slot cost: "     . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;
-        echo "Total cost: "    . $utilClass::quantitiesToReadable($this->getTotalCost($iMod)) . "ISK" . PHP_EOL;
-        echo "Total profit: "  . $utilClass::quantitiesToReadable($this->getTotalProfit($iMod)) . "ISK" . PHP_EOL;
+        echo "Total cost: "    . $utilClass::quantitiesToReadable($this->getTotalCost($buyContext)) . "ISK" . PHP_EOL;
+        echo "Total profit: "  . $utilClass::quantitiesToReadable($this->getTotalProfit($buyContext, $sellContext))
+            . "ISK" . PHP_EOL;
     }
 }
