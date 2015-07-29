@@ -131,7 +131,7 @@ class ReactionProcessData
     /**
      * Convenience function for getting the buy cost of the input materials.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
@@ -144,7 +144,7 @@ class ReactionProcessData
     /**
      * Convenience function for getting the sell value of the input materials.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
@@ -157,7 +157,7 @@ class ReactionProcessData
     /**
      * Convenience function for getting the profit from this reaction process.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials

@@ -62,13 +62,14 @@ class Config
     protected static $defaultMarketRegionId = 10000002; //The Forge
 
     /**
-     * Defines the maximum acceptable price data age in seconds.
-     * When using pricing methods and there is no relevant price data available or its age is greater than this value,
-     * it will trigger a lookup to CREST.
+     * Defines the maximum globally acceptable price data age in seconds. Also influences cache expiry times on price
+     * objects. When using pricing methods and the price data age is greater than this value, it will trigger a lookup
+     * from REST. This can be overridden for specific pricing method calls by setting the variable on the passed
+     * IndustryModifier object.
      */
     protected static $maxPriceDataAge = 21600;
 
-    //Defines the regions that will have their market data collected via CREST
+    //Defines the regions that will have their market data collected via CREST by the batch updater
     protected static $trackedMarketRegionIds = array(
 //        10000001, //Derelik
         10000002, //The Forge
@@ -146,8 +147,8 @@ class Config
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
         'BlueprintModifier'      => '\iveeCore\BlueprintModifier',
-        'Cache'                  => '\iveeCore\MemcachedWrapper',
-        //'Cache'                  => '\iveeCore\RedisWrapper',
+        'Cache'                  => '\iveeCore\MemcachedWrapper', //don't forget the also change the port
+        //'Cache'                  => '\iveeCore\RedisWrapper', //don't forget the also change the port
         'CacheableArray'         => '\iveeCore\CacheableArray',
         'CharacterModifier'      => '\iveeCore\CharacterModifier',
         'CoreDataCommon'         => '\iveeCore\CoreDataCommon',
@@ -620,7 +621,7 @@ class Config
     /**
      * Sets the maximum price data age in seconds.
      *
-     * @param int $maxPriceDataAge the max age in seconds, 0 for unlimited
+     * @param int $maxPriceDataAge the max age in seconds.
      *
      * @return void
      */

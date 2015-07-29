@@ -93,21 +93,22 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
      */
     public function testBasicBlueprintMethods()
     {
-        $type = Type::getById(2047); //DC I Blueprint
-        $this->assertTrue($type instanceof Blueprint);
+        $bp = Type::getById(2047); //DC I Blueprint
+        $this->assertTrue($bp instanceof Blueprint);
         //stubs
-        $type->getProduct();
-        $type->getMaxProductionLimit();
-        $type->getProductBaseCost(0);
-        $this->assertTrue($type->calcResearchMultiplier(0, 2) * 105 == 250);
+        $bp->getProduct();
+        $bp->getMaxProductionLimit();
+        $bp->getProductBaseCost(null);
+        $this->assertTrue($bp->calcResearchMultiplier(0, 2) * 105 == 250);
 
         //IndustryModifier for Itamo
         $iMod = IndustryModifier::getBySystemIdForPos(30000119);
-        $type->manufacture($iMod);
-        $type->copy($iMod);
-        $type->invent($iMod);
-        $type->researchME($iMod, 0, 10);
-        $type->researchTE($iMod, 0, 20);
+        $iMod->setMaxPriceDataAge(null); //disable live price update
+        $bp->manufacture($iMod)->getTotalProfit($iMod);
+        $bp->copy($iMod);
+        $bp->invent($iMod);
+        $bp->researchME($iMod, 0, 10);
+        $bp->researchTE($iMod, 0, 20);
     }
 
     public function testAssemblyLine()

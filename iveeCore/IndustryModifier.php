@@ -75,7 +75,7 @@ class IndustryModifier
     protected $preferredMarketStationId;
 
     /**
-     * @var int $maxPriceDataAge defines the maximum acceptable price data age in seconds.
+     * @var int $maxPriceDataAge defines the maximum acceptable price data age in seconds. null for unlimited.
      */
     protected $maxPriceDataAge;
 
@@ -328,15 +328,13 @@ class IndustryModifier
      */
     public function getMaxPriceDataAge()
     {
-        if ($this->maxPriceDataAge < 300)
-            return 300;
         return $this->maxPriceDataAge;
     }
 
     /**
      * Sets the maximum acceptable price data age in seconds.
      *
-     * @param int $maxPriceDataAge the time in seconds
+     * @param int $maxPriceDataAge the time in seconds. Set to null for unlimited age (no updates or exceptions).
      *
      * @return void
      */

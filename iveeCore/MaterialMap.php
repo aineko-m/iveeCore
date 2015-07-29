@@ -189,10 +189,10 @@ class MaterialMap
 
     /**
      * Returns material buy cost, considering station specific taxes. The best station (lowest tax) in system will be
-     * chosen for that.
+     * chosen for that unless another preferred station is set on the IndustryModifier object.
      * Items that are not on the market will be ignored.
      *
-     * @param IndustryModifier $iMod used for industry context
+     * @param IndustryModifier $iMod used for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
@@ -205,16 +205,18 @@ class MaterialMap
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionId())
+                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionId(), $iMod->getMaxPriceDataAge())
                     ->getBuyPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getBuyTaxFactor();
         }
         return $sum;
     }
 
     /**
-     * Returns material sell value, considering taxes.
+     * Returns material sell value, considering specific taxes taxes. The best station (lowest tax) in system will be
+     * chosen for that unless another preferred station is set on the IndustryModifier object.
+     * Items that are not on the market will be ignored.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
@@ -227,7 +229,7 @@ class MaterialMap
             if (!$type->onMarket())
                 continue;
             if ($amount > 0)
-                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionId())
+                $sum += $type->getMarketPrices($iMod->getSolarSystem()->getRegionId(), $iMod->getMaxPriceDataAge())
                     ->getSellPrice($iMod->getMaxPriceDataAge()) * $amount * $iMod->getSellTaxFactor();
         }
         return $sum;

@@ -85,7 +85,7 @@ class ManufactureProcessData extends ProcessData
     /**
      * Returns the the total cost per single produced unit.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
@@ -98,23 +98,23 @@ class ManufactureProcessData extends ProcessData
     /**
      * Returns the the total profit for batch. Considers sell tax.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
     public function getTotalProfit(IndustryModifier $iMod)
     {
-        return (Type::getById($this->producesTypeId)->getMarketPrices($iMod->getSolarSystem()->getRegionId())
-                ->getSellPrice($iMod->getMaxPriceDataAge()) * $this->producesQuantity * $iMod->getSellTaxFactor()
-            ) - ($this->getTotalCost($iMod)
-        );
+        $product = $this->getProducedType();
+        $marketPrices = $product->getMarketPrices($iMod->getSolarSystem()->getRegionId(), $iMod->getMaxPriceDataAge());
+        return $marketPrices->getSellPrice($iMod->getMaxPriceDataAge()) * $this->producesQuantity
+            * $iMod->getSellTaxFactor() - $this->getTotalCost($iMod);
     }
 
     /**
      * Prints data about this process.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return void
      */

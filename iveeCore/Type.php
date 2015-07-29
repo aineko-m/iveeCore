@@ -447,15 +447,16 @@ class Type extends SdeType
      * Returns the MarketPrices object for this Type.
      *
      * @param int $regionId of the region to get market data for. If none passed, default is looked up.
+     * @param int $maxPriceDataAge for the price data. null for unlimited.
      *
      * @return \iveeCore\MarketPrices
      * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
-    public function getMarketPrices($regionId = null)
+    public function getMarketPrices($regionId = null, $maxPriceDataAge = null)
     {
         $marketPricesClass = Config::getIveeClassName('MarketPrices');
-        return $marketPricesClass::getByIdAndRegion($this->id, $regionId);
+        return $marketPricesClass::getByIdAndRegion($this->id, $regionId, $maxPriceDataAge);
     }
 
     /**

@@ -148,7 +148,7 @@ You'll probably want to setup this script to run with the -all flag automaticall
 
 The history update should be run before the price update because some history statistics are used when estimating the realistic buy/sell prices. It would fetch the history on demand, but it would not be asynchronous, thus slower overall than if fetching history explicitly first (which runs multiple requests in parallel asynchronously).
 
-For the applications that make use of iveeCore it might be undesirable to have it pull market data on-demand when it encounters old data, potentially incurring substantial delays thanks to CREST. To solve this, the recommended way is setting a much higher $maxPriceDataAge at runtime, thus it won't trigger a live fetch, while batched updates will run normally.
+For the applications that make use of iveeCore it might be undesirable to have it pull market data on-demand when it encounters old data, potentially incurring substantial delays thanks to CREST. To solve this, the recommended way is setting a higher $maxPriceDataAge globally in Config at runtime, thus it will only trigger a live fetch if the data is really old, while batched updates will run normally. Alternatively setting the variable to null on the IndustryModifier used to provide context for specific pricing operations will disable the data age checking completely.
 
 On the first history update run the DB load will be higher because non-trivial amounts of data is being inserted (~1GB for 6 regions). Subsequent runs should be quicker. By default, the CREST updater only tracks "The Forge", "Lonetrek", "Heimatar", "Sinq Laison", "Domain" and "Metropolis" market regions. This can be changed in Config.php, also at runtime.
 

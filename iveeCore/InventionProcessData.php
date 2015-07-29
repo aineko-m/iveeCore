@@ -237,7 +237,7 @@ class InventionProcessData extends ProcessData
     /**
      * Returns average material cost until success, without subprocesses.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      */
@@ -249,7 +249,7 @@ class InventionProcessData extends ProcessData
     /**
      * Returns average material cost until success, including subprocesses.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      */
@@ -261,7 +261,7 @@ class InventionProcessData extends ProcessData
     /**
      * Returns total average cost until success, including subprocesses.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      */
@@ -273,7 +273,7 @@ class InventionProcessData extends ProcessData
     /**
      * Prints data about this process.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return void
      */

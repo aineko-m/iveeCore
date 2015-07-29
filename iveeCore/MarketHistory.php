@@ -140,7 +140,7 @@ class MarketHistory extends CoreDataCommon
      *
      * @param int $typeId of type
      * @param int $regionId of the region. If none passed, default is looked up.
-     * @param int $maxPriceDataAge for the maximum acceptable market data age. Use 0 to force update from CREST.
+     * @param int $maxPriceDataAge for the maximum acceptable market data age. null for unlimited.
      * @param bool $cache whether this object should be cached. Note that it can be quite large, so chose carefully.
      *
      * @return \iveeCore\MarketHistory
@@ -157,34 +157,28 @@ class MarketHistory extends CoreDataCommon
         if (is_null($regionId))
             $regionId = Config::getDefaultMarketRegionId();
 
-        //get default maximum market data age if none passed
-        if (is_null($maxPriceDataAge))
-            $maxPriceDataAge = Config::getMaxPriceDataAge();
-
         //try instance pool and cache
-        if ($maxPriceDataAge > 0) {
-            try {
-                return static::$instancePool->getItem(
-                    static::getClassHierarchyKeyPrefix() . (int) $regionId . '_' . (int) $typeId
-                );
-            } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
-            }
+        try {
+            $mh = static::$instancePool->getItem(
+                static::getClassHierarchyKeyPrefix() . (int) $regionId . '_' . (int) $typeId
+            );
+            if (!$mh->isTooOld($maxPriceDataAge))
+                return $mh;
+        } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
         }
 
         $mhClass = Config::getIveeClassName(static::getClassNick());
 
         //try DB
-        if ($maxPriceDataAge > 0) {
-            try {
-                $mh = new $mhClass($typeId, $regionId);
+        try {
+            $mh = new $mhClass($typeId, $regionId);
 
-                //use it only if its not too old
-                if (!$mh->isTooOld($maxPriceDataAge)) {
-                    static::$instancePool->setItem($mh);
-                    return $mh;
-                }
-            } catch (NoPriceDataAvailableException $e) { //empty as we are using Exceptions for flow control here
+            //use it only if its not too old or unlimited
+            if (!$mh->isTooOld($maxPriceDataAge)) {
+                static::$instancePool->setItem($mh);
+                return $mh;
             }
+        } catch (NoPriceDataAvailableException $e) { //empty as we are using Exceptions for flow control here
         }
 
         if (is_null(static::$crestMarketProcessor)) {
@@ -383,13 +377,13 @@ class MarketHistory extends CoreDataCommon
      * past day, therefore the date timestamp will lag up to two whole days + how long it takes to get the new data from
      * CREST behind the current timestamp. An appropriate offset is automatically applied when performing the check.
      *
-     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds. null for unlimited.
      *
      * @return bool
      */
     public function isTooOld($maxPriceDataAge)
     {
-        return $this->getLastHistUpdateTs() + 2 * 86400 + $maxPriceDataAge < time();
+        return !is_null($maxPriceDataAge) AND $this->getLastHistUpdateTs() + 2 * 86400 + $maxPriceDataAge < time();
     }
 
     /**

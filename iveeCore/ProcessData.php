@@ -268,7 +268,7 @@ class ProcessData
     /**
      * Returns material buy cost, without subprocesses.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
@@ -283,7 +283,7 @@ class ProcessData
     /**
      * Returns material buy cost, including subprocesses.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
@@ -303,7 +303,7 @@ class ProcessData
     /**
      * Returns total cost, including subprocesses.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
@@ -471,7 +471,7 @@ class ProcessData
     /**
      * Returns total profit for this batch (direct child ManufactureProcessData sub-processes).
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
@@ -490,7 +490,7 @@ class ProcessData
     /**
      * Prints data about this process.
      *
-     * @param \iveeCore\IndustryModifier $iMod for industry context
+     * @param \iveeCore\IndustryModifier $iMod for market context
      *
      * @return void
      */

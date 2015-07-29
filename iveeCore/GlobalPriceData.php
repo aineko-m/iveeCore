@@ -69,7 +69,7 @@ class GlobalPriceData extends CoreDataCommon
      * Retuns a GlobalPriceData object. Tries caches and instantiates new objects if necessary.
      *
      * @param int $typeId of requested market data typeId
-     * @param int $maxPriceDataAge maximum global price data age
+     * @param int $maxPriceDataAge maximum global price data age.
      *
      * @return \iveeCore\GlobalPriceData
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
@@ -187,7 +187,7 @@ class GlobalPriceData extends CoreDataCommon
     /**
      * Gets eve-wide average, as returned by CREST.
      *
-     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds.
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds. null for unlimited.
      *
      * @return float
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
@@ -213,7 +213,7 @@ class GlobalPriceData extends CoreDataCommon
     /**
      * Gets eve-wide adjusted price, as returned by CREST; relevant for industry activity cost calculations.
      *
-     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds.
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds. null for unlimited.
      *
      * @return float
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no CREST price data available
@@ -241,7 +241,7 @@ class GlobalPriceData extends CoreDataCommon
      * lag up to a whole day + how long it takes to get the new data from CREST behind the current timestamp. An
      * appropriate offset is automatically applied when performing the check.
      *
-     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds. null for unlimited.
      *
      * @return bool
      */
@@ -249,6 +249,6 @@ class GlobalPriceData extends CoreDataCommon
     {
         //take the data timestamp, add a whole day as it is valid until the end of the current day.
         //Then add whatever wiggle room we get from maxPriceDataAge.
-        return $this->priceDate + 86400 + $maxPriceDataAge < time();
+        return !is_null($maxPriceDataAge) AND $this->priceDate + 86400 + $maxPriceDataAge < time();
     }
 }

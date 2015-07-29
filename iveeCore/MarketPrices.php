@@ -115,7 +115,7 @@ class MarketPrices extends CoreDataCommon
      *
      * @param int $typeId of type
      * @param int $regionId of the region. If none passed, default is looked up.
-     * @param int $maxPriceDataAge for the maximum acceptable market data age. Use 0 to force update from CREST.
+     * @param int $maxPriceDataAge for the maximum acceptable market data age. Use null for unlimited.
      *
      * @return \iveeCore\MarketPrices
      * @throws \iveeCore\Exceptions\NotOnMarketException if requested type is not on market
@@ -131,34 +131,28 @@ class MarketPrices extends CoreDataCommon
         if (is_null($regionId))
             $regionId = Config::getDefaultMarketRegionId();
 
-        //get default maximum market data age if none passed
-        if (is_null($maxPriceDataAge))
-            $maxPriceDataAge = Config::getMaxPriceDataAge();
-
         //try instance pool and cache
-        if ($maxPriceDataAge > 0) {
-            try {
-                return static::$instancePool->getItem(
-                    static::getClassHierarchyKeyPrefix() . (int) $regionId . '_' . (int) $typeId
-                );
-            } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
-            }
+        try {
+            $mp = static::$instancePool->getItem(
+                static::getClassHierarchyKeyPrefix() . (int) $regionId . '_' . (int) $typeId
+            );
+            if (!$mp->isTooOld($maxPriceDataAge))
+                return $mp;
+        } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
         }
 
         $mpClass = Config::getIveeClassName(static::getClassNick());
 
         //try DB
-        if ($maxPriceDataAge > 0) {
-            try {
-                $mp = new $mpClass($typeId, $regionId, $maxPriceDataAge);
+        try {
+            $mp = new $mpClass($typeId, $regionId, $maxPriceDataAge);
 
-                //use it only if its not too old
-                if (!$mp->isTooOld($maxPriceDataAge)) {
-                    static::$instancePool->setItem($mp);
-                    return $mp;
-                }
-            } catch (NoPriceDataAvailableException $e) { //empty as we are using Exceptions for flow control here
+            //use it only if its not too old or unlimited
+            if (!$mp->isTooOld($maxPriceDataAge)) {
+                static::$instancePool->setItem($mp);
+                return $mp;
             }
+        } catch (NoPriceDataAvailableException $e) { //empty as we are using Exceptions for flow control here
         }
 
         if (is_null(static::$crestMarketProcessor)) {
@@ -221,6 +215,9 @@ class MarketPrices extends CoreDataCommon
             $this->avgSell5OrderAge = (int) $data['avgSell5OrderAge'];
         if (isset($data['avgBuy5OrderAge']))
             $this->avgBuy5OrderAge = (int) $data['avgBuy5OrderAge'];
+
+        if (is_null($maxPriceDataAge))
+            $maxPriceDataAge = Config::getMaxPriceDataAge();
 
         if ($this->lastPriceUpdate + $maxPriceDataAge > time())
             $this->expiry = $this->lastPriceUpdate + $maxPriceDataAge;
@@ -299,13 +296,13 @@ class MarketPrices extends CoreDataCommon
     /**
      * Gets whether the current data is too old.
      *
-     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds
+     * @param int $maxPriceDataAge specifies the maximum CREST price data age in seconds. null for unlimited.
      *
      * @return bool
      */
     public function isTooOld($maxPriceDataAge)
     {
-        return $this->getLastPriceUpdateTs() + $maxPriceDataAge < time();
+        return !is_null($maxPriceDataAge) AND $this->getLastPriceUpdateTs() + $maxPriceDataAge < time();
     }
 
     /**
@@ -331,7 +328,7 @@ class MarketPrices extends CoreDataCommon
     /**
      * Returns the realistic buy price as estimated in PriceEstimator.
      *
-     * @param int $maxPriceDataAge specifies the maximum price data age in seconds.
+     * @param int $maxPriceDataAge specifies the maximum price data age in seconds. null for unlimited.
      *
      * @return float
      * @throws \iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
@@ -339,7 +336,7 @@ class MarketPrices extends CoreDataCommon
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
-    public function getBuyPrice($maxPriceDataAge)
+    public function getBuyPrice($maxPriceDataAge = null)
     {
         if (is_null($this->buyPrice))
             self::throwException(
@@ -356,7 +353,7 @@ class MarketPrices extends CoreDataCommon
     /**
      * Returns the realistic sell price as estimated in PriceEstimator.
      *
-     * @param int $maxPriceDataAge specifies the maximum price data age in seconds.
+     * @param int $maxPriceDataAge specifies the maximum price data age in seconds. null for unlimited.
      *
      * @return float
      * @throws \iveeCore\Exceptions\NotOnMarketException if the item is not actually sellable (child classes)
@@ -364,7 +361,7 @@ class MarketPrices extends CoreDataCommon
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
      * too old
      */
-    public function getSellPrice($maxPriceDataAge)
+    public function getSellPrice($maxPriceDataAge = null)
     {
         if (is_null($this->sellPrice))
             self::throwException(

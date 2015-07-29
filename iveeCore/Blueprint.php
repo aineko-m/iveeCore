@@ -222,7 +222,7 @@ class Blueprint extends Type
     /**
      * Gets products base cost based on the adjustedPrice from CREST for each of the input materials.
      *
-     * @param int $maxPriceDataAge the maximum price data age in seconds
+     * @param int $maxPriceDataAge the maximum price data age in seconds. null for unlimited (no updates or exceptions).
      *
      * @return float
      */
