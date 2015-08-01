@@ -192,8 +192,30 @@ class MarketPrices extends CoreDataCommon
         if(!$type->onMarket())
             $this->throwNotOnMarketException($type);
 
+        //set data to object, fetching from DB if necessary
+        $this->setData($data);
+
+        if (is_null($maxPriceDataAge))
+            $maxPriceDataAge = Config::getMaxPriceDataAge();
+
+        if ($this->lastPriceUpdate + $maxPriceDataAge > time())
+            $this->expiry = $this->lastPriceUpdate + $maxPriceDataAge;
+        else
+            $this->expiry = time() + 1800; //if the data somehow is too old, cache it for another half hour
+    }
+
+    /**
+     * Set data to the object.
+     *
+     * @param array $data to be set. If null passed, the data is fetched from DB
+     *
+     * @return void
+     * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
+     */
+    protected function setData(array $data = null)
+    {
         if(is_null($data))
-            $data = $this->getDataFromDb();
+            $data = static::getDataFromDb($this->id, $this->regionId);
 
         //set data to attributes
         $this->lastPriceUpdate = (int) $data['lastPriceUpdate'];
@@ -215,14 +237,6 @@ class MarketPrices extends CoreDataCommon
             $this->avgSell5OrderAge = (int) $data['avgSell5OrderAge'];
         if (isset($data['avgBuy5OrderAge']))
             $this->avgBuy5OrderAge = (int) $data['avgBuy5OrderAge'];
-
-        if (is_null($maxPriceDataAge))
-            $maxPriceDataAge = Config::getMaxPriceDataAge();
-
-        if ($this->lastPriceUpdate + $maxPriceDataAge > time())
-            $this->expiry = $this->lastPriceUpdate + $maxPriceDataAge;
-        else
-            $this->expiry = time() + 1800; //if the data somehow is too old, cache it for another half hour
     }
 
     /**
@@ -231,7 +245,7 @@ class MarketPrices extends CoreDataCommon
      * @return array
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if no region market data is found
      */
-    protected function getDataFromDb()
+    protected static function getDataFromDb($typeId, $regionId)
     {
         $sdeClass = Config::getIveeClassName('SDE');
 
@@ -251,14 +265,14 @@ class MarketPrices extends CoreDataCommon
             ap.avgBuy5OrderAge
             FROM " . Config::getIveeDbName() . ".trackedMarketData as atp
             LEFT JOIN " . Config::getIveeDbName() . ".marketPrices AS ap ON atp.newestPriceData = ap.id
-            WHERE atp.typeID = " . $this->id . "
-            AND atp.regionID = " . $this->regionId . ";"
+            WHERE atp.typeID = " . (int) $typeId . "
+            AND atp.regionID = " . (int) $regionId . ";"
         )->fetch_assoc();
 
         if (empty($row))
             self::throwException(
-                'NoPriceDataAvailableException', "No region market data for typeId=" . $this->id . " and regionId="
-                . $this->regionId . " found"
+                'NoPriceDataAvailableException', "No region market data for typeId=" . (int) $typeId . " and regionId="
+                . (int) $regionId . " found"
             );
         return $row;
     }

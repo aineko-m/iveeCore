@@ -236,6 +236,20 @@ class MarketHistory extends CoreDataCommon
         $this->lastHistUpdate = (int) $row['lastHistUpdate'];
 
         //fetch the complete history
+        $this->loadFromMarketHistory($sde, $iveeDbName);
+        $this->loadFromMarketPrices($sde, $iveeDbName);
+    }
+
+    /**
+     * Loads the data from the marketHistory table
+     *
+     * @param \iveeCore\SDE $sde for the DB connection
+     * @param string $iveeDbName for the iveeCore DB schema name
+     *
+     * @return void
+     */
+    protected function loadFromMarketHistory(SDE $sde, $iveeDbName)
+    {
         $res = $sde->query(
             'SELECT 
             UNIX_TIMESTAMP(date) as date,
@@ -270,8 +284,18 @@ class MarketHistory extends CoreDataCommon
             if (isset($row['tx']))
                 $this->tx[$date] = (int) $row['tx'];
         }
+    }
 
-        //fetch the complete history
+    /**
+     * Loads the data from the marketPrices table
+     *
+     * @param \iveeCore\SDE $sde for the DB connection
+     * @param string $iveeDbName for the iveeCore DB schema name
+     *
+     * @return void
+     */
+    protected function loadFromMarketPrices(SDE $sde, $iveeDbName)
+    {
         $res = $sde->query(
             'SELECT 
             UNIX_TIMESTAMP(date) as date,
@@ -310,7 +334,7 @@ class MarketHistory extends CoreDataCommon
                 $this->avgBuy5OrderAge[$date] = (int) $row['avgBuy5OrderAge'];
         }
     }
-
+    
     /**
      * Returns the id of the the region this objects refers to.
      *
