@@ -37,7 +37,7 @@ class Config
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_mos10';
+    protected static $sdeDbName = 'eve_sde_aeg11';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';
@@ -184,11 +184,11 @@ class Config
         'T3Blueprint'            => '\iveeCore\T3Blueprint',
         'Type'                   => '\iveeCore\Type',
         'Util'                   => '\iveeCore\Util',
-        'CrestDataUpdate'                => '\iveeCore\CREST\CrestDataUpdater',
-        'CrestIndustryFacilitiesUpdater' => '\iveeCore\CREST\IndustryFacilitiesUpdater',
-        'CrestIndustrySystemsUpdater'    => '\iveeCore\CREST\IndustrySystemsUpdater',
+        'CrestDataUpdater'               => '\iveeCore\CREST\CrestDataUpdater',
+        'CrestFacilitiesUpdater'         => '\iveeCore\CREST\FacilitiesUpdater',
+        'CrestIndustryIndicesUpdater'    => '\iveeCore\CREST\IndustryIndicesUpdater',
         'CrestIveeUpdater'               => '\iveeCore\CREST\IveeUpdater',
-        'CrestMarketPricesUpdater'       => '\iveeCore\CREST\MarketPricesUpdater',
+        'CrestGlobalPricesUpdater'       => '\iveeCore\CREST\GlobalPricesUpdater',
         'CrestMarketProcessor'           => '\iveeCore\CREST\MarketProcessor',
         'CrestPriceEstimator'            => '\iveeCore\CREST\PriceEstimator',
         'ActivityIdNotFoundException'         => '\iveeCore\Exceptions\ActivityIdNotFoundException',

@@ -555,8 +555,7 @@ class MarketProcessor
         $typeRes = static::$sde->query(
             "SELECT typeID, typeName
             FROM invTypes
-            WHERE marketGroupID IS NOT NULL
-            AND published = 1;"
+            WHERE (marketGroupID IS NOT NULL OR published = 1);"
         );
         while ($tmp = $typeRes->fetch_array(MYSQL_NUM))
             static::$marketTypes[(int) $tmp[0]] = $tmp[1];

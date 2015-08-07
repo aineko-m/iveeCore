@@ -1,6 +1,6 @@
 <?php
 /**
- * MarketPricesUpdater class file.
+ * GlobalPricesUpdater class file.
  *
  * PHP version 5.4
  *
@@ -8,22 +8,22 @@
  * @package  IveeCoreCrest
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/MarketPricesUpdater.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/GlobalPricesUpdater.php
  */
 
 namespace iveeCore\CREST;
 use iveeCore\Config, iveeCrest\EndpointHandler;
 
 /**
- * MarketPricesUpdater updates the data for the global average and adjusted prices from CREST (not orders or history).
+ * GlobalPricesUpdater updates the data for the global average and adjusted prices from CREST (not orders or history).
  *
  * @category IveeCore
  * @package  IveeCoreCrest
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/MarketPricesUpdater.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/GlobalPricesUpdater.php
  */
-class MarketPricesUpdater extends CrestDataUpdater
+class GlobalPricesUpdater extends CrestDataUpdater
 {
     /**
      * Processes data objects to SQL.

@@ -1,6 +1,6 @@
 <?php
 /**
- * IndustrySystemsUpdater class file.
+ * IndustryIndicesUpdater class file.
  *
  * PHP version 5.4
  *
@@ -8,7 +8,7 @@
  * @package  IveeCoreCrest
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/IndustrySystemsUpdater.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/IndustryIndicesUpdater.php
  *
  */
 
@@ -16,16 +16,16 @@ namespace iveeCore\CREST;
 use iveeCore\Config, iveeCrest\EndpointHandler;
 
 /**
- * IndustrySystemsUpdater specific CREST data updater
+ * IndustryIndicesUpdater specific CREST data updater
  *
  * @category IveeCore
  * @package  IveeCoreCrest
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/IndustrySystemsUpdater.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/CREST/IndustryIndicesUpdater.php
  *
  */
-class IndustrySystemsUpdater extends CrestDataUpdater
+class IndustryIndicesUpdater extends CrestDataUpdater
 {
     /**
      * Processes data objects to SQL

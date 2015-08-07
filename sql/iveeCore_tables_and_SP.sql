@@ -52,6 +52,14 @@ COMMENT='This table points to the most recent rows of data for both history and 
 COLLATE='ascii_general_ci'
 ENGINE=InnoDB;
 
+CREATE TABLE `trackedCrestUpdates` (
+	`name` VARCHAR(255) NOT NULL,
+	`lastUpdate` DATETIME NOT NULL,
+	PRIMARY KEY (`name`)
+)
+COMMENT='This table tracks when certain CREST updates were run.'
+ENGINE=InnoDB;
+
 DELIMITER //
 CREATE PROCEDURE `completeHistoryUpdate`(IN `IN_typeID` INT, IN `IN_regionID` INT, IN `IN_generatedAt` DATETIME)
     LANGUAGE SQL
