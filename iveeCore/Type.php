@@ -115,7 +115,7 @@ class Type extends SdeType
         $res = $sdeClass::instance()->query(
             "SELECT typeID, typeName
             FROM invTypes
-            WHERE published = 1;"
+            WHERE marketGroupID IS NOT NULL OR published = 1;"
         );
 
         $namesToIds = [];
