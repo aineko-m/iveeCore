@@ -26,7 +26,7 @@ namespace iveeCore;
  */
 class Config
 {
-    const VERSION = 'iveeCore/2.6';
+    const VERSION = 'iveeCore/2.6.1';
 
     /////////////////////
     // Edit below here //

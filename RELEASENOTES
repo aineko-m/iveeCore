@@ -1,5 +1,16 @@
 This file lists major changes in iveeCore releases.
 
+Version 2.6.1 - August 9th, 2015
+--------------------------------
+- Normalize and clarify the use of the maxPriceDataAge configuration variable.
+- More logic in the CREST updaters to decide what data to update. This allows the user to call the update script with -all flag frequently without having to worry about unneeded updates. A small new DB table was added for update tracking. Migration provided.
+- Renamed 3 of the iveeCore\CREST updater classes to better reflect their purpose. Users will have to adapt their Config.php's.
+- Split updates for industry indices and global prices into two separate flags in the updater.
+- Fixed updaters not fetching data for items on market but with published = 0 in the SDE.
+- Prevent updater script from being started more than once.
+- Allow a second IndustryModifier object as market context in MaterialMap and ProcessData during profit calculation. Useful when buying and selling is done in different stations.
+
+
 Version 2.6 - July 27th, 2015
 -----------------------------
 - Full-fledged CREST client by merging of iveeCrest.

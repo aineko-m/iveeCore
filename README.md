@@ -136,19 +136,24 @@ To test the CREST setup run the script under cli/updater.php from the console:
 php updater.php -test
 ```
 If everything is fine, it should see the CREST response to an access token verify call, which shows some data about your character.
-The script offers various flags that control its operation (multiple can be specified):
-"-industry" updates the system industry indices and the global (adjusted, average) prices.
-"-facilities" updates the information on conquerable stations.
-"-history" runs a market history update of all relevant market items for all regions configured in Config::$trackedMarketRegionIds. Note that even on a fast internet connection this will take at least 20 minutes per region.
-"-prices" runs a market prices update of all relevant market items for all regions configured in Config::$trackedMarketRegionIds. Note that even on a fast internet connection this will take at least 20 minutes per region.
-"-all" runs all of the above updates.
-"-s" sets silent operation (except errors)
+The script offers various flags that control its operation:
+```
+Available options:
+-test         : Test the CREST connectivity by pulling data for the character
+-indices      : Update system industry indices
+-globalprices : Update global prices (average, adjusted)
+-facilities   : Update facilities (outposts)
+-history      : Update market history for items in all configured regions
+-prices       : Update market prices for items in all configured regions
+-all          : Run all of the above updates
+-s            : Silent operation
+Multiple options can be specified
+```
+The updates are run for data that has become too old (with different criteria for different data). Market history and orders are updated for all regions configured in Config::$trackedMarketRegionIds. The configuration variable Config::$maxPriceDataAge controls the maximum age of market data in seconds after which it will be updated.
 
-You'll probably want to setup this script to run with the -all flag automatically (cronjob) at least once a day. Note that history will only be update once per day. The price update respects the Config::$maxPriceDataAge setting and will ignore items whose price data hasn't reached that age. Therefor $maxPriceData age should be set to a matching value, i.e. if you run the update every 6 hours, set the variable to 21600 (6x60x60) or slightly less. Cache expiry of price objects is also controlled via this variable.
+You should setup this script to run with the -all flag automatically (cronjob) at least once a day. You can also run it more frequently, every hour for instance. Only data that requires updating will be fetched from CREST. The script prevents being executed twice at the same time, so long running update jobs that overlap into the next execution do not cause problems.
 
-The history update should be run before the price update because some history statistics are used when estimating the realistic buy/sell prices. It would fetch the history on demand, but it would not be asynchronous, thus slower overall than if fetching history explicitly first (which runs multiple requests in parallel asynchronously).
-
-For the applications that make use of iveeCore it might be undesirable to have it pull market data on-demand when it encounters old data, potentially incurring substantial delays thanks to CREST. To solve this, the recommended way is setting a higher $maxPriceDataAge globally in Config at runtime, thus it will only trigger a live fetch if the data is really old, while batched updates will run normally. Alternatively setting the variable to null on the IndustryModifier used to provide context for specific pricing operations will disable the data age checking completely.
+Note that when using iveeCore outside of the updater and it encounters old market data, it will trigger an update from CREST. Pulling this data on-demand in a live application might be undesirable, as it potentially incurs substantial delays thanks to CREST. To solve this, the recommended way is setting a higher $maxPriceDataAge globally in Config at runtime, thus it will only trigger a live fetch if the data is really old, while batched updates will run normally. Alternatively setting the variable to null on the IndustryModifier objects used to provide context for specific pricing operations will disable the data age checking completely.
 
 On the first history update run the DB load will be higher because non-trivial amounts of data is being inserted (~1GB for 6 regions). Subsequent runs should be quicker. By default, the CREST updater only tracks "The Forge", "Lonetrek", "Heimatar", "Sinq Laison", "Domain" and "Metropolis" market regions. This can be changed in Config.php, also at runtime.
 
@@ -177,7 +182,7 @@ Again, running the provided unit test to check for problems is a good idea.
 
 
 ## Usage
-Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.pdf](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf) and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have run "cli/updater.php -all" at least once before any of the industry methods will work.
+Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.pdf](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf) and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have run "cli/updater.php -all" at least once before these examples will work.
 ```php
 <?php
 //initialize iveeCore. Adapt path as required.

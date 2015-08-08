@@ -631,8 +631,6 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="5" second="15">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -645,8 +643,6 @@ omitted</Text>
         <EndMultiplicity>0..1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="5" second="6">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="False">
@@ -675,6 +671,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="14" second="16">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -704,8 +702,6 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="16" second="17">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -729,6 +725,8 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="5" second="22">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -821,7 +819,7 @@ omitted</Text>
         <Name>ProcessData</Name>
         <Access>Public</Access>
         <Location left="435" top="31" />
-        <Size width="310" height="706" />
+        <Size width="330" height="706" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int activity</Member>
         <Member type="Field">protected int producesTypeId</Member>
@@ -858,7 +856,7 @@ omitted</Text>
         <Member type="Method">public int getTime()</Member>
         <Member type="Method">public int getTotalTime()</Member>
         <Member type="Method">public array getTotalTimes()</Member>
-        <Member type="Method">public float getTotalProfit(IndustryModifier iMod)</Member>
+        <Member type="Method">public float getTotalProfit(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
         <Member type="Method">public void printData(IndustryModifier iMod)</Member>
         <Modifier>None</Modifier>
       </Entity>
@@ -911,7 +909,7 @@ omitted</Text>
         <Member type="Method">public bool withFeedback()</Member>
         <Member type="Method">public float getInputBuyCost(IndustryModifier iMod)</Member>
         <Member type="Method">public float getOutputSellValue(IndustryModifier iMod)</Member>
-        <Member type="Method">public float getProfit(IndustryModifier iMod)</Member>
+        <Member type="Method">public float getProfit(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Comment">
@@ -958,12 +956,10 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="3" second="3">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>780</X>
+          <X>800</X>
           <Y>706</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
@@ -1196,8 +1192,6 @@ omitted</Text>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="2" second="3">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1210,8 +1204,6 @@ omitted</Text>
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1227,8 +1219,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="0">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1240,6 +1230,8 @@ omitted</Text>
         <EndMultiplicity>1..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="3" second="0">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1271,8 +1263,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="1" second="7">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1280,8 +1270,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="6">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1403,7 +1391,7 @@ omitted</Text>
     <Language>Java</Language>
     <Entities>
       <Entity type="Class">
-        <Name>MarketPricesUpdater</Name>
+        <Name>GlobalPricesUpdater</Name>
         <Access>Public</Access>
         <Location left="1004" top="390" />
         <Size width="162" height="77" />
@@ -1411,7 +1399,7 @@ omitted</Text>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
-        <Name>IndustrySystemsUpdater</Name>
+        <Name>IndustryIndicesUpdater</Name>
         <Access>Public</Access>
         <Location left="789" top="390" />
         <Size width="170" height="77" />
@@ -1419,7 +1407,7 @@ omitted</Text>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
-        <Name>IndustryFacilitiesUpdater</Name>
+        <Name>FacilitiesUpdater</Name>
         <Access>Public</Access>
         <Location left="575" top="390" />
         <Size width="173" height="77" />
@@ -1447,17 +1435,19 @@ omitted</Text>
         <Name>IveeUpdater</Name>
         <Access>Public</Access>
         <Location left="88" top="70" />
-        <Size width="399" height="230" />
+        <Size width="399" height="264" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected EndpointHandler endpointHandler</Member>
         <Member type="Field">protected MarketProcessor marketProcessor</Member>
+        <Member type="Field">protected SDE sde</Member>
         <Member type="Method">public void run(array args, array regionIds)</Member>
         <Member type="Method">protected void test()</Member>
-        <Member type="Method">protected void updateIndustry()</Member>
-        <Member type="Method">protected void updateFacilities()</Member>
-        <Member type="Method">protected void updateHistory()</Member>
-        <Member type="Method">protected void updatePrices()</Member>
-        <Member type="Method">protected array getTypeIdsToUpdate(int regionId, int cutoffTs, string dateColumn)</Member>
+        <Member type="Method">protected void updateIndices(bool verbose)</Member>
+        <Member type="Method">protected void updateGlobalPrices(bool verbose)</Member>
+        <Member type="Method">protected void updateFacilities(bool verbose)</Member>
+        <Member type="Method">protected void updateHistory(array regionIds, bool verbose)</Member>
+        <Member type="Method">protected void updatePrices(array regionIds, bool verbose)</Member>
+        <Member type="Method">protected array getTypeIdsToUpdate(int regionId, int cutoffTs, string dateColumn, EndpointHandler eph)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -1535,6 +1525,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="4" second="5">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1542,6 +1534,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="6" second="5">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1549,8 +1543,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="4" second="3">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1730,8 +1722,6 @@ omitted</Text>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="0" second="1">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1740,8 +1730,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="0" second="2">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1750,8 +1738,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1760,8 +1746,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="2" second="3">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1777,8 +1761,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="4" second="0">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
