@@ -113,7 +113,7 @@
         <Name>Reaction</Name>
         <Access>Public</Access>
         <Location left="829" top="1760" />
-        <Size width="278" height="216" />
+        <Size width="278" height="230" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array cycleInputMaterial</Member>
         <Member type="Field">protected array cycleOutputMaterial</Member>
@@ -123,6 +123,7 @@
         <Member type="Method">public array getCycleOutputMaterials()</Member>
         <Member type="Method">public bool isAlchemy()</Member>
         <Member type="Method">public ReactionProcessData react(int cycles, bool reprocess, bool feedback, IndustryModifier iMod)</Member>
+        <Member type="Method">public ReactionProcessData reactExact(IndustryModifier iMod, float units, int recursionDepth)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -132,8 +133,8 @@
         <Size width="339" height="128" />
         <Collapsed>False</Collapsed>
         <Member type="Method">protected array queryAttributes()</Member>
-        <Member type="Method">public InventionData invent(IndustryModifier iMod, int inventedBpId, int decryptorId, bool recursive)</Member>
-        <Member type="Method">public InventionData inventManufacture(IndustryModifier iMod, int inventedBpId, int decryptorId, bool recursive)</Member>
+        <Member type="Method">public InventionData invent(IndustryModifier iMod, int inventedBpId, int decryptorId, int manuRecursionDepth)</Member>
+        <Member type="Method">public InventionData inventManufacture(IndustryModifier iMod, int inventedBpId, int decryptorId, int manuRecursionDepth, int reactionRecursionDepth)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -153,12 +154,13 @@
         <Name>ReactionProduct</Name>
         <Access>Public</Access>
         <Location left="733" top="1546" />
-        <Size width="235" height="145" />
+        <Size width="235" height="162" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected array productOfReactionIds</Member>
         <Member type="Method">protected ReactionProduct __construct(int typeId)</Member>
         <Member type="Method">public array getReactions()</Member>
         <Member type="Method">public array getReactionIds()</Member>
+        <Member type="Method">public ReactionProcessData doBestReaction(IndustryModifier iMod, float units, int recursionDepth, IndustryModifier buyContext)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -286,11 +288,11 @@
         <Member type="Method">public float getBuyPrice(int maxPriceDataAge)</Member>
         <Member type="Method">public float getSellPrice(int maxPriceDataAge)</Member>
         <Member type="Method">public float getProductBaseCost(int maxPriceDataAge)</Member>
-        <Member type="Method">public ManufactureData manufacture(IndustryModifier iMod, int units, int bpME, int bpTE, bool recursive)</Member>
-        <Member type="Method">public CopyData copy(IndustryModifier iMod, int copies, int runs, bool recursive)</Member>
-        <Member type="Method">public ResearchMEProcessData researchME(IndustryModifier iMod, int startME, int endME, bool recursive)</Member>
-        <Member type="Method">public ResearchTEProcessData researchTE(IndustryModifier iMod, int startTE, int endTE, bool recursive)</Member>
-        <Member type="Method">protected void addActivityMaterials(IndustryModifier iMod, ProcessData pd, int activityId, float materialFactor, float numPortions, bool recursive)</Member>
+        <Member type="Method">public ManufactureData manufacture(IndustryModifier iMod, int units, int bpME, int bpTE, int manuRecursionDepth, int reactionRecursionDepth)</Member>
+        <Member type="Method">public CopyData copy(IndustryModifier iMod, int copies, int runs, int manuRecursionDepth)</Member>
+        <Member type="Method">public ResearchMEProcessData researchME(IndustryModifier iMod, int startME, int endME, int manuRecursionDepth)</Member>
+        <Member type="Method">public ResearchTEProcessData researchTE(IndustryModifier iMod, int startTE, int endTE, int manuRecursionDepth)</Member>
+        <Member type="Method">protected void addActivityMaterials(IndustryModifier iMod, ProcessData pd, int activityId, float materialFactor, float numPortions, int manuRecursionDepth, int reactionRecursionDepth)</Member>
         <Member type="Method">public array getMaterials()</Member>
         <Member type="Method">public array getMaterialsForActivity(int activityId)</Member>
         <Member type="Method">public int getProductId()</Member>
@@ -320,9 +322,9 @@
         <Member type="Method">protected InventorBlueprint __construct(int typeId)</Member>
         <Member type="Method">protected void loadInventionStats(SDE sde)</Member>
         <Member type="Method">protected void loadSkillToDatacoreInterface(SDE sde)</Member>
-        <Member type="Method">public InventionData invent(IndustryModifier iMod, int inventedBpId, int decryptorId, bool recursive)</Member>
+        <Member type="Method">public InventionData invent(IndustryModifier iMod, int inventedBpId, int decryptorId, int manuRecursionDepth)</Member>
         <Member type="Method">protected Decryptor getAndCheckDecryptor(int decryptorId)</Member>
-        <Member type="Method">public ManufactureData copyInventManufacture(IndustryModifier iMod, int inventedBpId, int decryptorId, bool recursive)</Member>
+        <Member type="Method">public ManufactureData copyInventManufacture(IndustryModifier iMod, int inventedBpId, int decryptorId, int manuRecursionDepth, int reactionRecursionDepth)</Member>
         <Member type="Method">protected array getInventableBlueprintIds()</Member>
         <Member type="Method">protected array getInventableBlueprints()</Member>
         <Member type="Method">protected float getInventionProbability()</Member>
@@ -346,8 +348,8 @@
         <Member type="Method">public InventableBlueprint getInventorBlueprint()</Member>
         <Member type="Method">public void getBuyPrice(int maxPriceDataAge)</Member>
         <Member type="Method">public void getSellPrice(int maxPriceDataAge)</Member>
-        <Member type="Method">public InventionData invent(IndustryModifier iMod, int decryptorId, bool recursive)</Member>
-        <Member type="Method">public ManufactureData copyInventManufacture(IndustryModifier iMod, int decryptorId, bool recursive)</Member>
+        <Member type="Method">public InventionData invent(IndustryModifier iMod, int decryptorId, int manuRecursionDepth)</Member>
+        <Member type="Method">public ManufactureData copyInventManufacture(IndustryModifier iMod, int decryptorId, int manuRecursionDepth, int reactionRecursionDepth)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -360,8 +362,8 @@
         <Member type="Method">protected void loadOriginatingBlueprints(SDE sde)</Member>
         <Member type="Method">protected array getInventionRelicIds()</Member>
         <Member type="Method">protected array getInventionRelics()</Member>
-        <Member type="Method">public InventionData inventFromRelic(IndustryModifier iMod, int relicId, int decryptorId, bool recursive)</Member>
-        <Member type="Method">public InventionData inventManufacture(IndustryModifier iMod, int relicId, int decryptorId, bool recursive)</Member>
+        <Member type="Method">public InventionData inventFromRelic(IndustryModifier iMod, int relicId, int decryptorId, int manuRecursionDepth)</Member>
+        <Member type="Method">public InventionData inventManufacture(IndustryModifier iMod, int relicId, int decryptorId, int manuRecursionDepth, int reactionRecursionDepth)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -572,6 +574,19 @@ omitted</Text>
         <Location left="31" top="57" />
         <Size width="109" height="50" />
       </Entity>
+      <Entity type="Class">
+        <Name>Starbase</Name>
+        <Access>Public</Access>
+        <Location left="1586" top="1885" />
+        <Size width="326" height="162" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">protected array onlineCycleFuelReq</Member>
+        <Member type="Field">protected array reinforcedCycleFuelReq</Member>
+        <Member type="Method">public Starbase __construct(int id)</Member>
+        <Member type="Method">public MaterialMap getOnlineCycleFuelReqs(int solarSystemId)</Member>
+        <Member type="Method">public MaterialMap getReinforcedCycleFuelReq(int solarSystemId)</Member>
+        <Modifier>None</Modifier>
+      </Entity>
     </Entities>
     <Relationships>
       <Relationship type="Generalization" first="8" second="7">
@@ -754,6 +769,10 @@ omitted</Text>
           <Y>1521</Y>
         </BendPoint>
       </Relationship>
+      <Relationship type="Generalization" first="24" second="2">
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
+      </Relationship>
     </Relationships>
   </ProjectItem>
   <ProjectItem type="NClass.DiagramEditor.ClassDiagram.Diagram" assembly="NClass.DiagramEditor, Version=2.4.1823.0, Culture=neutral, PublicKeyToken=null">
@@ -763,7 +782,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>ResearchTEProcessData</Name>
         <Access>Public</Access>
-        <Location left="876" top="1076" />
+        <Location left="908" top="1225" />
         <Size width="282" height="162" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int startTELevel</Member>
@@ -776,7 +795,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>InventionProcessData</Name>
         <Access>Public</Access>
-        <Location left="435" top="868" />
+        <Location left="467" top="1017" />
         <Size width="330" height="468" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected float probability</Member>
@@ -807,7 +826,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>CopyProcessData</Name>
         <Access>Public</Access>
-        <Location left="50" top="1183" />
+        <Location left="64" top="1017" />
         <Size width="272" height="145" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int outputRuns</Member>
@@ -818,44 +837,25 @@ omitted</Text>
       <Entity type="Class">
         <Name>ProcessData</Name>
         <Access>Public</Access>
-        <Location left="435" top="31" />
-        <Size width="330" height="706" />
+        <Location left="466" top="504" />
+        <Size width="330" height="383" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">protected int activity</Member>
         <Member type="Field">protected int producesTypeId</Member>
         <Member type="Field">protected int producesQuantity</Member>
         <Member type="Field">protected int processTime</Member>
         <Member type="Field">protected float processCost</Member>
         <Member type="Field">protected int assemblyLineId</Member>
-        <Member type="Field">protected int solarSystemId</Member>
         <Member type="Field">protected SkillMap skills</Member>
-        <Member type="Field">protected MaterialMap materials</Member>
-        <Member type="Field">protected array subProcessData</Member>
         <Member type="Method">public ProcessData __construct(int producesTypeId, int producesQuantity, int processTime, float processCost)</Member>
         <Member type="Method">public void addMaterial(int typeId, int amount)</Member>
         <Member type="Method">public void addSkill(int skillId, int level)</Member>
         <Member type="Method">public void addSkillMap(SkillMap sm)</Member>
-        <Member type="Method">public void addSubProcessData(ProcessData subProcessData)</Member>
-        <Member type="Method">public int getActivityId()</Member>
         <Member type="Method">public Type getProducedType()</Member>
         <Member type="Method">public int getNumProducedUnits()</Member>
-        <Member type="Method">public array getSubProcesses()</Member>
-        <Member type="Method">public float getProcessCost()</Member>
-        <Member type="Method">public int getSolarSystemId()</Member>
         <Member type="Method">public int getAssemblyLineTypeId()</Member>
-        <Member type="Method">public float getTotalProcessCost()</Member>
-        <Member type="Method">public float getMaterialBuyCost(IndustryModifier iMod)</Member>
-        <Member type="Method">public float getTotalMaterialBuyCost(IndustryModifier iMod)</Member>
-        <Member type="Method">public float getTotalCost(IndustryModifier iMod)</Member>
-        <Member type="Method">public MaterialMap getMaterialMap()</Member>
-        <Member type="Method">public MaterialMap getTotalMaterialMap()</Member>
-        <Member type="Method">public float getMaterialVolume()</Member>
-        <Member type="Method">public float getTotalMaterialVolume()</Member>
-        <Member type="Method">public SkillMap getSkillMap()</Member>
-        <Member type="Method">public SkillMap getTotalSkillMap()</Member>
         <Member type="Method">public int getTime()</Member>
-        <Member type="Method">public int getTotalTime()</Member>
-        <Member type="Method">public array getTotalTimes()</Member>
+        <Member type="Method">public float getProcessCost()</Member>
+        <Member type="Method">public SkillMap getSkillMap()</Member>
         <Member type="Method">public float getTotalProfit(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
         <Member type="Method">public void printData(IndustryModifier iMod)</Member>
         <Modifier>None</Modifier>
@@ -863,7 +863,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>ResearchMEProcessData</Name>
         <Access>Public</Access>
-        <Location left="876" top="868" />
+        <Location left="908" top="1017" />
         <Size width="282" height="162" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int startMELevel</Member>
@@ -876,7 +876,7 @@ omitted</Text>
       <Entity type="Class">
         <Name>ManufactureProcessData</Name>
         <Access>Public</Access>
-        <Location left="50" top="868" />
+        <Location left="64" top="1220" />
         <Size width="272" height="213" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected int bpMeLevel</Member>
@@ -892,30 +892,87 @@ omitted</Text>
       <Entity type="Class">
         <Name>ReactionProcessData</Name>
         <Access>Public</Access>
-        <Location left="26" top="31" />
-        <Size width="350" height="333" />
+        <Location left="49" top="504" />
+        <Size width="350" height="400" />
         <Collapsed>False</Collapsed>
-        <Member type="Field">protected MaterialMap inputMaterialMap</Member>
-        <Member type="Field">protected MaterialMap outputMaterialMap</Member>
+        <Member type="Field">protected int activityId</Member>
+        <Member type="Field">protected int reactionId</Member>
+        <Member type="Field">protected MaterialMap outputMaterials</Member>
         <Member type="Field">protected float cycles</Member>
         <Member type="Field">protected bool withRefining</Member>
         <Member type="Field">protected bool withFeedback</Member>
-        <Member type="Method">public ReactionProcessData __construct(MaterialMap inputMaterialMap, MaterialMap outputMaterialMap, int cycles, bool withReprocessing, bool withFeedback)</Member>
-        <Member type="Method">public MaterialMap geInputMaterialMap()</Member>
+        <Member type="Method">public ReactionProcessData __construct(int reactionId, MaterialMap inputMaterialMap, MaterialMap outputMaterialMap, int solarSystemId, float cycles, bool withReprocessing, bool withFeedback)</Member>
+        <Member type="Method">public int getReactionId()</Member>
         <Member type="Method">public MaterialMap getOutputMaterialMap()</Member>
         <Member type="Method">public float getCycles()</Member>
-        <Member type="Method">public float getTime()</Member>
-        <Member type="Method">public bool withRefining()</Member>
+        <Member type="Method">public int getTime()</Member>
+        <Member type="Method">public SkillMap getSkillMap()</Member>
+        <Member type="Method">public float getProcessCost()</Member>
+        <Member type="Method">public float getMaterialVolume()</Member>
+        <Member type="Method">public float getTotalMaterialVolume()</Member>
+        <Member type="Method">public bool withReprocessing()</Member>
         <Member type="Method">public bool withFeedback()</Member>
-        <Member type="Method">public float getInputBuyCost(IndustryModifier iMod)</Member>
         <Member type="Method">public float getOutputSellValue(IndustryModifier iMod)</Member>
-        <Member type="Method">public float getProfit(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
+        <Member type="Method">public float getTotalProfit(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Comment">
         <Text>Process classes</Text>
-        <Location left="999" top="62" />
+        <Location left="96" top="71" />
         <Size width="109" height="50" />
+      </Entity>
+      <Entity type="Interface">
+        <Name>IProcessData</Name>
+        <Access>Public</Access>
+        <Location left="871" top="38" />
+        <Size width="350" height="400" />
+        <Collapsed>False</Collapsed>
+        <Member type="Method">public int getActivityId()</Member>
+        <Member type="Method">public int getSolarSystemId()</Member>
+        <Member type="Method">public void addSubProcessData(IProcessData subProcessData)</Member>
+        <Member type="Method">public array getSubProcesses()</Member>
+        <Member type="Method">public float getProcessCost()</Member>
+        <Member type="Method">public float getTotalProcessCost()</Member>
+        <Member type="Method">public float getTotalCost()</Member>
+        <Member type="Method">public float getMaterialBuyCost(IndustryModifier buyContext)</Member>
+        <Member type="Method">public float getTotalMaterialBuyCost(IndustryModifier buyContext)</Member>
+        <Member type="Method">public MaterialMap getMaterialMap()</Member>
+        <Member type="Method">public MaterialMap getTotalMaterialMap()</Member>
+        <Member type="Method">public float getMaterialVolume()</Member>
+        <Member type="Method">public float getTotalMaterialVolume()</Member>
+        <Member type="Method">public SkillMap getSkillMap()</Member>
+        <Member type="Method">public SkillMap getTotalSkillMap()</Member>
+        <Member type="Method">public float getTime()</Member>
+        <Member type="Method">public float getTotalTime()</Member>
+        <Member type="Method">public array getTotalTimes()</Member>
+        <Member type="Method">public float getTotalProfit(IndustryModifier buyContext, IndustryModifier sellContext)</Member>
+      </Entity>
+      <Entity type="Class">
+        <Name>ProcessDataCommon</Name>
+        <Access>Public</Access>
+        <Location left="477" top="38" />
+        <Size width="307" height="400" />
+        <Collapsed>False</Collapsed>
+        <Member type="Field">protected int activityId</Member>
+        <Member type="Field">protected int solarSystemId</Member>
+        <Member type="Field">protected array subProcessData</Member>
+        <Member type="Field">protected MaterialMap materials</Member>
+        <Member type="Method">public void addSubProcessData(ProcessData subProcessData)</Member>
+        <Member type="Method">public array getSubProcesses()</Member>
+        <Member type="Method">public int getActivityId()</Member>
+        <Member type="Method">public int getSolarSystemId()</Member>
+        <Member type="Method">public MaterialMap getMaterialMap()</Member>
+        <Member type="Method">public MaterialMap getTotalMaterialMap()</Member>
+        <Member type="Method">public SkillMap getTotalSkillMap()</Member>
+        <Member type="Method">public float getTotalProcessCost()</Member>
+        <Member type="Method">public float getMaterialBuyCost(IndustryModifier iMod)</Member>
+        <Member type="Method">public float getTotalMaterialBuyCost(IndustryModifier iMod)</Member>
+        <Member type="Method">public float getTotalCost(IndustryModifier iMod)</Member>
+        <Member type="Method">public int getTotalTime()</Member>
+        <Member type="Method">public array getTotalTimes()</Member>
+        <Member type="Method">public float getMaterialVolume()</Member>
+        <Member type="Method">public float getTotalMaterialVolume()</Member>
+        <Modifier>Abstract</Modifier>
       </Entity>
     </Entities>
     <Relationships>
@@ -923,28 +980,32 @@ omitted</Text>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>819</X>
-          <Y>1148</Y>
+          <X>855</X>
+          <Y>956</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>819</X>
-          <Y>802</Y>
+          <X>631</X>
+          <Y>999</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="4" second="3">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
+        <BendPoint relativeToStartShape="True">
+          <X>631</X>
+          <Y>956</Y>
+        </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="2" second="3">
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>339</X>
-          <Y>1141</Y>
+          <X>199</X>
+          <Y>956</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>380</X>
-          <Y>802</Y>
+          <X>631</X>
+          <Y>956</Y>
         </BendPoint>
       </Relationship>
       <Relationship type="Generalization" first="1" second="3">
@@ -952,23 +1013,43 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Generalization" first="5" second="3">
-        <StartOrientation>Vertical</StartOrientation>
-        <EndOrientation>Vertical</EndOrientation>
-      </Relationship>
-      <Relationship type="Association" first="3" second="3">
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
-          <X>800</X>
-          <Y>706</Y>
+          <X>405</X>
+          <Y>956</Y>
         </BendPoint>
         <BendPoint relativeToStartShape="False">
-          <X>698</X>
-          <Y>771</Y>
+          <X>631</X>
+          <Y>999</Y>
+        </BendPoint>
+      </Relationship>
+      <Relationship type="Realization" first="9" second="8">
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+      </Relationship>
+      <Relationship type="Generalization" first="3" second="9">
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Vertical</EndOrientation>
+      </Relationship>
+      <Relationship type="Association" first="9" second="8">
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+        <BendPoint relativeToStartShape="True">
+          <X>818</X>
+          <Y>350</Y>
         </BendPoint>
         <Direction>Unidirectional</Direction>
         <AssociationType>Aggregation</AssociationType>
         <EndMultiplicity>0..*</EndMultiplicity>
+      </Relationship>
+      <Relationship type="Generalization" first="6" second="9">
+        <StartOrientation>Vertical</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+        <BendPoint relativeToStartShape="False">
+          <X>428</X>
+          <Y>318</Y>
+        </BendPoint>
       </Relationship>
     </Relationships>
   </ProjectItem>
@@ -1307,7 +1388,7 @@ omitted</Text>
         <Member type="Method">public static void symmetricDifference(MaterialMap m1, MaterialMap m2)</Member>
         <Member type="Method">public void addMaterialMap(MaterialMap materials)</Member>
         <Member type="Method">public array getMaterials()</Member>
-        <Member type="Method">public MaterialMap getMultipliedMaterialMap(float factor)</Member>
+        <Member type="Method">public MaterialMap multiply(float factor)</Member>
         <Member type="Method">public void reprocessMaterials(IndustryModifier iMod)</Member>
         <Member type="Method">public float getMaterialVolume()</Member>
         <Member type="Method">public float getMaterialBuyCost(IndustryModifier buyContext)</Member>
