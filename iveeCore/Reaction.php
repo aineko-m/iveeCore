@@ -114,7 +114,7 @@ class Reaction extends Type
     }
 
     /**
-     * Produces an ReactionProcessData object detailing a reaction process.
+     * Produces an ReactionProcessData object detailing a reaction process for a given number of reaction cycles.
      *
      * @param int|float $cycles defines the number of reaction cycles to be calculated. One cycle takes 1h to complete.
      * @param bool $reprocess defines reprocessable reaction outputs should be reprocessed in the process. Applies to
@@ -145,11 +145,33 @@ class Reaction extends Type
         $reactionProcessDataClass = Config::getIveeClassName('ReactionProcessData');
 
         return new $reactionProcessDataClass(
+            $this->id,
             $imm->getMultipliedMaterialMap($cycles),
             $omm->getMultipliedMaterialMap($cycles),
+            $iMod->getSolarSystem()->getId(),
             $cycles,
             ($this->isAlchemy AND $reprocess), //only pass on refine flag if this reaction actually produces a refinable
-            $feedback
+            ($this->isAlchemy AND $feedback) //only pass feedback flag it it actually was used in reaction
         );
+    }
+
+    /**
+     * Produces an ReactionProcessData object detailing a reaction process for an exact number of desired output
+     * materials. This will likely result in fractionary number of reaction cycles. It also implies output reprocessing
+     * and reaction feedback (if applicable).
+     *
+     * @param int|float $units defines the number of desired output material units
+     * @param \iveeCore\IndustryModifier $iMod as industry context
+     *
+     * @return \iveeCore\ReactionProcessData
+     */
+    public function reactExact($units, IndustryModifier $iMod)
+    {
+        //determine the output material quantity from a single reaction cycle
+        $singleCycleOutput = $this->react(1, true, true, $iMod)->getOutputMaterialMap()->getMaterials();
+        $singleCycleQuantity = array_pop($singleCycleOutput);
+
+        //run reaction with adjusted fractionary number of cycles
+        return $this->react($units / $singleCycleQuantity, true, true, $iMod);
     }
 }

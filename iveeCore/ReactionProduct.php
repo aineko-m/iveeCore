@@ -94,4 +94,43 @@ class ReactionProduct extends Type
     {
         return $this->productOfReactionIds;
     }
+
+    /**
+     * Runs the reaction for producing a given number of units of this type. If multiple reactions are possible (like
+     * alchemy), the most cost effective option is used.
+     *
+     * @param int|float $units defines the number of desired output material units
+     * @param \iveeCore\IndustryModifier $iMod as industry context
+     * @param \iveeCore\IndustryModifier $buyContext for pricing context for chosing the cheapest reaction. If not
+     * given, it defaults to default Jita 4-4 CNAP.
+     *
+     * @return \iveeCore\ReactionProcessData
+     */
+    public function doBestReaction($units, IndustryModifier $iMod, IndustryModifier $buyContext = null)
+    {
+        $reactions = $this->getReactions();
+
+        //if there's only one reaction option, do straight forward reaction
+        if (count($reactions) == 1)
+            return array_pop($reactions)->reactExact($units, $iMod);
+
+        //if no pricing context waas given, get the default one
+        if (is_null($buyContext)) {
+            $iModClass = Config::getIveeClassName('IndustryModifier');
+            $buyContext = $iModClass::getByStationId(60003760); //hardcoded Jita 4-4 CNAP
+        }
+        $bestRpd = null;
+        $bestCost = null;
+
+        //run all reaction options and pick the cheapest one
+        foreach ($reactions as $reaction) {
+            $rpd = $reaction->reactExact($units, $iMod);
+            $cost = $rpd->getInputBuyCost($buyContext);
+            if (is_null($bestCost) OR $cost < $bestCost) {
+                $bestCost = $cost;
+                $bestRpd = $rpd;
+            }
+        }
+        return $bestRpd;
+    }
 }

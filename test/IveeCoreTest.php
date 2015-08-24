@@ -16,7 +16,8 @@ ini_set('display_errors', 'on');
 
 use iveeCore\Config, iveeCore\SDE, iveeCore\Type, iveeCore\Manufacturable, iveeCore\Blueprint,
     iveeCore\IndustryModifier, iveeCore\AssemblyLine, iveeCore\MaterialMap, iveeCore\ReactionProduct,
-    iveeCore\FitParser;
+    iveeCore\FitParser, iveeCore\ProcessData, iveeCore\ManufactureProcessData, iveeCore\InventionProcessData,
+    iveeCore\CopyProcessData, iveeCore\ReactionProcessData;
 
 //include the iveeCore init, expected in the iveeCore directory, with absolute path
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
@@ -86,6 +87,75 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         Type::deleteFromCache(array(645));
         //this should throw an exception
         $cacheInstance->getItem('iveeCore\Type_645');
+    }
+
+    /**
+     * Creates a process tree three levels deep and tests cost calculation
+     */
+    public function testProcessData()
+    {
+        //IndustryModifier for Jita 4-4
+        $marketContext = IndustryModifier::getByStationId(60003760);
+
+        //create ProcessData and direct children
+        $topPd = new ProcessData;
+        $ipd = new InventionProcessData(0, 100, 100, 0.5, 1, 0, 0, 0, 0);
+        $topPd->addSubProcessData($ipd);
+        $mpd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
+        $topPd->addSubProcessData($mpd);
+        $rpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $topPd->addSubProcessData($rpd);
+        $cpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
+        $topPd->addSubProcessData($cpd);
+        $this->assertTrue($topPd->getTotalCost($marketContext) == 400);
+
+        //add children to ipd
+        $iipd = new InventionProcessData(0, 100, 100, 0.5, 1, 0, 0, 0, 0);
+        $ipd->addSubProcessData($iipd);
+        $impd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
+        $ipd->addSubProcessData($impd);
+        $irpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $ipd->addSubProcessData($irpd);
+        $icpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
+        $ipd->addSubProcessData($icpd);
+        $this->assertTrue($ipd->getTotalCost($marketContext) == 500);
+        $this->assertTrue($ipd->getTotalSuccessCost($marketContext) == 1000);
+
+        //add children to mpd
+        $mipd = new InventionProcessData(0, 100, 100, 0.5, 1, 0, 0, 0, 0);
+        $mpd->addSubProcessData($mipd);
+        $mmpd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
+        $mpd->addSubProcessData($mmpd);
+        $mrpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $mpd->addSubProcessData($mrpd);
+        $mcpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
+        $mpd->addSubProcessData($mcpd);
+        $this->assertTrue($mpd->getTotalCost($marketContext) == 500);
+
+        //add children to rpd
+        $ripd = new InventionProcessData(0, 100, 100, 0.5, 1, 0, 0, 0, 0);
+        $rpd->addSubProcessData($ripd);
+        $rmpd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
+        $rpd->addSubProcessData($rmpd);
+        $rrpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $rpd->addSubProcessData($rrpd);
+        $rcpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
+        $rpd->addSubProcessData($rcpd);
+        $this->assertTrue($rpd->getTotalCost($marketContext) == 400);
+
+        //add children to cpd
+        $cipd = new InventionProcessData(0, 100, 100, 0.5, 1, 0, 0, 0, 0);
+        $cpd->addSubProcessData($cipd);
+        $cmpd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
+        $cpd->addSubProcessData($cmpd);
+        $crpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $cpd->addSubProcessData($crpd);
+        $ccpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
+        $cpd->addSubProcessData($ccpd);
+        $this->assertTrue($cpd->getTotalCost($marketContext) == 500);
+
+        //all together
+        $this->assertTrue($topPd->getTotalCost($marketContext) == 2400);
     }
 
     /**
@@ -222,7 +292,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $inTarget = new MaterialMap;
         $inTarget->addMaterial(16640, 72000);
         $inTarget->addMaterial(16644, 7200);
-        $this->assertTrue($rpd->getInputMaterialMap()->getMaterials() == $inTarget->getMaterials());
+        $this->assertTrue($rpd->getMaterialMap()->getMaterials() == $inTarget->getMaterials());
         $outTarget = new MaterialMap;
         $outTarget->addMaterial(16662, 14400);
         $this->assertTrue($rpd->getOutputMaterialMap()->getMaterials() == $outTarget->getMaterials());

@@ -22,17 +22,22 @@ namespace iveeCore;
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ReactionProcessData.php
  */
-class ReactionProcessData
+class ReactionProcessData extends ProcessDataCommon
 {
     /**
-     * @var \iveeCore\MaterialMap $inputMaterialMap holding the input materials for the reaction
+     * @var int $activityId of this process
      */
-    protected $inputMaterialMap;
+    protected $activityId = self::ACTIVITY_REACTING;
 
     /**
-     * @var \iveeCore\MaterialMap $outputMaterialMap holding the output materials of the reaction
+     * @var int $reactionId used in this process
      */
-    protected $outputMaterialMap;
+    protected $reactionId;
+
+    /**
+     * @var \iveeCore\MaterialMap $outputMaterials holding the output materials of the reaction
+     */
+    protected $outputMaterials;
 
     /**
      * @var int|float $cycles the number of reaction cycles
@@ -52,30 +57,34 @@ class ReactionProcessData
     /**
      * Constructor.
      *
+     * @param int $reactionId of the used reaction
      * @param MaterialMap $inputMaterialMap for the reaction input materials
      * @param MaterialMap $outputMaterialMap for the reaction output materials
-     * @param int $cycles defines the number of cycles the object covers
+     * @param int $solarSystemId ID of the SolarSystem the research is performed
+     * @param int|float $cycles defines the number of cycles the object covers
      * @param bool $withReprocessing defines if the process includes a reprocessing step, which can happen for alchemy
      * @param bool $withFeedback defines if the process includes a material feedback loop, which can happen for alchemy
      */
-    public function __construct(MaterialMap $inputMaterialMap, MaterialMap $outputMaterialMap, $cycles = 1,
-        $withReprocessing = false, $withFeedback = false
+    public function __construct($reactionId, MaterialMap $inputMaterialMap, MaterialMap $outputMaterialMap,
+        $solarSystemId, $cycles = 1, $withReprocessing = false, $withFeedback = false
     ) {
-        $this->inputMaterialMap  = $inputMaterialMap;
-        $this->outputMaterialMap = $outputMaterialMap;
-        $this->cycles            = $cycles;
-        $this->withReprocessing  = $withReprocessing;
-        $this->withFeedback      = $withFeedback;
+        $this->reactionId       = (int) $reactionId;
+        $this->materials        = $inputMaterialMap;
+        $this->outputMaterials  = $outputMaterialMap;
+        $this->solarSystemId    = (int) $solarSystemId;
+        $this->cycles           = $cycles;
+        $this->withReprocessing = $withReprocessing;
+        $this->withFeedback     = $withFeedback;
     }
 
     /**
-     * Returns the MaterialMap representing the consumed materials of the reaction.
+     * Returns the id of the reaction used
      *
-     * @return \iveeCore\MaterialMap
+     * @return int
      */
-    public function getInputMaterialMap()
+    public function getReactionId()
     {
-        return $this->inputMaterialMap;
+        return $this->reactionId;
     }
 
     /**
@@ -85,7 +94,7 @@ class ReactionProcessData
      */
     public function getOutputMaterialMap()
     {
-        return $this->outputMaterialMap;
+        return clone $this->outputMaterials;
     }
 
     /**
@@ -109,6 +118,27 @@ class ReactionProcessData
     }
 
     /**
+     * Will return an empty new SkillMap as reactions don't have skill requirements.
+     *
+     * @return \iveeCore\SkillMap
+     */
+    public function getSkillMap()
+    {
+        $skillClass = Config::getIveeClassName('SkillMap');
+        return new $skillClass;
+    }
+
+    /**
+     * Returns process cost, without subprocesses.
+     *
+     * @return float
+     */
+    public function getProcessCost()
+    {
+        return 0.0;
+    }
+
+    /**
      * Returns a boolean defining if this reaction process includes a reprocessing step (alchemy).
      *
      * @return bool
@@ -129,19 +159,6 @@ class ReactionProcessData
     }
 
     /**
-     * Convenience function for getting the buy cost of the input materials.
-     *
-     * @param \iveeCore\IndustryModifier $iMod for market context
-     *
-     * @return float
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
-     */
-    public function getInputBuyCost(IndustryModifier $iMod)
-    {
-        return $this->getInputMaterialMap()->getMaterialBuyCost($iMod);
-    }
-
-    /**
      * Convenience function for getting the sell value of the input materials.
      *
      * @param \iveeCore\IndustryModifier $iMod for market context
@@ -151,21 +168,24 @@ class ReactionProcessData
      */
     public function getOutputSellValue(IndustryModifier $iMod)
     {
-        return $this->getOutputMaterialMap()->getMaterialSellValue($iMod);
+        return $this->outputMaterials->getMaterialSellValue($iMod);
     }
 
     /**
-     * Convenience function for getting the profit from this reaction process.
+     * Returns total profit for direct child ManufactureProcessData or ReactionProcessData sub-processes (activities
+     * with a product that can be sold on the market).
      *
      * @param \iveeCore\IndustryModifier $buyContext for buying context
-     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext is used.
+     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext will be
+     * used.
      *
      * @return float
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
+     * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
+     * too old
      */
-    public function getProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
+    public function getTotalProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
         return $this->getOutputSellValue(is_null($sellContext) ? $buyContext : $sellContext)
-            - $this->getInputBuyCost($buyContext);
+            - $this->getTotalCost($buyContext);
     }
 }
