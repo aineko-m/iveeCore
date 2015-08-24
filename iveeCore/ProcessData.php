@@ -14,8 +14,8 @@
 namespace iveeCore;
 
 /**
- * ProcessData is the base class for holding information about an industrial process. This class has not been made
- * abstract so it can be used to aggregate multiple ProcessData objects ("shopping cart" functionality).
+ * ProcessData represents a generic industrial process. This class has not been made abstract so it can be used to
+ * aggregate multiple IProcessData objects ("shopping cart" functionality).
  *
  * Note that some methods have special-casing for InventionProcessData objects. This is due to the design decision of
  * making "invention attempt" cases override the normal inherited methods while the "invention success" cases are
@@ -27,20 +27,8 @@ namespace iveeCore;
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
  * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/ProcessData.php
  */
-class ProcessData
+class ProcessData extends ProcessDataCommon
 {
-    //activity ID constants
-    const ACTIVITY_MANUFACTURING = 1;
-    const ACTIVITY_RESEARCH_TE   = 3;
-    const ACTIVITY_RESEARCH_ME   = 4;
-    const ACTIVITY_COPYING       = 5;
-    const ACTIVITY_INVENTING     = 8;
-
-    /**
-     * @var int $activityId of this process.
-     */
-    protected $activityId = 0;
-
     /**
      * @var int $producesTypeId the resulting item of this process.
      */
@@ -67,24 +55,9 @@ class ProcessData
     protected $assemblyLineId;
 
     /**
-     * @var int $solarSystemId the ID of the SolarSystem the process is being performed
-     */
-    protected $solarSystemId;
-
-    /**
      * @var \iveeCore\SkillMap $skills an object defining the minimum required skills to perform this activity.
      */
     protected $skills;
-
-    /**
-     * @var \iveeCore\MaterialMap $materials object holding required materials and amounts
-     */
-    protected $materials;
-
-    /**
-     * @var \iveeCore\ProcessData[] $subProcessData holds (recursive|sub) process objects.
-     */
-    protected $subProcessData;
 
     /**
      * Constructor.
@@ -116,7 +89,7 @@ class ProcessData
             $materialClass = Config::getIveeClassName('MaterialMap');
             $this->materials = new $materialClass;
         }
-        $this->getMaterialMap()->addMaterial($typeId, $amount);
+        $this->materials->addMaterial($typeId, $amount);
     }
 
     /**
@@ -135,7 +108,7 @@ class ProcessData
             $skillClass = Config::getIveeClassName('SkillMap');
             $this->skills = new $skillClass;
         }
-        $this->getSkillMap()->addSkill($skillId, $level);
+        $this->skills->addSkill($skillId, $level);
     }
 
     /**
@@ -154,30 +127,6 @@ class ProcessData
         else {
             $this->skills = $sm;
         }
-    }
-
-    /**
-     * Add sub-ProcessData object. This can be used to make entire build-trees or build batches.
-     *
-     * @param \iveeCore\ProcessData $subProcessData ProcessData object to add as a sub-process
-     *
-     * @return void
-     */
-    public function addSubProcessData(ProcessData $subProcessData)
-    {
-        if (!isset($this->subProcessData))
-            $this->subProcessData = [];
-        $this->subProcessData[] = $subProcessData;
-    }
-
-    /**
-     * Returns the activityId of the process.
-     *
-     * @return int
-     */
-    public function getActivityId()
-    {
-        return $this->activityId;
     }
 
     /**
@@ -207,38 +156,6 @@ class ProcessData
     }
 
     /**
-     * Returns all sub process data objects, if any.
-     *
-     * @return \iveeCore\ProcessData[]
-     */
-    public function getSubProcesses()
-    {
-        if (!isset($this->subProcessData))
-            return [];
-        return $this->subProcessData;
-    }
-
-    /**
-     * Returns process cost, without subprocesses.
-     *
-     * @return float
-     */
-    public function getProcessCost()
-    {
-        return $this->processCost;
-    }
-
-    /**
-     * Returns ID of the SolarSystem this process is performed in.
-     *
-     * @return int
-     */
-    public function getSolarSystemId()
-    {
-        return $this->solarSystemId;
-    }
-
-    /**
      * Returns ID of the AssemblyLine this process is performed in.
      *
      * @return int
@@ -246,170 +163,6 @@ class ProcessData
     public function getAssemblyLineTypeId()
     {
         return $this->assemblyLineId;
-    }
-
-    /**
-     * Returns process cost (no materials), including subprocesses.
-     *
-     * @return float
-     */
-    public function getTotalProcessCost()
-    {
-        $sum = $this->getProcessCost();
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessProcessCost();
-            else
-                $sum += $subProcessData->getTotalProcessCost();
-        }
-        return $sum;
-    }
-
-    /**
-     * Returns material buy cost, without subprocesses.
-     *
-     * @param \iveeCore\IndustryModifier $iMod for market context
-     *
-     * @return float
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
-     */
-    public function getMaterialBuyCost(IndustryModifier $iMod)
-    {
-        if (!isset($this->materials))
-            return 0;
-        return $this->getMaterialMap()->getMaterialBuyCost($iMod);
-    }
-
-    /**
-     * Returns material buy cost, including subprocesses.
-     *
-     * @param \iveeCore\IndustryModifier $iMod for market context
-     *
-     * @return float
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
-     */
-    public function getTotalMaterialBuyCost(IndustryModifier $iMod)
-    {
-        $sum = $this->getMaterialBuyCost($iMod);
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessMaterialBuyCost($iMod);
-            else
-                $sum += $subProcessData->getTotalMaterialBuyCost($iMod);
-        }
-        return $sum;
-    }
-
-    /**
-     * Returns total cost, including subprocesses.
-     *
-     * @param \iveeCore\IndustryModifier $iMod for market context
-     *
-     * @return float
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
-     */
-    public function getTotalCost(IndustryModifier $iMod)
-    {
-        return $this->getTotalProcessCost() + $this->getTotalMaterialBuyCost($iMod);
-    }
-
-    /**
-     * Returns required materials object for this process, WITHOUT sub-processes. Will return an empty new MaterialMap
-     * object if this has none.
-     *
-     * @return \iveeCore\MaterialMap
-     */
-    public function getMaterialMap()
-    {
-        if (isset($this->materials)) {
-            return $this->materials;
-        } else {
-            $materialClass = Config::getIveeClassName('MaterialMap');
-            return new $materialClass;
-        }
-    }
-
-    /**
-     * Returns a new MaterialMap object containing all required materials, including sub-processes.
-     * Note that material quantities might be fractionary, due to invention chance effects or requesting builds of items
-     * in numbers that are not multiple of portionSize.
-     *
-     * @return \iveeCore\MaterialMap
-     */
-    public function getTotalMaterialMap()
-    {
-        $materialsClass = Config::getIveeClassName('MaterialMap');
-        $tmat = new $materialsClass;
-        if (isset($this->materials))
-            $tmat->addMaterialMap($this->getMaterialMap());
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $tmat->addMaterialMap($subProcessData->getTotalSuccessMaterialMap());
-            else
-                $tmat->addMaterialMap($subProcessData->getTotalMaterialMap());
-        }
-        return $tmat;
-    }
-
-    /**
-     * Returns the volume of the process materials, without sub-processes.
-     *
-     * @return float
-     */
-    public function getMaterialVolume()
-    {
-        if (!isset($this->materials))
-            return 0;
-        return $this->getMaterialMap()->getMaterialVolume();
-    }
-
-    /**
-     * Returns the volume of the process materials, including sub-processes.
-     *
-     * @return float
-     */
-    public function getTotalMaterialVolume()
-    {
-        $sum = $this->getMaterialVolume();
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessMaterialVolume();
-            else
-                $sum += $subProcessData->getTotalMaterialVolume();
-        }
-        return $sum;
-    }
-
-    /**
-     * Returns object defining the minimum skills required for this process, without sub-processes.
-     *
-     * @return \iveeCore\SkillMap
-     */
-    public function getSkillMap()
-    {
-        if (isset($this->skills))
-            return $this->skills;
-        else {
-            $skillClass = Config::getIveeClassName('SkillMap');
-            return new $skillClass;
-        }
-    }
-
-    /**
-     * Returns a new object with all skills required, including sub-processes.
-     *
-     * @return \iveeCore\SkillMap
-     */
-    public function getTotalSkillMap()
-    {
-        $skillClass = Config::getIveeClassName('SkillMap');
-        $tskills =  new $skillClass;
-        if (isset($this->skills))
-            $tskills->addSkillMap($this->getSkillMap());
-        foreach ($this->getSubProcesses() as $subProcessData)
-            $tskills->addSkillMap($subProcessData->getTotalSkillMap());
-
-        return $tskills;
     }
 
     /**
@@ -423,57 +176,31 @@ class ProcessData
     }
 
     /**
-     * Returns sum of all times, in seconds, including sub-processes.
+     * Returns process cost, without subprocesses.
      *
-     * @return int|float
+     * @return float
      */
-    public function getTotalTime()
+    public function getProcessCost()
     {
-        $sum = $this->getTime();
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessTime();
-            else
-                $sum += $subProcessData->getTotalTime();
-        }
-        return $sum;
+        return $this->processCost;
+    }
+    
+    /**
+     * Returns a clone of the SkillMap defining the minimum skills required for this process, without sub-processes.
+     *
+     * @return \iveeCore\SkillMap
+     */
+    public function getSkillMap()
+    {
+        return clone $this->skills; //we return a clone so the original doesn't get altered
     }
 
     /**
-     * Returns array with process times summed by activity, in seconds, including sub-processes.
-     *
-     * @return float[] in the form activityId => float
-     */
-    public function getTotalTimes()
-    {
-        $sum = array(
-            static::ACTIVITY_MANUFACTURING => 0.0,
-            static::ACTIVITY_RESEARCH_TE => 0.0,
-            static::ACTIVITY_RESEARCH_ME => 0.0,
-            static::ACTIVITY_COPYING => 0.0,
-            static::ACTIVITY_INVENTING => 0.0
-        );
-
-        if ($this->processTime > 0)
-            $sum[$this->activityId] = $this->processTime;
-
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                foreach ($subProcessData->getTotalSuccessTimes() as $activityId => $time)
-                    $sum[$activityId] += $time;
-            else
-                foreach ($subProcessData->getTotalTimes() as $activityId => $time)
-                    $sum[$activityId] += $time;
-        }
-        return $sum;
-    }
-
-    /**
-     * Returns total profit for this batch (direct child ManufactureProcessData sub-processes).
+     * Returns total profit of all its the sub-processes.
      *
      * @param \iveeCore\IndustryModifier $buyContext for buying context
      * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext will be
-     * used. Only relevant for manufacturing (activities with a product that can be sold on the market).
+     * used.
      *
      * @return float
      * @throws \iveeCore\Exceptions\PriceDataTooOldException if a maxPriceDataAge has been specified and the data is
@@ -482,11 +209,17 @@ class ProcessData
     public function getTotalProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
         $sum = 0;
-        foreach ($this->getSubProcesses() as $spd)
-            if ($spd instanceof ManufactureProcessData)
+        foreach ($this->getSubProcesses() as $spd) {
+            if ($spd instanceof ManufactureProcessData OR $spd instanceof ReactionProcessData)
                 $sum += $spd->getTotalProfit($buyContext, $sellContext);
+            elseif ($spd instanceof InventionProcessData)
+                $sum -= $spd->getTotalSuccessCost($buyContext);
+            else
+                $sum -= $spd->getTotalCost($buyContext);
+        }
 
-        return $sum;
+        return $sum
+            - ($this instanceof InventionProcessData ? $this->getSuccessProcessCost() : $this->getProcessCost());
     }
 
     /**

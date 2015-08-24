@@ -173,7 +173,7 @@ class InventionProcessData extends ProcessData
         $materialsClass = Config::getIveeClassName('MaterialMap');
         $smat = new $materialsClass;
         if (isset($this->materials))
-            foreach ($this->getMaterialMap()->getMaterials() as $typeId => $quantity)
+            foreach ($this->materials->getMaterials() as $typeId => $quantity)
                 $smat->addMaterial($typeId, $quantity / $this->probability);
 
         return $smat;

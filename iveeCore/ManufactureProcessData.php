@@ -96,7 +96,7 @@ class ManufactureProcessData extends ProcessData
     }
 
     /**
-     * Returns the the total profit for batch. Considers sell tax.
+     * Returns the the total profit for batch. Considers sell tax and cost of sub-processes.
      *
      * @param \iveeCore\IndustryModifier $buyContext for buying context
      * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext will be
