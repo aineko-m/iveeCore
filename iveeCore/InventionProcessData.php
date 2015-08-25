@@ -146,19 +146,9 @@ class InventionProcessData extends ProcessData
      */
     public function getTotalSuccessTimes()
     {
-        $sum = array(
-            static::ACTIVITY_MANUFACTURING => 0.0,
-            static::ACTIVITY_RESEARCH_TE => 0.0,
-            static::ACTIVITY_RESEARCH_ME => 0.0,
-            static::ACTIVITY_COPYING => 0.0,
-            static::ACTIVITY_INVENTING => 0.0
-        );
-
-        $sum[$this->activityId] = $this->processTime / $this->probability;
-
-        foreach ($this->getSubProcesses() as $subProcessData)
-            foreach ($subProcessData->getTotalTimes() as $activityId => $time)
-                $sum[$activityId] += $time / $this->probability;
+        $sum = $this->getTotalTimes();
+        foreach ($sum as $activityId => $time)
+            $sum[$activityId] = $time / $this->probability;
 
         return $sum;
     }
@@ -170,13 +160,7 @@ class InventionProcessData extends ProcessData
      */
     public function getSuccessMaterialMap()
     {
-        $materialsClass = Config::getIveeClassName('MaterialMap');
-        $smat = new $materialsClass;
-        if (isset($this->materials))
-            foreach ($this->materials->getMaterials() as $typeId => $quantity)
-                $smat->addMaterial($typeId, $quantity / $this->probability);
-
-        return $smat;
+        return $this->getMaterialMap()->multiply(1 / $this->probability);
     }
 
     /**
@@ -188,8 +172,7 @@ class InventionProcessData extends ProcessData
     {
         $smat = $this->getSuccessMaterialMap();
         foreach ($this->getSubProcesses() as $subProcessData)
-            foreach ($subProcessData->getTotalMaterialMap()->getMaterials() as $typeId => $quantity)
-                $smat->addMaterial($typeId, $quantity / $this->probability);
+            $smat->addMaterialMap($subProcessData->getTotalMaterialMap()->multiply(1 / $this->probability));
 
         return $smat;
     }

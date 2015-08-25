@@ -142,6 +142,10 @@ class Reaction extends Type
         if ($feedback)
             $materialsClass::symmetricDifference($imm, $omm);
 
+        //multiply amounts by cycles as factor
+        $imm->multiply($cycles);
+        $omm->multiply($cycles);
+
         $reactionProcessDataClass = Config::getIveeClassName('ReactionProcessData');
 
         return new $reactionProcessDataClass(

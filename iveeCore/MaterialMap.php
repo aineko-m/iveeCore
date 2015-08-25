@@ -138,20 +138,18 @@ class MaterialMap
     }
 
     /**
-     * Returns a new materialMap object with quantities multiplied by given factor.
+     * Multiplies all materials of the map by given factor.
      *
      * @param float|int $factor for the multiplication
      *
      * @return \iveeCore\MaterialMap
      */
-    public function getMultipliedMaterialMap($factor)
+    public function multiply($factor)
     {
-        $materialMapClass = Config::getIveeClassName('MaterialMap');
-        $multipleMaterialMap = new $materialMapClass;
-        foreach ($this->getMaterials() as $typeId => $quantity)
-            $multipleMaterialMap->addMaterial($typeId, $quantity * $factor);
+        foreach ($this->materials as $typeId => $quantity)
+            $this->materials[$typeId] = $quantity * $factor;
 
-        return $multipleMaterialMap;
+        return $this;
     }
 
     /**
