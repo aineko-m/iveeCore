@@ -37,9 +37,8 @@ class Blueprint extends Type
     protected $maxProductionLimit;
 
     /**
-     * @var array $activityMaterials holds activity material requirements.
-     * $activityMaterials[$activityId][$typeId]['q'|'c'] for quantity and consume flag, respectively.
-     * Array entries for consume flag are omitted if the value is 1.
+     * @var array $activityMaterials holds material requirements by activity.
+     * $activityMaterials[$activityId][$typeId] => quantity
      */
     protected $activityMaterials = [];
 
@@ -108,19 +107,15 @@ class Blueprint extends Type
     protected function loadActivityMaterials(SDE $sde)
     {
         $res = $sde->query(
-            'SELECT activityID, materialTypeID, quantity, consume
+            'SELECT activityID, materialTypeID, quantity
             FROM industryActivityMaterials
             WHERE typeID = ' . $this->id .';'
         );
         //add materials to the array
         if ($res->num_rows > 0) {
             while ($row = $res->fetch_assoc()) {
-                $this->activityMaterials[(int) $row['activityID']][(int) $row['materialTypeID']]['q']
+                $this->activityMaterials[(int) $row['activityID']][(int) $row['materialTypeID']]
                     = (int) $row['quantity'];
-                //to reduce memory usage the consume flag is only explicitly stored if != 1
-                if ($row['consume'] != 1)
-                    $this->activityMaterials[(int) $row['activityID']][(int) $row['materialTypeID']]['c']
-                        = (int) $row['consume'];
             }
         }
     }
@@ -232,12 +227,10 @@ class Blueprint extends Type
             return $this->productBaseCost;
 
         $this->productBaseCost = 0.0;
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matId => $matData) {
-            if (isset($matData['c'])) //if the consume field is present, consume is not 1
-                continue;
+        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matId => $rawAmount)
             $this->productBaseCost += Type::getById($matId)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge) 
-                * $matData['q'];
-        }
+                * $rawAmount;
+
         return $this->productBaseCost;
     }
 
@@ -471,15 +464,9 @@ class Blueprint extends Type
     protected function addActivityMaterials(IndustryModifier $iMod, ProcessData $pdata, $activityId, $materialFactor,
         $numPortions, $recursive
     ) {
-        foreach ($this->getMaterialsForActivity($activityId) as $matId => $matData) {
-            //if consume flag is set to 0, add to needed mats with quantity 0
-            if (isset($matData['c']) and $matData['c'] == 0) {
-                $pdata->addMaterial($matId, 0);
-                continue;
-            }
-
+        foreach ($this->getMaterialsForActivity($activityId) as $matId => $rawAmount) {
             $mat = Type::getById($matId);
-            $amount = $matData['q'] * $materialFactor * $numPortions;
+            $amount = $rawAmount * $materialFactor * $numPortions;
 
             //calculate total quantity needed, applying all modifiers
             //if number of portions is a fraction, don't ceil() amounts
@@ -508,7 +495,7 @@ class Blueprint extends Type
     /**
      * Returns raw activity material requirements.
      *
-     * @return array with the requirements in the form activityId => materialId => array ('q' => ... , 'c' => ...)
+     * @return array with the requirements in the form activityId => materialId => quantity
      */
     protected function getActivityMaterials()
     {
@@ -520,7 +507,7 @@ class Blueprint extends Type
      *
      * @param int $activityId specifies for which activity the requirements should be returned.
      *
-     * @return array in the form materialId => array ('q' => ... , 'c' => ...)
+     * @return array in the form materialId => quantity
      */
     protected function getMaterialsForActivity($activityId)
     {
