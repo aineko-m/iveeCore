@@ -288,7 +288,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 
         //test handling of alchemy reactions with refining + feedback
         $iMod = IndustryModifier::getBySystemIdForPos(30000119);
-        $rpd = Type::getByName('Unrefined Platinum Technite Reaction')->react(24 * 30, true, true, $iMod);
+        $rpd = Type::getByName('Unrefined Platinum Technite Reaction')->react($iMod, 24 * 30, true, true);
         $inTarget = new MaterialMap;
         $inTarget->addMaterial(16640, 72000);
         $inTarget->addMaterial(16644, 7200);
