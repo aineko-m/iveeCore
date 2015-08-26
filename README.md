@@ -47,6 +47,7 @@ The CREST portion of the engine (formerly the iveeCrest library) can be used in 
 - Multilayer cache design
 - The index-less collections returned by CREST are properly re-indexed by IDs
 - Includes a self-contained web-script to retrieve a refresh token
+- CLI tool for automated CREST updates
 
 
 ## Requirements
@@ -60,7 +61,7 @@ If using PHP prior to version 5.5 also using the APC opcode cache is recommended
 
 You'll probably want root access to whatever box you plan on running iveeCore on, but this isn't strictly required. As for the resource use, a VPS is likely the minimum required setup for full functionality. [A VM on a desktop is fine too](http://k162space.com/2014/03/14/eve-development-environment/).
 
-The largest chunk of used DB space will come from the (CREST enabled) market history and with time also market prices. Expect each of those tables to consume roughly 1MB per day per region (if fetching all relevant market items).
+The largest chunk of used DB space will come from the (CREST enabled) market history and with time also market prices. The initial history data pull for the 6 most active (default) market regions makes the DB go to about 1.2GB in size. Adding more regions doesn't scale linearly though, as when there is no market activity for items, they produce no data.
 
 The necessary amount of cache memory to avoid hot data being evicted is strongly dependant on the usage pattern. Users should carefully monitor their caches (and review their applications data requirements) before trying to cache objects that won't be read again before expiry, potentially causing cache thrashing.
 
@@ -82,9 +83,9 @@ redis-server redis-tools php5-redis
 ### Setting up the Static Data Export DB in MySQL
 
 The SDE dump in MySQL format can usually be found in the Technology Lab section of the EVE Online forum, thanks to helpful 3rd party developer Steve Ronuken. At the time of this writing the latest conversion can be found here:
-[https://forums.eveonline.com/default.aspx?g=posts&t=433747](https://forums.eveonline.com/default.aspx?g=posts&t=433747)
+[https://forums.eveonline.com/default.aspx?g=posts&m=5990523#post5990523](https://forums.eveonline.com/default.aspx?g=posts&m=5990523#post5990523)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_aeg11". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to it. I use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_gal10". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 Then create a second database, naming it "iveeCore" and giving the same user as before full privileges to it.
 
 
@@ -198,44 +199,46 @@ $type = Type::getByName('Damage Control I');
 
 //Now lets looks at industry activities.
 //First we need to get an IndustryModifier object, which aggregates all the things
-//like system indices, available assembly lines, character skills & implants.
-$iMod = IndustryModifier::getBySystemIdForAllNpcStations(30000180); //Osmon
+//like system indices, available assembly lines, character skills & implants, as an
+//industry context. Lots of configuration and customization options there.
+$industryContext = IndustryModifier::getBySystemIdForAllNpcStations(30000180); //Osmon
 
 //manufacture 5 units of 'Damage Control I' with ME 10 and TE 20
-$manuData = $type->getBlueprint()->manufacture($iMod, 5, 10, 20);
+$manuData = $type->getBlueprint()->manufacture($industryContext, 5, 10, 20);
 
 //show the ManufactureProcessData object
 print_r($manuData);
 
 //Lets create another IndustryModifier object for Jita, so we can calculate costs and 
 //profits there
-$sMod = IndustryModifier::getBySystemIdForAllNpcStations(30000142);
+$marketContext = IndustryModifier::getBySystemIdForAllNpcStations(30000142);
 //set default market station to Jita 4-4 CNAP
-$sMod->setPreferredMarketStation(60003760);
-        
+$marketContext->setPreferredMarketStation(60003760);
+
 //print materials, cost and profits for this process
-$manuData->printData($sMod);
+$manuData->printData($marketContext);
 
 //get the data for making Damage Control I blueprint copy, inventing from it with a
 //decryptor and building from the resulting T2 BPC, recursively building the necessary
 //components
-$processData = Type::getByName('Damage Control II Blueprint')->copyInventManufacture($iMod, 34203, true);
+$processData = Type::getByName('Damage Control II Blueprint')->copyInventManufacture($industryContext, 34203, 1);
 
 //get the raw profit for running an Unrefined Hyperflurite Reaction for 30 days,
 //taking into account the refining and material feedback steps, and refinery
 //efficiency and tax dependent on character skill and standing, then selling in Jita
 $reaction = Type::getByName('Unrefined Hyperflurite Reaction');
-$reactionProcessData = $reaction->react(24 * 30, true, true, $iMod);
-echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit($sMod) . PHP_EOL;
+$reactionProcessData = $reaction->react($industryContext, 24 * 30, true, true);
+echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit($marketContext) . PHP_EOL;
 ```
 The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the engine are type, process and industry context classes.
 
 ## Notes
 Although I tried to make iveeCore as configurable as possible, there are still a number of underlying assumptions made and caveats:
-- For profit calculations, it is assumed you buy items using buy orders; you sell your products with sell orders with competitive pricing.
+- For profit calculations, it is assumed you buy items using buy orders; you sell your products with sell orders with competitive pricing. Everyone has a different idea what that is, so the realistic price estimation can be customized by writing an extension to the PriceEstimator class.
 - The prices of items that can't be sold on the market also can't be determined. This includes BPCs (The _cost_ of copying, inventing or researching a BPC can and is calculated for processes, however).
-- Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production batches in non-multiples of portionSize. These should be treated as the average required or consumed when doing multiple production batches.
+- Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production or reaction batches in non-multiples of their portion size. These should be treated as the average required or consumed when doing multiple production batches.
 - When automatically picking AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
+- CharacterModifier and BlueprintModifier are stub implementations representing a max skill character with good standings all around and perfectly researched blueprints, respectively. You'll want to implement your own extensions to get accurate numbers for your use case.
 
 Generals notes:
 - Remember to restart or flush the cache after making changes to type classes or changing the DB. For memcache, you can do so with a command like: ```echo 'flush_all' | nc localhost 11211```. For Redis, enter the interactive Redis client using ```redis-cli``` and issue ```FLUSHALL```.
@@ -254,7 +257,7 @@ To extend iveeCore to your needs without changing the code, the suggested way of
 ## Future Plans
 A simplex algorithm based ore compression calculator is in the works, which will allow you to define the target amounts of minerals and the calculator will give you the quantities of (compressed) ores to buy to get these numbers while minimizing price.
 
-I'll try to keep improving iveeCores structuring, CREST endpoint support, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
+I'll try to keep improving iveeCores structuring, features, CREST endpoint support, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
 
 
 ## FAQ
