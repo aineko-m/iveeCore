@@ -148,13 +148,13 @@ class InventorBlueprint extends Blueprint
      * @param int $inventedBpId the ID if the blueprint to be invented. If left null, it is set to the first
      * inventable blueprint ID
      * @param int $decryptorId the decryptor the be used, if any
-     * @param boolean $recursive defines if manufacturables should be build recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
      *
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if the specified blueprint can't be invented from this
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorId isn't a decryptor
      */
-    public function invent(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null, $recursive = true)
+    public function invent(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null, $manuRecursionDepth = 1)
     {
         $inventionDataClass = Config::getIveeClassName('InventionProcessData');
         $inventableBpIds = $this->getInventableBlueprintIds();
@@ -225,7 +225,8 @@ class InventorBlueprint extends Blueprint
             ProcessData::ACTIVITY_INVENTING,
             $modifier['m'],
             1,
-            $recursive
+            $manuRecursionDepth,
+            0
         );
         return $idata;
     }
@@ -256,23 +257,25 @@ class InventorBlueprint extends Blueprint
      * @param int $inventedBpId the ID of the blueprint to be invented. If left null it will default to the first
      * blueprint defined in inventsBlueprintId
      * @param int $decryptorId the decryptor the be used, if any
-     * @param bool $recursive defines if manufacturables should be build recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
+     * @param int $reactionRecursionDepth defines if and how deep used materials should be gained through reaction
+     * recursively
      *
      * @return \iveeCore\ManufactureProcessData with cascaded InventionProcessData and CopyProcessData objects
      * @throws \iveeCore\Exceptions\WrongTypeException if product is no an InventableBlueprint
      */
     public function copyInventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
-        $recursive = true
+        $manuRecursionDepth = 1, $reactionRecursionDepth = 0
     ) {
         //make one BP copy
-        $copyData = $this->copy($iMod, 1, 1, $recursive);
+        $copyData = $this->copy($iMod, 1, 1, $manuRecursionDepth);
 
         //run the invention
         $inventionData = $this->invent(
             $iMod,
             $inventedBpId,
             $decryptorId,
-            $recursive
+            $manuRecursionDepth
         );
 
         //add copyData to invention data
@@ -288,7 +291,8 @@ class InventorBlueprint extends Blueprint
             $inventionData->getResultRuns(),
             $inventionData->getResultME(),
             $inventionData->getResultTE(),
-            $recursive
+            $manuRecursionDepth,
+            $reactionRecursionDepth
         );
 
         //add invention data to the manufactureProcessData object

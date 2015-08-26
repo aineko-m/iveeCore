@@ -72,15 +72,15 @@ class Relic extends InventorBlueprint
      * @param int $inventedBpId the ID if the T3Blueprint to be invented. If left null, it is set to the first
      * inventable blueprint ID
      * @param int $decryptorId the decryptor the be used, if any
-     * @param boolean $recursive defines if manufacturables should be build recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
      *
      * @return \iveeCore\InventionProcessData
      * @throws \iveeCore\Exceptions\NotInventableException if the specified blueprint can't be invented from this
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorId isn't a decryptor
      */
-    public function invent(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null, $recursive = true)
+    public function invent(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null, $manuRecursionDepth = 1)
     {
-        $id = parent::invent($iMod, $inventedBpId, $decryptorId, $recursive);
+        $id = parent::invent($iMod, $inventedBpId, $decryptorId, $manuRecursionDepth);
         $id->addMaterial($this->getId(), 1);
         return $id;
     }
@@ -92,20 +92,22 @@ class Relic extends InventorBlueprint
      * @param int $inventedBpId the ID of the T3Blueprint to be invented. If left null it will default to the first
      * blueprint defined in inventsBlueprintId
      * @param int $decryptorId the decryptor the be used, if any
-     * @param bool $recursive defines if manufacturables should be build recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
+     * @param int $reactionRecursionDepth defines if and how deep used materials should be gained through reaction
+     * recursively
      *
      * @return \iveeCore\ManufactureProcessData with cascaded InventionProcessData object
      * @throws \iveeCore\Exceptions\WrongTypeException if product is no an InventableBlueprint
      */
     public function inventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
-        $recursive = true
+        $manuRecursionDepth = 1, $reactionRecursionDepth = 0
     ) {
         //run the invention
         $inventionData = $this->invent(
             $iMod,
             $inventedBpId,
             $decryptorId,
-            $recursive
+            $manuRecursionDepth
         );
 
         $producedType = $inventionData->getProducedType();
@@ -118,7 +120,8 @@ class Relic extends InventorBlueprint
             $inventionData->getResultRuns(),
             $inventionData->getResultME(),
             $inventionData->getResultTE(),
-            $recursive
+            $manuRecursionDepth,
+            $reactionRecursionDepth
         );
 
         //add invention data to the manufactureProcessData object
@@ -134,7 +137,7 @@ class Relic extends InventorBlueprint
      */
 
     public function copyInventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
-        $recursive = true
+        $manuRecursionDepth = 1, $reactionRecursionDepth = 0
     ) {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
@@ -144,22 +147,23 @@ class Relic extends InventorBlueprint
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
 
-    public function manufacture(IndustryModifier $iMod, $units = 1, $bpME = null, $bpTE = null, $recursive = true)
+    public function manufacture(IndustryModifier $iMod, $units = 1, $bpME = null, $bpTE = null, $manuRecursionDepth = 1,
+        $reactionRecursionDepth = 0
+    ) {
+        self::throwException('IveeCoreException', "Relics do not support this method");
+    }
+
+    public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $manuRecursionDepth = 1)
     {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
 
-    public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $recursive = true)
+    public function researchME(IndustryModifier $iMod, $startME, $endME, $manuRecursionDepth = 1)
     {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
 
-    public function researchME(IndustryModifier $iMod, $startME, $endME, $recursive = true)
-    {
-        self::throwException('IveeCoreException', "Relics do not support this method");
-    }
-
-    public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $recursive = true)
+    public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $manuRecursionDepth = 1)
     {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }

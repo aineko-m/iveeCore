@@ -98,13 +98,13 @@ class InventableBlueprint extends Blueprint
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $decryptorId the decryptor the be used, if any
-     * @param boolean $recursive defines if manufacturables should be build recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
      *
      * @return \iveeCore\InventionProcessData
      */
-    public function invent(IndustryModifier $iMod, $decryptorId = null, $recursive = true)
+    public function invent(IndustryModifier $iMod, $decryptorId = null, $manuRecursionDepth = 1)
     {
-        return $this->getInventorBlueprint()->invent($iMod, $this->id, $decryptorId, $recursive);
+        return $this->getInventorBlueprint()->invent($iMod, $this->id, $decryptorId, $manuRecursionDepth);
     }
 
     /**
@@ -112,13 +112,22 @@ class InventableBlueprint extends Blueprint
      *
      * @param \iveeCore\IndustryModifier $iMod the object with all the necessary industry modifying entities
      * @param int $decryptorId the decryptor the be used, if any
-     * @param bool $recursive defines if manufacturables should be build recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
+     * @param int $reactionRecursionDepth defines if and how deep used materials should be gained through reaction
+     * recursively
      *
      * @return \iveeCore\ManufactureProcessData with cascaded iveeCore\InventionProcessData and
      * iveeCore\CopyProcessData objects
      */
-    public function copyInventManufacture(IndustryModifier $iMod, $decryptorId = null, $recursive = true)
-    {
-        return $this->getInventorBlueprint()->copyInventManufacture($iMod, $this->id, $decryptorId, $recursive);
+    public function copyInventManufacture(IndustryModifier $iMod, $decryptorId = null, $manuRecursionDepth = 1,
+        $reactionRecursionDepth = 0
+    ) {
+        return $this->getInventorBlueprint()->copyInventManufacture(
+            $iMod,
+            $this->id,
+            $decryptorId,
+            $manuRecursionDepth,
+            $reactionRecursionDepth
+        );
     }
 }

@@ -243,14 +243,17 @@ class Blueprint extends Type
      * @param int $units the number of items to produce; defaults to 1.
      * @param int $bpME level of the BP; if left null, get from IBlueprintModifier contained in IndustryModifier
      * @param int $bpTE level of the BP; if left null, get from IBlueprintModifier contained in IndustryModifier
-     * @param bool $recursive defines if components should be manufactured recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
+     * @param int $reactionRecursionDepth defines if and how deep used materials should be gained through reaction
+     * recursively
      *
      * @return \iveeCore\ManufactureProcessData describing the manufacturing process
      * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the product cannot be manufactured in any of the
      * assemblyLines given in the IndustryModifier object
      */
-    public function manufacture(IndustryModifier $iMod, $units = 1, $bpME = null, $bpTE = null, $recursive = true)
-    {
+    public function manufacture(IndustryModifier $iMod, $units = 1, $bpME = null, $bpTE = null, $manuRecursionDepth = 1,
+            $reactionRecursionDepth = 0
+    ) {
         //get product
         $product = $this->getProduct();
         //get modifiers and test if manufacturing the product is possible with the given assemblyLines
@@ -296,7 +299,8 @@ class Blueprint extends Type
             ProcessData::ACTIVITY_MANUFACTURING,
             static::convertBpLevelToFactor($bpME) * $modifier['m'],
             $numPortions,
-            $recursive
+            $manuRecursionDepth,
+            $reactionRecursionDepth
         );
         return $mdata;
     }
@@ -308,11 +312,11 @@ class Blueprint extends Type
      * indices, tax and assemblyLines
      * @param int $copies the number of copies to produce; defaults to 1.
      * @param int|string $runs the number of runs on each copy. Use 'max' for the maximum possible number of runs.
-     * @param bool $recursive defines if used materials should be manufactured recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
      *
      * @return \iveeCore\CopyProcessData describing the copy process
      */
-    public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $recursive = true)
+    public function copy(IndustryModifier $iMod, $copies = 1, $runs = 'max', $manuRecursionDepth = 1)
     {
         //get modifiers and test if copying is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_COPYING, $this);
@@ -343,7 +347,8 @@ class Blueprint extends Type
             ProcessData::ACTIVITY_COPYING,
             $modifier['m'] * $totalRuns,
             $copies,
-            $recursive
+            $manuRecursionDepth,
+            0
         );
         return $cdata;
     }
@@ -355,11 +360,11 @@ class Blueprint extends Type
      * indices, tax and assemblyLines
      * @param int $startME the initial ME level
      * @param int $endME the ME level after the research
-     * @param bool $recursive defines if used materials should be manufactured recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
      *
      * @return \iveeCore\ResearchMEProcessData describing the research process
      */
-    public function researchME(IndustryModifier $iMod, $startME, $endME, $recursive = true)
+    public function researchME(IndustryModifier $iMod, $startME, $endME, $manuRecursionDepth = 1)
     {
         $startME = abs((int) $startME);
         $endME   = abs((int) $endME);
@@ -395,7 +400,8 @@ class Blueprint extends Type
             ProcessData::ACTIVITY_RESEARCH_ME,
             $modifier['m'],
             ($endME - $startME),
-            $recursive
+            $manuRecursionDepth,
+            0
         );
         return $rmdata;
     }
@@ -407,11 +413,11 @@ class Blueprint extends Type
      * indices, tax and assemblyLines
      * @param int $startTE the initial TE level
      * @param int $endTE the TE level after the research
-     * @param bool $recursive defines if used materials should be manufactured recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
      *
      * @return \iveeCore\ResearchTEProcessData describing the research process
      */
-    public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $recursive = true)
+    public function researchTE(IndustryModifier $iMod, $startTE, $endTE, $manuRecursionDepth = 1)
     {
         $startTE = abs((int) $startTE);
         $endTE   = abs((int) $endTE);
@@ -442,7 +448,8 @@ class Blueprint extends Type
             ProcessData::ACTIVITY_RESEARCH_TE,
             $modifier['m'],
             ($endTE - $startTE) / 2,
-            $recursive
+            $manuRecursionDepth,
+            0
         );
         return $rtdata;
     }
@@ -457,12 +464,14 @@ class Blueprint extends Type
      * @param float $materialFactor the IndustryModifier and Blueprint ME level dependant ME bonus factor
      * @param float $numPortions the number of portions being built or researched. Note that passing a fraction will
      * make the method not use the rounding for the resulting required amounts.
-     * @param bool $recursive defines if used materials should be manufactured recursively
+     * @param int $manuRecursionDepth defines if and how deep used materials should be manufactured recursively
+     * @param int $reactionRecursionDepth defines if and how deep used materials should be gained through reaction
+     * recursively
      *
      * @return void
      */
     protected function addActivityMaterials(IndustryModifier $iMod, ProcessData $pdata, $activityId, $materialFactor,
-        $numPortions, $recursive
+        $numPortions, $manuRecursionDepth, $reactionRecursionDepth
     ) {
         foreach ($this->getMaterialsForActivity($activityId) as $matId => $rawAmount) {
             $mat = Type::getById($matId);
@@ -485,8 +494,20 @@ class Blueprint extends Type
                 $totalNeeded = $numPortions;
 
             //if using recursive building and material is manufacturable, recurse!
-            if ($recursive AND $mat instanceof Manufacturable)
-                $pdata->addSubProcessData($mat->getBlueprint()->manufacture($iMod, $totalNeeded));
+            if ($manuRecursionDepth > 0 AND $mat instanceof Manufacturable)
+                $pdata->addSubProcessData(
+                    $mat->getBlueprint()->manufacture(
+                        $iMod,
+                        $totalNeeded,
+                        null,
+                        null,
+                        $manuRecursionDepth - 1,
+                        $reactionRecursionDepth
+                    )
+                );
+            //is using recursive reaction and material is a ReactionProduct, recurse!
+            elseif ($reactionRecursionDepth > 0 AND $mat instanceof ReactionProduct)
+                $pdata->addSubProcessData($mat->doBestReaction($iMod, $totalNeeded, $reactionRecursionDepth - 1));
             else
                 $pdata->addMaterial($matId, $totalNeeded);
         }
