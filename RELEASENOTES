@@ -1,5 +1,14 @@
 This file lists major changes in iveeCore releases.
 
+Version 2.6.2 - August 27th, 2015
+---------------------------------
+- Recursive reaction calculation. Now industry processes that take a ReactionProduct as input can recurse into the reaction process.
+- Changed industry activity recursion control from boolean parameter to a recursion depth int; also added an int reaction recursion depth parameter. Minor API breakage.
+- Some refactoring of ProcessData and ReactionProcessData by introduction of a shared abstract parent class ProcessDataCommon implementing IProcessData interface. Minor API breakage.
+- MaterialMap->getMultipliedMaterialMap() renamed to multiply() and acts on the object itself instead of returning a new one.
+- Adapted to Galatea release.
+
+
 Version 2.6.1 - August 9th, 2015
 --------------------------------
 - Normalize and clarify the use of the maxPriceDataAge configuration variable.

@@ -1,6 +1,6 @@
 {
     "name": "aineko-m/ivee-core",
-    "version": "2.6.1",
+    "version": "2.6.2",
     "description": "PHP engine for calculations of EVE Online industrial activities and CREST library",
     "type": "library",
     "keywords": ["EVE Online", "EVE API", "CREST", "ivee", "iveeCore"],
