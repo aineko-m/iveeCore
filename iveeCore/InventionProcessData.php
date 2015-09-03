@@ -172,7 +172,10 @@ class InventionProcessData extends ProcessData
     {
         $smat = $this->getSuccessMaterialMap();
         foreach ($this->getSubProcesses() as $subProcessData)
-            $smat->addMaterialMap($subProcessData->getTotalMaterialMap()->multiply(1 / $this->probability));
+            if ($subProcessData instanceof InventionProcessData)
+                $smat->addMaterialMap($subProcessData->getTotalSuccessMaterialMap()->multiply(1 / $this->probability));
+            else
+                $smat->addMaterialMap($subProcessData->getTotalMaterialMap()->multiply(1 / $this->probability));
 
         return $smat;
     }
