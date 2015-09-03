@@ -90,12 +90,13 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Creates a process tree three levels deep and tests cost calculation
+     * Creates a process tree 3 levels deep and tests calculations
      */
     public function testProcessData()
     {
         //IndustryModifier for Jita 4-4
         $marketContext = IndustryModifier::getByStationId(60003760);
+        $mm = new MaterialMap;
 
         //create ProcessData and direct children
         $topPd = new ProcessData;
@@ -103,7 +104,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $topPd->addSubProcessData($ipd);
         $mpd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
         $topPd->addSubProcessData($mpd);
-        $rpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $rpd = new ReactionProcessData(0, $mm, new MaterialMap, 0);
         $topPd->addSubProcessData($rpd);
         $cpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
         $topPd->addSubProcessData($cpd);
@@ -114,7 +115,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $ipd->addSubProcessData($iipd);
         $impd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
         $ipd->addSubProcessData($impd);
-        $irpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $irpd = new ReactionProcessData(0, $mm, new MaterialMap, 0);
         $ipd->addSubProcessData($irpd);
         $icpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
         $ipd->addSubProcessData($icpd);
@@ -126,7 +127,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $mpd->addSubProcessData($mipd);
         $mmpd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
         $mpd->addSubProcessData($mmpd);
-        $mrpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $mrpd = new ReactionProcessData(0, $mm, new MaterialMap, 0);
         $mpd->addSubProcessData($mrpd);
         $mcpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
         $mpd->addSubProcessData($mcpd);
@@ -137,7 +138,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $rpd->addSubProcessData($ripd);
         $rmpd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
         $rpd->addSubProcessData($rmpd);
-        $rrpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $rrpd = new ReactionProcessData(0, $mm, new MaterialMap, 0);
         $rpd->addSubProcessData($rrpd);
         $rcpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
         $rpd->addSubProcessData($rcpd);
@@ -148,7 +149,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $cpd->addSubProcessData($cipd);
         $cmpd = new ManufactureProcessData(34, 1, 100, 100, 0, 0, 0, 0);
         $cpd->addSubProcessData($cmpd);
-        $crpd = new ReactionProcessData(0, new MaterialMap, new MaterialMap, 0);
+        $crpd = new ReactionProcessData(0, $mm, new MaterialMap, 0);
         $cpd->addSubProcessData($crpd);
         $ccpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
         $cpd->addSubProcessData($ccpd);
@@ -156,6 +157,34 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
 
         //all together
         $this->assertTrue($topPd->getTotalCost($marketContext) == 2400);
+
+        //now test materials
+        $mm->addMaterial(34, 100);
+
+        $ipd->addMaterial(34, 100);
+        $mpd->addMaterial(34, 100);
+        $cpd->addMaterial(34, 100);
+
+        $iipd->addMaterial(34, 100);
+        $impd->addMaterial(34, 100);
+        $icpd->addMaterial(34, 100);
+
+        $mipd->addMaterial(34, 100);
+        $mmpd->addMaterial(34, 100);
+        $mcpd->addMaterial(34, 100);
+
+        $ripd->addMaterial(34, 100);
+        $rmpd->addMaterial(34, 100);
+        $rcpd->addMaterial(34, 100);
+
+        $cipd->addMaterial(34, 100);
+        $cmpd->addMaterial(34, 100);
+        $ccpd->addMaterial(34, 100);
+
+        $totalMm = $topPd->getTotalMaterialMap();
+        $this->assertTrue($totalMm->getMaterials() == [34 => 3000]);
+        $this->assertTrue($totalMm->getMaterialVolume() == 30);
+        $this->assertTrue($topPd->getTotalMaterialVolume() == 30);
     }
 
     /**
