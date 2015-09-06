@@ -32,7 +32,7 @@ These are a few example questions that can be answered with a few lines of code 
 - An API that strives to be "good", with high power-to-weight ratio
 - Strong object oriented design and class model for inventory types
 - Classes for representing manufacturing, copying, T2 & T3 invention, research and reaction activities, with recursive component building
-- Market data gathering via CREST with realistic price estimation and profit calculation
+- Market data gathering via CREST with realistic price estimation and profit calculation & DB persistence
 - CREST data fetcher handling system industry indices, market prices and facilities
 - Parsers for EFT-style and EvE XML ship fittings descriptions as well as cargo and ship scanning results
 - Caching support for Memcached or Redis (via PhpRedis)
@@ -47,7 +47,7 @@ The CREST portion of the engine (formerly the iveeCrest library) can be used in 
 - Multilayer cache design
 - The index-less collections returned by CREST are properly re-indexed by IDs
 - Includes a self-contained web-script to retrieve a refresh token
-- CLI tool for automated CREST updates
+- CLI tool for automated bulk CREST updates
 
 
 ## Requirements
@@ -183,7 +183,7 @@ Again, running the provided unit test to check for problems is a good idea.
 
 
 ## Usage
-Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.pdf](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf) and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have run "cli/updater.php -all" at least once before these examples will work.
+Please take a look at the class diagram in [iveeCore/doc/iveeCore_class_diagram.pdf](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf) and familiarize yourself with the iveeCore object model. iveeCore provides a simple but powerful API. Once configured, one can use it as demonstrated by the following examples. Do note that you have to have setup CREST and run "cli/updater.php -all" at least once before these examples will work.
 ```php
 <?php
 //initialize iveeCore. Adapt path as required.
@@ -230,7 +230,41 @@ $reaction = Type::getByName('Unrefined Hyperflurite Reaction');
 $reactionProcessData = $reaction->react($industryContext, 24 * 30, true, true);
 echo PHP_EOL . 'Reaction Profit: ' . $reactionProcessData->getProfit($marketContext) . PHP_EOL;
 ```
-The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular importance to users of the engine are type, process and industry context classes.
+The above are just basic examples of the possibilities you have with iveeCore. Reading the PHPDoc in the classes is suggested. Of particular interest to users of the engine are type, process and industry context classes.
+
+Basic CREST functionality is shown in this snippet (you need to have set up CREST for these to work):
+```php
+<?php
+//initialize iveeCore. Adapt path as required.
+require_once('/path/to/iveeCore/iveeCoreInit.php');
+
+use iveeCrest\Client, iveeCrest\EndpointHandler;
+
+//instantiate the CREST client (when no parameters are passed to the constructor values defined in Config are used)
+$client = new Client;
+
+//instantiate an endpoint handler
+$handler = new EndpointHandler($client);
+
+//show response data from verifyAccessToken call
+print_r($handler->verifyAccessToken());
+
+//get regions endpoint
+print_r($handler->getRegions());
+
+//get specific region endpoint
+print_r($handler->getRegion(10000002));
+
+//gather all item groups (multipage response is gathered automatically)
+print_r($handler->getItemGroups());
+
+//get all market orders for Tritanium in The Forge
+print_r($handler->getMarketOrders(34, 10000002));
+```
+
+These examples showcase some of the implemented endpoints in the EndpointHandler class. You are not forced to use EndpointHandler at all, you can also call the Client class directly and implement your own endpoint handling if it suits your use case better.
+
+The Client class implements the infrastructure for getting data from CREST. This includes methods for authentication handling, simple requests to single endpoints, automatic gathering of multipage responses and parallel GET requests. The latter is a bit more complex to implement as callback functions need to be used to asynchronously process responses, but provides great flexibility and performance. EndpointHandler has a few examples of how to do it.
 
 ## Notes
 Although I tried to make iveeCore as configurable as possible, there are still a number of underlying assumptions made and caveats:
@@ -239,6 +273,14 @@ Although I tried to make iveeCore as configurable as possible, there are still a
 - Calculated material amounts might be fractions, which is due invention chance or (hypothetical) production or reaction batches in non-multiples of their portion size. These should be treated as the average required or consumed when doing multiple production batches.
 - When automatically picking AssemblyLines for use in industry activities, iveeCore will choose first based on ME bonuses, then TE bonuses and cost savings last.
 - CharacterModifier and BlueprintModifier are stub implementations representing a max skill character with good standings all around and perfectly researched blueprints, respectively. You'll want to implement your own extensions to get accurate numbers for your use case.
+
+And about some CREST weaknesses:
+- Performance: Even with client side caching there is a general performance issue which makes live data pulling (as in "user waiting for the app") impractical except in [tailored cases](https://forums.eveonline.com/default.aspx?g=posts&t=402562). Due to the RESTful way the endpoints are structured, often dozens to thousands of API calls are necessary to fetch just a single bit of wanted data.
+- Inflexibility: CREST doesn't offer ways to filter, search or combine data like you can in a relational database, you generally have to pull in all the data in search yourself. This compounds on the performance issue.
+- Availability / Reliability: As CREST is tied to the live EVE cluster, it also follows the daily downtime. 3rd party API access is also among the first to be shut down in case of problems. CREST also throws spurious errors.
+
+One of the possible solutions for these issues (independent of this library) is to collect and persist the data from CREST in a database and serve the application from there instead of pulling it live. That adds complexity to the application code but that's a price to pay for gaining resilience and ergonomics.
+That is what iveeCore does with the market price and history data, it is persisted in the DB and fetched from there (or the cache) as long as it hasn't become too old. Since you can proactively fetch and store the market data in bulk with the CLI tool, it is possible to avoid iveeCore ever having to pull market data live.
 
 Generals notes:
 - Remember to restart or flush the cache after making changes to type classes or changing the DB. For memcache, you can do so with a command like: ```echo 'flush_all' | nc localhost 11211```. For Redis, enter the interactive Redis client using ```redis-cli``` and issue ```FLUSHALL```.
@@ -255,9 +297,10 @@ To extend iveeCore to your needs without changing the code, the suggested way of
 
 
 ## Future Plans
-A simplex algorithm based ore compression calculator is in the works, which will allow you to define the target amounts of minerals and the calculator will give you the quantities of (compressed) ores to buy to get these numbers while minimizing price.
+- A simplex algorithm based ore compression calculator is in the works, which will allow you to define the target amounts of minerals and the calculator will give you the quantities of (compressed) ores to buy to get these numbers while minimizing price.
+- With time iveeCrest will be updated with support for new endpoints. I'm also considering making Responses typed for each representation. Finally if more authorization scopes are introduced some refactoring will happen.
 
-I'll try to keep improving iveeCores structuring, features, CREST endpoint support, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
+I'll try to keep improving iveeCores features, structuring, API and test coverage. I also want to write a more comprehensive manual. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, have any other feedback or are "just" a user, please post in this thread: [https://forums.eveonline.com/default.aspx?g=posts&t=292458](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
 
 
 ## FAQ
