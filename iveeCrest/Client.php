@@ -36,9 +36,16 @@ class Client
     protected $cache;
 
     /**
-     * @var string $rootEndpointUrl specifies the CREST root URL from which most other endpoints can be navigated to.
+     * @var string $publicCrestBaseUrl specifies the public CREST root URL from which most other endpoints can be
+     * navigated to.
      */
-    protected $rootEndpointUrl;
+    protected $publicCrestBaseUrl;
+
+    /**
+     * @var string $authedCrestBaseUrl specifies the authenticated CREST root URL from which most other endpoints can be
+     * navigated to.
+     */
+    protected $authedCrestBaseUrl;
 
     /**
      * @var string $clientId holds the client application ID as configured in CCPs developer application backend:
@@ -73,23 +80,34 @@ class Client
     protected $cw;
 
     /**
-     * @var stdClass $rootEndpoint holds the root endpoint (after having been requested at least once)
+     * @var stdClass $publicRootEndpoint holds the public CREST root endpoint (after having been requested at least
+     * once)
      */
-    protected $rootEndpoint;
+    protected $publicRootEndpoint;
+
+    /**
+     * @var stdClass $authedRootEndpoint holds the authenticated CREST root endpoint (after having been requested at
+     * least once)
+     */
+    protected $authedRootEndpoint;
 
     /**
      * Constructs a Client object. Note that because of the refresh token these are character-specific.
      *
-     * @param string $rootEndpointUrl the URL to the CREST root
+     * @param string $publicCrestBaseUrl the URL to the public CREST root
+     * @param string $authedCrestBaseUrl the URL to the authenticated CREST root
      * @param string $clientId the Id of the app you registered
      * @param string $clientSecret the secret for the app you registered
      * @param string $charRefreshToken the chracter-specific refresh token to be used
      * @param string $clientUserAgent the user agent that should be used in the requests
      */
-    public function __construct($rootEndpointUrl = null, $clientId = null, $clientSecret = null,
-        $charRefreshToken = null, $clientUserAgent = null
+    public function __construct($publicCrestBaseUrl = null, $authedCrestBaseUrl = null, $clientId = null,
+        $clientSecret = null, $charRefreshToken = null, $clientUserAgent = null
     ) {
-        $this->rootEndpointUrl  = is_null($rootEndpointUrl)  ? Config::getAuthedCrestBaseUrl()      : $rootEndpointUrl;
+        $this->publicCrestBaseUrl =
+            is_null($publicCrestBaseUrl) ? Config::getPublicCrestBaseUrl() : $publicCrestBaseUrl;
+        $this->authedCrestBaseUrl =
+            is_null($authedCrestBaseUrl) ? Config::getAuthedCrestBaseUrl() : $authedCrestBaseUrl;
         $this->clientId         = is_null($clientId)         ? Config::getCrestClientId()           : $clientId;
         $this->clientSecret     = is_null($clientSecret)     ? Config::getCrestClientSecret()       : $clientSecret;
         $this->charRefreshToken = is_null($charRefreshToken) ? Config::getCrestClientRefreshToken() : $charRefreshToken;
@@ -103,23 +121,26 @@ class Client
             is_null($clientUserAgent) ? Config::getUserAgent() : $clientUserAgent,
             $this->charRefreshToken
         );
-
-        //load root endpoint
-        $this->rootEndpoint = $this->getEndpoint(
-            $this->rootEndpointUrl,
-            false,
-            static::ROOT_REPRESENTATION
-        );
     }
 
     /**
-     * Returns the root endpoint.
+     * Returns the public CREST root URL.
      *
-     * @return stdClass
+     * @return string
      */
-    public function getRootEndpointUrl()
+    public function getPublicCrestBaseUrl()
     {
-        return $this->rootEndpointUrl;
+        return $this->publicCrestBaseUrl;
+    }
+
+    /**
+     * Returns the authenticated CREST root URL.
+     *
+     * @return string
+     */
+    public function getAuthedCrestBaseUrl()
+    {
+        return $this->authedCrestBaseUrl;
     }
 
     /**
@@ -178,26 +199,51 @@ class Client
         //if we don't have an access token, get one
         if (!isset($this->charAccessToken) OR time() >= $this->charAccessTokenExpiry) {
             $accessTokenResponse = $this->cw->post(
-                $this->getRootEndpoint()->authEndpoint->href, 
+                $this->getAuthedRootEndpoint()->authEndpoint->href, 
                 $this->getBasicAuthHeader(), 
                 $this->getRefreshTokenPostFields()
             );
             $this->charAccessToken = $accessTokenResponse->content->access_token;
-            //The access token response is cached for a slightly lower time then it's actual validity. This way we
-            //can fetch a new one before we run into trouble. Do so just after it was removed from cache.
+            //The access token response is cached for a slightly lower time then it's actual validity. Here we hold the
+            //token for local expiry + 1, so the local cache is garanteed to have expired when we fetch a new one from
+            //CREST before it expires on CCPs side.
             $this->charAccessTokenExpiry = $accessTokenResponse->getCacheExpiry() + 1;
         }
         return $this->charAccessToken;
     }
 
     /**
-     * Returns the root endpoint.
+     * Returns the public CREST root endpoint.
      *
      * @return stdClass
      */
-    public function getRootEndpoint()
+    public function getPublicRootEndpoint()
     {
-        return $this->rootEndpoint;
+        if (is_null($this->publicRootEndpoint))
+            $this->publicRootEndpoint = $this->getEndpoint(
+                $this->publicCrestBaseUrl,
+                false,
+                static::ROOT_REPRESENTATION,
+                true
+            );
+        return $this->publicRootEndpoint;
+    }
+
+    /**
+     * Returns the authenticated CREST root endpoint.
+     *
+     * @return stdClass
+     */
+    public function getAuthedRootEndpoint()
+    {
+        if (is_null($this->authedRootEndpoint))
+            $this->authedRootEndpoint = $this->getEndpoint(
+                $this->authedCrestBaseUrl,
+                false,
+                static::ROOT_REPRESENTATION,
+                true
+            );
+        return $this->authedRootEndpoint;
     }
 
     /**

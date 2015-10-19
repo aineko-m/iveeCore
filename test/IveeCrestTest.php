@@ -50,6 +50,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->client = new Client(
+            Config::getPublicCrestBaseUrl(),
             Config::getAuthedCrestBaseUrl(),
             Config::getCrestClientId(),
             Config::getCrestClientSecret(),
@@ -62,9 +63,9 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
 
     public function testClient()
     {
-        $this->assertTrue($this->client->getRootEndpoint() instanceof stdClass);
+        $this->assertTrue($this->client->getAuthedRootEndpoint() instanceof stdClass);
         $this->assertTrue($this->client->getCache() instanceof ICache);
-        $this->assertTrue($this->client->getOptions($this->client->getRootEndpointUrl()) instanceof stdClass);
+        $this->assertTrue($this->client->getOptions($this->client->getAuthedCrestBaseUrl()) instanceof stdClass);
     }
 
     public function testHandler()

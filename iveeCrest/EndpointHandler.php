@@ -101,7 +101,7 @@ class EndpointHandler
     {
         return $this->client->getEndpoint(
             //no path to the verify endpoint is exposed, so we need construct it
-            str_replace('token', 'verify', $this->client->getRootEndpoint()->authEndpoint->href),
+            str_replace('token', 'verify', $this->client->getAuthedRootEndpoint()->authEndpoint->href),
             true,
             null,
             false
@@ -116,7 +116,7 @@ class EndpointHandler
     public function tokenDecode()
     {
         return $this->client->getEndpoint(
-            $this->client->getRootEndpoint()->decode->href,
+            $this->client->getAuthedRootEndpoint()->decode->href,
             true,
             static::TOKEN_DECODE_REPRESENTATION
         );
@@ -130,7 +130,7 @@ class EndpointHandler
     public function getMarketTypes()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->marketTypes->href,
+            $this->client->getPublicRootEndpoint()->marketTypes->href,
             function (\stdClass $marketType) {
                 return (int) $marketType->type->id;
             },
@@ -149,7 +149,7 @@ class EndpointHandler
         if (!isset($this->marketTypeHrefs)) {
             //gather all the hrefs into one compact array, indexed by item id
             $this->marketTypeHrefs = $this->client->gather(
-                $this->client->getRootEndpoint()->marketTypes->href,
+                $this->client->getPublicRootEndpoint()->marketTypes->href,
                 function (\stdClass $marketType) {
                     return (int) $marketType->type->id;
                 },
@@ -173,7 +173,7 @@ class EndpointHandler
     public function getRegions()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->regions->href,
+            $this->client->getPublicRootEndpoint()->regions->href,
             function (\stdClass $region) {
                 return static::parseTrailingIdFromUrl($region->href);
             },
@@ -308,7 +308,7 @@ class EndpointHandler
         return $this->client->getEndpoint(
             //Here we intentionally disregard CREST principles by constructing the URL as the official alternative is 
             //impracticable by virtue of requiring over a thousand calls to the constellation endpoint
-            $this->client->getRootEndpointUrl() . '/solarsystems/' . (int) $systemId . '/',
+            $this->client->getPublicCrestBaseUrl() . '/solarsystems/' . (int) $systemId . '/',
             true,
             static::SYSTEM_REPRESENTATION
         );
@@ -412,7 +412,7 @@ class EndpointHandler
         $ttl = mktime(0, 5, 0) - time();
         return $this->client->gather(
             //Here we have to construct the URL because there's no navigable way to reach this data from CREST root
-            $this->client->getRootEndpointUrl() . 'market/' . (int) $regionId . '/types/' . (int) $typeId
+            $this->client->getPublicCrestBaseUrl() . 'market/' . (int) $regionId . '/types/' . (int) $typeId
             . '/history/',
             function (\stdClass $history) {
                 return strtotime($history->date);
@@ -451,7 +451,7 @@ class EndpointHandler
 
         //Here we have to construct the URLs because there's no navigable way to reach this data from CREST root
         $hrefs = [];
-        $rootUrl = $this->client->getRootEndpointUrl();
+        $rootUrl = $this->client->getPublicCrestBaseUrl();
         foreach (array_unique($typeIds) as $typeId)
             $hrefs[] = $rootUrl . 'market/' . (int) $regionId . '/types/' . (int) $typeId . '/history/';
 
@@ -475,7 +475,7 @@ class EndpointHandler
     public function getIndustrySystems($cache = true)
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->industry->systems->href,
+            $this->client->getPublicRootEndpoint()->industry->systems->href,
             function (\stdClass $system) {
                 return (int) $system->solarSystem->id;
             },
@@ -495,7 +495,7 @@ class EndpointHandler
     public function getMarketPrices($cache = true)
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->marketPrices->href,
+            $this->client->getPublicRootEndpoint()->marketPrices->href,
             function (\stdClass $price) {
                 return (int) $price->type->id;
             },
@@ -515,7 +515,7 @@ class EndpointHandler
     public function getIndustryFacilities($cache = true)
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->industry->facilities->href,
+            $this->client->getPublicRootEndpoint()->industry->facilities->href,
             function (\stdClass $facility) {
                 return (int) $facility->facilityID;
             },
@@ -533,7 +533,7 @@ class EndpointHandler
     public function getItemGroups()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->itemGroups->href,
+            $this->client->getPublicRootEndpoint()->itemGroups->href,
             function (\stdClass $group) {
                 return static::parseTrailingIdFromUrl($group->href);
             },
@@ -572,7 +572,7 @@ class EndpointHandler
     public function getAlliances()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->alliances->href,
+            $this->client->getPublicRootEndpoint()->alliances->href,
             function (\stdClass $alliance) {
                 return (int) $alliance->href->id;
             },
@@ -612,7 +612,7 @@ class EndpointHandler
     public function getItemTypes()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->itemTypes->href,
+            $this->client->getPublicRootEndpoint()->itemTypes->href,
             function (\stdClass $type) {
                 return static::parseTrailingIdFromUrl($type->href);
             },
@@ -651,7 +651,7 @@ class EndpointHandler
     public function getItemCategories()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->itemCategories->href,
+            $this->client->getPublicRootEndpoint()->itemCategories->href,
             function (\stdClass $category) {
                 return static::parseTrailingIdFromUrl($category->href);
             },
@@ -690,7 +690,7 @@ class EndpointHandler
     public function getMarketGroups()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->marketGroups->href,
+            $this->client->getPublicRootEndpoint()->marketGroups->href,
             function (\stdClass $group) {
                 return static::parseTrailingIdFromUrl($group->href);
             },
@@ -750,7 +750,7 @@ class EndpointHandler
     public function getTournaments()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->tournaments->href,
+            $this->client->getPublicRootEndpoint()->tournaments->href,
             function (\stdClass $tournament) {
                 return static::parseTrailingIdFromUrl($tournament->href->href);
             },
@@ -771,7 +771,7 @@ class EndpointHandler
     public function getWarHrefs()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->wars->href,
+            $this->client->getPublicRootEndpoint()->wars->href,
             function (\stdClass $war) {
                 return (int) $war->id;
             },
@@ -793,7 +793,7 @@ class EndpointHandler
     {
         //we don't use the wars collection here due to it's huge size
         return $this->client->getEndpoint(
-            $this->client->getRootEndpoint()->wars->href . (int) $warId . '/',
+            $this->client->getPublicRootEndpoint()->wars->href . (int) $warId . '/',
             true,
             static::WAR_REPRESENTATION
         );
@@ -807,7 +807,7 @@ class EndpointHandler
     public function getIncursions()
     {
         return $this->client->getEndpoint(
-            $this->client->getRootEndpoint()->incursions->href,
+            $this->client->getPublicRootEndpoint()->incursions->href,
             true,
             static::INCURSION_COLLECTION_REPRESENTATION
         );
@@ -821,7 +821,7 @@ class EndpointHandler
     public function getSovCampaigns()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->sovereignty->campaigns->href,
+            $this->client->getPublicRootEndpoint()->sovereignty->campaigns->href,
             function (\stdClass $campaign) {
                 return (int) $campaign->campaignID;
             },
@@ -840,7 +840,7 @@ class EndpointHandler
     public function getSovStructures()
     {
         return $this->client->gather(
-            $this->client->getRootEndpoint()->sovereignty->structures->href,
+            $this->client->getPublicRootEndpoint()->sovereignty->structures->href,
             function (\stdClass $structure) {
                 return (int) $structure->structureID;
             },
@@ -863,7 +863,7 @@ class EndpointHandler
     public function getKillmail($killmailHref)
     {
         return $this->client->getEndpoint(
-            $this->client->getRootEndpointUrl() . ltrim(parse_url($killmailHref, PHP_URL_PATH), '/'),
+            $this->client->getPublicCrestBaseUrl() . ltrim(parse_url($killmailHref, PHP_URL_PATH), '/'),
             true,
             static::KILLMAIL_REPRESENTATION
         );

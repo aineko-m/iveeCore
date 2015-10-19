@@ -51,6 +51,7 @@ class Config
 
     //CREST config
     protected static $authedCrestBaseUrl      = 'https://crest-tq.eveonline.com/';
+    protected static $publicCrestBaseUrl      = 'https://public-crest.eveonline.com/';
     protected static $crestClientId           = 'myclientid';
     protected static $crestClientSecret       = 'myclientsecret';
     protected static $crestClientRefreshToken = 'myclientrefreshtoken';
@@ -453,25 +454,25 @@ class Config
     }
 
     /**
-     * Returns configured CREST base URL.
+     * Returns configured public CREST base URL.
      *
      * @return string
      */
-    public static function getCrestBaseUrl()
+    public static function getPublicCrestBaseUrl()
     {
-        return static::$crestBaseUrl;
+        return static::$publicCrestBaseUrl;
     }
 
     /**
-     * Configure CREST base URL.
+     * Configure public CREST base URL.
      *
-     * @param string $crestBaseUrl for the CREST API
+     * @param string $publicCrestBaseUrl for the CREST API
      *
      * @return void
      */
-    public static function setCrestBaseUrl($crestBaseUrl)
+    public static function setPublicCrestBaseUrl($publicCrestBaseUrl)
     {
-        static::$crestBaseUrl = $crestBaseUrl;
+        static::$publicCrestBaseUrl = $publicCrestBaseUrl;
     }
 
     /**
