@@ -100,9 +100,10 @@ class Client
      * @param string $clientSecret the secret for the app you registered
      * @param string $charRefreshToken the chracter-specific refresh token to be used
      * @param string $clientUserAgent the user agent that should be used in the requests
+     * @param \iveeCore\ICache $cache optional cache object. If none is given, a new one is instantiated
      */
     public function __construct($publicCrestBaseUrl = null, $authedCrestBaseUrl = null, $clientId = null,
-        $clientSecret = null, $charRefreshToken = null, $clientUserAgent = null
+        $clientSecret = null, $charRefreshToken = null, $clientUserAgent = null, iveeCore\ICache $cache = null
     ) {
         $this->publicCrestBaseUrl =
             is_null($publicCrestBaseUrl) ? Config::getPublicCrestBaseUrl() : $publicCrestBaseUrl;
@@ -112,8 +113,11 @@ class Client
         $this->clientSecret     = is_null($clientSecret)     ? Config::getCrestClientSecret()       : $clientSecret;
         $this->charRefreshToken = is_null($charRefreshToken) ? Config::getCrestClientRefreshToken() : $charRefreshToken;
 
-        $cacheClass = Config::getIveeClassName('Cache');
-        $this->cache = $cacheClass::instance();
+        if (is_null($cache)) {
+            $cacheClass = Config::getIveeClassName('Cache');
+            $this->cache = $cacheClass::instance();
+        } else
+            $this->cache = $cache;
 
         $cwClass = Config::getIveeClassName('CurlWrapper');
         $this->cw = new $cwClass(
