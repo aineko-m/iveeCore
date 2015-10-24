@@ -15,6 +15,7 @@ namespace iveeCore;
 
 /**
  * ReactionProcessData is used for describing reaction processes.
+ * Inheritance: ReactionProcessData -> ProcessDataCommon.
  *
  * @category IveeCore
  * @package  IveeCoreClasses

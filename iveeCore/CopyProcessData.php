@@ -15,7 +15,7 @@ namespace iveeCore;
 
 /**
  * Class for holding copy process data.
- * Inheritance: CopyProcessData -> ProcessData.
+ * Inheritance: CopyProcessData -> ProcessData -> ProcessDataCommon.
  *
  * @category IveeCore
  * @package  IveeCoreClasses

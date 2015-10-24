@@ -87,26 +87,6 @@ interface IProcessData
     public function getTotalCost(IndustryModifier $buyContext);
 
     /**
-     * Returns material buy cost, without subprocesses.
-     *
-     * @param \iveeCore\IndustryModifier $buyContext for market context
-     *
-     * @return float
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
-     */
-    public function getMaterialBuyCost(IndustryModifier $buyContext);
-
-    /**
-     * Returns material buy cost, including subprocesses.
-     *
-     * @param \iveeCore\IndustryModifier $buyContext for market context
-     *
-     * @return float
-     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
-     */
-    public function getTotalMaterialBuyCost(IndustryModifier $buyContext);
-
-    /**
      * Returns required materials object for this process, WITHOUT sub-processes. Will return an empty new MaterialMap
      * object if this has none.
      *
@@ -122,20 +102,6 @@ interface IProcessData
      * @return \iveeCore\MaterialMap
      */
     public function getTotalMaterialMap();
-
-    /**
-     * Returns the volume of the process materials, without sub-processes.
-     *
-     * @return float
-     */
-    public function getMaterialVolume();
-
-    /**
-     * Returns the volume of the process materials, including sub-processes.
-     *
-     * @return float
-     */
-    public function getTotalMaterialVolume();
 
     /**
      * Returns object defining the minimum skills required for this process, without sub-processes.

@@ -15,7 +15,7 @@ namespace iveeCore;
 
 /**
  * ResearchTEProcessData holds data about TE research processes.
- * Inheritance ResearchTEProcessData -> ProcessData
+ * Inheritance ResearchTEProcessData -> ProcessData -> ProcessDataCommon.
  *
  * @category IveeCore
  * @package  IveeCoreClasses

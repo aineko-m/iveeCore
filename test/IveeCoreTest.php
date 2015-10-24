@@ -119,8 +119,8 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $ipd->addSubProcessData($irpd);
         $icpd = new CopyProcessData(0, 1, 1, 100, 100, 0, 0);
         $ipd->addSubProcessData($icpd);
-        $this->assertTrue($ipd->getTotalCost($marketContext) == 500);
-        $this->assertTrue($ipd->getTotalSuccessCost($marketContext) == 1000);
+        $this->assertTrue($ipd->getTotalAttemptCost($marketContext) == 500);
+        $this->assertTrue($ipd->getTotalCost($marketContext) == 1000);
 
         //add children to mpd
         $mipd = new InventionProcessData(0, 100, 100, 0.5, 1, 0, 0, 0, 0);
@@ -161,30 +161,36 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         //now test materials
         $mm->addMaterial(34, 100);
 
-        $ipd->addMaterial(34, 100);
-        $mpd->addMaterial(34, 100);
-        $cpd->addMaterial(34, 100);
+        $ipd->addMaterial(35, 100);
+        $mpd->addMaterial(35, 100);
+        $cpd->addMaterial(35, 100);
 
-        $iipd->addMaterial(34, 100);
-        $impd->addMaterial(34, 100);
-        $icpd->addMaterial(34, 100);
+        $iipd->addMaterial(36, 100);
+        $impd->addMaterial(36, 100);
+        $icpd->addMaterial(36, 100);
 
-        $mipd->addMaterial(34, 100);
-        $mmpd->addMaterial(34, 100);
-        $mcpd->addMaterial(34, 100);
+        $mipd->addMaterial(37, 100);
+        $mmpd->addMaterial(37, 100);
+        $mcpd->addMaterial(37, 100);
 
-        $ripd->addMaterial(34, 100);
-        $rmpd->addMaterial(34, 100);
-        $rcpd->addMaterial(34, 100);
+        $ripd->addMaterial(38, 100);
+        $rmpd->addMaterial(38, 100);
+        $rcpd->addMaterial(38, 100);
 
-        $cipd->addMaterial(34, 100);
-        $cmpd->addMaterial(34, 100);
-        $ccpd->addMaterial(34, 100);
+        $cipd->addMaterial(39, 100);
+        $cmpd->addMaterial(39, 100);
+        $ccpd->addMaterial(39, 100);
 
         $totalMm = $topPd->getTotalMaterialMap();
-        $this->assertTrue($totalMm->getMaterials() == [34 => 3000]);
+        $this->assertTrue($totalMm->getMaterials() == [
+            34 => 600,
+            35 => 400,
+            36 => 800,
+            37 => 400,
+            38 => 400,
+            39 => 400
+        ]);
         $this->assertTrue($totalMm->getMaterialVolume() == 30);
-        $this->assertTrue($topPd->getTotalMaterialVolume() == 30);
     }
 
     /**
@@ -304,7 +310,7 @@ class IveeCoreTest extends PHPUnit_Framework_TestCase
         $materialTarget->addMaterial(20412, 3);
         $materialTarget->addMaterial(20424, 3);
         $materialTarget->addMaterial(30752, 1);
-        $this->assertTrue($red->getTotalMaterialMap() == $materialTarget);
+        $this->assertTrue($red->getTotalAttemptMaterialMap() == $materialTarget);
         $this->assertTrue(abs($red->getProbability() - 0.49583333333333) < 0.00000000001);
     }
 

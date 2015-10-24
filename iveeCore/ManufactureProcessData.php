@@ -15,7 +15,7 @@ namespace iveeCore;
 
 /**
  * Holds data about manufacturing processes.
- * Inheritance: ManufactureProcessData -> ProcessData
+ * Inheritance: ManufactureProcessData -> ProcessData -> ProcessDataCommon.
  *
  * @category IveeCore
  * @package  IveeCoreClasses

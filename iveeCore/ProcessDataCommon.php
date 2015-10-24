@@ -116,12 +116,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalMaterialMap()
     {
         $tmat = $this->getMaterialMap();
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $tmat->addMaterialMap($subProcessData->getTotalSuccessMaterialMap());
-            else
-                $tmat->addMaterialMap($subProcessData->getTotalMaterialMap());
-        }
+        foreach ($this->getSubProcesses() as $subProcessData)
+            $tmat->addMaterialMap($subProcessData->getTotalMaterialMap());
+
         return $tmat;
     }
 
@@ -147,12 +144,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalProcessCost()
     {
         $sum = $this->getProcessCost();
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessProcessCost();
-            else
-                $sum += $subProcessData->getTotalProcessCost();
-        }
+        foreach ($this->getSubProcesses() as $subProcessData)
+            $sum += $subProcessData->getTotalProcessCost();
+
         return $sum;
     }
 
@@ -182,12 +176,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalMaterialBuyCost(IndustryModifier $buyContext)
     {
         $sum = $this->getMaterialBuyCost($buyContext);
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessMaterialBuyCost($buyContext);
-            else
-                $sum += $subProcessData->getTotalMaterialBuyCost($buyContext);
-        }
+        foreach ($this->getSubProcesses() as $subProcessData)
+            $sum += $subProcessData->getTotalMaterialBuyCost($buyContext);
+
         return $sum;
     }
 
@@ -212,12 +203,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalTime()
     {
         $sum = $this->getTime();
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessTime();
-            else
-                $sum += $subProcessData->getTotalTime();
-        }
+        foreach ($this->getSubProcesses() as $subProcessData)
+            $sum += $subProcessData->getTotalTime();
+
         return $sum;
     }
 
@@ -239,43 +227,10 @@ abstract class ProcessDataCommon implements IProcessData
 
         $sum[$this->getActivityId()] = $this->getTime();
 
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                foreach ($subProcessData->getTotalSuccessTimes() as $activityId => $time)
-                    $sum[$activityId] += $time;
-            else
-                foreach ($subProcessData->getTotalTimes() as $activityId => $time)
-                    $sum[$activityId] += $time;
-        }
-        return $sum;
-    }
+        foreach ($this->getSubProcesses() as $subProcessData)
+            foreach ($subProcessData->getTotalTimes() as $activityId => $time)
+                $sum[$activityId] += $time;
 
-    /**
-     * Returns the volume of the process materials, without sub-processes.
-     *
-     * @return float
-     */
-    public function getMaterialVolume()
-    {
-        if (!isset($this->materials))
-            return 0;
-        return $this->materials->getMaterialVolume();
-    }
-
-    /**
-     * Returns the volume of the process materials, including sub-processes.
-     *
-     * @return float
-     */
-    public function getTotalMaterialVolume()
-    {
-        $sum = $this->getMaterialVolume();
-        foreach ($this->getSubProcesses() as $subProcessData) {
-            if ($subProcessData instanceof InventionProcessData)
-                $sum += $subProcessData->getTotalSuccessMaterialVolume();
-            else
-                $sum += $subProcessData->getTotalMaterialVolume();
-        }
         return $sum;
     }
 }

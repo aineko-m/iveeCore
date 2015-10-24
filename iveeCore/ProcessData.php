@@ -17,10 +17,6 @@ namespace iveeCore;
  * ProcessData represents a generic industrial process. This class has not been made abstract so it can be used to
  * aggregate multiple IProcessData objects ("shopping cart" functionality).
  *
- * Note that some methods have special-casing for InventionProcessData objects. This is due to the design decision of
- * making "invention attempt" cases override the normal inherited methods while the "invention success" cases are
- * defined explicitly as new methods, which is less error prone.
- *
  * @category IveeCore
  * @package  IveeCoreClasses
  * @author   Aineko Macx <ai@sknop.net>
@@ -208,18 +204,15 @@ class ProcessData extends ProcessDataCommon
      */
     public function getTotalProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
-        $sum = 0;
+        $sum = -$this->getProcessCost();
         foreach ($this->getSubProcesses() as $spd) {
             if ($spd instanceof ManufactureProcessData OR $spd instanceof ReactionProcessData)
                 $sum += $spd->getTotalProfit($buyContext, $sellContext);
-            elseif ($spd instanceof InventionProcessData)
-                $sum -= $spd->getTotalSuccessCost($buyContext);
             else
                 $sum -= $spd->getTotalCost($buyContext);
         }
 
-        return $sum
-            - ($this instanceof InventionProcessData ? $this->getSuccessProcessCost() : $this->getProcessCost());
+        return $sum;
     }
 
     /**

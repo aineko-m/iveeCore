@@ -15,11 +15,11 @@ namespace iveeCore;
 
 /**
  * Holds data about invention processes.
- * Inheritance: InventionProcessData -> ProcessData.
+ * Inheritance: InventionProcessData -> ProcessData -> ProcessDataCommon.
  *
- * Note the design decision of making "invention attempt" cases override the normal inherited methods while the
- * "invention success" cases are defined explicitly in new methods. This is less error error prone than the other way
- * round.
+ * Note the design decision of making the "invention success" cases override the inherited methods while the "invention
+ * attemp" methods are re-implemented explicitly with "Attemp" in the method name. This simplifies ProcessData trees,
+ * moving all special casing from other ProcessData classes to this one.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -40,12 +40,12 @@ class InventionProcessData extends ProcessData
     protected $probability;
 
     /**
-     * @var int $resultRuns the number of runs on the resulting T2 BPC if invention is successful
+     * @var int $resultRuns the number of runs on the resulting T2/T3 BPC if invention is successful
      */
     protected $resultRuns;
 
     /**
-     * @var int $resultME the ME level on the resulting T2 BPC if invention is successful
+     * @var int $resultME the ME level on the resulting T2/T3 BPC if invention is successful
      */
     protected $resultME;
 
@@ -58,12 +58,12 @@ class InventionProcessData extends ProcessData
      * Constructor.
      *
      * @param int $inventedBpId typeId of the invented blueprint
-     * @param int $inventTime the invention takes in seconds
+     * @param int $inventTime the invention attempt takes in seconds
      * @param float $processCost the cost of performing this reseach process
      * @param float $probability  chance of success for invention
-     * @param int $resultRuns the number of runs on the resulting T2 BPC if invention is successful
-     * @param int $resultME the ME level on the resulting T2 BPC if invention is successful
-     * @param int $resultTE the TE level on the resulting T2 BPC if invention is successful
+     * @param int $resultRuns the number of runs on the resulting T2/T3 BPC if invention is successful
+     * @param int $resultME the ME level on the resulting T2/T3 BPC if invention is successful
+     * @param int $resultTE the TE level on the resulting T2/T3 BPC if invention is successful
      * @param int $solarSystemId ID of the SolarSystem the research is performed
      * @param int $assemblyLineId ID of the AssemblyLine where the research is being performed
      */
@@ -80,7 +80,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns the number of runs on the resulting T2 BPC if invention is successful.
+     * Returns the number of runs on the resulting T2/T3 BPC if invention is successful.
      *
      * @return int
      */
@@ -90,7 +90,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns the ME level on the resulting T2 BPC if invention is successful.
+     * Returns the ME level on the resulting T2/T3 BPC if invention is successful.
      *
      * @return int
      */
@@ -100,7 +100,7 @@ class InventionProcessData extends ProcessData
     }
 
     /**
-     * Returns the TE level on the resulting T2 BPC if invention is successful.
+     * Returns the TE level on the resulting T2/T3 BPC if invention is successful.
      *
      * @return int
      */
@@ -120,13 +120,37 @@ class InventionProcessData extends ProcessData
     }
 
     /**
+     * Returns the time per invention attempt, without sub-processes.
+     *
+     * @return float
+     */
+    public function getAttemptTime()
+    {
+        return $this->processTime;
+    }
+
+    /**
      * Returns the average time until invention success, without sub-processes.
      *
      * @return float
      */
-    public function getSuccesTime()
+    public function getTime()
     {
-        return $this->getTime() / $this->probability;
+        return $this->getAttemptTime() / $this->probability;
+    }
+
+    /**
+     * Returns sum of all times per invention attempt, in seconds, including sub-processes.
+     *
+     * @return int|float
+     */
+    public function getTotalAttemptTime()
+    {
+        $sum = $this->getAttemptTime();
+        foreach ($this->getSubProcesses() as $subProcessData)
+            $sum += $subProcessData->getTotalTime();
+
+        return $sum;
     }
 
     /**
@@ -134,9 +158,34 @@ class InventionProcessData extends ProcessData
      *
      * @return float
      */
-    public function getTotalSuccessTime()
+    public function getTotalTime()
     {
-        return $this->getTotalTime() / $this->probability;
+        return $this->getTotalAttemptTime() / $this->probability;
+    }
+
+    /**
+     * Returns array with process times per invention attempt, summed by activity, in seconds, including sub-processes.
+     *
+     * @return float[] in the form activityId => float
+     */
+    public function getTotalAttemptTimes()
+    {
+        $sum = array(
+            static::ACTIVITY_MANUFACTURING => 0.0,
+            static::ACTIVITY_RESEARCH_TE   => 0.0,
+            static::ACTIVITY_RESEARCH_ME   => 0.0,
+            static::ACTIVITY_COPYING       => 0.0,
+            static::ACTIVITY_INVENTING     => 0.0,
+            static::ACTIVITY_REACTING      => 0.0
+        );
+
+        $sum[$this->getActivityId()] = $this->getAttemptTime();
+
+        foreach ($this->getSubProcesses() as $subProcessData)
+            foreach ($subProcessData->getTotalTimes() as $activityId => $time)
+                $sum[$activityId] += $time;
+
+        return $sum;
     }
 
     /**
@@ -144,9 +193,9 @@ class InventionProcessData extends ProcessData
      *
      * @return float[]
      */
-    public function getTotalSuccessTimes()
+    public function getTotalTimes()
     {
-        $sum = $this->getTotalTimes();
+        $sum = $this->getTotalAttemptTimes();
         foreach ($sum as $activityId => $time)
             $sum[$activityId] = $time / $this->probability;
 
@@ -154,13 +203,43 @@ class InventionProcessData extends ProcessData
     }
 
     /**
+     * Returns a clone of the MaterialMap for this process, representing an invention attemp, WITHOUT sub-processes.
+     * Will return an empty new MaterialMap object if this process has no material requirements.
+     *
+     * @return \iveeCore\MaterialMap
+     */
+    public function getAttemptMaterialMap()
+    {
+        if (isset($this->materials)) {
+            return clone $this->materials; //we return a clone so the original doesn't get altered
+        } else {
+            $materialClass = Config::getIveeClassName('MaterialMap');
+            return new $materialClass;
+        }
+    }
+
+    /**
      * Returns MaterialMap object with average required materials until invention success, without sub-processes.
      *
      * @return \iveeCore\MaterialMap
      */
-    public function getSuccessMaterialMap()
+    public function getMaterialMap()
     {
-        return $this->getMaterialMap()->multiply(1 / $this->probability);
+        return $this->getAttemptMaterialMap()->multiply(1 / $this->probability);
+    }
+
+    /**
+     * Returns MaterialMap object with required materials per invention attempt, including sub-processes.
+     *
+     * @return \iveeCore\MaterialMap
+     */
+    public function getTotalAttemptMaterialMap()
+    {
+        $smat = $this->getAttemptMaterialMap();
+        foreach ($this->getSubProcesses() as $subProcessData)
+            $smat->addMaterialMap($subProcessData->getTotalMaterialMap());
+
+        return $smat;
     }
 
     /**
@@ -168,36 +247,19 @@ class InventionProcessData extends ProcessData
      *
      * @return \iveeCore\MaterialMap
      */
-    public function getTotalSuccessMaterialMap()
+    public function getTotalMaterialMap()
     {
-        $smat = $this->getSuccessMaterialMap();
-        foreach ($this->getSubProcesses() as $subProcessData)
-            if ($subProcessData instanceof InventionProcessData)
-                $smat->addMaterialMap($subProcessData->getTotalSuccessMaterialMap()->multiply(1 / $this->probability));
-            else
-                $smat->addMaterialMap($subProcessData->getTotalMaterialMap()->multiply(1 / $this->probability));
-
-        return $smat;
+        return $this->getTotalAttemptMaterialMap()->multiply(1 / $this->probability);
     }
 
     /**
-     * Returns volume of average required materials until invention success, without sub-processes.
+     * Returns process cost per invention attempt, without subprocesses.
      *
-     * @return float volume
+     * @return float
      */
-    public function getSuccessMaterialVolume()
+    public function getAttemptProcessCost()
     {
-        return $this->getMaterialVolume() / $this->probability;
-    }
-
-    /**
-     * Returns volume of average required materials until invention success, including sub-processes.
-     *
-     * @return float volume
-     */
-    public function getTotalSuccessMaterialVolume()
-    {
-        return $this->getTotalMaterialVolume() / $this->probability;
+        return $this->processCost;
     }
 
     /**
@@ -205,9 +267,9 @@ class InventionProcessData extends ProcessData
      *
      * @return float
      */
-    public function getSuccessProcessCost()
+    public function getProcessCost()
     {
-        return $this->getProcessCost() / $this->probability;
+        return $this->getAttemptProcessCost() / $this->probability;
     }
 
     /**
@@ -215,33 +277,37 @@ class InventionProcessData extends ProcessData
      *
      * @return float
      */
-    public function getTotalSuccessProcessCost()
+    public function getTotalProcessCost()
     {
-        return $this->getTotalProcessCost() / $this->probability;
+        return $this->getTotalAttemptProcessCost() / $this->probability;
     }
 
     /**
-     * Returns average material cost until success, without subprocesses.
-     *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * Returns process cost (no materials) per invention attempt, including subprocesses.
      *
      * @return float
      */
-    public function getSuccessMaterialBuyCost(IndustryModifier $iMod)
+    public function getTotalAttemptProcessCost()
     {
-        return $this->getMaterialBuyCost($iMod) / $this->probability;
+        $sum = $this->getAttemptProcessCost();
+        foreach ($this->getSubProcesses() as $subProcessData)
+            $sum += $subProcessData->getTotalProcessCost();
+
+        return $sum;
     }
 
     /**
-     * Returns average material cost until success, including subprocesses.
+     * Returns total cost per invention attempt, including subprocesses.
      *
-     * @param \iveeCore\IndustryModifier $iMod for market context
+     * @param \iveeCore\IndustryModifier $buyContext for market context
      *
      * @return float
+     * @throws \iveeCore\Exceptions\PriceDataTooOldException if $maxPriceDataAge is exceeded by any of the materials
      */
-    public function getTotalSuccessMaterialBuyCost(IndustryModifier $iMod)
+    public function getTotalAttemptCost(IndustryModifier $buyContext)
     {
-        return $this->getTotalMaterialBuyCost($iMod) / $this->probability;
+        return $this->getTotalAttemptProcessCost()
+            + $this->getTotalAttemptMaterialMap()->getMaterialBuyCost($buyContext);
     }
 
     /**
@@ -251,9 +317,9 @@ class InventionProcessData extends ProcessData
      *
      * @return float
      */
-    public function getTotalSuccessCost(IndustryModifier $iMod)
+    public function getTotalCost(IndustryModifier $iMod)
     {
-        return $this->getTotalCost($iMod) / $this->probability;
+        return $this->getTotalAttemptCost($iMod) / $this->probability;
     }
 
     /**
@@ -269,19 +335,19 @@ class InventionProcessData extends ProcessData
         $utilClass = Config::getIveeClassName('Util');
 
         echo "Average total success times:" . PHP_EOL;
-        print_r($this->getTotalSuccessTimes());
+        print_r($this->getTotalTimes());
 
         echo "Average total success materials:" . PHP_EOL;
-        foreach ($this->getTotalSuccessMaterialMap()->getMaterials() as $typeId => $amount) {
+        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount) {
             echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
         }
 
         echo "Total average success material cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalSuccessMaterialBuyCost($buyContext)) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($buyContext)) . "ISK" . PHP_EOL;
         echo "Total average success slot cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalSuccessProcessCost()) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;
         echo "Total average success cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalSuccessCost($buyContext)) . "ISK" . PHP_EOL;
+        . $utilClass::quantitiesToReadable($this->getTotalCost($buyContext)) . "ISK" . PHP_EOL;
         echo "Total profit: "
         . $utilClass::quantitiesToReadable($this->getTotalProfit($buyContext, $sellContext)) . "ISK" . PHP_EOL;
     }
