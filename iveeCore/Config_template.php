@@ -50,11 +50,14 @@ class Config
     protected static $cachePort   = 11211; //memcached default: 11211, redis default: 6379
 
     //CREST config
-    protected static $authedCrestBaseUrl      = 'https://crest-tq.eveonline.com/';
-    protected static $publicCrestBaseUrl      = 'https://public-crest.eveonline.com/';
-    protected static $crestClientId           = 'myclientid';
-    protected static $crestClientSecret       = 'myclientsecret';
-    protected static $crestClientRefreshToken = 'myclientrefreshtoken';
+    protected static $authedCrestBaseUrl       = 'https://crest-tq.eveonline.com/';
+    protected static $publicCrestBaseUrl       = 'https://public-crest.eveonline.com/';
+    protected static $crestClientId            = 'myclientid';
+    protected static $crestClientSecret        = 'myclientsecret';
+    //Refresh tokens, per authentication scope. Tokens can have multiple scopes, so just repeat it if needed.
+    protected static $crestClientRefreshTokens = [
+        'publicData' => 'myclientrefreshtoken'
+    ];
 
     //set the name of your application. It is used as part of the User Agent when accessing the CREST API.
     protected static $applicationName = 'unknown application';
@@ -71,7 +74,7 @@ class Config
     protected static $maxPriceDataAge = 21600;
 
     //Defines the regions that will have their market data collected via CREST by the batch updater
-    protected static $trackedMarketRegionIds = array(
+    protected static $trackedMarketRegionIds = [
 //        10000001, //Derelik
         10000002, //The Forge
 //        10000003, //Vale of the Silent
@@ -139,12 +142,12 @@ class Config
 //        10000067, //Genesis
 //        10000068, //Verge Vendor
 //        10000069  //Black Rise
-    );
+    ];
 
     //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
     //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
     //can then be used by the autoloader. Change according to your needs.
-    protected static $classes = array(
+    protected static $classes = [
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
         'BlueprintModifier'      => '\iveeCore\BlueprintModifier',
@@ -230,7 +233,7 @@ class Config
         'EndpointHandler'       => '\iveeCrest\EndpointHandler',
         'Response'              => '\iveeCrest\Response',
         'IveeCrestException'    => '\iveeCrest\Exceptions\IveeCrestException'
-    );
+    ];
 
     ////////////////////////////
     // Do not edit below here //
@@ -542,25 +545,25 @@ class Config
     }
 
     /**
-     * Returns configured CREST user specific refresh token.
+     * Returns configured CREST user and authentication scope specific refresh tokens.
      *
-     * @return string
+     * @return array
      */
-    public static function getCrestClientRefreshToken()
+    public static function getCrestClientRefreshTokens()
     {
-        return static::$crestClientRefreshToken;
+        return static::$crestClientRefreshTokens;
     }
 
     /**
-     * Sets the CREST user specific refresh token.
+     * Sets the CREST user and authentication scope specific refresh tokens.
      *
-     * @param string $crestClientRefreshToken to be set
+     * @param array $crestClientRefreshTokens to be set
      *
      * @return void
      */
-    public static function setCrestClientRefreshToken($crestClientRefreshToken)
+    public static function setCrestClientRefreshTokens(array $crestClientRefreshTokens)
     {
-        return static::$crestClientRefreshToken = $crestClientRefreshToken;
+        return static::$crestClientRefreshTokens = $crestClientRefreshTokens;
     }
 
     /**

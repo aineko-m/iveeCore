@@ -95,29 +95,34 @@ class EndpointHandler
     /**
      * Verifies the access token, returning data about the character linked to it.
      *
+     * @param string $authScope the CREST authentication scope whose access token shall be verified
+     * @param bool $cache whether the response of the verification should be cached
+     *
      * @return stdClass
      */
-    public function verifyAccessToken()
+    public function verifyAccessToken($authScope = 'publicData', $cache = false)
     {
         return $this->client->getEndpoint(
             //no path to the verify endpoint is exposed, so we need construct it
             str_replace('token', 'verify', $this->client->getAuthedRootEndpoint()->authEndpoint->href),
-            true,
+            $authScope,
             null,
-            false
+            $cache
         );
     }
 
     /**
      * "decodes" the access token, returning a href to the character endpoint.
      *
+     * @param string $authScope the CREST authentication scope whose access token shall be "decoded"
+     *
      * @return stdClass
      */
-    public function tokenDecode()
+    public function tokenDecode($authScope = 'publicData')
     {
         return $this->client->getEndpoint(
             $this->client->getAuthedRootEndpoint()->decode->href,
-            true,
+            $authScope,
             static::TOKEN_DECODE_REPRESENTATION
         );
     }
@@ -131,6 +136,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->marketTypes->href,
+            false,
             function (\stdClass $marketType) {
                 return (int) $marketType->type->id;
             },
@@ -150,6 +156,7 @@ class EndpointHandler
             //gather all the hrefs into one compact array, indexed by item id
             $this->marketTypeHrefs = $this->client->gather(
                 $this->client->getPublicRootEndpoint()->marketTypes->href,
+                false,
                 function (\stdClass $marketType) {
                     return (int) $marketType->type->id;
                 },
@@ -174,6 +181,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->regions->href,
+            false,
             function (\stdClass $region) {
                 return static::parseTrailingIdFromUrl($region->href);
             },
@@ -199,7 +207,7 @@ class EndpointHandler
 
         return $this->client->getEndpoint(
             $regions[$regionId]->href,
-            true,
+            false,
             static::REGION_REPRESENTATION
         );
     }
@@ -228,6 +236,7 @@ class EndpointHandler
             //run the async queries
             $this->client->asyncGetMultiEndpointResponses(
                 $hrefs,
+                false,
                 function (Response $res) use ($dataObj) {
                     foreach ($res->content->constellations as $constellation)
                         $dataObj->data[EndpointHandler::parseTrailingIdFromUrl($constellation->href)]
@@ -260,7 +269,7 @@ class EndpointHandler
 
         return $this->client->getEndpoint(
             $constellations[$constellationId],
-            true,
+            false,
             static::CONSTELLATION_REPRESENTATION
         );
     }
@@ -284,6 +293,7 @@ class EndpointHandler
             //run the async queries
             $this->client->asyncGetMultiEndpointResponses(
                 $this->getConstellationHrefs(),
+                false,
                 function (Response $res) use ($dataObj) {
                     foreach ($res->content->systems as $system)
                         $dataObj->data[EndpointHandler::parseTrailingIdFromUrl($system->href)] = $system->href;
@@ -309,7 +319,7 @@ class EndpointHandler
             //Here we intentionally disregard CREST principles by constructing the URL as the official alternative is 
             //impracticable by virtue of requiring over a thousand calls to the constellation endpoint
             $this->client->getPublicCrestBaseUrl() . '/solarsystems/' . (int) $systemId . '/',
-            true,
+            false,
             static::SYSTEM_REPRESENTATION
         );
     }
@@ -334,6 +344,7 @@ class EndpointHandler
         $ret = new \stdClass();
         $ret->sellOrders = $this->client->gather(
             $region->marketSellOrders->href . '?type=' . $marketTypeHrefs[$typeId],
+            false,
             null,
             null,
             static::MARKET_ORDER_COLLECTION_REPRESENTATION,
@@ -341,6 +352,7 @@ class EndpointHandler
         );
         $ret->buyOrders = $this->client->gather(
             $region->marketBuyOrders->href . '?type=' . $marketTypeHrefs[$typeId],
+            false,
             null,
             null,
             static::MARKET_ORDER_COLLECTION_REPRESENTATION,
@@ -390,6 +402,7 @@ class EndpointHandler
         //run the async queries
         $this->client->asyncGetMultiEndpointResponses(
             $hrefs,
+            false,
             $callback,
             $errCallback,
             static::MARKET_ORDER_COLLECTION_REPRESENTATION,
@@ -414,6 +427,7 @@ class EndpointHandler
             //Here we have to construct the URL because there's no navigable way to reach this data from CREST root
             $this->client->getPublicCrestBaseUrl() . 'market/' . (int) $regionId . '/types/' . (int) $typeId
             . '/history/',
+            false,
             function (\stdClass $history) {
                 return strtotime($history->date);
             },
@@ -458,6 +472,7 @@ class EndpointHandler
         //run the async queries
         $this->client->asyncGetMultiEndpointResponses(
             $hrefs,
+            false,
             $callback,
             $errCallback,
             static::MARKET_TYPE_HISTORY_COLLECTION_REPRESENTATION,
@@ -476,6 +491,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->industry->systems->href,
+            false,
             function (\stdClass $system) {
                 return (int) $system->solarSystem->id;
             },
@@ -496,6 +512,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->marketPrices->href,
+            false,
             function (\stdClass $price) {
                 return (int) $price->type->id;
             },
@@ -516,6 +533,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->industry->facilities->href,
+            false,
             function (\stdClass $facility) {
                 return (int) $facility->facilityID;
             },
@@ -534,6 +552,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->itemGroups->href,
+            false,
             function (\stdClass $group) {
                 return static::parseTrailingIdFromUrl($group->href);
             },
@@ -559,7 +578,7 @@ class EndpointHandler
 
         return $this->client->getEndpoint(
             $groups[$groupId]->href,
-            true,
+            false,
             static::ITEM_GROUP_REPRESENTATION
         );
     }
@@ -573,6 +592,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->alliances->href,
+            false,
             function (\stdClass $alliance) {
                 return (int) $alliance->href->id;
             },
@@ -599,7 +619,7 @@ class EndpointHandler
         }
         return $this->client->getEndpoint(
             $alliances[$allianceId]->href,
-            true,
+            false,
             static::ALLIANCE_REPRESENTATION
         );
     }
@@ -613,6 +633,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->itemTypes->href,
+            false,
             function (\stdClass $type) {
                 return static::parseTrailingIdFromUrl($type->href);
             },
@@ -638,7 +659,7 @@ class EndpointHandler
 
         return $this->client->getEndpoint(
             $itemTypes[$typeId]->href,
-            true,
+            false,
             static::ITEM_TYPE_REPRESENTATION
         );
     }
@@ -652,6 +673,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->itemCategories->href,
+            false,
             function (\stdClass $category) {
                 return static::parseTrailingIdFromUrl($category->href);
             },
@@ -677,7 +699,7 @@ class EndpointHandler
 
         return $this->client->getEndpoint(
             $categories[$categoryId]->href,
-            true,
+            false,
             static::ITEM_CATEGORY_REPRESENTATION
         );
     }
@@ -691,6 +713,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->marketGroups->href,
+            false,
             function (\stdClass $group) {
                 return static::parseTrailingIdFromUrl($group->href);
             },
@@ -718,7 +741,7 @@ class EndpointHandler
 
         return $this->client->getEndpoint(
             $marketGroups[$marketGroupId]->href,
-            true,
+            false,
             static::MARKET_GROUP_REPRESENTATION
         );
     }
@@ -734,6 +757,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->getMarketGroup($marketGroupId)->types->href,
+            false,
             function (\stdClass $type) {
                 return (int) $type->type->id;
             },
@@ -751,6 +775,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->tournaments->href,
+            false,
             function (\stdClass $tournament) {
                 return static::parseTrailingIdFromUrl($tournament->href->href);
             },
@@ -772,6 +797,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->wars->href,
+            false,
             function (\stdClass $war) {
                 return (int) $war->id;
             },
@@ -794,7 +820,7 @@ class EndpointHandler
         //we don't use the wars collection here due to it's huge size
         return $this->client->getEndpoint(
             $this->client->getPublicRootEndpoint()->wars->href . (int) $warId . '/',
-            true,
+            false,
             static::WAR_REPRESENTATION
         );
     }
@@ -808,7 +834,7 @@ class EndpointHandler
     {
         return $this->client->getEndpoint(
             $this->client->getPublicRootEndpoint()->incursions->href,
-            true,
+            false,
             static::INCURSION_COLLECTION_REPRESENTATION
         );
     }
@@ -822,6 +848,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->sovereignty->campaigns->href,
+            false,
             function (\stdClass $campaign) {
                 return (int) $campaign->campaignID;
             },
@@ -841,6 +868,7 @@ class EndpointHandler
     {
         return $this->client->gather(
             $this->client->getPublicRootEndpoint()->sovereignty->structures->href,
+            false,
             function (\stdClass $structure) {
                 return (int) $structure->structureID;
             },
@@ -864,7 +892,7 @@ class EndpointHandler
     {
         return $this->client->getEndpoint(
             $this->client->getPublicCrestBaseUrl() . ltrim(parse_url($killmailHref, PHP_URL_PATH), '/'),
-            true,
+            false,
             static::KILLMAIL_REPRESENTATION
         );
     }

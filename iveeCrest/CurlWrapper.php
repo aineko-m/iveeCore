@@ -42,22 +42,15 @@ class CurlWrapper
     protected $ch;
 
     /**
-     * @var string $refreshToken used to isolate cached responses in a multi-character scenrio
-     */
-    protected $refreshToken;
-
-    /**
      * Constructor.
      * 
      * @param \iveeCore\ICache $cache object to be used
      * @param string $userAgent to be used in the HTTP requests
-     * @param string $refreshToken used to isolate cached responses in a multi-character scenrio
      */
-    public function __construct(ICache $cache, $userAgent, $refreshToken)
+    public function __construct(ICache $cache, $userAgent)
     {
         $this->cache = $cache;
         $this->userAgent = $userAgent;
-        $this->refreshToken = $refreshToken;
         $this->ch = curl_init();
         
         //set standard CURL options
@@ -88,14 +81,17 @@ class CurlWrapper
      * 
      * @param string $uri the URI to make the request to
      * @param string[] $header to be used in http request
-     * @param array $fields parameters to be passed in the request in the form param => value
+     * @param string[] $fields parameters to be passed in the request in the form param => value
+     * @param string $cacheNsPrefix a character specific string to isolate Responses in the cache in a multi-character
+     * use-case.
+     * @param bool $cache whether the response from this POST request should be cached
      * 
      * @return \iveeCrest\Response
      * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
-    public function post($uri, array $header, array $fields)
+    public function post($uri, array $header, array $fields, $cacheNsPrefix, $cache = false)
     {
-        $responseKey = md5($this->refreshToken . '_post:' . $uri);
+        $responseKey = md5($cacheNsPrefix . '_post:' . $uri);
         try {
             return $this->cache->getItem($responseKey);
         } catch (KeyNotFoundInCacheException $e) {
@@ -115,7 +111,7 @@ class CurlWrapper
                 CURLOPT_HTTPHEADER      => $header,
                 CURLOPT_HEADERFUNCTION  => array($response, 'handleCurlHeaderLine')
             );
-            $this->doRequest($curlOptions, $response, false);
+            $this->doRequest($curlOptions, $response, $cache);
             return $response;
         }
     }
@@ -125,15 +121,17 @@ class CurlWrapper
      * 
      * @param string $uri the URI to make the request to
      * @param string $header header to be passed in the request
+     * @param string $cacheNsPrefix a character specific string to isolate Responses in the cache in a multi-character
+     * use-case.
      * @param bool $cache whether the response should be cached. If using another caching layer, it is advisable to
      * disabled it here to prevent redundant caching.
      * 
      * @return \iveeCrest\Response
      * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
-    public function get($uri, array $header, $cache = true) 
+    public function get($uri, array $header, $cacheNsPrefix, $cache = true) 
     {
-        $responseKey = md5($this->refreshToken . '_get:' . $uri);
+        $responseKey = md5($cacheNsPrefix . '_get:' . $uri);
         try {
             return $this->cache->getItem($responseKey);
         } catch (KeyNotFoundInCacheException $e) {
@@ -161,7 +159,7 @@ class CurlWrapper
      */
     public function options($uri)
     {
-        $responseKey = md5($this->refreshToken . '_options:' . $uri);
+        $responseKey = md5('_options:' . $uri);
         try {
             return $this->cache->getItem($responseKey);
         } catch (KeyNotFoundInCacheException $e) {
@@ -232,12 +230,14 @@ class CurlWrapper
      * @param callable $errCallback a function expecting one iveeCrest\Response object as argument, called for every
      * non-successful response
      * @param bool $cache whether the individual Responses should be cached
+     * @param string $cacheNsPrefix a character specific string to isolate Responses in the cache in a multi-character
+     * use-case.
      * 
      * @return void
      * @throws \iveeCrest\Exceptions\IveeCrestException on general CURL error
      */
     public function asyncMultiGet(array $hrefs, array $header, callable $getAuthHeader, callable $callback,
-        callable $errCallback = null, $cache = true
+        callable $errCallback = null, $cache = true, $cacheNsPrefix = ''
     ) {
         //This method is fairly complex in part due to the tricky and ugly interface of multi-curl and moving window
         //logic. Ideas or patches how to make it nicer welcome!
@@ -246,7 +246,7 @@ class CurlWrapper
         $hrefsToQuery = [];
         $keysToQuery  = [];
         foreach ($hrefs as $href) {
-            $responseKey = md5($this->refreshToken . '_get:' . $href);
+            $responseKey = md5($cacheNsPrefix . '_get:' . $href);
             try {
                 $callback($this->cache->getItem($responseKey));
             } catch (KeyNotFoundInCacheException $e) {

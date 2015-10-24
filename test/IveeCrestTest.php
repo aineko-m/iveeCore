@@ -54,7 +54,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
             Config::getAuthedCrestBaseUrl(),
             Config::getCrestClientId(),
             Config::getCrestClientSecret(),
-            Config::getCrestClientRefreshToken(),
+            Config::getCrestClientRefreshTokens(),
             Config::getUserAgent()
         );
 
