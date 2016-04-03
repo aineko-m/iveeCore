@@ -59,7 +59,7 @@ class IveeUpdater
     public function run(array $args, array $regionIds)
     {
         if (count($args) < 2) {
-            echo '== ' . Config::VERSION . ' Updater ==' . PHP_EOL
+            echo '== iveeCore ' . SDE::IVEECORE_VERSION . ' Updater ==' . PHP_EOL
                 . 'Available options:' . PHP_EOL
                 . '-testauth     : Test the authenticated CREST connectivity (configured refresh token required)' . PHP_EOL
                 . '-indices      : Update system industry indices' . PHP_EOL

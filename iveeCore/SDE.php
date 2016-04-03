@@ -25,6 +25,8 @@ namespace iveeCore;
  */
 class SDE
 {
+    const IVEECORE_VERSION = '3.0.0';
+
     /**
      * @var \iveeCore\SDE $instance holds the singleton SDE object.
      */
@@ -87,7 +89,7 @@ class SDE
     /**
      * Returns a new mysqli connection object.
      *
-     * @return mysqli
+     * @return \mysqli
      */
     protected function connectDb()
     {
@@ -105,7 +107,7 @@ class SDE
      *
      * @param string $sql the query to be sent to the DB
      *
-     * @return mysql_result
+     * @return \mysql_result
      * @throws \iveeCore\Exceptions\SQLErrorException when the query execution errors out
      */
     public function query($sql)
@@ -222,7 +224,7 @@ class SDE
      * @param array $update the data to be updated as column => value, optional. If not given, a regular insert is
      * created.
      *
-     * @return string the SQL query
+     * @return string
      * @throws \iveeCore\Exceptions\InvalidArgumentException if unsuported value types are passed
      */
     public static function makeUpsertQuery($table, array $insert, array $update = null)
@@ -272,7 +274,7 @@ class SDE
      * by type.
      * @param array $where the conditions for the update as column => value. Conditions are linked via 'AND'.
      *
-     * @return string the SQL query
+     * @return string
      * @throws \iveeCore\Exceptions\InvalidArgumentException if unsuported value types are passed
      */
     public static function makeUpdateQuery($table, array $update, array $where)

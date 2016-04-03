@@ -26,8 +26,6 @@ namespace iveeCore;
  */
 class Config
 {
-    const VERSION = 'iveeCore/2.6.2';
-
     /////////////////////
     // Edit below here //
     /////////////////////
@@ -646,7 +644,7 @@ class Config
      */
     public static function getUserAgent()
     {
-        return static::VERSION . ' (' . static::$applicationName . ')';
+        return SDE::IVEECORE_VERSION . ' (' . static::$applicationName . ')';
     }
 
     /**
