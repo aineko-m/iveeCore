@@ -47,15 +47,17 @@ class T3Blueprint extends InventableBlueprint
             WHERE activityID = 8
             AND productTypeID = " . $this->id . ';'
         );
-        if ($res->num_rows < 1)
+        if ($res->num_rows < 1) {
             self::throwException(
                 'TypeIdNotFoundException',
                 "Reverse Engineering data for T3Blueprint ID=" . $this->id ." not found"
             );
+        }
 
         $this->inventedFrom = [];
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $this->inventedFrom[] = (int) $row['typeID'];
+        }
     }
 
     /**
@@ -76,8 +78,9 @@ class T3Blueprint extends InventableBlueprint
     public function getInventionRelics()
     {
         $relics = [];
-        foreach ($this->getInventionRelicIds() as $relicId)
+        foreach ($this->getInventionRelicIds() as $relicId) {
             $relics[$relicId] = Type::getById($relicId);
+        }
 
         return $relics;
     }
@@ -96,14 +99,17 @@ class T3Blueprint extends InventableBlueprint
      */
     public function inventFromRelic(IndustryModifier $iMod, $relicId, $decryptorId = null, $manuRecursionDepth = 1)
     {
-        if(!in_array($relicId, $this->inventedFrom))
+        if (!in_array($relicId, $this->inventedFrom)) {
             self::throwException(
-                'NotInventableException', "Can't use Relic ID=" . (int) $relicId . " to invent this T3Blueprint"
+                'NotInventableException',
+                "Can't use Relic ID=" . (int) $relicId . " to invent this T3Blueprint"
             );
+        }
 
         $relic = Type::getById($relicId);
-        if(!$relic instanceof Relic)
+        if (!$relic instanceof Relic) {
             self::throwException('WrongTypeException', 'Given object is not instance of Relic');
+        }
 
         return $relic->invent($iMod, $this->getId(), $decryptorId, $manuRecursionDepth);
     }
@@ -122,17 +128,24 @@ class T3Blueprint extends InventableBlueprint
      * @throws \iveeCore\Exceptions\NotInventableException if a wrong relicId is given
      * @throws \iveeCore\Exceptions\WrongTypeException if decryptorId isn't a decryptor or if relicId isn't a Relic
      */
-    public function inventManufacture(IndustryModifier $iMod, $relicId, $decryptorId = null, $manuRecursionDepth = 1,
+    public function inventManufacture(
+        IndustryModifier $iMod,
+        $relicId,
+        $decryptorId = null,
+        $manuRecursionDepth = 1,
         $reactionRecursionDepth = 0
     ) {
-        if(!in_array($relicId, $this->inventedFrom))
+        if (!in_array($relicId, $this->inventedFrom)) {
             self::throwException(
-                'NotInventableException', "Can't use Relic ID=" . (int) $relicId . " to invent this T3Blueprint"
+                'NotInventableException',
+                "Can't use Relic ID=" . (int) $relicId . " to invent this T3Blueprint"
             );
+        }
    
         $relic = Type::getById($relicId);
-        if(!$relic instanceof Relic)
+        if (!$relic instanceof Relic) {
             self::throwException('WrongTypeException', 'Given object is not instance of Relic');
+        }
 
         return $relic->inventManufacture($iMod, $this->getId(), $decryptorId, $manuRecursionDepth, $reactionRecursionDepth);
     }
@@ -143,7 +156,10 @@ class T3Blueprint extends InventableBlueprint
      * shared code.
      */
 
-    public function copyInventManufacture(IndustryModifier $iMod, $decryptorId = null, $manuRecursionDepth = 1,
+    public function copyInventManufacture(
+        IndustryModifier $iMod,
+        $decryptorId = null,
+        $manuRecursionDepth = 1,
         $reactionRecursionDepth = 0
     ) {
         self::throwException('IveeCoreException', "Use inventManufacture()");

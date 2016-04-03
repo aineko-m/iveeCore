@@ -12,7 +12,9 @@
  */
 
 namespace iveeCore;
-use iveeCore\Exceptions\KeyNotFoundInCacheException, iveeCore\Exceptions\NoPriceDataAvailableException;
+
+use iveeCore\Exceptions\KeyNotFoundInCacheException;
+use iveeCore\Exceptions\NoPriceDataAvailableException;
 
 /**
  * MarketPrices holds the current market prices for a market item in a specific region. The "realistic" sell and buy
@@ -124,20 +126,23 @@ class MarketPrices extends CoreDataCommon
     public static function getByIdAndRegion($typeId, $regionId = null, $maxPriceDataAge = null)
     {
         //setup instance pool if needed
-        if (!isset(static::$instancePool))
+        if (!isset(static::$instancePool)) {
             static::init();
+        }
 
         //get default market regionId if none passed
-        if (is_null($regionId))
+        if (is_null($regionId)) {
             $regionId = Config::getDefaultMarketRegionId();
+        }
 
         //try instance pool and cache
         try {
             $mp = static::$instancePool->getItem(
                 static::getClassHierarchyKeyPrefix() . (int) $regionId . '_' . (int) $typeId
             );
-            if (!$mp->isTooOld($maxPriceDataAge))
+            if (!$mp->isTooOld($maxPriceDataAge)) {
                 return $mp;
+            }
         } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
         }
 
@@ -189,19 +194,22 @@ class MarketPrices extends CoreDataCommon
         $this->regionId = (int) $regionId;
 
         $type = Type::getById($this->id);
-        if(!$type->onMarket())
+        if (!$type->onMarket()) {
             $this->throwNotOnMarketException($type);
+        }
 
         //set data to object, fetching from DB if necessary
         $this->setData($data);
 
-        if (is_null($maxPriceDataAge))
+        if (is_null($maxPriceDataAge)) {
             $maxPriceDataAge = Config::getMaxPriceDataAge();
+        }
 
-        if ($this->lastPriceUpdate + $maxPriceDataAge > time())
+        if ($this->lastPriceUpdate + $maxPriceDataAge > time()) {
             $this->expiry = $this->lastPriceUpdate + $maxPriceDataAge;
-        else
+        } else {
             $this->expiry = time() + 1800; //if the data somehow is too old, cache it for another half hour
+        }
     }
 
     /**
@@ -214,29 +222,39 @@ class MarketPrices extends CoreDataCommon
      */
     protected function setData(array $data = null)
     {
-        if(is_null($data))
+        if (is_null($data)) {
             $data = static::getDataFromDb($this->id, $this->regionId);
+        }
 
         //set data to attributes
         $this->lastPriceUpdate = (int) $data['lastPriceUpdate'];
-        if (isset($data['lastHistUpdate']))
+        if (isset($data['lastHistUpdate'])) {
             $this->lastHistUpdate = (int) $data['lastHistUpdate'];
-        if (isset($data['avgVol']))
+        }
+        if (isset($data['avgVol'])) {
             $this->avgVol = (float) $data['avgVol'];
-        if (isset($data['avgTx']))
+        }
+        if (isset($data['avgTx'])) {
             $this->avgTx = (float) $data['avgTx'];
-        if (isset($data['sell']))
+        }
+        if (isset($data['sell'])) {
             $this->sellPrice = (float) $data['sell'];
-        if (isset($data['buy']))
+        }
+        if (isset($data['buy'])) {
             $this->buyPrice  = (float) $data['buy'];
-        if (isset($data['supplyIn5']))
+        }
+        if (isset($data['supplyIn5'])) {
             $this->supplyIn5 = (int) $data['supplyIn5'];
-        if (isset($data['demandIn5']))
+        }
+        if (isset($data['demandIn5'])) {
             $this->demandIn5 = (int) $data['demandIn5'];
-        if (isset($data['avgSell5OrderAge']))
+        }
+        if (isset($data['avgSell5OrderAge'])) {
             $this->avgSell5OrderAge = (int) $data['avgSell5OrderAge'];
-        if (isset($data['avgBuy5OrderAge']))
+        }
+        if (isset($data['avgBuy5OrderAge'])) {
             $this->avgBuy5OrderAge = (int) $data['avgBuy5OrderAge'];
+        }
     }
 
     /**
@@ -269,11 +287,13 @@ class MarketPrices extends CoreDataCommon
             AND atp.regionID = " . (int) $regionId . ";"
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             self::throwException(
-                'NoPriceDataAvailableException', "No region market data for typeId=" . (int) $typeId . " and regionId="
+                'NoPriceDataAvailableException',
+                "No region market data for typeId=" . (int) $typeId . " and regionId="
                 . (int) $regionId . " found"
             );
+        }
         return $row;
     }
 
@@ -316,7 +336,7 @@ class MarketPrices extends CoreDataCommon
      */
     public function isTooOld($maxPriceDataAge)
     {
-        return !is_null($maxPriceDataAge) AND $this->getLastPriceUpdateTs() + $maxPriceDataAge < time();
+        return !is_null($maxPriceDataAge) and $this->getLastPriceUpdateTs() + $maxPriceDataAge < time();
     }
 
     /**
@@ -352,14 +372,17 @@ class MarketPrices extends CoreDataCommon
      */
     public function getBuyPrice($maxPriceDataAge = null)
     {
-        if (is_null($this->buyPrice))
+        if (is_null($this->buyPrice)) {
             self::throwException(
-                'NoPriceDataAvailableException', "No buy price available for " . $this->getType()->getName()
+                'NoPriceDataAvailableException',
+                "No buy price available for " . $this->getType()->getName()
             );
-        elseif ($this->isTooOld($maxPriceDataAge))
+        } elseif ($this->isTooOld($maxPriceDataAge)) {
             self::throwException(
-                'PriceDataTooOldException', 'Price data for ' . $this->getType()->getName() . ' is too old'
+                'PriceDataTooOldException',
+                'Price data for ' . $this->getType()->getName() . ' is too old'
             );
+        }
 
         return $this->buyPrice;
     }
@@ -377,14 +400,17 @@ class MarketPrices extends CoreDataCommon
      */
     public function getSellPrice($maxPriceDataAge = null)
     {
-        if (is_null($this->sellPrice))
+        if (is_null($this->sellPrice)) {
             self::throwException(
-                'NoPriceDataAvailableException', "No sell price available for " . $this->getType()->getName()
+                'NoPriceDataAvailableException',
+                "No sell price available for " . $this->getType()->getName()
             );
-        elseif ($this->isTooOld($maxPriceDataAge))
+        } elseif ($this->isTooOld($maxPriceDataAge)) {
             self::throwException(
-                'PriceDataTooOldException', 'Price data for ' . $this->getType()->getName() . ' is too old'
+                'PriceDataTooOldException',
+                'Price data for ' . $this->getType()->getName() . ' is too old'
             );
+        }
 
         return $this->sellPrice;
     }

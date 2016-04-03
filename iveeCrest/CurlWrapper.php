@@ -12,7 +12,10 @@
  */
 
 namespace iveeCrest;
-use iveeCore\Config, iveeCore\ICache, iveeCore\Exceptions\KeyNotFoundInCacheException;
+
+use iveeCore\Config;
+use iveeCore\ICache;
+use iveeCore\Exceptions\KeyNotFoundInCacheException;
 
 /**
  * CurlWrapper is a CREST-specific wrapper around CURL. It handles GET, POST and OPTIONS requests. Parallel asynchronous
@@ -43,7 +46,7 @@ class CurlWrapper
 
     /**
      * Constructor.
-     * 
+     *
      * @param \iveeCore\ICache $cache object to be used
      * @param string $userAgent to be used in the HTTP requests
      */
@@ -78,14 +81,14 @@ class CurlWrapper
 
     /**
      * Performs POST request.
-     * 
+     *
      * @param string $uri the URI to make the request to
      * @param string[] $header to be used in http request
      * @param string[] $fields parameters to be passed in the request in the form param => value
      * @param string $cacheNsPrefix a character specific string to isolate Responses in the cache in a multi-character
      * use-case.
      * @param bool $cache whether the response from this POST request should be cached
-     * 
+     *
      * @return \iveeCrest\Response
      * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
@@ -97,8 +100,9 @@ class CurlWrapper
         } catch (KeyNotFoundInCacheException $e) {
             //url-ify the data for the POST
             $fields_string = '';
-            foreach ($fields as $key => $value)
+            foreach ($fields as $key => $value) {
                 $fields_string .= $key . '=' . $value . '&';
+            }
             rtrim($fields_string, '&');
 
             $responseClass = Config::getIveeClassName('Response');
@@ -118,18 +122,18 @@ class CurlWrapper
 
     /**
      * Performs GET request.
-     * 
+     *
      * @param string $uri the URI to make the request to
      * @param string $header header to be passed in the request
      * @param string $cacheNsPrefix a character specific string to isolate Responses in the cache in a multi-character
      * use-case.
      * @param bool $cache whether the response should be cached. If using another caching layer, it is advisable to
      * disabled it here to prevent redundant caching.
-     * 
+     *
      * @return \iveeCrest\Response
      * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
-    public function get($uri, array $header, $cacheNsPrefix, $cache = true) 
+    public function get($uri, array $header, $cacheNsPrefix, $cache = true)
     {
         $responseKey = md5($cacheNsPrefix . '_get:' . $uri);
         try {
@@ -151,9 +155,9 @@ class CurlWrapper
 
     /**
      * Performs OPTIONS request.
-     * 
+     *
      * @param string $uri the URI to make the request to
-     * 
+     *
      * @return \iveeCrest\Response
      * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200 and 302
      */
@@ -213,16 +217,17 @@ class CurlWrapper
 
         //set data to response and cache it
         $response->setContentAndInfo($resBody, $info);
-        if ($cache)
+        if ($cache) {
             $this->cache->setItem($response);
+        }
     }
 
     /**
      * Performs parallel asynchronous GET requests using callbacks to process incoming responses.
-     * 
+     *
      * @param array $hrefs the hrefs to request
      * @param array $header the header to be passed in all requests
-     * @param callable $getAuthHeader that returns an appropriate bearer authentication header, for instance 
+     * @param callable $getAuthHeader that returns an appropriate bearer authentication header, for instance
      * Client::getBearerAuthHeader(). We do this on-the-fly as during large multi-GET batches the access token might
      * expire.
      * @param callable $callback a function expecting one iveeCrest\Response object as argument, called for every
@@ -232,12 +237,18 @@ class CurlWrapper
      * @param bool $cache whether the individual Responses should be cached
      * @param string $cacheNsPrefix a character specific string to isolate Responses in the cache in a multi-character
      * use-case.
-     * 
+     *
      * @return void
      * @throws \iveeCrest\Exceptions\IveeCrestException on general CURL error
      */
-    public function asyncMultiGet(array $hrefs, array $header, callable $getAuthHeader, callable $callback,
-        callable $errCallback = null, $cache = true, $cacheNsPrefix = ''
+    public function asyncMultiGet(
+        array $hrefs,
+        array $header,
+        callable $getAuthHeader,
+        callable $callback,
+        callable $errCallback = null,
+        $cache = true,
+        $cacheNsPrefix = ''
     ) {
         //This method is fairly complex in part due to the tricky and ugly interface of multi-curl and moving window
         //logic. Ideas or patches how to make it nicer welcome!
@@ -291,8 +302,9 @@ class CurlWrapper
                 $execrun = curl_multi_exec($master, $running);
             } while ($execrun == CURLM_CALL_MULTI_PERFORM);
 
-            if ($execrun != CURLM_OK)
+            if ($execrun != CURLM_OK) {
                 throw new $crestExceptionClass("CURL Multi-GET error", $execrun);
+            }
 
             //block until we have anything on at least one of the handles
             curl_multi_select($master);
@@ -310,13 +322,15 @@ class CurlWrapper
                 //execute the callbacks passing the response as argument
                 if ($info['http_code'] == 200) {
                     //cache it if configured
-                    if($cache)
+                    if ($cache) {
                         $this->cache->setItem($res);
+                    }
                     $callback($res);
-                } elseif (isset($errCallback))
+                } elseif (isset($errCallback)) {
                     $errCallback($res);
-                else
+                } else {
                     throw new $crestExceptionClass('CREST http error ' . $info['http_code']);
+                }
                 
                 //remove the reference to response to conserve memory on large batches
                 $responses[$info['url']] = null;
@@ -348,19 +362,24 @@ class CurlWrapper
 
     /**
      * Creates new curl handle and adds to curl multi handle. Also creates the corresponding Response object.
-     * 
+     *
      * @param resource $multiHandle the CURL multi handle
      * @param string $href to be requested
      * @param string $key for the Response
      * @param array $stdOptions the CURL options to be set
-     * @param callable $getAuthHeader that returns an appropriate bearer authentication header, for instance 
+     * @param callable $getAuthHeader that returns an appropriate bearer authentication header, for instance
      * Client::getBearerAuthHeader(). We do this on-the-fly as during large multi GET batches the access token might
      * expire.
      * @param array $header to be used in each request
-     * 
+     *
      * @return \iveeCrest\Response
      */
-    protected function addHandleToMulti($multiHandle, $href, $key, array $stdOptions, callable $getAuthHeader,
+    protected function addHandleToMulti(
+        $multiHandle,
+        $href,
+        $key,
+        array $stdOptions,
+        callable $getAuthHeader,
         array $header
     ) {
         $ch = curl_init();

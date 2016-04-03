@@ -12,7 +12,10 @@
  */
 
 namespace iveeCore\CREST;
-use iveeCore\Config, iveeCrest\EndpointHandler, iveeCore\Station;
+
+use iveeCore\Config;
+use iveeCrest\EndpointHandler;
+use iveeCore\Station;
 
 /**
  * IndustryFacilities specific CREST data updater
@@ -39,22 +42,25 @@ class FacilitiesUpdater extends CrestDataUpdater
 
         $update = [];
 
-        if (!isset($item->facilityID))
+        if (!isset($item->facilityID)) {
             throw new $exceptionClass("facilityID missing from facilities CREST data");
+        }
         $facilityId = (int) $item->facilityID;
 
-        if (!isset($item->owner))
+        if (!isset($item->owner)) {
             throw new $exceptionClass("owner missing from facilities CREST data");
+        }
         $update['ownerID'] = (int) $item->owner->id;
 
         //only store if station is conquerable
-        if ($facilityId >= 61000000 OR ($facilityId >= 60014861 AND $facilityId <= 60014928)) {
+        if ($facilityId >= 61000000 or ($facilityId >= 60014861 and $facilityId <= 60014928)) {
             $update['solarSystemID'] = (int) $item->solarSystem->id;
             $update['stationName']   = $item->name;
             $update['stationTypeID'] = (int) $item->type->id;
             $table = Config::getIveeDbName() . '.outposts';
-        } else
+        } else {
             return '';
+        }
 
         $insert = $update;
         $insert['facilityID'] = $facilityId;

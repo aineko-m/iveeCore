@@ -1,7 +1,7 @@
 <?php
 /**
  * This web script allows users to retrieve refresh tokens for their application from CREST. It has no dependency to
- * other files so it can be used independently from the rest of iveeCrest. It is implemented procedurally because of 
+ * other files so it can be used independently from the rest of iveeCrest. It is implemented procedurally because of
  * retro.
  *
  * Inspired by https://github.com/fuzzysteve/eve-sso-auth
@@ -34,9 +34,8 @@ if (isset($_SESSION['refresh_token'])) {
     //we already have a refresh token
     $_SESSION['step'] = 3;
     renderHtml();
-} elseif (isset($_GET['code']) AND isset($_SESSION['auth_state']) AND isset($_GET['state']) 
-        AND $_SESSION['auth_state'] == $_GET['state'])
-    {
+} elseif (isset($_GET['code']) and isset($_SESSION['auth_state']) and isset($_GET['state'])
+        and $_SESSION['auth_state'] == $_GET['state']) {
     //we received a request with a code parameter
     retrieveToken();
     renderHtml();
@@ -62,14 +61,17 @@ function handlePost()
     unset($_SESSION['clientsecret']);
     unset($_SESSION['callbackurl']);
 
-    if (isset($_POST['clientid']) AND strlen($_POST['clientid']) == 32)
+    if (isset($_POST['clientid']) and strlen($_POST['clientid']) == 32) {
         $_SESSION['clientid'] = $_POST['clientid'];
-    if (isset($_POST['clientsecret']) AND strlen($_POST['clientsecret']) == 40)
+    }
+    if (isset($_POST['clientsecret']) and strlen($_POST['clientsecret']) == 40) {
         $_SESSION['clientsecret'] = $_POST['clientsecret'];
-    if (isset($_POST['callbackurl']) AND strlen($_POST['callbackurl']) > 0)
+    }
+    if (isset($_POST['callbackurl']) and strlen($_POST['callbackurl']) > 0) {
         $_SESSION['callbackurl'] = $_POST['callbackurl'];
+    }
 
-    if (isset($_SESSION['clientid']) AND isset($_SESSION['clientsecret']) AND isset($_SESSION['callbackurl'])) {
+    if (isset($_SESSION['clientid']) and isset($_SESSION['clientsecret']) and isset($_SESSION['callbackurl'])) {
         $_SESSION['auth_state'] = MD5(microtime() . uniqid());
 
         header(
@@ -120,13 +122,15 @@ function retrieveToken()
     $err  = curl_errno($ch);
     $errmsg = curl_error($ch);
 
-    if ($err != 0)
+    if ($err != 0) {
         throw new Exception($errmsg, $err);
-    if (!in_array($info['http_code'], array(200, 302)))
+    }
+    if (!in_array($info['http_code'], array(200, 302))) {
         throw new Exception(
             'HTTP response not OK: ' . (int)$info['http_code'] . '. Response body: ' . $resBody,
             $info['http_code']
         );
+    }
 
     curl_close($ch);
     $response = json_decode($resBody);
@@ -171,7 +175,7 @@ function content()
     switch ($_SESSION['step']) {
         case 3:
             echo '<p>A refresh token has been succesfully received from CREST.</p>'
-            . '<div class="alert alert-success" role="alert">Refresh token: <b>' . $_SESSION['refresh_token'] 
+            . '<div class="alert alert-success" role="alert">Refresh token: <b>' . $_SESSION['refresh_token']
             . '</b></div>'
             . '<p>This token can now be used in conjunction with the client ID and secret to enable applications access '
             . 'to authenticated CREST.</p>'
@@ -199,21 +203,21 @@ function content()
             <div class="form-group">
             <label for="clientid" class="col-sm-3 control-label">Application Client ID:</label>
                 <div class="col-sm-9">
-                <input type="text" class="form-control" id="clientid" name="clientid" maxlength="32" value="' 
+                <input type="text" class="form-control" id="clientid" name="clientid" maxlength="32" value="'
                     . $clientId . '" placeholder="Enter client ID">
                 </div>
             </div>
             <div class="form-group">
             <label for="clientsecret" class="col-sm-3 control-label">Client Secret Key:</label>
                 <div class="col-sm-9">
-                <input type="text" class="form-control" id="clientsecret" name="clientsecret" maxlength="40" value="' 
+                <input type="text" class="form-control" id="clientsecret" name="clientsecret" maxlength="40" value="'
                     . $clientSecret . '" placeholder="Enter client secret">
                 </div>
             </div>
             <div class="form-group">
             <label for="callbackurl" class="col-sm-3 control-label">Callback URL:</label>
                 <div class="col-sm-9">
-                <input type="text" class="form-control" id="callbackurl" name="callbackurl" maxlength="255" value="' 
+                <input type="text" class="form-control" id="callbackurl" name="callbackurl" maxlength="255" value="'
                     . $callbackUrl . '" placeholder="Enter callback URL">
                 </div>
             </div><br />
@@ -235,12 +239,14 @@ function get_current_url()
 {
     $protocol = 'http';
     $protocol_port = '';
-    if (isset($_SERVER['HTTPS']) AND $_SERVER['HTTPS'] == 'on') {
+    if (isset($_SERVER['HTTPS']) and $_SERVER['HTTPS'] == 'on') {
         $protocol .= 's';
-        if ($_SERVER['SERVER_PORT'] != 443)
+        if ($_SERVER['SERVER_PORT'] != 443) {
             $protocol_port = ':' . $_SERVER['SERVER_PORT'];
-    } elseif ($_SERVER['SERVER_PORT'] != 80)
+        }
+    } elseif ($_SERVER['SERVER_PORT'] != 80) {
         $protocol_port = ':' . $_SERVER['SERVER_PORT'];
+    }
 
     return $protocol . '://' . $_SERVER['HTTP_HOST'] . $protocol_port . $_SERVER['PHP_SELF'];
 }

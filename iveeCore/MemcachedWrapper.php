@@ -57,8 +57,9 @@ class MemcachedWrapper implements ICache
      */
     public static function instance()
     {
-        if (!isset(static::$instance))
+        if (!isset(static::$instance)) {
             static::$instance = new static();
+        }
         return static::$instance;
     }
 
@@ -72,9 +73,9 @@ class MemcachedWrapper implements ICache
         $this->memcached->setOption(\Memcached::OPT_PREFIX_KEY, Config::getCachePrefix());
 
         //determine if deleteMulti() is supported
-        if (defined('HHVM_VERSION'))
+        if (defined('HHVM_VERSION')) {
             $this->hasMultiDelete = false;
-        else {
+        } else {
             $ext = new \ReflectionExtension('memcached');
             $this->hasMultiDelete = version_compare($ext->getVersion(), '2.0.0', '>=');
         }
@@ -90,8 +91,9 @@ class MemcachedWrapper implements ICache
     public function setItem(ICacheable $item)
     {
         $ttl = $item->getCacheExpiry() - time();
-        if ($ttl < 1)
+        if ($ttl < 1) {
             return false;
+        }
         return $this->memcached->set($item->getKey(), $item, $ttl);
     }
 
@@ -136,11 +138,13 @@ class MemcachedWrapper implements ICache
      */
     public function deleteMulti(array $keys)
     {
-        if ($this->hasMultiDelete)
+        if ($this->hasMultiDelete) {
             return $this->memcached->deleteMulti($keys);
+        }
 
-        foreach ($keys as $key)
+        foreach ($keys as $key) {
             $this->deleteItem($key);
+        }
         return true;
     }
 
@@ -161,6 +165,6 @@ class MemcachedWrapper implements ICache
      */
     public function getHits()
     {
-        return $this->hits; 
+        return $this->hits;
     }
 }

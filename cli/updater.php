@@ -21,8 +21,9 @@ use iveeCore\Config;
 //ensure only one instance of this script runs at a time using a lockfile
 $lock = DIRECTORY_SEPARATOR . 'tmp' . DIRECTORY_SEPARATOR .'iveeCoreUpdater.lock';
 $f = fopen($lock, 'w');
-if(!flock($f, LOCK_EX | LOCK_NB))
+if (!flock($f, LOCK_EX | LOCK_NB)) {
     exit("iveeCore Updater already running\n");
+}
 
 //run the updater
 $iveeUpdaterClass = Config::getIveeClassName('CrestIveeUpdater');

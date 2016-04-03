@@ -66,8 +66,14 @@ class ReactionProcessData extends ProcessDataCommon
      * @param bool $withReprocessing defines if the process includes a reprocessing step, which can happen for alchemy
      * @param bool $withFeedback defines if the process includes a material feedback loop, which can happen for alchemy
      */
-    public function __construct($reactionId, MaterialMap $inputMaterialMap, MaterialMap $outputMaterialMap,
-        $solarSystemId, $cycles = 1, $withReprocessing = false, $withFeedback = false
+    public function __construct(
+        $reactionId,
+        MaterialMap $inputMaterialMap,
+        MaterialMap $outputMaterialMap,
+        $solarSystemId,
+        $cycles = 1,
+        $withReprocessing = false,
+        $withFeedback = false
     ) {
         $this->reactionId       = (int) $reactionId;
         $this->materials        = $inputMaterialMap;

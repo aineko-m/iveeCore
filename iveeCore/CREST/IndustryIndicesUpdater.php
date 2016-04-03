@@ -13,7 +13,9 @@
  */
 
 namespace iveeCore\CREST;
-use iveeCore\Config, iveeCrest\EndpointHandler;
+
+use iveeCore\Config;
+use iveeCrest\EndpointHandler;
 
 /**
  * IndustryIndicesUpdater specific CREST data updater
@@ -38,41 +40,44 @@ class IndustryIndicesUpdater extends CrestDataUpdater
     {
         $exceptionClass = Config::getIveeClassName('CrestException');
 
-        if (!isset($item->solarSystem->id))
+        if (!isset($item->solarSystem->id)) {
             throw new $exceptionClass('systemID missing in Industry Systems CREST data');
+        }
         $systemId = (int) $item->solarSystem->id;
 
         $update = [];
 
         foreach ($item->systemCostIndices as $indexObj) {
-            if (!isset($indexObj->activityID))
+            if (!isset($indexObj->activityID)) {
                 throw new $exceptionClass(
                     'activityID missing in Industry Systems CREST data for systemID ' . $systemId);
-            if (!isset($indexObj->costIndex))
+            }
+            if (!isset($indexObj->costIndex)) {
                 throw new $exceptionClass(
                     'costIndex missing in Industry Systems CREST data for systemID ' . $systemId);
+            }
 
             switch ($indexObj->activityID) {
-            case 1:
-                $update['manufacturingIndex'] = (float) $indexObj->costIndex;
-                break;
-            case 3:
-                $update['teResearchIndex'] = (float) $indexObj->costIndex;
-                break;
-            case 4:
-                $update['meResearchIndex'] = (float) $indexObj->costIndex;
-                break;
-            case 5:
-                $update['copyIndex'] = (float) $indexObj->costIndex;
-                break;
-            case 7:
-                $update['reverseIndex'] = (float) $indexObj->costIndex;
-                break;
-            case 8:
-                $update['inventionIndex'] = (float) $indexObj->costIndex;
-                break;
-            default :
-                throw new $exceptionClass(
+                case 1:
+                    $update['manufacturingIndex'] = (float) $indexObj->costIndex;
+                    break;
+                case 3:
+                    $update['teResearchIndex'] = (float) $indexObj->costIndex;
+                    break;
+                case 4:
+                    $update['meResearchIndex'] = (float) $indexObj->costIndex;
+                    break;
+                case 5:
+                    $update['copyIndex'] = (float) $indexObj->costIndex;
+                    break;
+                case 7:
+                    $update['reverseIndex'] = (float) $indexObj->costIndex;
+                    break;
+                case 8:
+                    $update['inventionIndex'] = (float) $indexObj->costIndex;
+                    break;
+                default:
+                    throw new $exceptionClass(
                     'Unknown activityID received from Industry Systems CREST data for systemID ' . $systemId);
             }
         }

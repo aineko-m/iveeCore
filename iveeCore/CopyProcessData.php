@@ -46,7 +46,13 @@ class CopyProcessData extends ProcessData
      * @param int $solarSystemId ID of the SolarSystem the research is performed
      * @param int $assemblyLineId ID of the AssemblyLine where the research is being performed
      */
-    public function __construct($bpCopyId, $copyQuantity, $outputRuns, $copyTime, $processCost, $solarSystemId,
+    public function __construct(
+        $bpCopyId,
+        $copyQuantity,
+        $outputRuns,
+        $copyTime,
+        $processCost,
+        $solarSystemId,
         $assemblyLineId
     ) {
         parent::__construct($bpCopyId, $copyQuantity, $copyTime, $processCost);

@@ -67,8 +67,9 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
      */
     protected static function getInstancePool()
     {
-        if (!isset(static::$instancePool))
+        if (!isset(static::$instancePool)) {
             static::init();
+        }
         return static::$instancePool;
     }
 

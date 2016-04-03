@@ -52,8 +52,9 @@ class RedisWrapper implements ICache
      */
     public static function instance()
     {
-        if (!isset(static::$instance))
+        if (!isset(static::$instance)) {
             static::$instance = new static();
+        }
         return static::$instance;
     }
 
@@ -78,8 +79,9 @@ class RedisWrapper implements ICache
     {
         $ttl = $item->getCacheExpiry() - time();
 
-        if ($ttl < 1)
+        if ($ttl < 1) {
             return false;
+        }
 
         return $this->redis->setex(
             $item->getKey(),
@@ -149,6 +151,6 @@ class RedisWrapper implements ICache
      */
     public function getHits()
     {
-        return $this->hits; 
+        return $this->hits;
     }
 }

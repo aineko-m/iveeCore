@@ -67,8 +67,16 @@ class InventionProcessData extends ProcessData
      * @param int $solarSystemId ID of the SolarSystem the research is performed
      * @param int $assemblyLineId ID of the AssemblyLine where the research is being performed
      */
-    public function __construct($inventedBpId, $inventTime, $processCost, $probability, $resultRuns,
-        $resultME, $resultTE, $solarSystemId, $assemblyLineId
+    public function __construct(
+        $inventedBpId,
+        $inventTime,
+        $processCost,
+        $probability,
+        $resultRuns,
+        $resultME,
+        $resultTE,
+        $solarSystemId,
+        $assemblyLineId
     ) {
         parent::__construct($inventedBpId, 1, $inventTime, $processCost);
         $this->probability     = (float) $probability;
@@ -147,8 +155,9 @@ class InventionProcessData extends ProcessData
     public function getTotalAttemptTime()
     {
         $sum = $this->getAttemptTime();
-        foreach ($this->getSubProcesses() as $subProcessData)
+        foreach ($this->getSubProcesses() as $subProcessData) {
             $sum += $subProcessData->getTotalTime();
+        }
 
         return $sum;
     }
@@ -181,9 +190,11 @@ class InventionProcessData extends ProcessData
 
         $sum[$this->getActivityId()] = $this->getAttemptTime();
 
-        foreach ($this->getSubProcesses() as $subProcessData)
-            foreach ($subProcessData->getTotalTimes() as $activityId => $time)
+        foreach ($this->getSubProcesses() as $subProcessData) {
+            foreach ($subProcessData->getTotalTimes() as $activityId => $time) {
                 $sum[$activityId] += $time;
+            }
+        }
 
         return $sum;
     }
@@ -196,8 +207,9 @@ class InventionProcessData extends ProcessData
     public function getTotalTimes()
     {
         $sum = $this->getTotalAttemptTimes();
-        foreach ($sum as $activityId => $time)
+        foreach ($sum as $activityId => $time) {
             $sum[$activityId] = $time / $this->probability;
+        }
 
         return $sum;
     }
@@ -236,8 +248,9 @@ class InventionProcessData extends ProcessData
     public function getTotalAttemptMaterialMap()
     {
         $smat = $this->getAttemptMaterialMap();
-        foreach ($this->getSubProcesses() as $subProcessData)
+        foreach ($this->getSubProcesses() as $subProcessData) {
             $smat->addMaterialMap($subProcessData->getTotalMaterialMap());
+        }
 
         return $smat;
     }
@@ -290,8 +303,9 @@ class InventionProcessData extends ProcessData
     public function getTotalAttemptProcessCost()
     {
         $sum = $this->getAttemptProcessCost();
-        foreach ($this->getSubProcesses() as $subProcessData)
+        foreach ($this->getSubProcesses() as $subProcessData) {
             $sum += $subProcessData->getTotalProcessCost();
+        }
 
         return $sum;
     }

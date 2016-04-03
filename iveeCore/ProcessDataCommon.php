@@ -53,8 +53,9 @@ abstract class ProcessDataCommon implements IProcessData
      */
     public function addSubProcessData(IProcessData $subProcessData)
     {
-        if (!isset($this->subProcessData))
+        if (!isset($this->subProcessData)) {
             $this->subProcessData = [];
+        }
         $this->subProcessData[] = $subProcessData;
     }
 
@@ -65,8 +66,9 @@ abstract class ProcessDataCommon implements IProcessData
      */
     public function getSubProcesses()
     {
-        if (!isset($this->subProcessData))
+        if (!isset($this->subProcessData)) {
             return [];
+        }
         return $this->subProcessData;
     }
 
@@ -116,8 +118,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalMaterialMap()
     {
         $tmat = $this->getMaterialMap();
-        foreach ($this->getSubProcesses() as $subProcessData)
+        foreach ($this->getSubProcesses() as $subProcessData) {
             $tmat->addMaterialMap($subProcessData->getTotalMaterialMap());
+        }
 
         return $tmat;
     }
@@ -130,8 +133,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalSkillMap()
     {
         $tskills = $this->getSkillMap();
-        foreach ($this->getSubProcesses() as $subProcessData)
+        foreach ($this->getSubProcesses() as $subProcessData) {
             $tskills->addSkillMap($subProcessData->getTotalSkillMap());
+        }
 
         return $tskills;
     }
@@ -144,8 +148,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalProcessCost()
     {
         $sum = $this->getProcessCost();
-        foreach ($this->getSubProcesses() as $subProcessData)
+        foreach ($this->getSubProcesses() as $subProcessData) {
             $sum += $subProcessData->getTotalProcessCost();
+        }
 
         return $sum;
     }
@@ -160,8 +165,9 @@ abstract class ProcessDataCommon implements IProcessData
      */
     public function getMaterialBuyCost(IndustryModifier $buyContext)
     {
-        if (!isset($this->materials))
+        if (!isset($this->materials)) {
             return 0;
+        }
         return $this->materials->getMaterialBuyCost($buyContext);
     }
 
@@ -176,8 +182,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalMaterialBuyCost(IndustryModifier $buyContext)
     {
         $sum = $this->getMaterialBuyCost($buyContext);
-        foreach ($this->getSubProcesses() as $subProcessData)
+        foreach ($this->getSubProcesses() as $subProcessData) {
             $sum += $subProcessData->getTotalMaterialBuyCost($buyContext);
+        }
 
         return $sum;
     }
@@ -203,8 +210,9 @@ abstract class ProcessDataCommon implements IProcessData
     public function getTotalTime()
     {
         $sum = $this->getTime();
-        foreach ($this->getSubProcesses() as $subProcessData)
+        foreach ($this->getSubProcesses() as $subProcessData) {
             $sum += $subProcessData->getTotalTime();
+        }
 
         return $sum;
     }
@@ -227,9 +235,11 @@ abstract class ProcessDataCommon implements IProcessData
 
         $sum[$this->getActivityId()] = $this->getTime();
 
-        foreach ($this->getSubProcesses() as $subProcessData)
-            foreach ($subProcessData->getTotalTimes() as $activityId => $time)
+        foreach ($this->getSubProcesses() as $subProcessData) {
+            foreach ($subProcessData->getTotalTimes() as $activityId => $time) {
                 $sum[$activityId] += $time;
+            }
+        }
 
         return $sum;
     }

@@ -157,8 +157,9 @@ class IndustryModifier
         }
 
         $assemblyLineTypeIds = [];
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $assemblyLineTypeIds[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
+        }
 
         return static::getBySystemIdWithAssembly(
             $solarSystemId,
@@ -195,8 +196,9 @@ class IndustryModifier
         }
 
         $assemblyLineTypeIds = [];
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $assemblyLineTypeIds[$row['activityID']][] = (int) $row['assemblyLineTypeID'];
+        }
 
         return static::getBySystemIdWithAssembly(
             $solarSystemId,
@@ -227,9 +229,11 @@ class IndustryModifier
 
         //instantiate AssemblyLines from IDs
         $assemblyLines = [];
-        foreach ($assemblyLineTypeIds as $activity => $activityAssemblyLineTypeIds)
-            foreach ($activityAssemblyLineTypeIds as $assemblyLineTypeId)
+        foreach ($assemblyLineTypeIds as $activity => $activityAssemblyLineTypeIds) {
+            foreach ($activityAssemblyLineTypeIds as $assemblyLineTypeId) {
                 $assemblyLines[$activity][$assemblyLineTypeId] = $assemblyLineClass::getById($assemblyLineTypeId);
+            }
+        }
 
         return new static(
             $system,
@@ -362,10 +366,11 @@ class IndustryModifier
      */
     public function getAssemblyLinesForActivity($activityId)
     {
-        if (isset($this->assemblyLines[$activityId]))
+        if (isset($this->assemblyLines[$activityId])) {
             return $this->assemblyLines[$activityId];
-        else
+        } else {
             return [];
+        }
     }
 
     /**
@@ -410,12 +415,15 @@ class IndustryModifier
      */
     public function isActivityPossible($activityId, Type $type)
     {
-        if (!isset($this->assemblyLines[$activityId]))
+        if (!isset($this->assemblyLines[$activityId])) {
             return false;
+        }
 
-        foreach ($this->assemblyLines[$activityId] as $assemblyLine)
-            if ($assemblyLine->isTypeCompatible($type))
+        foreach ($this->assemblyLines[$activityId] as $assemblyLine) {
+            if ($assemblyLine->isTypeCompatible($type)) {
                 return true;
+            }
+        }
 
         return false;
     }
@@ -475,10 +483,9 @@ class IndustryModifier
 
         foreach ($this->getAssemblyLinesForActivity($activityId) as $candidateAssemblyLine) {
             //skip incompatible assemblyLines
-            if (!$candidateAssemblyLine->isTypeCompatible($type))
+            if (!$candidateAssemblyLine->isTypeCompatible($type)) {
                 continue;
-
-            //compare candidate assemblyLine with current best
+            } //compare candidate assemblyLine with current best
             elseif (is_null($bestAssemblyLine)) {
                 $bestAssemblyLine = $candidateAssemblyLine;
                 $bestModifier = $bestAssemblyLine->getModifiersForType($type);
@@ -486,19 +493,19 @@ class IndustryModifier
                 $candidateModifier = $candidateAssemblyLine->getModifiersForType($type);
 
                 //Modifiers are ranked with priority order for material, time then cost modifiers (lower is better!)
-                if ($bestModifier['m'] < $candidateModifier['m'])
+                if ($bestModifier['m'] < $candidateModifier['m']) {
                     continue;
-                elseif ($bestModifier['m'] > $candidateModifier['m']) {
+                } elseif ($bestModifier['m'] > $candidateModifier['m']) {
                     $bestAssemblyLine = $candidateAssemblyLine;
                     $bestModifier = $candidateModifier;
-                } elseif ($bestModifier['t'] < $candidateModifier['t'])
+                } elseif ($bestModifier['t'] < $candidateModifier['t']) {
                     continue;
-                elseif ($bestModifier['t'] > $candidateModifier['t']) {
+                } elseif ($bestModifier['t'] > $candidateModifier['t']) {
                     $bestAssemblyLine = $candidateAssemblyLine;
                     $bestModifier = $candidateModifier;
-                } elseif ($bestModifier['c'] < $candidateModifier['c'])
+                } elseif ($bestModifier['c'] < $candidateModifier['c']) {
                     continue;
-                elseif ($bestModifier['c'] > $candidateModifier['c']) {
+                } elseif ($bestModifier['c'] > $candidateModifier['c']) {
                     $bestAssemblyLine = $candidateAssemblyLine;
                     $bestModifier = $candidateModifier;
                 }
@@ -519,12 +526,14 @@ class IndustryModifier
     {
         $bestStation = null;
         $lowestBrokerTax = 100;
-        if (!isset($this->marketStations))
+        if (!isset($this->marketStations)) {
             $this->marketStations = $this->getSolarSystem()->getStationsWithService(64);
+        }
 
         //check if preferred station is among them
-        if (isset($this->preferredMarketStationId) AND isset($this->marketStations[$this->preferredMarketStationId]))
+        if (isset($this->preferredMarketStationId) and isset($this->marketStations[$this->preferredMarketStationId])) {
             return $this->marketStations[$this->preferredMarketStationId];
+        }
 
         foreach ($this->marketStations as $station) {
             $tax = $this->getCharacterModifier()->getBrokerTax($station->getFactionId(), $station->getCorporationId());

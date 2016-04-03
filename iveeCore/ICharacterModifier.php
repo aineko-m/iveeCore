@@ -66,9 +66,9 @@ interface ICharacterModifier
 
     /**
      * Gets the skill-dependent time factor for a specific industry activity.
-     * 
+     *
      * @param int $activityId of the activity
-     * 
+     *
      * @return float in the form 0.75 meaning 25% bonus
      */
     public function getIndustrySkillTimeFactor($activityId);

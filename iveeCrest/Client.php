@@ -12,7 +12,9 @@
  */
 
 namespace iveeCrest;
-use iveeCore\Config, iveeCore\Exceptions\KeyNotFoundInCacheException;
+
+use iveeCore\Config;
+use iveeCore\Exceptions\KeyNotFoundInCacheException;
 
 /**
  * The Client class provides the infrastructure for requesting data from CREST. Apart from handling authentication, it
@@ -102,8 +104,14 @@ class Client
      * @param string $clientUserAgent the user agent that should be used in the requests
      * @param \iveeCore\ICache $cache optional cache object. If none is given, a new one is instantiated
      */
-    public function __construct($publicCrestBaseUrl = null, $authedCrestBaseUrl = null, $clientId = null,
-        $clientSecret = null, array $charRefreshTokens = null, $clientUserAgent = null, \iveeCore\ICache $cache = null
+    public function __construct(
+        $publicCrestBaseUrl = null,
+        $authedCrestBaseUrl = null,
+        $clientId = null,
+        $clientSecret = null,
+        array $charRefreshTokens = null,
+        $clientUserAgent = null,
+        \iveeCore\ICache $cache = null
     ) {
         $this->publicCrestBaseUrl =
             is_null($publicCrestBaseUrl) ? Config::getPublicCrestBaseUrl() : $publicCrestBaseUrl;
@@ -117,8 +125,9 @@ class Client
         if (is_null($cache)) {
             $cacheClass = Config::getIveeClassName('Cache');
             $this->cache = $cacheClass::instance();
-        } else
+        } else {
             $this->cache = $cache;
+        }
 
         $cwClass = Config::getIveeClassName('CurlWrapper');
         $this->cw = new $cwClass(
@@ -217,10 +226,10 @@ class Client
         $refreshToken = $this->getRefreshToken($authScope);
 
         //if we don't have the required valid access token, get one
-        if (!isset($this->charAccessTokens[$authScope]) OR time() >= $this->charAccessTokenExpiries[$authScope]) {
+        if (!isset($this->charAccessTokens[$authScope]) or time() >= $this->charAccessTokenExpiries[$authScope]) {
             $accessTokenResponse = $this->cw->post(
-                $this->getAuthedRootEndpoint()->authEndpoint->href, 
-                $this->getBasicAuthHeader(), 
+                $this->getAuthedRootEndpoint()->authEndpoint->href,
+                $this->getBasicAuthHeader(),
                 [
                     'grant_type' => 'refresh_token',
                     'refresh_token' => $refreshToken
@@ -244,13 +253,14 @@ class Client
      */
     public function getPublicRootEndpoint()
     {
-        if (is_null($this->publicRootEndpoint))
+        if (is_null($this->publicRootEndpoint)) {
             $this->publicRootEndpoint = $this->getEndpoint(
                 $this->publicCrestBaseUrl,
                 false,
                 static::ROOT_REPRESENTATION,
                 true
             );
+        }
         return $this->publicRootEndpoint;
     }
 
@@ -261,13 +271,14 @@ class Client
      */
     public function getAuthedRootEndpoint()
     {
-        if (is_null($this->authedRootEndpoint))
+        if (is_null($this->authedRootEndpoint)) {
             $this->authedRootEndpoint = $this->getEndpoint(
                 $this->authedCrestBaseUrl,
                 false,
                 static::ROOT_REPRESENTATION,
                 true
             );
+        }
         return $this->authedRootEndpoint;
     }
 
@@ -297,7 +308,7 @@ class Client
      */
     public function getEndpointResponse($url, $authScope = false, $accept = null, $cache = true)
     {
-        if (is_string($authScope) AND strlen($authScope) > 0) {
+        if (is_string($authScope) and strlen($authScope) > 0) {
             $header = $this->getBearerAuthHeader($authScope);
             $cacheNsPrefix = $this->getRefreshToken($authScope);
         } else {
@@ -305,8 +316,9 @@ class Client
             $cacheNsPrefix = '';
         }
 
-        if(isset($accept))
+        if (isset($accept)) {
             $header[] = 'Accept: application/' . $accept;
+        }
 
         return $this->cw->get($url, $header, $cacheNsPrefix, $cache);
     }
@@ -329,7 +341,7 @@ class Client
     }
 
     /**
-     * Gathers multipage endpoint responses and joins them into one array, using the passed callback functions to 
+     * Gathers multipage endpoint responses and joins them into one array, using the passed callback functions to
      * traverse and index the data. The result of this (potentially expensive) operation can be cached.
      *
      * @param string $endpointHref the URL to the first page of the endpoint
@@ -346,8 +358,15 @@ class Client
      * @throws \iveeCore\Exceptions\InvalidParameterValueException when a authentication scope is requested for which
      * there is no refresh token.
      */
-    public function gather($endpointHref, $authScope = false, callable $indexFunc = null, callable $elementFunc = null,
-        $accept = null, $cache = true, $ttl = 3600, $subCommandKey = null
+    public function gather(
+        $endpointHref,
+        $authScope = false,
+        callable $indexFunc = null,
+        callable $elementFunc = null,
+        $accept = null,
+        $cache = true,
+        $ttl = 3600,
+        $subCommandKey = null
     ) {
         $dataKey = 'gathered:' . $endpointHref . (isset($subCommandKey) ? ',' . $subCommandKey : '');
         //we introduce another caching layer here because gathering and reindexing multipage data is expensive, even
@@ -369,8 +388,9 @@ class Client
                 false //if we want to cache gathered pages, we don't do it on the lower levels, but here (lines below)
             );
 
-            if ($cache)
+            if ($cache) {
                 $this->cache->setItem($dataObj);
+            }
         }
         return $dataObj->data;
     }
@@ -390,8 +410,13 @@ class Client
      * @throws \iveeCore\Exceptions\InvalidParameterValueException when a authentication scope is requested for which
      * there is no refresh token.
      */
-    protected function gather2($endpointHref, $authScope = false, callable $indexFunc = null,
-        callable $elementFunc = null, $accept = null, $cache = true
+    protected function gather2(
+        $endpointHref,
+        $authScope = false,
+        callable $indexFunc = null,
+        callable $elementFunc = null,
+        $accept = null,
+        $cache = true
     ) {
         $ret = [];
         $href = $endpointHref;
@@ -402,24 +427,27 @@ class Client
 
             foreach ($response->content->items as $item) {
                 //if an element function has been given, call it, otherwise use the full item in the result array
-                if(is_null($elementFunc))
+                if (is_null($elementFunc)) {
                     $element = $item;
-                else
+                } else {
                     $element = $elementFunc($item);
+                }
 
                 //if an index function has been given, call it to get a result key, otherwise just push the element
                 //onto result array
-                if(is_null($indexFunc))
+                if (is_null($indexFunc)) {
                     $ret[] = $element;
-                else
+                } else {
                     $ret[$indexFunc($item)] = $element;
+                }
             }
 
             //if there are more pages, do another iteration with updated href
-            if ($response->hasNextPage())
+            if ($response->hasNextPage()) {
                 $href = $response->getNextPageHref();
-            else
+            } else {
                 break;
+            }
         }
         return $ret;
     }
@@ -446,10 +474,15 @@ class Client
      * @throws \iveeCore\Exceptions\InvalidParameterValueException when a authentication scope is requested for which
      * there is no refresh token.
      */
-    public function asyncGetMultiEndpointResponses(array $hrefs, $authScope, callable $callback,
-        callable $errCallback = null, $accept = null, $cache = true
+    public function asyncGetMultiEndpointResponses(
+        array $hrefs,
+        $authScope,
+        callable $callback,
+        callable $errCallback = null,
+        $accept = null,
+        $cache = true
     ) {
-        $useAuthScope = is_string($authScope) AND strlen($authScope) > 0;
+        $useAuthScope = is_string($authScope) and strlen($authScope) > 0;
         //run the multi GET
         $this->cw->asyncMultiGet(
             array_unique($hrefs),

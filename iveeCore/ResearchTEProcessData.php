@@ -51,8 +51,14 @@ class ResearchTEProcessData extends ProcessData
      * @param int $solarSystemId ID of the SolarSystem the research is performed
      * @param int $assemblyLineId ID of the AssemblyLine where the research is being performed
      */
-    public function __construct($researchedBpId, $researchTime, $processCost, $startTELevel, $endTELevel,
-        $solarSystemId, $assemblyLineId
+    public function __construct(
+        $researchedBpId,
+        $researchTime,
+        $processCost,
+        $startTELevel,
+        $endTELevel,
+        $solarSystemId,
+        $assemblyLineId
     ) {
         parent::__construct($researchedBpId, 1, $researchTime, $processCost);
         $this->startTELevel   = (int) $startTELevel;

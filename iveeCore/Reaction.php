@@ -77,12 +77,13 @@ class Reaction extends Type
         );
 
         while ($row = $res->fetch_assoc()) {
-            if ($row['input'] == 1)
+            if ($row['input'] == 1) {
                 $this->cycleInputMaterialMap->addMaterial($row['typeID'], $row['quantity']);
-            else {
+            } else {
                 $this->cycleOutputMaterialMap->addMaterial($row['typeID'], $row['quantity']);
-                if (Type::getById($row['typeID'])->isReprocessable())
+                if (Type::getById($row['typeID'])->isReprocessable()) {
                     $this->isAlchemy = true;
+                }
             }
         }
     }
@@ -140,13 +141,15 @@ class Reaction extends Type
         $omm = $this->getCycleOutputMaterialMap();
 
         //if refine flag set, replace the refinable output materials by their refined materials
-        if ($reprocess)
+        if ($reprocess) {
             $omm->reprocessMaterials($iMod);
+        }
 
         //if feedback flag set, subtract materials occurring in both input and output from each other, respecting
         //quantities. This gives the effective required and resulting materials.
-        if ($feedback)
+        if ($feedback) {
             $materialMapClass::symmetricDifference($imm, $omm);
+        }
 
         //multiply amounts by cycles as factor
         $imm->multiply($cycles);
@@ -158,8 +161,8 @@ class Reaction extends Type
             $omm,
             $iMod->getSolarSystem()->getId(),
             $cycles,
-            ($this->isAlchemy AND $reprocess), //only pass on refine flag if this reaction actually produces a refinable
-            ($this->isAlchemy AND $feedback) //only pass feedback flag it it actually was used in reaction
+            ($this->isAlchemy and $reprocess), //only pass on refine flag if this reaction actually produces a refinable
+            ($this->isAlchemy and $feedback) //only pass feedback flag it it actually was used in reaction
         );
 
         //if we are doing reaction recursion, replace ReactionProducts in input by their equivalent ReactionProcessData

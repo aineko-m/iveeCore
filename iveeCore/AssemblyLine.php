@@ -111,7 +111,7 @@ class AssemblyLine extends SdeType
             )
         );
 
-        if ($systemSecurity < 0.45 AND $systemSecurity > 0.0) {
+        if ($systemSecurity < 0.45 and $systemSecurity > 0.0) {
             $assemblyLineTypeIds[1][] = 21; //Capital Ship Assembly Array
             $assemblyLineTypeIds[1][] = 171; //Thukker Component Assembly Array
         }
@@ -183,11 +183,12 @@ class AssemblyLine extends SdeType
             WHERE assemblyLineTypeID = " . $this->id . ";"
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             static::throwException(
                 'AssemblyLineTypeIdNotFoundException',
                 "assemblyLine TypeID=". $this->id . " not found"
             );
+        }
 
         //set data to attributes
         $this->name                   = $row['assemblyLineTypeName'];
@@ -203,12 +204,13 @@ class AssemblyLine extends SdeType
             WHERE assemblyLineTypeID = " . $this->id . ';'
         );
 
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $this->categoryModifiers[(int) $row['categoryID']] = array(
                 't' => (float) $row['timeMultiplier'],
                 'm' => (float) $row['materialMultiplier'],
                 'c' => (float) $row['costMultiplier']
             );
+        }
 
         //get group bonuses
         $res = $sde->query(
@@ -217,12 +219,13 @@ class AssemblyLine extends SdeType
             WHERE assemblyLineTypeID = " . $this->id . ';'
         );
 
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $this->groupModifiers[(int) $row['groupID']] = array(
                 'c' => (float) $row['costMultiplier'],
                 'm' => (float) $row['materialMultiplier'],
                 't' => (float) $row['timeMultiplier']
             );
+        }
         
         //Since Phoebe the SDE does not contain group or category specific blueprint compatibility and bonus data.
         //Instead, the bonuses have been merge into the base bonuses of ramAssemblyLineTypes and all blueprints are
@@ -311,11 +314,12 @@ class AssemblyLine extends SdeType
     public function getModifiersForType(Type $type)
     {
         //check if type can actually be handled in this assembly line
-        if (!$this->isTypeCompatible($type))
+        if (!$this->isTypeCompatible($type)) {
             static::throwException(
                 'TypeNotCompatibleException',
                 $type->getName() . " is not compatible with " . $this->getName()
             );
+        }
 
         //gets the base modifiers
         $mods = array(
@@ -325,16 +329,18 @@ class AssemblyLine extends SdeType
         );
 
         //apply group modifiers if available, taking precedence over category modifiers
-        if (isset($this->groupModifiers[$type->getGroupId()]))
-            foreach ($this->groupModifiers[$type->getGroupId()] as $modifierType => $modifier)
+        if (isset($this->groupModifiers[$type->getGroupId()])) {
+            foreach ($this->groupModifiers[$type->getGroupId()] as $modifierType => $modifier) {
                 //base and group modifiers are multiplied together
                 $mods[$modifierType] = $mods[$modifierType] * $modifier;
-
-        //apply category modifiers if available
-        elseif (isset($this->categoryModifiers[$type->getCategoryId()]))
-            foreach ($this->categoryModifiers[$type->getCategoryId()] as $modifierType => $modifier)
+            }
+        } //apply category modifiers if available
+        elseif (isset($this->categoryModifiers[$type->getCategoryId()])) {
+            foreach ($this->categoryModifiers[$type->getCategoryId()] as $modifierType => $modifier) {
                 //base and category modifiers are multiplied together
                 $mods[$modifierType] = $mods[$modifierType] * $modifier;
+            }
+        }
 
         return $mods;
     }
@@ -353,7 +359,7 @@ class AssemblyLine extends SdeType
         //the type is compatible if its groupId or categoryId is listet in the modifiers array
         return (
             isset($this->groupModifiers[$type->getGroupId()])
-            OR isset($this->categoryModifiers[$type->getCategoryId()])
+            or isset($this->categoryModifiers[$type->getCategoryId()])
         );
     }
 }

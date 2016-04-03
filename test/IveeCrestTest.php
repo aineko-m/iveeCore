@@ -18,7 +18,10 @@ ini_set('display_errors', 'on');
 //include the iveeCrest init, expected in the iveeCrest directory, with absolute path
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';
 
-use iveeCore\Config, iveeCore\ICache, iveeCrest\Client, iveeCrest\EndpointHandler;
+use iveeCore\Config;
+use iveeCore\ICache;
+use iveeCrest\Client;
+use iveeCrest\EndpointHandler;
 
 /**
  * PHPUnit test for iveeCrest
@@ -100,7 +103,6 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($this->handler->getWar(1) instanceof stdClass);
         $this->assertTrue($this->handler->getKillmail(
             'http://public-crest.eveonline.com/killmails/30290604/787fb3714062f1700560d4a83ce32c67640b1797/'
-            ) instanceof stdClass
-        );
+        ) instanceof stdClass);
     }
 }

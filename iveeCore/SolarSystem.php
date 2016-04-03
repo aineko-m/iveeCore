@@ -92,8 +92,9 @@ class SolarSystem extends SdeType
         );
 
         $namesToIds = [];
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $namesToIds[$row['solarSystemName']] = (int) $row['solarSystemID'];
+        }
 
         static::$instancePool->setNamesToKeys(static::getClassHierarchyKeyPrefix() . 'Names', $namesToIds);
     }
@@ -129,8 +130,9 @@ class SolarSystem extends SdeType
             WHERE solarSystemID = " . $this->id . ";"
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             static::throwException('SystemIdNotFoundException', "SolarSystem ID=". $this->id . " not found");
+        }
 
         //set data to attributes
         $this->regionId        = (int) $row['regionID'];
@@ -148,18 +150,24 @@ class SolarSystem extends SdeType
         )->fetch_assoc();
 
         if (!empty($res)) {
-            if (isset($res['crestIndexDate']))
+            if (isset($res['crestIndexDate'])) {
                 $this->industryIndexDate = (int) $res['crestIndexDate'];
-            if (isset($res['manufacturingIndex']))
+            }
+            if (isset($res['manufacturingIndex'])) {
                 $this->industryIndices[1] = (float) $res['manufacturingIndex'];
-            if (isset($res['teResearchIndex']))
+            }
+            if (isset($res['teResearchIndex'])) {
                 $this->industryIndices[3] = (float) $res['teResearchIndex'];
-            if (isset($res['meResearchIndex']))
+            }
+            if (isset($res['meResearchIndex'])) {
                 $this->industryIndices[4] = (float) $res['meResearchIndex'];
-            if (isset($res['copyIndex']))
+            }
+            if (isset($res['copyIndex'])) {
                 $this->industryIndices[5] = (float) $res['copyIndex'];
-            if (isset($res['inventionIndex']))
+            }
+            if (isset($res['inventionIndex'])) {
                 $this->industryIndices[8] = (float) $res['inventionIndex'];
+            }
         }
 
         $this->loadStations($sde);
@@ -249,8 +257,9 @@ class SolarSystem extends SdeType
         if (!isset($this->stations)) {
             $this->stations = [];
             $stationClass = Config::getIveeClassName("Station");
-            foreach ($this->getStationIds() as $stationId)
+            foreach ($this->getStationIds() as $stationId) {
                 $this->stations[$stationId] = $stationClass::getById($stationId);
+            }
         }
         return $this->stations;
     }
@@ -265,9 +274,11 @@ class SolarSystem extends SdeType
     public function getStationsWithService($serviceId)
     {
         $ret = [];
-        foreach ($this->getStations() as $station)
-            if(in_array($serviceId, $station->getServiceIds()))
-               $ret[$station->getId()] = $station;
+        foreach ($this->getStations() as $station) {
+            if (in_array($serviceId, $station->getServiceIds())) {
+                $ret[$station->getId()] = $station;
+            }
+        }
 
         return $ret;
     }
@@ -299,8 +310,9 @@ class SolarSystem extends SdeType
      */
     public function getIndustryIndices($maxIndexDataAge = 172800)
     {
-        if ($maxIndexDataAge > 0 AND ($this->industryIndexDate + $maxIndexDataAge) < time())
+        if ($maxIndexDataAge > 0 and ($this->industryIndexDate + $maxIndexDataAge) < time()) {
             static::throwException('CrestDataTooOldException', 'Index data for ' . $this->getName() . ' is too old');
+        }
 
         return $this->industryIndices;
     }
@@ -317,8 +329,9 @@ class SolarSystem extends SdeType
     public function getIndustryIndexForActivity($activityId, $maxIndexDataAge = 172800)
     {
         if (isset($this->industryIndices[$activityId])) {
-            if ($maxIndexDataAge > 0 AND ($this->industryIndexDate + $maxIndexDataAge) < time())
+            if ($maxIndexDataAge > 0 and ($this->industryIndexDate + $maxIndexDataAge) < time()) {
                 static::throwException('CrestDataTooOldException', 'Index data for ' . $this->getName() . ' is too old');
+            }
             return $this->industryIndices[$activityId];
         } else {
             static::throwException(

@@ -12,7 +12,9 @@
  */
 
 namespace iveeCore\CREST;
-use iveeCore\Config, iveeCrest\EndpointHandler;
+
+use iveeCore\Config;
+use iveeCrest\EndpointHandler;
 
 /**
  * GlobalPricesUpdater updates the data for the global average and adjusted prices from CREST (not orders or history).
@@ -36,18 +38,21 @@ class GlobalPricesUpdater extends CrestDataUpdater
     {
         $exceptionClass = Config::getIveeClassName('CrestException');
 
-        if (!isset($item->type->id))
+        if (!isset($item->type->id)) {
             throw new $exceptionClass('typeID missing in Market Prices CREST data');
+        }
         $typeId = (int) $item->type->id;
         $this->updatedIds[] = $typeId;
         $update = array();
 
-        if (!isset($item->adjustedPrice))
+        if (!isset($item->adjustedPrice)) {
             throw new $exceptionClass('Missing adjustedPrice in CREST MarketPrices data for typeID ' . $typeId);
+        }
         $update['adjustedPrice'] = (float) $item->adjustedPrice;
 
-        if (isset($item->averagePrice))
+        if (isset($item->averagePrice)) {
             $update['averagePrice'] = (float) $item->averagePrice;
+        }
 
         $insert = $update;
         $insert['typeID'] = $typeId;

@@ -64,8 +64,9 @@ class InstancePool
     public function setItem(ICacheable $obj)
     {
         $this->keyToObj[$obj->getKey()] = $obj;
-        if ($this->cache instanceof ICache)
+        if ($this->cache instanceof ICache) {
             $this->cache->setItem($obj);
+        }
     }
 
     /**
@@ -83,8 +84,9 @@ class InstancePool
         $cacheableArray = new $cacheableArrayClass($classKey, time() + 3600 * 24);
         $cacheableArray->data = $nameToKey;
 
-        if ($this->cache instanceof ICache)
-           $this->cache->setItem($cacheableArray);
+        if ($this->cache instanceof ICache) {
+            $this->cache->setItem($cacheableArray);
+        }
     }
 
     /**
@@ -97,7 +99,7 @@ class InstancePool
      */
     public function getItem($key)
     {
-        if (isset($this->keyToObj[$key]) AND $this->keyToObj[$key]->getCacheExpiry() > time()) {
+        if (isset($this->keyToObj[$key]) and $this->keyToObj[$key]->getCacheExpiry() > time()) {
             $this->hits++;
             return $this->keyToObj[$key];
         } elseif ($this->cache instanceof ICache) {
@@ -136,8 +138,9 @@ class InstancePool
                 throw new $KeyNotFoundInCacheExceptionClass('Names not found in pool');
             }
         }
-        if (isset($this->nameToKey[$classTypeNamesKey][$name]))
+        if (isset($this->nameToKey[$classTypeNamesKey][$name])) {
             return $this->nameToKey[$classTypeNamesKey][$name];
+        }
 
         $typeNameNotFoundExceptionClass = Config::getIveeClassName('TypeNameNotFoundException');
         throw new $typeNameNotFoundExceptionClass('Type name not found');
@@ -153,8 +156,9 @@ class InstancePool
     public function deleteItem($key)
     {
         $this->cache->deleteItem($key);
-        if (isset($this->keyToObj[$key]))
+        if (isset($this->keyToObj[$key])) {
             unset($this->keyToObj[$key]);
+        }
     }
 
     /**
@@ -167,9 +171,11 @@ class InstancePool
     public function deleteMulti(array $keys)
     {
         $this->cache->deleteMulti($keys);
-        foreach ($keys as $key)
-            if (isset($this->keyToObj[$key]))
+        foreach ($keys as $key) {
+            if (isset($this->keyToObj[$key])) {
                 unset($this->keyToObj[$key]);
+            }
+        }
     }
 
     /**

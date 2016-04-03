@@ -77,7 +77,7 @@ class CharacterModifier implements ICharacterModifier
      */
     public function getIndustrySkillTimeFactor($activityId)
     {
-        switch ($activityId){
+        switch ($activityId) {
             case 1:
                 //Industry and Advanced Industry
                 return (1.0 - 0.04 * $this->getSkillLevel(3380)) * (1.0 - 0.03 * $this->getSkillLevel(3388));
@@ -108,7 +108,7 @@ class CharacterModifier implements ICharacterModifier
      */
     public function getIndustryImplantTimeFactor($activityId)
     {
-        switch ($activityId){
+        switch ($activityId) {
             case 1:
             case 3:
             case 4:
@@ -182,8 +182,9 @@ class CharacterModifier implements ICharacterModifier
     public function getFactionStanding($factionId, $considerSkills = false)
     {
         $standings = 2.5;
-        if ($considerSkills)
+        if ($considerSkills) {
             return $this->getStandingWithSkillBonus($standings, in_array($factionId, static::$pirateFactions));
+        }
         return $standings;
     }
 
@@ -198,8 +199,9 @@ class CharacterModifier implements ICharacterModifier
     public function getCorporationStanding($corpId, $considerSkills = false)
     {
         $standings = 7.5;
-        if ($considerSkills)
+        if ($considerSkills) {
             return $this->getStandingWithSkillBonus($standings, in_array($corpId, static::$pirateCorporations));
+        }
         return $standings;
     }
 
@@ -213,13 +215,13 @@ class CharacterModifier implements ICharacterModifier
      */
     public function getStandingWithSkillBonus($baseStandings, $isPirate)
     {
-        if ($baseStandings < 0)
+        if ($baseStandings < 0) {
             $skillLevel = $this->getSkillLevel(3357); //Diplomacy skill
-        elseif($isPirate)
+        } elseif ($isPirate) {
             $skillLevel = $this->getSkillLevel(3361); //Criminal Connections skill
-        else
+        } else {
             $skillLevel = $this->getSkillLevel(3359); //Connections skill
-
+        }
         return $baseStandings + (10 - $baseStandings) * 0.04 * $skillLevel;
     }
 
@@ -234,7 +236,9 @@ class CharacterModifier implements ICharacterModifier
     {
         //calculate tax factor
         $tax = 0.05 - (0.0075 * $this->getCorporationStanding($corpId, true));
-        if($tax < 0) $tax = 0;
+        if ($tax < 0) {
+            $tax = 0;
+        }
 
         return 1.0 - $tax;
     }

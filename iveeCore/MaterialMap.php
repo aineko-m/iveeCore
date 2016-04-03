@@ -46,10 +46,11 @@ class MaterialMap
             throw new $exceptionClass("Can't add negative material amounts to MaterialMap");
         }
 
-        if (isset($this->materials[(int) $typeId]))
+        if (isset($this->materials[(int) $typeId])) {
             $this->materials[(int) $typeId] += $quantity;
-        else
+        } else {
             $this->materials[(int) $typeId] = $quantity;
+        }
     }
 
     /**
@@ -62,8 +63,9 @@ class MaterialMap
      */
     public function addMaterials(array $materials)
     {
-        foreach ($materials as $typeId => $quantity)
+        foreach ($materials as $typeId => $quantity) {
             $this->addMaterial($typeId, $quantity);
+        }
     }
 
     /**
@@ -78,16 +80,18 @@ class MaterialMap
     public function subtractMaterial($typeId, $quantity)
     {
         $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
-        if (!isset($this->materials[$typeId]))
+        if (!isset($this->materials[$typeId])) {
             throw new $exceptionClass('Trying to subtract materials of typeId ' . (int) $typeId
                 . " from MaterialMap, which doesn't occur");
-        elseif ($quantity > $this->materials[$typeId])
+        } elseif ($quantity > $this->materials[$typeId]) {
             throw new $exceptionClass('Trying to subtract more materials of typeId ' . (int) $typeId
             . " from MaterialMap than is available");
+        }
 
         $this->materials[$typeId] -= $quantity;
-        if ($this->materials[$typeId] == 0)
+        if ($this->materials[$typeId] == 0) {
             unset($this->materials[$typeId]);
+        }
     }
 
     /**
@@ -123,8 +127,9 @@ class MaterialMap
      */
     public function addMaterialMap(MaterialMap $materials)
     {
-        foreach ($materials->getMaterials() as $typeId => $quantity)
+        foreach ($materials->getMaterials() as $typeId => $quantity) {
             $this->addMaterial($typeId, $quantity);
+        }
     }
 
     /**
@@ -146,8 +151,9 @@ class MaterialMap
      */
     public function multiply($factor)
     {
-        foreach ($this->materials as $typeId => $quantity)
+        foreach ($this->materials as $typeId => $quantity) {
             $this->materials[$typeId] = $quantity * $factor;
+        }
 
         return $this;
     }
@@ -179,8 +185,9 @@ class MaterialMap
     public function getMaterialVolume()
     {
         $sum = 0;
-        foreach ($this->getMaterials() as $typeId => $quantity)
+        foreach ($this->getMaterials() as $typeId => $quantity) {
             $sum += Type::getById($typeId)->getVolume() * $quantity;
+        }
 
         return $sum;
     }
@@ -200,13 +207,15 @@ class MaterialMap
         $sum = 0;
         foreach ($this->getMaterials() as $typeId => $amount) {
             $type = Type::getById($typeId);
-            if (!$type->onMarket())
+            if (!$type->onMarket()) {
                 continue;
-            if ($amount > 0)
+            }
+            if ($amount > 0) {
                 $sum += $type->getMarketPrices(
                     $buyContext->getSolarSystem()->getRegionId(),
                     $buyContext->getMaxPriceDataAge()
                 )->getBuyPrice($buyContext->getMaxPriceDataAge()) * $amount * $buyContext->getBuyTaxFactor();
+            }
         }
         return $sum;
     }
@@ -226,13 +235,15 @@ class MaterialMap
         $sum = 0;
         foreach ($this->getMaterials() as $typeId => $amount) {
             $type = Type::getById($typeId);
-            if (!$type->onMarket())
+            if (!$type->onMarket()) {
                 continue;
-            if ($amount > 0)
+            }
+            if ($amount > 0) {
                 $sum += $type->getMarketPrices(
                     $sellContext->getSolarSystem()->getRegionId(),
                     $sellContext->getMaxPriceDataAge()
                 )->getSellPrice($sellContext->getMaxPriceDataAge()) * $amount * $sellContext->getSellTaxFactor();
+            }
         }
         return $sum;
     }

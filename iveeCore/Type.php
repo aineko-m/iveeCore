@@ -12,6 +12,7 @@
  */
 
 namespace iveeCore;
+
 use iveeCore\Exceptions\KeyNotFoundInCacheException;
 
 /**
@@ -87,8 +88,9 @@ class Type extends SdeType
      */
     public static function getById($id)
     {
-        if (!isset(static::$instancePool))
+        if (!isset(static::$instancePool)) {
             static::init();
+        }
 
         try {
             return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int)$id);
@@ -119,8 +121,9 @@ class Type extends SdeType
         );
 
         $namesToIds = [];
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $namesToIds[$row['typeName']] = (int) $row['typeID'];
+        }
 
         self::$instancePool->setNamesToKeys(static::getClassHierarchyKeyPrefix() . 'Names', $namesToIds);
     }
@@ -149,8 +152,9 @@ class Type extends SdeType
     private static function factory($typeId, array $subtypeInfo = null)
     {
         //get type decision data if not given
-        if (is_null($subtypeInfo))
+        if (is_null($subtypeInfo)) {
             $subtypeInfo = self::getSubtypeInfo((int) $typeId);
+        }
 
         //decide type
         $subtype = self::decideType($subtypeInfo);
@@ -220,8 +224,9 @@ class Type extends SdeType
             WHERE it.typeID = " . (int) $typeId . ";"
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             self::throwException('TypeIdNotFoundException', "typeId " . (int) $typeId . " not found");
+        }
 
         return $row;
     }
@@ -236,30 +241,31 @@ class Type extends SdeType
     private static function decideType(array $subtypeInfo)
     {
         $subtype = '';
-        if (empty($subtypeInfo))
+        if (empty($subtypeInfo)) {
             self::throwException('TypeIdNotFoundException', "typeId not found");
-        elseif ($subtypeInfo['categoryID'] == 24)
+        } elseif ($subtypeInfo['categoryID'] == 24) {
             $subtype = 'Reaction';
-        elseif (!empty($subtypeInfo['reactionProduct']))
+        } elseif (!empty($subtypeInfo['reactionProduct'])) {
             $subtype = 'ReactionProduct';
-        elseif (in_array($subtypeInfo['groupID'], array(973, 996, 1309)))
+        } elseif (in_array($subtypeInfo['groupID'], array(973, 996, 1309))) {
             $subtype = 'T3Blueprint';
-        elseif (!empty($subtypeInfo['inventable']))
+        } elseif (!empty($subtypeInfo['inventable'])) {
             $subtype = 'InventableBlueprint';
-        elseif ($subtypeInfo['categoryID'] == 34)
+        } elseif ($subtypeInfo['categoryID'] == 34) {
             $subtype = 'Relic';
-        elseif (!empty($subtypeInfo['inventor']))
+        } elseif (!empty($subtypeInfo['inventor'])) {
             $subtype = 'InventorBlueprint';
-        elseif (!empty($subtypeInfo['blueprint']))
+        } elseif (!empty($subtypeInfo['blueprint'])) {
             $subtype = 'Blueprint';
-        elseif ($subtypeInfo['categoryID'] == 35)
+        } elseif ($subtypeInfo['categoryID'] == 35) {
             $subtype = 'Decryptor';
-        elseif($subtypeInfo['groupID'] == 365)
+        } elseif ($subtypeInfo['groupID'] == 365) {
             $subtype = 'Starbase';
-        elseif (!empty($subtypeInfo['manufacturable']))
+        } elseif (!empty($subtypeInfo['manufacturable'])) {
             $subtype = 'Manufacturable';
-        else
+        } else {
             $subtype = 'Type';
+        }
 
         return Config::getIveeClassName($subtype);
     }
@@ -295,8 +301,9 @@ class Type extends SdeType
         if ($res->num_rows > 0) {
             $this->materials = [];
             //add materials to the array
-            while ($row = $res->fetch_assoc())
+            while ($row = $res->fetch_assoc()) {
                 $this->materials[(int) $row['materialTypeID']] = (int) $row['quantity'];
+            }
         }
     }
 
@@ -333,8 +340,9 @@ class Type extends SdeType
             AND it.typeID = " . (int) $this->id . ';'
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             self::throwException('TypeIdNotFoundException', "typeId " . $this->id . " not found");
+        }
 
         return $row;
     }
@@ -354,10 +362,12 @@ class Type extends SdeType
         $this->volume      = (float) $row['volume'];
         $this->portionSize = (int) $row['portionSize'];
         $this->basePrice   = (float) $row['basePrice'];
-        if (isset($row['marketGroupID']))
+        if (isset($row['marketGroupID'])) {
             $this->marketGroupId = (int) $row['marketGroupID'];
-        if (isset($row['reprocessingSkillID']))
+        }
+        if (isset($row['reprocessingSkillID'])) {
             $this->reprocessingSkillId = (int) $row['reprocessingSkillID'];
+        }
     }
 
     /**
@@ -491,10 +501,11 @@ class Type extends SdeType
      */
     public function getMaterials()
     {
-        if (empty($this->materials))
+        if (empty($this->materials)) {
             return [];
-        else
+        } else {
             return $this->materials;
+        }
     }
 
     /**
@@ -519,13 +530,16 @@ class Type extends SdeType
      */
     public function getReprocessingMaterialMap(IndustryModifier $iMod, $batchSize)
     {
-        if (!$this->isReprocessable())
+        if (!$this->isReprocessable()) {
             self::throwException('NotReprocessableException', $this->name . ' is not reprocessable');
+        }
 
-        if ($batchSize % $this->portionSize != 0)
-            self::throwException('InvalidParameterValueException',
+        if ($batchSize % $this->portionSize != 0) {
+            self::throwException(
+                'InvalidParameterValueException',
                 'Reprocessing batch size needs to be multiple of ' . $this->portionSize
             );
+        }
 
         //get station for reprocessing at
         $station = $iMod->getBestReprocessingStation();
@@ -533,23 +547,23 @@ class Type extends SdeType
         $charMod = $iMod->getCharacterModifier();
 
         //if (compressed) ore or ice
-        if ($this->getCategoryId() == 25)
+        if ($this->getCategoryId() == 25) {
             //Reprocessing, Reprocessing Efficiency and specific Processing skills
             $yield = $station->getReprocessingEfficiency()
                 * (1 + 0.03 * $charMod->getSkillLevel(3385)) //Reprocessing skill
                 * (1 + 0.02 * $charMod->getSkillLevel(3389)) //Reprocessing Efficiency skill
                 * (1 + 0.02 * $charMod->getSkillLevel($this->getReprocessingSkillId())) // specific skill
                 * $charMod->getReprocessingImplantYieldFactor();
-        //everything else
-        else
-            //Apply Scrapmetal Processing skill
+        } //everything else
+        else {             //Apply Scrapmetal Processing skill
             $yield = $station->getReprocessingEfficiency() * (1 + 0.02 * $charMod->getSkillLevel(12196));
+        }
 
         $materialsClass = Config::getIveeClassName('MaterialMap');
         $rmat = new $materialsClass;
 
         $numPortions = $batchSize / $this->portionSize;
-        foreach ($this->getMaterials() as $typeId => $quantity)
+        foreach ($this->getMaterials() as $typeId => $quantity) {
             $rmat->addMaterial(
                 $typeId,
                 round(
@@ -558,6 +572,7 @@ class Type extends SdeType
                     )
                 )
             );
+        }
         return $rmat;
     }
 }

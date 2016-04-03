@@ -54,14 +54,15 @@ class DoctrineCacheWrapper implements ICache
      */
     public static function instance()
     {
-        if (!isset(static::$instance))
+        if (!isset(static::$instance)) {
             static::$instance = new static();
+        }
         return static::$instance;
     }
 
     /**
      * Set the Doctrine Cache Provider.
-     * 
+     *
      * @param Doctrine\Common\Cache\CacheProvider $cache Doctrine Cache Provider to use.
      *
      * @return void
@@ -81,8 +82,9 @@ class DoctrineCacheWrapper implements ICache
     public function setItem(ICacheable $item)
     {
         $ttl = $item->getCacheExpiry() - time();
-        if ($ttl < 1)
+        if ($ttl < 1) {
             return false;
+        }
         return $this->cache->save($item->getKey(), $item, $ttl);
     }
 
@@ -127,8 +129,9 @@ class DoctrineCacheWrapper implements ICache
     public function deleteMulti(array $keys)
     {
         foreach ($keys as $key) {
-            if (!$this->cache->delete($key))
+            if (!$this->cache->delete($key)) {
                 return false;
+            }
         }
         return true;
     }
@@ -150,6 +153,6 @@ class DoctrineCacheWrapper implements ICache
      */
     public function getHits()
     {
-        return $this->hits; 
+        return $this->hits;
     }
 }

@@ -121,8 +121,9 @@ class Station extends SdeType
         );
 
         $namesToIds = [];
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $namesToIds[$row['stationName']] = (int) $row['stationID'];
+        }
 
         static::$instancePool->setNamesToKeys(static::getClassHierarchyKeyPrefix() . 'Names', $namesToIds);
     }
@@ -152,10 +153,11 @@ class Station extends SdeType
             $key = static::getClassHierarchyKeyPrefix() . 'operations';
             try {
                 $ops = static::$instancePool->getItem($key);
-                if ($ops instanceof CacheableArray)
+                if ($ops instanceof CacheableArray) {
                     static::$operations = $ops->data;
-                else
+                } else {
                     static::throwException('IveeCoreException');
+                }
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
                 static::$operations = [];
                 $sdeClass = Config::getIveeClassName('SDE');
@@ -192,18 +194,21 @@ class Station extends SdeType
             $key = static::getClassHierarchyKeyPrefix() . 'operationServices';
             try {
                 $opsServ = static::$instancePool->getItem($key);
-                if ($opsServ instanceof CacheableArray)
+                if ($opsServ instanceof CacheableArray) {
                     static::$operationServices = $opsServ->data;
-                else
+                } else {
                     static::throwException('IveeCoreException');
+                }
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
                 static::$operationServices = [];
                 $sdeClass = Config::getIveeClassName('SDE');
                 $sde = $sdeClass::instance();
                 $res = $sde->query('SELECT * FROM staOperationServices;');
-                if ($res->num_rows > 0)
-                    while ($row = $res->fetch_assoc())
+                if ($res->num_rows > 0) {
+                    while ($row = $res->fetch_assoc()) {
                         static::$operationServices[(int) $row['operationID']][] = (int) $row['serviceID'];
+                    }
+                }
 
                 $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
                 $cacheArray = new $cacheableArrayClass($key, time() + 24 * 3600);
@@ -227,18 +232,21 @@ class Station extends SdeType
             $key = static::getClassHierarchyKeyPrefix() . 'services';
             try {
                 $serv = static::$instancePool->getItem($key);
-                if ($serv instanceof CacheableArray)
+                if ($serv instanceof CacheableArray) {
                     static::$services = $serv->data;
-                else
+                } else {
                     static::throwException('IveeCoreException');
+                }
             } catch (Exceptions\KeyNotFoundInCacheException $e) {
                 static::$services = [];
                 $sdeClass = Config::getIveeClassName('SDE');
                 $sde = $sdeClass::instance();
                 $res = $sde->query('SELECT * FROM staServices;');
-                if ($res->num_rows > 0)
-                    while ($row = $res->fetch_assoc())
+                if ($res->num_rows > 0) {
+                    while ($row = $res->fetch_assoc()) {
                         static::$services[(int) $row['serviceID']] = $row['serviceName'];
+                    }
+                }
 
                 $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
                 $cacheArray = new $cacheableArrayClass($key, time() + 24 * 3600);
@@ -285,16 +293,17 @@ class Station extends SdeType
             )->fetch_assoc();
         }
 
-        if (empty($row))
+        if (empty($row)) {
             static::throwException('StationIdNotFoundException', "Station ID=". $this->id . " not found");
+        }
 
         //set data to attributes
         $this->conquerable   = (bool) $row['conquerable'];
         $this->solarSystemId = (int) $row['solarSystemID'];
         $this->stationTypeId = (int) $row['stationTypeID'];
-        $this->corporationId = ($this->conquerable AND isset($row['playerCorpID']))
+        $this->corporationId = ($this->conquerable and isset($row['playerCorpID']))
             ? (int) $row['playerCorpID'] : (int) $row['corporationID'];
-        $this->name          = ($this->conquerable AND isset($row['playerStationName']))
+        $this->name          = ($this->conquerable and isset($row['playerStationName']))
             ? $row['playerStationName'] : $row['stationName'];
         $this->operationId   = (int) $row['operationID'];
         $this->reprocessingEfficiency   = (float) $row['reprocessingEfficiency'];
@@ -404,8 +413,9 @@ class Station extends SdeType
      */
     public function getFactionId()
     {
-        if ($this->id >= 61000000)
+        if ($this->id >= 61000000) {
             static::throwException('NoRelevantDataException', 'Data unavailable for player built outposts');
+        }
         return $this->corporationId;
     }
 
@@ -436,8 +446,9 @@ class Station extends SdeType
      */
     public function getTax()
     {
-        if (isset($this->tax))
+        if (isset($this->tax)) {
             return $this->tax;
+        }
         return 0.1;
     }
 
@@ -473,10 +484,11 @@ class Station extends SdeType
      */
     public function getAssemblyLineTypeIdsForActivity($activityId)
     {
-        if (isset($this->assemblyLineTypeIds[$activityId]))
+        if (isset($this->assemblyLineTypeIds[$activityId])) {
             return $this->assemblyLineTypeIds[$activityId];
-        else
+        } else {
             return [];
+        }
     }
 
     /**

@@ -34,10 +34,11 @@ class Util
     public static function quantitiesToReadable($val)
     {
         if (abs($val) < 1000) {
-            if ($val - ((int) $val) !== 0)
+            if ($val - ((int) $val) !== 0) {
                 return sprintf("%1.2f", $val);
-            else
+            } else {
                 return $val;
+            }
         } elseif (abs($val) >= 1000000000) {
             $val = $val / 1000000000;
             $unit = 'G';
@@ -61,8 +62,9 @@ class Util
     public static function secondsToReadable($fseconds)
     {
         $seconds = (int) $fseconds;
-        if (($fseconds - $seconds) * 60 > 1)
+        if (($fseconds - $seconds) * 60 > 1) {
             $seconds++;
+        }
 
         $readable = "";
         if ($seconds >= (24 * 3600)) {

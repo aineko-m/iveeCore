@@ -12,7 +12,9 @@
  */
 
 namespace iveeCore\CREST;
-use iveeCore\Config, iveeCrest\EndpointHandler;
+
+use iveeCore\Config;
+use iveeCrest\EndpointHandler;
 
 /**
  * Abstract base class for the specific CREST endpoint updaters.
@@ -61,7 +63,7 @@ abstract class CrestDataUpdater
         foreach ($this->data as $item) {
             $sql .= $this->processDataItemToSQL($item);
             $count++;
-            if ($count % 100 == 0 OR $count == count($this->data)) {
+            if ($count % 100 == 0 or $count == count($this->data)) {
                 $sdeDb->multiQuery($sql . ' COMMIT;');
                 $sql = '';
             }
@@ -102,19 +104,22 @@ abstract class CrestDataUpdater
      */
     public static function doUpdate(EndpointHandler $eph, $verbose = true)
     {
-        if ($verbose)
+        if ($verbose) {
             echo get_called_class() . ' getting data from CREST... ';
+        }
 
         //fetch the data, check returned representation name
         $data = static::getData($eph);
-        if ($verbose)
+        if ($verbose) {
             echo "Done" . PHP_EOL . 'Saving data in DB... ';
+        }
 
         //store in DB
         $cdu = new static($data);
         $cdu->insertIntoDB();
-        if ($verbose)
+        if ($verbose) {
             echo 'Done' . PHP_EOL;
+        }
     }
 
     /**

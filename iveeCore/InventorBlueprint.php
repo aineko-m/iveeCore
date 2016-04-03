@@ -99,11 +99,12 @@ class InventorBlueprint extends Blueprint
             AND inventorProd.typeID = " . $this->id . ";"
         );
 
-        if ($res->num_rows < 1)
+        if ($res->num_rows < 1) {
             self::throwException(
                 'TypeIdNotFoundException',
                 "Inventor data for Type ID=" . $this->id ." not found"
             );
+        }
 
         while ($row = $res->fetch_assoc()) {
             $this->inventsBlueprintIds[(int) $row['resultBpID']] = 1;
@@ -134,10 +135,11 @@ class InventorBlueprint extends Blueprint
         );
         $this->datacoreSkillIds = [];
         while ($row = $res->fetch_assoc()) {
-            if ($row['groupID'] == 333)
+            if ($row['groupID'] == 333) {
                 $this->datacoreSkillIds[] = $row['skillID'];
-            elseif ($row['groupID'] == 716)
+            } elseif ($row['groupID'] == 716) {
                 $this->encryptionSkillId = $row['skillID'];
+            }
         }
     }
 
@@ -160,15 +162,15 @@ class InventorBlueprint extends Blueprint
         $inventableBpIds = $this->getInventableBlueprintIds();
 
         //if no inventedBpId given, set to first inventable BP ID
-         if (is_null($inventedBpId))
-             $inventedBpId = $inventableBpIds[0];
-
-        //check if the given BP can be invented from this
-        elseif (!isset($this->inventsBlueprintIds[$inventedBpId]))
+        if (is_null($inventedBpId)) {
+            $inventedBpId = $inventableBpIds[0];
+        } //check if the given BP can be invented from this
+        elseif (!isset($this->inventsBlueprintIds[$inventedBpId])) {
             self::throwException(
                 'NotInventableException',
                 "Specified blueprint can't be invented from this inventor blueprint."
             );
+        }
 
         //get invented BP
         $inventedBp = Type::getById($inventedBpId);
@@ -244,8 +246,9 @@ class InventorBlueprint extends Blueprint
         $decryptor = Type::getById($decryptorId);
 
         //check if decryptorId is actually a decryptor
-        if (!($decryptor instanceof Decryptor))
+        if (!($decryptor instanceof Decryptor)) {
             self::throwException('WrongTypeException', 'typeId ' . $decryptorId . ' is not a Decryptor');
+        }
 
         return $decryptor;
     }
@@ -264,8 +267,12 @@ class InventorBlueprint extends Blueprint
      * @return \iveeCore\ManufactureProcessData with cascaded InventionProcessData and CopyProcessData objects
      * @throws \iveeCore\Exceptions\WrongTypeException if product is no an InventableBlueprint
      */
-    public function copyInventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
-        $manuRecursionDepth = 1, $reactionRecursionDepth = 0
+    public function copyInventManufacture(
+        IndustryModifier $iMod,
+        $inventedBpId = null,
+        $decryptorId = null,
+        $manuRecursionDepth = 1,
+        $reactionRecursionDepth = 0
     ) {
         //make one BP copy
         $copyData = $this->copy($iMod, 1, 1, $manuRecursionDepth);
@@ -282,8 +289,9 @@ class InventorBlueprint extends Blueprint
         $inventionData->addSubProcessData($copyData);
         
         $producedType = $inventionData->getProducedType();
-        if(!$producedType instanceof InventableBlueprint)
+        if (!$producedType instanceof InventableBlueprint) {
             self::throwException('WrongTypeException', 'Given object is not instance of InventableBlueprint');
+        }
 
         //manufacture from invented BP
         $manufactureData = $producedType->manufacture(
@@ -319,8 +327,9 @@ class InventorBlueprint extends Blueprint
     public function getInventableBlueprints()
     {
         $ret = [];
-        foreach($this->getInventableBlueprintIds() as $bpId)
+        foreach ($this->getInventableBlueprintIds() as $bpId) {
             $ret[$bpId] = Type::getById($bpId);
+        }
         return $ret;
     }
 
@@ -343,8 +352,9 @@ class InventorBlueprint extends Blueprint
      */
     public function getInventableBlueprintIdsByRaceId($raceId)
     {
-        if (!isset($this->inventsBlueprintIdsByRaceId[$raceId]))
+        if (!isset($this->inventsBlueprintIdsByRaceId[$raceId])) {
             return [];
+        }
         return $this->inventsBlueprintIdsByRaceId[$raceId];
     }
 
@@ -387,12 +397,12 @@ class InventorBlueprint extends Blueprint
      */
     public function calcInventionProbability(ICharacterModifier $charMod)
     {
-        return $this->getInventionProbability() 
+        return $this->getInventionProbability()
             * (1 +
                 ($charMod->getSkillLevel($this->datacoreSkillIds[0])
                     + $charMod->getSkillLevel($this->datacoreSkillIds[1])
                 ) / 30
                 + $charMod->getSkillLevel($this->encryptionSkillId) / 40
-        );
+            );
     }
 }

@@ -12,6 +12,7 @@
  */
 
 namespace iveeCore;
+
 use iveeCore\Exceptions\KeyNotFoundInCacheException;
 
 /**
@@ -76,11 +77,13 @@ class GlobalPriceData extends CoreDataCommon
      */
     public static function getById($typeId, $maxPriceDataAge = null)
     {
-        if (is_null($maxPriceDataAge))
+        if (is_null($maxPriceDataAge)) {
             $maxPriceDataAge = Config::getMaxPriceDataAge();
+        }
 
-        if (!isset(static::$instancePool))
+        if (!isset(static::$instancePool)) {
             static::init();
+        }
 
         try {
             return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int) $typeId);
@@ -135,11 +138,13 @@ class GlobalPriceData extends CoreDataCommon
             ORDER BY date DESC LIMIT 1;"
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             self::throwException(
-                'NoPriceDataAvailableException', "No global price data for " . $this->getType()->getName()
+                'NoPriceDataAvailableException',
+                "No global price data for " . $this->getType()->getName()
                     . " (typeId=" . $this->id . ") found"
             );
+        }
 
         return $row;
     }
@@ -176,12 +181,14 @@ class GlobalPriceData extends CoreDataCommon
      */
     public function getPriceDate()
     {
-        if ($this->priceDate > 0)
+        if ($this->priceDate > 0) {
             return $this->priceDate;
-        else
+        } else {
             self::throwException(
-                'NoPriceDataAvailableException', "No CREST price available for " . $this->getType()->getName()
+                'NoPriceDataAvailableException',
+                "No CREST price available for " . $this->getType()->getName()
             );
+        }
     }
 
     /**
@@ -196,16 +203,17 @@ class GlobalPriceData extends CoreDataCommon
      */
     public function getAveragePrice($maxPriceDataAge)
     {
-        if (is_null($this->averagePrice))
+        if (is_null($this->averagePrice)) {
             self::throwException(
                 'NoPriceDataAvailableException',
                 "No averagePrice available for " . $this->getType()->getName()
             );
-        elseif ($this->isTooOld($maxPriceDataAge))
+        } elseif ($this->isTooOld($maxPriceDataAge)) {
             self::throwException(
                 'PriceDataTooOldException',
                 'averagePrice data for ' . $this->getType()->getName() . ' is too old'
             );
+        }
 
         return $this->averagePrice;
     }
@@ -222,16 +230,17 @@ class GlobalPriceData extends CoreDataCommon
      */
     public function getAdjustedPrice($maxPriceDataAge)
     {
-        if (is_null($this->adjustedPrice))
+        if (is_null($this->adjustedPrice)) {
             self::throwException(
                 'NoPriceDataAvailableException',
                 "No adjustedPrice available for " . $this->getType()->getName()
             );
-        elseif ($this->isTooOld($maxPriceDataAge))
+        } elseif ($this->isTooOld($maxPriceDataAge)) {
             self::throwException(
                 'PriceDataTooOldException',
                 'adjustedPrice data for ' . $this->getType()->getName() . ' is too old'
             );
+        }
         return $this->adjustedPrice;
     }
 
@@ -249,6 +258,6 @@ class GlobalPriceData extends CoreDataCommon
     {
         //take the data timestamp, add a whole day as it is valid until the end of the current day.
         //Then add whatever wiggle room we get from maxPriceDataAge.
-        return !is_null($maxPriceDataAge) AND $this->priceDate + 86400 + $maxPriceDataAge < time();
+        return !is_null($maxPriceDataAge) and $this->priceDate + 86400 + $maxPriceDataAge < time();
     }
 }

@@ -63,14 +63,16 @@ class InventableBlueprint extends Blueprint
             AND productTypeID = " . $this->id . ';'
         );
 
-        if ($res->num_rows < 1)
+        if ($res->num_rows < 1) {
             self::throwException(
                 'TypeIdNotFoundException',
                 "Originating Blueprint data for InventableBlueprint ID=" . $this->id ." not found"
             );
+        }
 
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $this->inventedFrom = (int) $row['typeID'];
+        }
     }
 
     /**
@@ -119,7 +121,10 @@ class InventableBlueprint extends Blueprint
      * @return \iveeCore\ManufactureProcessData with cascaded iveeCore\InventionProcessData and
      * iveeCore\CopyProcessData objects
      */
-    public function copyInventManufacture(IndustryModifier $iMod, $decryptorId = null, $manuRecursionDepth = 1,
+    public function copyInventManufacture(
+        IndustryModifier $iMod,
+        $decryptorId = null,
+        $manuRecursionDepth = 1,
         $reactionRecursionDepth = 0
     ) {
         return $this->getInventorBlueprint()->copyInventManufacture(

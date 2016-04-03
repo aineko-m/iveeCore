@@ -159,8 +159,9 @@ class Blueprint extends Type
             WHERE typeID = ' . $this->id .';'
         );
         //set time data to array
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $this->activityTimes[(int) $row['activityID']] = (int) $row['time'];
+        }
     }
 
     /**
@@ -194,8 +195,9 @@ class Blueprint extends Type
             AND it.typeID = " . $this->id . ";"
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             self::throwException('TypeIdNotFoundException', "Blueprint ID=" . $this->id . " not found");
+        }
 
         return $row;
     }
@@ -223,13 +225,15 @@ class Blueprint extends Type
      */
     public function getProductBaseCost($maxPriceDataAge)
     {
-        if (isset($this->productBaseCost))
+        if (isset($this->productBaseCost)) {
             return $this->productBaseCost;
+        }
 
         $this->productBaseCost = 0.0;
-        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matId => $rawAmount)
-            $this->productBaseCost += Type::getById($matId)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge) 
+        foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matId => $rawAmount) {
+            $this->productBaseCost += Type::getById($matId)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge)
                 * $rawAmount;
+        }
 
         return $this->productBaseCost;
     }
@@ -251,8 +255,13 @@ class Blueprint extends Type
      * @throws \iveeCore\Exceptions\TypeNotCompatibleException if the product cannot be manufactured in any of the
      * assemblyLines given in the IndustryModifier object
      */
-    public function manufacture(IndustryModifier $iMod, $units = 1, $bpME = null, $bpTE = null, $manuRecursionDepth = 1,
-            $reactionRecursionDepth = 0
+    public function manufacture(
+        IndustryModifier $iMod,
+        $units = 1,
+        $bpME = null,
+        $bpTE = null,
+        $manuRecursionDepth = 1,
+        $reactionRecursionDepth = 0
     ) {
         //get product
         $product = $this->getProduct();
@@ -267,10 +276,12 @@ class Blueprint extends Type
         $numPortions = $units / $product->getPortionSize();
 
         //lookup ME & TE levels if not set
-        if (is_null($bpME))
+        if (is_null($bpME)) {
             $bpME = $iMod->getBlueprintModifier()->getBpMeLevel($this->id);
-        if (is_null($bpTE))
+        }
+        if (is_null($bpTE)) {
             $bpTE = $iMod->getBlueprintModifier()->getBpTeLevel($this->id);
+        }
 
         //instantiate manu data object
         $mdata = new $manufactureDataClass(
@@ -322,8 +333,9 @@ class Blueprint extends Type
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_COPYING, $this);
 
         //convert 'max' into max number of runs
-        if ($runs == 'max')
+        if ($runs == 'max') {
             $runs = $this->maxProductionLimit;
+        }
         $totalRuns = $copies * $runs;
 
         $copyDataClass = Config::getIveeClassName('CopyProcessData');
@@ -368,8 +380,9 @@ class Blueprint extends Type
     {
         $startME = abs((int) $startME);
         $endME   = abs((int) $endME);
-        if ($startME < 0 OR $startME >= $endME OR $endME > 10)
+        if ($startME < 0 or $startME >= $endME or $endME > 10) {
             self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
+        }
 
         //get modifiers and test if ME research is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_ME, $this);
@@ -421,8 +434,9 @@ class Blueprint extends Type
     {
         $startTE = abs((int) $startTE);
         $endTE   = abs((int) $endTE);
-        if ($startTE < 0 OR $startTE >= $endTE OR $endTE > 20 OR $startTE % 2 != 0 OR $endTE % 2 != 0)
+        if ($startTE < 0 or $startTE >= $endTE or $endTE > 20 or $startTE % 2 != 0 or $endTE % 2 != 0) {
             self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
+        }
 
         //get modifiers and test if TE research is possible with the given assemblyLines
         $modifier = $iMod->getModifier(ProcessData::ACTIVITY_RESEARCH_TE, $this);
@@ -470,8 +484,14 @@ class Blueprint extends Type
      *
      * @return void
      */
-    protected function addActivityMaterials(IndustryModifier $iMod, ProcessData $pdata, $activityId, $materialFactor,
-        $numPortions, $manuRecursionDepth, $reactionRecursionDepth
+    protected function addActivityMaterials(
+        IndustryModifier $iMod,
+        ProcessData $pdata,
+        $activityId,
+        $materialFactor,
+        $numPortions,
+        $manuRecursionDepth,
+        $reactionRecursionDepth
     ) {
         foreach ($this->getMaterialsForActivity($activityId) as $matId => $rawAmount) {
             $mat = Type::getById($matId);
@@ -479,22 +499,24 @@ class Blueprint extends Type
 
             //calculate total quantity needed, applying all modifiers
             //if number of portions is a fraction, don't ceil() amounts
-            if (fmod($numPortions, 1.0) > 0.000000001)
+            if (fmod($numPortions, 1.0) > 0.000000001) {
                 $totalNeeded = $amount;
-            else {
+            } else {
                 //fix float precision problems
-                if (fmod($amount, 1.0) < 0.000000001)
+                if (fmod($amount, 1.0) < 0.000000001) {
                     $totalNeeded = round($amount);
-                else
+                } else {
                     $totalNeeded = ceil($amount);
+                }
             }
 
             //at least one unit of material is required per portion
-            if ($totalNeeded < $numPortions)
+            if ($totalNeeded < $numPortions) {
                 $totalNeeded = $numPortions;
+            }
 
             //if using recursive building and material is manufacturable, recurse!
-            if ($manuRecursionDepth > 0 AND $mat instanceof Manufacturable)
+            if ($manuRecursionDepth > 0 and $mat instanceof Manufacturable) {
                 $pdata->addSubProcessData(
                     $mat->getBlueprint()->manufacture(
                         $iMod,
@@ -505,11 +527,12 @@ class Blueprint extends Type
                         $reactionRecursionDepth
                     )
                 );
-            //is using recursive reaction and material is a ReactionProduct, recurse!
-            elseif ($reactionRecursionDepth > 0 AND $mat instanceof ReactionProduct)
+            } //is using recursive reaction and material is a ReactionProduct, recurse!
+            elseif ($reactionRecursionDepth > 0 and $mat instanceof ReactionProduct) {
                 $pdata->addSubProcessData($mat->doBestReaction($iMod, $totalNeeded, $reactionRecursionDepth - 1));
-            else
+            } else {
                 $pdata->addMaterial($matId, $totalNeeded);
+            }
         }
     }
 
@@ -532,10 +555,11 @@ class Blueprint extends Type
      */
     protected function getMaterialsForActivity($activityId)
     {
-        if (isset($this->activityMaterials[(int) $activityId]))
+        if (isset($this->activityMaterials[(int) $activityId])) {
             return $this->activityMaterials[(int) $activityId];
-        else
+        } else {
             return [];
+        }
     }
 
     /**
@@ -567,9 +591,9 @@ class Blueprint extends Type
      */
     protected function getSkillMapForActivity($activityId)
     {
-        if (isset($this->activitySkills[(int) $activityId]))
+        if (isset($this->activitySkills[(int) $activityId])) {
             return clone $this->activitySkills[(int) $activityId];
-        else {
+        } else {
             $skillMapClass = Config::getIveeClassName('SkillMap');
             return new $skillMapClass;
         }
@@ -585,10 +609,11 @@ class Blueprint extends Type
      */
     protected function getBaseTimeForActivity($activityId)
     {
-        if (isset($this->activityTimes[(int) $activityId]))
+        if (isset($this->activityTimes[(int) $activityId])) {
             return $this->activityTimes[(int) $activityId];
-        else
+        } else {
             self::throwException('ActivityIdNotFoundException', "ActivityId " . (int) $activityId . " not found.");
+        }
     }
 
     /**
@@ -645,8 +670,9 @@ class Blueprint extends Type
      */
     public static function calcResearchMultiplier($startLevel, $endLevel)
     {
-        if ($startLevel < 0 OR $startLevel >= $endLevel OR $endLevel > 10)
+        if ($startLevel < 0 or $startLevel >= $endLevel or $endLevel > 10) {
             self::throwException('InvalidParameterValueException', "Invalid start or end research levels given");
+        }
 
         return (static::$baseResearchModifier[$endLevel] - static::$baseResearchModifier[$startLevel]) / 105;
     }

@@ -57,8 +57,9 @@ class Manufacturable extends Type
             AND it.typeID = " . $this->id . ";"
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             self::throwException('TypeIdNotFoundException', "typeId " . $this->id . " not found");
+        }
 
         return $row;
     }
@@ -73,8 +74,9 @@ class Manufacturable extends Type
     protected function setAttributes(array $row)
     {
         parent::setAttributes($row);
-        if (isset($row['blueprintTypeID']))
+        if (isset($row['blueprintTypeID'])) {
             $this->producedFromBlueprintId = (int) $row['blueprintTypeID'];
+        }
     }
 
     /**

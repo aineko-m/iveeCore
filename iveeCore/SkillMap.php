@@ -39,7 +39,7 @@ class SkillMap
      */
     public static function sanityCheckSkillLevel($skillLevel)
     {
-        if ($skillLevel < 0 OR $skillLevel > 5 OR !is_int($skillLevel)) {
+        if ($skillLevel < 0 or $skillLevel > 5 or !is_int($skillLevel)) {
             $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
             throw new $exceptionClass("Skill level needs to be an integer between 0 and 5");
         }
@@ -61,10 +61,12 @@ class SkillMap
         static::sanityCheckSkillLevel($level);
         if (isset($this->skills[(int) $skillId])) {
             //overwrite existing skill if $level is higher
-            if ($this->skills[(int) $skillId] < $level)
+            if ($this->skills[(int) $skillId] < $level) {
                 $this->skills[(int) $skillId] = (int) $level;
-        } else
+            }
+        } else {
             $this->skills[(int) $skillId] = (int) $level;
+        }
     }
 
     /**
@@ -76,8 +78,9 @@ class SkillMap
      */
     public function addSkillMap(SkillMap $skillMap)
     {
-        foreach ($skillMap->getSkills() as $skillId => $level)
+        foreach ($skillMap->getSkills() as $skillId => $level) {
             $this->addSkill($skillId, $level);
+        }
     }
 
     /**

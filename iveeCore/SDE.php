@@ -54,8 +54,9 @@ class SDE
      */
     public static function instance(\mysqli $db = null)
     {
-        if (!isset(static::$instance))
+        if (!isset(static::$instance)) {
             static::$instance = new static($db);
+        }
         return static::$instance;
     }
 
@@ -68,10 +69,12 @@ class SDE
     {
         if (!isset($db)) {
             $db = $this->connectDb();
-            if ($db->connect_error)
+            if ($db->connect_error) {
                 exit('Fatal Error: ' . $db->connect_error . PHP_EOL);
-        } elseif (!($db instanceof \mysqli))
+            }
+        } elseif (!($db instanceof \mysqli)) {
             exit('Fatal Error: parameter given is not a mysqli object' . PHP_EOL);
+        }
         $this->db = $db;
 
         //ivee uses transactions so turn off autocommit
@@ -147,7 +150,9 @@ class SDE
      */
     public function flushDbResults()
     {
-        while($this->db->more_results() && $this->db->next_result());
+        while ($this->db->more_results() && $this->db->next_result()) {
+
+        }
     }
 
     /**
@@ -228,10 +233,12 @@ class SDE
         $icols   = "";
         $ivalues = "";
         foreach ($insert as $i => $val) {
-            if (!(is_int($val) OR is_float($val) OR is_string($val)))
+            if (!(is_int($val) or is_float($val) or is_string($val))) {
                 throw new $exceptionClass("Supported data types: int, float, string");
-            if (is_string($val))
+            }
+            if (is_string($val)) {
                 $val = static::sanitizeAndEnquoteString($val);
+            }
             $icols   .= ", `" . $i . "`";
             $ivalues .= ", " . $val;
         }
@@ -244,10 +251,12 @@ class SDE
         if (is_array($update)) {
             $us = "";
             foreach ($update as $u => $val) {
-                if (!(is_int($val) OR is_float($val) OR is_string($val)))
+                if (!(is_int($val) or is_float($val) or is_string($val))) {
                     throw new $exceptionClass("Supported data types: int, float, string");
-                if (is_string($val))
+                }
+                if (is_string($val)) {
                     $val = static::sanitizeAndEnquoteString($val);
+                }
                 $us .= ", `" . $u . "` = " . $val;
             }
             $q .= PHP_EOL . "ON DUPLICATE KEY UPDATE " . substr($us, 2);
@@ -273,18 +282,22 @@ class SDE
         $exceptionClass = Config::getIveeClassName('InvalidArgumentException');
 
         foreach ($update as $col => $val) {
-            if (!(is_int($val) OR is_float($val) OR is_string($val)))
+            if (!(is_int($val) or is_float($val) or is_string($val))) {
                 throw new $exceptionClass("Supported data types: int, float, string");
-            if (is_string($val))
+            }
+            if (is_string($val)) {
                 $val = static::sanitizeAndEnquoteString($val);
+            }
             $data[] = $col . "=" . $val;
         }
 
         foreach ($where as $col => $val) {
-            if (!(is_int($val) OR is_float($val) OR is_string($val)))
+            if (!(is_int($val) or is_float($val) or is_string($val))) {
                 throw new $exceptionClass("Supported data types: int, float, string");
-            if (is_string($val))
+            }
+            if (is_string($val)) {
                 $val = static::sanitizeAndEnquoteString($val);
+            }
             $condition[] = $col . "=" . $val;
         }
 

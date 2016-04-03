@@ -12,7 +12,9 @@
  */
 
 namespace iveeCore\CREST;
-use iveeCore\Config, iveeCrest\EndpointHandler;
+
+use iveeCore\Config;
+use iveeCrest\EndpointHandler;
 
 /**
  * IveeUpdater provides the necessary functionality for running CREST updates from the CLI.
@@ -68,15 +70,17 @@ class IveeUpdater
         $sdeClass = Config::getIveeClassName('SDE');
         static::$sde = $sdeClass::instance();
 
-        if (in_array('-s', $args))
+        if (in_array('-s', $args)) {
             $verbose = false;
-        else
+        } else {
             $verbose = true;
+        }
 
-        if (in_array('-all', $args))
+        if (in_array('-all', $args)) {
             $all = true;
-        else
+        } else {
             $all = false;
+        }
 
         //setup CREST Client and EndpointHandler
         $clientClass = Config::getIveeClassName('Client');
@@ -84,26 +88,33 @@ class IveeUpdater
         $endpointHandlerClass = Config::getIveeClassName('EndpointHandler');
         $this->endpointHandler = new $endpointHandlerClass($client);
 
-        if (in_array('-test', $args))
+        if (in_array('-test', $args)) {
             $this->testCrest();
+        }
 
-        if ($all OR in_array('-indices', $args))
+        if ($all or in_array('-indices', $args)) {
             $this->updateIndices($verbose);
+        }
 
-        if ($all OR in_array('-globalprices', $args))
+        if ($all or in_array('-globalprices', $args)) {
             $this->updateGlobalPrices($verbose);
+        }
 
-        if ($all OR in_array('-facilities', $args))
+        if ($all or in_array('-facilities', $args)) {
             $this->updateFacilities($verbose);
+        }
 
-        if ($all OR in_array('-history', $args))
+        if ($all or in_array('-history', $args)) {
             $this->updateHistory($regionIds, $verbose);
+        }
 
-        if ($all OR in_array('-prices', $args))
+        if ($all or in_array('-prices', $args)) {
             $this->updatePrices($regionIds, $verbose);
+        }
 
-        if ($verbose)
+        if ($verbose) {
             echo 'Peak memory usage: ' . ceil(memory_get_peak_usage(true) / 1024) . 'KiB' . PHP_EOL;
+        }
     }
 
     /**
@@ -140,10 +151,11 @@ class IveeUpdater
             WHERE name = 'industryIndices';"
         );
 
-        if ($res->num_rows > 0)
+        if ($res->num_rows > 0) {
             $lastUpdateTs = (int) $res->fetch_assoc()['lastUpdateTs'];
-        else
+        } else {
             $lastUpdateTs = 0;
+        }
 
         //if roughly an hour passed, do the update
         //system indices are update at least once per hour on CCPs side
@@ -162,8 +174,9 @@ class IveeUpdater
             );
             static::$sde->multiQuery($sql . ' COMMIT;');
             
-        } elseif($verbose)
+        } elseif ($verbose) {
             echo "System industry indices still up-to-date, skipping.\n";
+        }
     }
 
     /**
@@ -213,10 +226,11 @@ class IveeUpdater
             WHERE name = 'facilities';"
         );
 
-        if ($res->num_rows > 0)
+        if ($res->num_rows > 0) {
             $lastUpdateTs = (int) $res->fetch_assoc()['lastUpdateTs'];
-        else
+        } else {
             $lastUpdateTs = 0;
+        }
 
         //if roughly three hours passed, do the update
         if (time() - $lastUpdateTs > 10000) {
@@ -232,8 +246,9 @@ class IveeUpdater
                 array('lastUpdate' => date('Y-m-d H:i:s', time()))
             );
             static::$sde->multiQuery($sql . ' COMMIT;');
-        } elseif($verbose)
+        } elseif ($verbose) {
             echo "Facilities data still up-to-date, skipping.\n";
+        }
     }
 
     /**
@@ -251,21 +266,23 @@ class IveeUpdater
             $this->marketProcessor = new $crestMarketProcessorClass($this->endpointHandler);
         }
 
-        if ($verbose)
+        if ($verbose) {
             echo get_called_class() . " starting market history update\n";
+        }
 
         //history doesn't need to be updated more than once a day
         $cutoffTs = mktime(0, 0, 0);
         foreach ($regionIds as $regionId) {
             $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastHistUpdate', $this->endpointHandler);
             if (count($idsToUpdate) > 0) {
-                if ($verbose)
+                if ($verbose) {
                     echo 'Updating history data for ' . count($idsToUpdate) . ' market types in regionId=' . $regionId
                         . PHP_EOL;
+                }
                 $this->marketProcessor->runHistoryBatch($idsToUpdate, array($regionId), $verbose);
-            } else
-                if ($verbose)
+            } elseif ($verbose) {
                     echo 'No history to update for market types in regionId=' . $regionId . PHP_EOL;
+            }
             
         }
     }
@@ -286,21 +303,23 @@ class IveeUpdater
             $this->marketProcessor = new $crestMarketProcessorClass($this->endpointHandler);
         }
 
-        if ($verbose)
+        if ($verbose) {
             echo get_called_class() . " starting market prices update\n";
+        }
 
         //get the cutoff timestamp for determining what price data age is too old
         $cutoffTs = time() - Config::getMaxPriceDataAge();
         foreach ($regionIds as $regionId) {
             $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastPriceUpdate', $this->endpointHandler);
             if (count($idsToUpdate) > 0) {
-                if ($verbose)
+                if ($verbose) {
                     echo 'Updating price data for ' . count($idsToUpdate) . ' market types in regionId=' . $regionId
                         . PHP_EOL;
+                }
                 $this->marketProcessor->runPriceBatch($idsToUpdate, array($regionId), $verbose);
-            } else
-                if ($verbose)
+            } elseif ($verbose) {
                     echo 'No prices to update for market types in regionId=' . $regionId . PHP_EOL;
+            }
         }
     }
 
@@ -334,8 +353,9 @@ class IveeUpdater
             ORDER BY typeID ASC;"
         );
         $ret = [];
-        while ($tmp = $res->fetch_array(MYSQL_NUM))
+        while ($tmp = $res->fetch_array(MYSQL_NUM)) {
             $ret[] = (int) $tmp[0];
+        }
         return $ret;
     }
 }

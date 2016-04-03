@@ -43,8 +43,9 @@ abstract class SdeType extends CoreDataCommon
      */
     public static function getById($id)
     {
-        if (!isset(static::$instancePool))
+        if (!isset(static::$instancePool)) {
             static::init();
+        }
 
         try {
             return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int) $id);
@@ -79,8 +80,9 @@ abstract class SdeType extends CoreDataCommon
      */
     public static function getIdByName($name)
     {
-        if (!isset(static::$instancePool))
+        if (!isset(static::$instancePool)) {
             static::init();
+        }
 
         $namesKey = static::getClassHierarchyKeyPrefix() . 'Names';
         try {

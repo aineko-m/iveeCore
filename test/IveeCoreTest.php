@@ -14,10 +14,21 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'on');
 
-use iveeCore\Config, iveeCore\SDE, iveeCore\Type, iveeCore\Manufacturable, iveeCore\Blueprint,
-    iveeCore\IndustryModifier, iveeCore\AssemblyLine, iveeCore\MaterialMap, iveeCore\ReactionProduct,
-    iveeCore\FitParser, iveeCore\ProcessData, iveeCore\ManufactureProcessData, iveeCore\InventionProcessData,
-    iveeCore\CopyProcessData, iveeCore\ReactionProcessData;
+use iveeCore\Config;
+use iveeCore\SDE;
+use iveeCore\Type;
+use iveeCore\Manufacturable;
+use iveeCore\Blueprint;
+use iveeCore\IndustryModifier;
+use iveeCore\AssemblyLine;
+use iveeCore\MaterialMap;
+use iveeCore\ReactionProduct;
+use iveeCore\FitParser;
+use iveeCore\ProcessData;
+use iveeCore\ManufactureProcessData;
+use iveeCore\InventionProcessData;
+use iveeCore\CopyProcessData;
+use iveeCore\ReactionProcessData;
 
 //include the iveeCore init, expected in the iveeCore directory, with absolute path
 require_once dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'iveeCoreInit.php';

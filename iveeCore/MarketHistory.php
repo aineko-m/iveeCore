@@ -12,7 +12,9 @@
  */
 
 namespace iveeCore;
-use iveeCore\Exceptions\KeyNotFoundInCacheException, iveeCore\Exceptions\NoPriceDataAvailableException;
+
+use iveeCore\Exceptions\KeyNotFoundInCacheException;
+use iveeCore\Exceptions\NoPriceDataAvailableException;
 
 /**
  * MarketHistory represents the market history as time series of all the data that was collected over time.
@@ -150,20 +152,23 @@ class MarketHistory extends CoreDataCommon
     public static function getByIdAndRegion($typeId, $regionId = null, $maxPriceDataAge = null, $cache = true)
     {
         //setup instance pool if needed
-        if (!isset(static::$instancePool))
+        if (!isset(static::$instancePool)) {
             static::init();
+        }
 
         //get default market regionId if none passed
-        if (is_null($regionId))
+        if (is_null($regionId)) {
             $regionId = Config::getDefaultMarketRegionId();
+        }
 
         //try instance pool and cache
         try {
             $mh = static::$instancePool->getItem(
                 static::getClassHierarchyKeyPrefix() . (int) $regionId . '_' . (int) $typeId
             );
-            if (!$mh->isTooOld($maxPriceDataAge))
+            if (!$mh->isTooOld($maxPriceDataAge)) {
                 return $mh;
+            }
         } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
         }
 
@@ -194,8 +199,9 @@ class MarketHistory extends CoreDataCommon
         $mh = new $mhClass($typeId, $regionId);
 
         //store object in instance pool and cache
-        if ($cache)
+        if ($cache) {
             static::$instancePool->setItem($mh);
+        }
         return $mh;
     }
 
@@ -214,8 +220,9 @@ class MarketHistory extends CoreDataCommon
         $this->regionId = (int) $regionId;
 
         $type = Type::getById($this->id);
-        if(!$type->onMarket())
+        if (!$type->onMarket()) {
             $this->throwNotOnMarketException($type);
+        }
 
         //get timestamp for today, 0h 05m
         $ts = mktime(0, 5, 0);
@@ -267,22 +274,29 @@ class MarketHistory extends CoreDataCommon
             $date = (int) $row['date'];
 
             //save the min and max dates
-            if ($date < $this->oldestDate OR !isset($this->oldestDate))
+            if ($date < $this->oldestDate or !isset($this->oldestDate)) {
                 $this->oldestDate = $date;
-            if ($date > $this->newestDate)
+            }
+            if ($date > $this->newestDate) {
                 $this->newestDate = $date;
+            }
 
             //we store the values by column instead of row to conserve memory
-            if (isset($row['low']))
+            if (isset($row['low'])) {
                 $this->low[$date] = (float) $row['low'];
-            if (isset($row['high']))
+            }
+            if (isset($row['high'])) {
                 $this->high[$date] = (float) $row['high'];
-            if (isset($row['avg']))
+            }
+            if (isset($row['avg'])) {
                 $this->avg[$date] = (float) $row['avg'];
-            if (isset($row['vol']))
+            }
+            if (isset($row['vol'])) {
                 $this->vol[$date] = (int) $row['vol'];
-            if (isset($row['tx']))
+            }
+            if (isset($row['tx'])) {
                 $this->tx[$date] = (int) $row['tx'];
+            }
         }
     }
 
@@ -314,24 +328,32 @@ class MarketHistory extends CoreDataCommon
             $date = (int) $row['date'];
 
             //save the min and max dates
-            if ($date < $this->oldestDate OR !isset($this->oldestDate))
+            if ($date < $this->oldestDate or !isset($this->oldestDate)) {
                 $this->oldestDate = $date;
-            if ($date > $this->newestDate)
+            }
+            if ($date > $this->newestDate) {
                 $this->newestDate = $date;
+            }
 
             //we store the values by column instead of row to conserve memory
-            if (isset($row['sell']))
+            if (isset($row['sell'])) {
                 $this->sell[$date] = (float) $row['sell'];
-            if (isset($row['buy']))
+            }
+            if (isset($row['buy'])) {
                 $this->buy[$date] = (float) $row['buy'];
-            if (isset($row['supplyIn5']))
+            }
+            if (isset($row['supplyIn5'])) {
                 $this->supplyIn5[$date] = (int) $row['supplyIn5'];
-            if (isset($row['demandIn5']))
+            }
+            if (isset($row['demandIn5'])) {
                 $this->demandIn5[$date] = (int) $row['demandIn5'];
-            if (isset($row['avgSell5OrderAge']))
+            }
+            if (isset($row['avgSell5OrderAge'])) {
                 $this->avgSell5OrderAge[$date] = (int) $row['avgSell5OrderAge'];
-            if (isset($row['avgBuy5OrderAge']))
+            }
+            if (isset($row['avgBuy5OrderAge'])) {
                 $this->avgBuy5OrderAge[$date] = (int) $row['avgBuy5OrderAge'];
+            }
         }
     }
     
@@ -407,7 +429,7 @@ class MarketHistory extends CoreDataCommon
      */
     public function isTooOld($maxPriceDataAge)
     {
-        return !is_null($maxPriceDataAge) AND $this->getLastHistUpdateTs() + 2 * 86400 + $maxPriceDataAge < time();
+        return !is_null($maxPriceDataAge) and $this->getLastHistUpdateTs() + 2 * 86400 + $maxPriceDataAge < time();
     }
 
     /**
@@ -420,28 +442,39 @@ class MarketHistory extends CoreDataCommon
     public function getValuesForDate($dateTs)
     {
         $ret = [];
-        if (isset($this->vol[$dateTs]))
+        if (isset($this->vol[$dateTs])) {
             $ret['vol'] = $this->vol[$dateTs];
-        if (isset($this->tx[$dateTs]))
+        }
+        if (isset($this->tx[$dateTs])) {
             $ret['tx'] = $this->tx[$dateTs];
-        if (isset($this->low[$dateTs]))
+        }
+        if (isset($this->low[$dateTs])) {
             $ret['low'] = $this->low[$dateTs];
-        if (isset($this->high[$dateTs]))
+        }
+        if (isset($this->high[$dateTs])) {
             $ret['high'] = $this->high[$dateTs];
-        if (isset($this->avg[$dateTs]))
+        }
+        if (isset($this->avg[$dateTs])) {
             $ret['avg'] = $this->avg[$dateTs];
-        if (isset($this->sell[$dateTs]))
+        }
+        if (isset($this->sell[$dateTs])) {
             $ret['sell'] = $this->sell[$dateTs];
-        if (isset($this->buy[$dateTs]))
+        }
+        if (isset($this->buy[$dateTs])) {
             $ret['buy'] = $this->buy[$dateTs];
-        if (isset($this->supplyIn5[$dateTs]))
+        }
+        if (isset($this->supplyIn5[$dateTs])) {
             $ret['supplyIn5'] = $this->supplyIn5[$dateTs];
-        if (isset($this->demandIn5[$dateTs]))
+        }
+        if (isset($this->demandIn5[$dateTs])) {
             $ret['demandIn5'] = $this->demandIn5[$dateTs];
-        if (isset($this->avgBuy5OrderAge[$dateTs]))
+        }
+        if (isset($this->avgBuy5OrderAge[$dateTs])) {
             $ret['avgBuy5OrderAge'] = $this->avgBuy5OrderAge[$dateTs];
-        if (isset($this->avgSell5OrderAge[$dateTs]))
+        }
+        if (isset($this->avgSell5OrderAge[$dateTs])) {
             $ret['avgSell5OrderAge'] = $this->avgSell5OrderAge[$dateTs];
+        }
         return $ret;
     }
 

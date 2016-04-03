@@ -12,6 +12,7 @@
  */
 
 namespace iveeCore\CREST;
+
 use iveeCore\Config;
 
 /**
@@ -90,13 +91,14 @@ class PriceEstimator
         $row = static::$sde->query($sql)->fetch_assoc();
 
         //if history update was run today, use that value
-        if ($row['lastHistUpdate'] > mktime(0, 0, 0))
+        if ($row['lastHistUpdate'] > mktime(0, 0, 0)) {
             return array(
                 'avgVol' => (float) $row['avgVol'],
                 'avgTx'  => (float) $row['avgTx'],
                 'lastHistUpdate'  => (int) $row['lastHistUpdate'],
                 'lastPriceUpdate' => time()
             );
+        }
 
         //history data was too old, trigger CREST update
         $this->marketProcessor->getNewestHistoryData($typeId, $regionId, false);
@@ -125,8 +127,9 @@ class PriceEstimator
         usort(
             $data,
             function (\stdClass $a, \stdClass $b) {
-                if ($a->price == $b->price)
+                if ($a->price == $b->price) {
                     return 0;
+                }
                 return ($a->price < $b->price) ? -1 : 1;
             }
         );
@@ -143,12 +146,14 @@ class PriceEstimator
             $ret['supplyIn5'] = 0;
             foreach ($data as $order) {
                 //skip orders with ludicrous minimum volume
-                if ($order->volume > ($avgVol < 1 ? 1 : $avgVol))
+                if ($order->volume > ($avgVol < 1 ? 1 : $avgVol)) {
                     continue;
+                }
 
                 //if cut-off sum reached, break
-                if ($ret['sell'] * 1.05 < $order->price )
+                if ($ret['sell'] * 1.05 < $order->price) {
                     break;
+                }
 
                 $ret['supplyIn5'] += $order->volume;
             }
@@ -170,8 +175,9 @@ class PriceEstimator
         usort(
             $data,
             function (\stdClass $a, \stdClass $b) {
-                if ($a->price == $b->price)
+                if ($a->price == $b->price) {
                     return 0;
+                }
                 return ($a->price > $b->price) ? -1 : 1;
             }
         );
@@ -188,12 +194,14 @@ class PriceEstimator
             $ret['demandIn5'] = 0;
             foreach ($data as $order) {
                 //skip orders with ludicrous minimum volume
-                if ($order->volume > ($avgVol < 1 ? 1 : $avgVol))
+                if ($order->volume > ($avgVol < 1 ? 1 : $avgVol)) {
                     continue;
+                }
 
                 //if cut-off sum reached, break
-                if ($ret['buy'] * 0.95 > $order->price )
+                if ($ret['buy'] * 0.95 > $order->price) {
                     break;
+                }
 
                 $ret['demandIn5'] += $order->volume;
             }
@@ -211,8 +219,9 @@ class PriceEstimator
      */
     protected static function getPriceStats(array $odata, $avgVol)
     {
-        if (count($odata) < 1)
+        if (count($odata) < 1) {
             return [];
+        }
 
         $volsum   = 0;
         $pricesum = 0;
@@ -220,8 +229,9 @@ class PriceEstimator
 
         foreach ($odata as $order) {
             //skip orders with ludicrous minimum volume
-            if ($order->minVolume > ($avgVol < 1 ? 1 : $avgVol))
+            if ($order->minVolume > ($avgVol < 1 ? 1 : $avgVol)) {
                 continue;
+            }
 
             //accumulate volume for weighted averages
             $volsum   += $order->volume;
@@ -231,13 +241,15 @@ class PriceEstimator
             $timesum    += $order->volume * (time() - strtotime($order->issued));
 
             // if 5% cut-off reached, break
-            if ($volsum >= $avgVol * 0.05)
+            if ($volsum >= $avgVol * 0.05) {
                 break;
+            }
         }
 
         //if the volume is zero we set it to 1 for the purpose of calculating a realistic price
-        if ($volsum == 0)
+        if ($volsum == 0) {
             $volsum = 1;
+        }
 
         return array(
             //get the averages by dividing by the cumulated volume

@@ -59,8 +59,9 @@ class Relic extends InventorBlueprint
             AND it.typeID = " . $this->id . ";"
         )->fetch_assoc();
 
-        if (empty($row))
+        if (empty($row)) {
             self::throwException('TypeIdNotFoundException', "Relic ID=" . $this->id . " not found");
+        }
 
         return $row;
     }
@@ -99,8 +100,12 @@ class Relic extends InventorBlueprint
      * @return \iveeCore\ManufactureProcessData with cascaded InventionProcessData object
      * @throws \iveeCore\Exceptions\WrongTypeException if product is no an InventableBlueprint
      */
-    public function inventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
-        $manuRecursionDepth = 1, $reactionRecursionDepth = 0
+    public function inventManufacture(
+        IndustryModifier $iMod,
+        $inventedBpId = null,
+        $decryptorId = null,
+        $manuRecursionDepth = 1,
+        $reactionRecursionDepth = 0
     ) {
         //run the invention
         $inventionData = $this->invent(
@@ -111,8 +116,9 @@ class Relic extends InventorBlueprint
         );
 
         $producedType = $inventionData->getProducedType();
-        if(!$producedType instanceof T3Blueprint)
+        if (!$producedType instanceof T3Blueprint) {
             self::throwException('WrongTypeException', 'Given object is not instance of T3Blueprint');
+        }
 
         //manufacture from invented BP
         $manufactureData = $producedType->manufacture(
@@ -136,8 +142,12 @@ class Relic extends InventorBlueprint
      * iveeCore is ever moved to PHP 5.4, this could be solved via Traits.
      */
 
-    public function copyInventManufacture(IndustryModifier $iMod, $inventedBpId = null, $decryptorId = null,
-        $manuRecursionDepth = 1, $reactionRecursionDepth = 0
+    public function copyInventManufacture(
+        IndustryModifier $iMod,
+        $inventedBpId = null,
+        $decryptorId = null,
+        $manuRecursionDepth = 1,
+        $reactionRecursionDepth = 0
     ) {
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
@@ -147,7 +157,12 @@ class Relic extends InventorBlueprint
         self::throwException('IveeCoreException', "Relics do not support this method");
     }
 
-    public function manufacture(IndustryModifier $iMod, $units = 1, $bpME = null, $bpTE = null, $manuRecursionDepth = 1,
+    public function manufacture(
+        IndustryModifier $iMod,
+        $units = 1,
+        $bpME = null,
+        $bpTE = null,
+        $manuRecursionDepth = 1,
         $reactionRecursionDepth = 0
     ) {
         self::throwException('IveeCoreException', "Relics do not support this method");

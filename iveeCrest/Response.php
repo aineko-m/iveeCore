@@ -12,6 +12,7 @@
  */
 
 namespace iveeCrest;
+
 use iveeCore\ICacheable;
 
 /**
@@ -52,7 +53,7 @@ class Response implements ICacheable
 
     /**
      * Constructor.
-     * 
+     *
      * @param string $key under which this Response is cached
      */
     public function __construct($key)
@@ -64,7 +65,7 @@ class Response implements ICacheable
 
     /**
      * Adds the content to the response, which will get JSON decoded and the curl info array.
-     * 
+     *
      * @param string $content JSON encoded response content
      * @param array $info the curl info array
      *
@@ -76,43 +77,47 @@ class Response implements ICacheable
         $this->info = $info;
 
         //for some reason curl sometimes fails to decompress gzipped responses, so we must do it manually
-        if(empty($this->content)
-            AND isset($this->header['Content-Encoding'])
-            AND $this->header['Content-Encoding'] == 'gzip'
-        )
+        if (empty($this->content)
+            and isset($this->header['Content-Encoding'])
+            and $this->header['Content-Encoding'] == 'gzip'
+        ) {
             $this->content = json_decode(gzdecode($content));
+        }
 
         //add the response timestamp to the content
-        if (isset($this->header['Date']))
+        if (isset($this->header['Date'])) {
             $this->content->dateTs = strtotime($this->header['Date']);
+        }
 
-        if (isset($this->content->access_token))
+        if (isset($this->content->access_token)) {
             //we need to expire (and refresh) the access token before it expires on CCPs side, which appears to happen
             //earlier than it should
             $this->expiry = time() + (int) $this->content->expires_in - 20;
-        elseif (isset($this->content->expires_in))
+        } elseif (isset($this->content->expires_in)) {
             $this->expiry = time() + (int) $this->content->expires_in;
-        elseif (isset($this->header['Cache-Control'])) {
+        } elseif (isset($this->header['Cache-Control'])) {
             foreach (explode(',', $this->header['Cache-Control']) as $frag) {
-                if (substr(trim($frag), 0, 8) == 'max-age=')
+                if (substr(trim($frag), 0, 8) == 'max-age=') {
                     $this->expiry = time() + (int) substr(trim($frag), 8);
+                }
             }
         }
     }
 
     /**
      * Callback function specified with CURLOPT_HEADERFUNCTION, used to process header lines.
-     * 
+     *
      * @param curl_handle $curl passed to callback
      * @param string $headerLine a single line from the http response header
-     * 
+     *
      * @return int the length of the input line (this is required)
      */
     public function handleCurlHeaderLine($curl, $headerLine)
     {
         $frags = explode(": ", $headerLine);
-        if(count($frags) == 2)
+        if (count($frags) == 2) {
             $this->header[$frags[0]] = trim($frags[1]);
+        }
         return strlen($headerLine);
     }
 
@@ -123,8 +128,9 @@ class Response implements ICacheable
      */
     public function getContentType()
     {
-        if (!isset($this->header['Content-Type']))
+        if (!isset($this->header['Content-Type'])) {
             return;
+        }
         $ctypes = explode(';', $this->header['Content-Type']);
         return trim($ctypes[0]);
     }
@@ -136,8 +142,9 @@ class Response implements ICacheable
      */
     public function getPageCount()
     {
-        if (isset($this->content->pageCount))
+        if (isset($this->content->pageCount)) {
             return (int) $this->content->pageCount;
+        }
         return 1;
     }
 
@@ -148,8 +155,9 @@ class Response implements ICacheable
      */
     public function hasNextPage()
     {
-        if(isset($this->content->next->href))
+        if (isset($this->content->next->href)) {
             return true;
+        }
         return false;
     }
 
@@ -161,8 +169,9 @@ class Response implements ICacheable
      */
     public function getNextPageHref()
     {
-        if($this->hasNextPage())
+        if ($this->hasNextPage()) {
             return $this->content->next->href;
+        }
 
         $iveeCrestExceptionClass = Config::getIveeClassName('IveeCrestException');
         throw new $iveeCrestExceptionClass('No next page href present in response body');
@@ -175,8 +184,9 @@ class Response implements ICacheable
      */
     public function hasPreviousPage()
     {
-        if(isset($this->content->previous->href))
+        if (isset($this->content->previous->href)) {
             return true;
+        }
         return false;
     }
 
@@ -188,8 +198,9 @@ class Response implements ICacheable
      */
     public function getPreviousPageHref()
     {
-        if($this->hasPreviousPage())
+        if ($this->hasPreviousPage()) {
             return $this->content->previous->href;
+        }
 
         $iveeCrestExceptionClass = Config::getIveeClassName('IveeCrestException');
         throw new $iveeCrestExceptionClass('No previous page href present in response body');
@@ -202,8 +213,9 @@ class Response implements ICacheable
      */
     public function isDeprecated()
     {
-        if (isset($this->header['X-Deprecated']))
+        if (isset($this->header['X-Deprecated'])) {
             return true;
+        }
         return false;
     }
 

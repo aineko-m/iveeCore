@@ -94,7 +94,7 @@ class Starbase extends Manufacturable
         foreach ($this->onlineCycleFuelReq as $typeId => $data) {
             if (isset($data['factionId'])) {
                 if ($solarSystem->getFactionId() == $data['factionId']
-                    AND $solarSystem->getSecurity() > $data['minSecurityLevel']
+                    and $solarSystem->getSecurity() > $data['minSecurityLevel']
                 ) {
                     $mats->addMaterial($typeId, $data['quantity']);
                 }
@@ -115,8 +115,9 @@ class Starbase extends Manufacturable
         $materialMapClass = Config::getIveeClassName('MaterialMap');
         $mats = new $materialMapClass;
 
-        foreach ($this->reinforcedCycleFuelReq as $typeId => $data)
+        foreach ($this->reinforcedCycleFuelReq as $typeId => $data) {
             $mats->addMaterial($typeId, $data['quantity']);
+        }
 
         return $mats;
     }

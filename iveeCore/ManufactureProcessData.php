@@ -52,8 +52,15 @@ class ManufactureProcessData extends ProcessData
      * @param int $solarSystemId ID of the SolarSystem the research is performed
      * @param int $assemblyLineId ID of the AssemblyLine where the research is being performed
      */
-    public function __construct($producesTypeId, $producesQuantity, $processTime, $processCost, $bpMeLevel,
-        $bpTeLevel, $solarSystemId, $assemblyLineId
+    public function __construct(
+        $producesTypeId,
+        $producesQuantity,
+        $processTime,
+        $processCost,
+        $bpMeLevel,
+        $bpTeLevel,
+        $solarSystemId,
+        $assemblyLineId
     ) {
         parent::__construct($producesTypeId, $producesQuantity, $processTime, $processCost);
         $this->bpMeLevel      = (int) $bpMeLevel;
@@ -107,8 +114,9 @@ class ManufactureProcessData extends ProcessData
      */
     public function getTotalProfit(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
     {
-        if (is_null($sellContext))
+        if (is_null($sellContext)) {
             $sellContext = $buyContext;
+        }
 
         $marketPrices = $this->getProducedType()->getMarketPrices(
             $sellContext->getSolarSystem()->getRegionId(),
@@ -136,8 +144,9 @@ class ManufactureProcessData extends ProcessData
             . Type::getById($this->producesTypeId)->getName() . ":" . PHP_EOL;
 
         //iterate over materials
-        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount)
+        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount) {
             echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
+        }
 
         echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($buyContext))
             . "ISK" . PHP_EOL;

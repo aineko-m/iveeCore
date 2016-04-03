@@ -617,8 +617,9 @@ class Config
      */
     public static function getMaxPriceDataAge()
     {
-        if (static::$maxPriceDataAge < 300)
+        if (static::$maxPriceDataAge < 300) {
             return 300;
+        }
         return static::$maxPriceDataAge;
     }
 
@@ -666,11 +667,12 @@ class Config
      */
     public static function getIveeClassName($classNickname)
     {
-        if (isset(static::$classes[$classNickname]))
+        if (isset(static::$classes[$classNickname])) {
             return static::$classes[$classNickname];
-        else
+        } else {
             exit('Fatal Error: No class configured  for "' . $classNickname . '" in iveeCore' . DIRECTORY_SEPARATOR
                 . 'Config.php' . PHP_EOL);
+        }
     }
 
     /**
@@ -685,5 +687,4 @@ class Config
     {
         static::$classes[$classNickname] = $className;
     }
-
 }

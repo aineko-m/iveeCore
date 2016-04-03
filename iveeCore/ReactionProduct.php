@@ -64,11 +64,13 @@ class ReactionProduct extends Type
             AND itr.input = 0);"
         );
 
-        if (empty($res))
+        if (empty($res)) {
             static::throwException('TypeIdNotFoundException', "ReactionProduct ID=". $this->id . " not found");
+        }
 
-        while ($row = $res->fetch_assoc())
+        while ($row = $res->fetch_assoc()) {
             $this->productOfReactionIds[] = (int) $row['reactionTypeID'];
+        }
     }
 
     /**
@@ -79,8 +81,9 @@ class ReactionProduct extends Type
     public function getReactions()
     {
         $ret = [];
-        foreach ($this->productOfReactionIds as $reactionId)
+        foreach ($this->productOfReactionIds as $reactionId) {
             $ret[$reactionId] = Type::getById($reactionId);
+        }
 
         return $ret;
     }
@@ -107,14 +110,18 @@ class ReactionProduct extends Type
      *
      * @return \iveeCore\ReactionProcessData
      */
-    public function doBestReaction(IndustryModifier $iMod, $units, $recursionDepth = 0,
+    public function doBestReaction(
+        IndustryModifier $iMod,
+        $units,
+        $recursionDepth = 0,
         IndustryModifier $buyContext = null
     ) {
         $reactions = $this->getReactions();
 
         //if there's only one reaction option, do straight forward reaction
-        if (count($reactions) == 1)
+        if (count($reactions) == 1) {
             return array_pop($reactions)->reactExact($iMod, $units, $recursionDepth);
+        }
 
         //if no pricing context waas given, get the default one
         if (is_null($buyContext)) {
@@ -128,7 +135,7 @@ class ReactionProduct extends Type
         foreach ($reactions as $reaction) {
             $rpd = $reaction->reactExact($iMod, $units, $recursionDepth);
             $cost = $rpd->getTotalMaterialBuyCost($buyContext);
-            if (is_null($bestCost) OR $cost < $bestCost) {
+            if (is_null($bestCost) or $cost < $bestCost) {
                 $bestCost = $cost;
                 $bestRpd = $rpd;
             }

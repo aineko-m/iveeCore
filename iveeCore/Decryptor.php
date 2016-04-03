@@ -79,20 +79,20 @@ class Decryptor extends Type
         //set modifiers to object
         while ($row = $res->fetch_assoc()) {
             switch ($row['attributeID']) {
-            case 1112:
-                $this->probabilityModifier = (float) $row['valueFloat'];
-                break;
-            case 1113:
-                $this->meModifier = (int) $row['valueFloat'];
-                break;
-            case 1114:
-                $this->teModifier = (int) $row['valueFloat'];
-                break;
-            case 1124:
-                $this->runModifier = (int) $row['valueFloat'];
-                break;
-            default:
-                self::throwException('UnexpectedDataException', "Error loading data for Decryptor ID=" . $this->id);
+                case 1112:
+                    $this->probabilityModifier = (float) $row['valueFloat'];
+                    break;
+                case 1113:
+                    $this->meModifier = (int) $row['valueFloat'];
+                    break;
+                case 1114:
+                    $this->teModifier = (int) $row['valueFloat'];
+                    break;
+                case 1124:
+                    $this->runModifier = (int) $row['valueFloat'];
+                    break;
+                default:
+                    self::throwException('UnexpectedDataException', "Error loading data for Decryptor ID=" . $this->id);
             }
         }
     }
@@ -156,8 +156,9 @@ class Decryptor extends Type
                 WHERE categoryID = 35
                 AND it.published = 1"
             );
-            while ($row = $res->fetch_assoc())
+            while ($row = $res->fetch_assoc()) {
                 static::$decryptorGroups[(int) $row['groupID']][] = (int) $row['typeID'];
+            }
         }
 
         return static::$decryptorGroups[$groupId];

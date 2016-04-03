@@ -118,9 +118,9 @@ class ProcessData extends ProcessDataCommon
      */
     public function addSkillMap(SkillMap $sm)
     {
-        if (isset($this->skills))
+        if (isset($this->skills)) {
             $this->skills->addSkillMap($sm);
-        else {
+        } else {
             $this->skills = $sm;
         }
     }
@@ -206,10 +206,11 @@ class ProcessData extends ProcessDataCommon
     {
         $sum = -$this->getProcessCost();
         foreach ($this->getSubProcesses() as $spd) {
-            if ($spd instanceof ManufactureProcessData OR $spd instanceof ReactionProcessData)
+            if ($spd instanceof ManufactureProcessData or $spd instanceof ReactionProcessData) {
                 $sum += $spd->getTotalProfit($buyContext, $sellContext);
-            else
+            } else {
                 $sum -= $spd->getTotalCost($buyContext);
+            }
         }
 
         return $sum;
@@ -230,8 +231,9 @@ class ProcessData extends ProcessDataCommon
         echo "Total slot time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
 
         //iterate over materials
-        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount)
+        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount) {
             echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
+        }
 
         echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($buyContext)) . "ISK"
             . PHP_EOL;

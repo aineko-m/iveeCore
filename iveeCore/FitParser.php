@@ -61,17 +61,20 @@ class FitParser
                 $lineFrag = trim($lineFrag);
 
                 //skip empty lines
-                if (strlen($lineFrag) <1) continue;
+                if (strlen($lineFrag) <1) {
+                    continue;
+                }
 
                 //detect quantities appended at end of string like 'itemName x123'
                 $lineFrag = preg_split('/( x[0-9]+)$/', $lineFrag, null, PREG_SPLIT_DELIM_CAPTURE);
                 try {
                     //if regex split happened
-                    if (count($lineFrag) > 1)
+                    if (count($lineFrag) > 1) {
                         $pr->addMaterial(Type::getIdByName($lineFrag[0]), (int) substr($lineFrag[1], 2));
-                    //if no quantity specified
-                    else
+                    } //if no quantity specified
+                    else {
                         $pr->addMaterial(Type::getIdByName($lineFrag[0]), 1);
+                    }
                 } catch (Exceptions\TypeNameNotFoundException $e) {
                     $pr->addUnparseable(implode('', $lineFrag));
                 }
@@ -100,17 +103,19 @@ class FitParser
                 } catch (Exceptions\TypeNameNotFoundException $e) {
                     $pr->addUnparseable($shipNode->getAttribute('value'));
                 }
-            } else
+            } else {
                 $pr->addUnparseable("Can't parse line " . $shipNode->getLineNo());
+            }
         }
 
         //get fittings
         foreach ($fitDom->getElementsByTagName('hardware') as $hardwareNode) {
             //if attribute 'qty' is present, use it as quantity, otherwise default to 1
-            if ($hardwareNode->hasAttribute('qty'))
+            if ($hardwareNode->hasAttribute('qty')) {
                 $qty = (int) $hardwareNode->getAttribute('qty');
-            else
+            } else {
                 $qty = 1;
+            }
             try {
                 $pr->addMaterial(Type::getIdByName($hardwareNode->getAttribute('type')), $qty);
             } catch (Exceptions\TypeNameNotFoundException $e) {
@@ -135,7 +140,9 @@ class FitParser
         //iterate over lines
         foreach (explode("\n", str_replace("\r\n", "\n", trim($scanResult))) as $line) {
             $line = trim($line);
-            if (strlen($line) < 1) continue;
+            if (strlen($line) < 1) {
+                continue;
+            }
 
             //split line if item is preceded with a quantifier in the form "123 An Item"
             $lineFrag = preg_split('/^([0-9]+ )/', $line, null, PREG_SPLIT_DELIM_CAPTURE);

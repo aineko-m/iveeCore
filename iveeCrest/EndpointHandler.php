@@ -12,6 +12,7 @@
  */
 
 namespace iveeCrest;
+
 use iveeCore\Config;
 
 /**
@@ -223,11 +224,12 @@ class EndpointHandler
         $dataKey = 'gathered:constellationHrefs';
         try {
             $dataObj = $this->client->getCache()->getItem($dataKey);
-        } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e){
+        } catch (\iveeCore\Exceptions\KeyNotFoundInCacheException $e) {
             //get region hrefs
             $hrefs = [];
-            foreach ($this->getRegions() as $region)
+            foreach ($this->getRegions() as $region) {
                 $hrefs[] = $region->href;
+            }
 
             //instantiate Response object
             $cacheableArrayClass = Config::getIveeClassName('CacheableArray');
@@ -238,9 +240,10 @@ class EndpointHandler
                 $hrefs,
                 false,
                 function (Response $res) use ($dataObj) {
-                    foreach ($res->content->constellations as $constellation)
+                    foreach ($res->content->constellations as $constellation) {
                         $dataObj->data[EndpointHandler::parseTrailingIdFromUrl($constellation->href)]
                             = $constellation->href;
+                    }
                 },
                 null,
                 static::REGION_REPRESENTATION
@@ -295,8 +298,9 @@ class EndpointHandler
                 $this->getConstellationHrefs(),
                 false,
                 function (Response $res) use ($dataObj) {
-                    foreach ($res->content->systems as $system)
+                    foreach ($res->content->systems as $system) {
                         $dataObj->data[EndpointHandler::parseTrailingIdFromUrl($system->href)] = $system->href;
+                    }
                 },
                 null,
                 static::CONSTELLATION_REPRESENTATION
@@ -316,7 +320,7 @@ class EndpointHandler
     public function getSolarSystem($systemId)
     {
         return $this->client->getEndpoint(
-            //Here we intentionally disregard CREST principles by constructing the URL as the official alternative is 
+            //Here we intentionally disregard CREST principles by constructing the URL as the official alternative is
             //impracticable by virtue of requiring over a thousand calls to the constellation endpoint
             $this->client->getPublicCrestBaseUrl() . '/solarsystems/' . (int) $systemId . '/',
             false,
@@ -377,7 +381,11 @@ class EndpointHandler
      *
      * @return void
      */
-    public function getMultiMarketOrders(array $typeIds, $regionId, callable $callback, callable $errCallback = null,
+    public function getMultiMarketOrders(
+        array $typeIds,
+        $regionId,
+        callable $callback,
+        callable $errCallback = null,
         $cache = true
     ) {
         //check for wormhole regions
@@ -454,7 +462,11 @@ class EndpointHandler
      *
      * @return void
      */
-    public function getMultiMarketHistory(array $typeIds, $regionId, callable $callback, callable $errCallback = null,
+    public function getMultiMarketHistory(
+        array $typeIds,
+        $regionId,
+        callable $callback,
+        callable $errCallback = null,
         $cache = true
     ) {
         //check for wormhole regions
@@ -466,8 +478,9 @@ class EndpointHandler
         //Here we have to construct the URLs because there's no navigable way to reach this data from CREST root
         $hrefs = [];
         $rootUrl = $this->client->getPublicCrestBaseUrl();
-        foreach (array_unique($typeIds) as $typeId)
+        foreach (array_unique($typeIds) as $typeId) {
             $hrefs[] = $rootUrl . 'market/' . (int) $regionId . '/types/' . (int) $typeId . '/history/';
+        }
 
         //run the async queries
         $this->client->asyncGetMultiEndpointResponses(
@@ -883,7 +896,7 @@ class EndpointHandler
      * Gets a Killmail. The domain of the passed href is adapted to the currently used CREST root, so all hrefs in the
      * response are relative to that.
      *
-     * @param string $killmailHref in the form 
+     * @param string $killmailHref in the form
      * http://public-crest.eveonline.com/killmails/30290604/787fb3714062f1700560d4a83ce32c67640b1797/
      *
      * @return stdClass

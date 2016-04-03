@@ -12,7 +12,10 @@
  */
 
 namespace iveeCore\CREST;
-use iveeCore\Config, iveeCrest\EndpointHandler, iveeCrest\Response;
+
+use iveeCore\Config;
+use iveeCrest\EndpointHandler;
+use iveeCrest\Response;
 
 /**
  * MarketProcessor interfaces with the iveeCrest classes to fetch market data and handles updates of the prices DB
@@ -80,8 +83,9 @@ class MarketProcessor
             $crestClient = new $crestClientClass;
             $endpointHandlerClass = Config::getIveeClassName('EndpointHandler');
             $this->endpointHandler = new $endpointHandlerClass($crestClient);
-        } else
+        } else {
             $this->endpointHandler = $endpointHandler;
+        }
 
         $sdeClass = Config::getIveeClassName('SDE');
         static::$sde = $sdeClass::instance();
@@ -121,7 +125,7 @@ class MarketProcessor
     public function runHistoryBatch(array $typeIds, array $regionIds, $verbose = false)
     {
         $this->verboseBatch = $verbose;
-        foreach (array_unique($regionIds) as $regionId)
+        foreach (array_unique($regionIds) as $regionId) {
             $this->endpointHandler->getMultiMarketHistory(
                 $typeIds,
                 $regionId,
@@ -133,7 +137,8 @@ class MarketProcessor
                 },
                 false
             );
-        $this->commitSql();
+            $this->commitSql();
+        }
     }
 
     /**
@@ -157,13 +162,14 @@ class MarketProcessor
 
         //The responses from CREST do not tell us the region and item it belongs to and in async mode there is no
         //guarrantee the requests will be answered in order, so we can't rely on the order of ids in the passed arrays.
-        //Instead we have to extract it from the url. 
+        //Instead we have to extract it from the url.
         $pathComponents = explode('/', parse_url($response->getInfo()['url'], PHP_URL_PATH));
         $data = [];
 
         //rewrite array index with date timestamps as keys
-        foreach ($response->content->items as $item)
+        foreach ($response->content->items as $item) {
             $data[strtotime($item->date)] = $item;
+        }
 
         return $this->processHistoryData($data, (int) $pathComponents[4], (int) $pathComponents[2]);
     }
@@ -207,8 +213,9 @@ class MarketProcessor
                 //if row already exists
                 if (isset($existingDates[$dateTs])) {
                     //do update for last day, skip all other existing rows
-                    if ($dateTs < $latestDate)
+                    if ($dateTs < $latestDate) {
                         continue;
+                    }
 
                     $updateData = array(
                         'tx'   => (int) $day->orderCount,
@@ -273,8 +280,9 @@ class MarketProcessor
             . $regionId . ", '" . date('Y-m-d H:i:s') . "');"
         );
 
-        if ($this->verboseBatch)
+        if ($this->verboseBatch) {
             static::printTypeAndRegion('H', $typeId, $regionId);
+        }
 
         //TODO: Decide if we should invalidate caches or not.
 
@@ -304,8 +312,9 @@ class MarketProcessor
             AND date <= '" . date('Y-m-d', $latestDate) . "'
             AND date >= '" . date('Y-m-d', $oldestDate) . "';"
         );
-        while ($tmp = $res->fetch_array(MYSQL_NUM))
+        while ($tmp = $res->fetch_array(MYSQL_NUM)) {
             $existingDates[(int) $tmp[0]] = 1;
+        }
 
         return $existingDates;
     }
@@ -391,20 +400,21 @@ class MarketProcessor
         $key = $regionId . '_' . $typeId;
 
         //Instantiate stdClass object if necessary
-        if (!isset($this->orderResponseBuffer[$key]))
+        if (!isset($this->orderResponseBuffer[$key])) {
             $this->orderResponseBuffer[$key] = new \stdClass;
+        }
 
         //we decide between buy and sell based on the url instead of the items in the response because potentially
         //empty sets could be returned
-        if ($pathComponents[4] == 'buy')
+        if ($pathComponents[4] == 'buy') {
             $this->orderResponseBuffer[$key]->buyOrders = $response->content->items;
-        else
+        } else {
             $this->orderResponseBuffer[$key]->sellOrders = $response->content->items;
+        }
 
         //if buy and sell order data has been matched, process it
-        if (
-            isset($this->orderResponseBuffer[$key]->buyOrders) 
-            AND isset($this->orderResponseBuffer[$key]->sellOrders)
+        if (isset($this->orderResponseBuffer[$key]->buyOrders)
+            and isset($this->orderResponseBuffer[$key]->sellOrders)
         ) {
             $this->processOrderData($this->orderResponseBuffer[$key], $typeId, $regionId);
             //unset data when done to preserve memory
@@ -445,14 +455,18 @@ class MarketProcessor
     {
         $sdeClass = Config::getIveeClassName('SDE');
         //clear columns that don't belong in this update
-        if (isset($priceData['avgVol']))
+        if (isset($priceData['avgVol'])) {
             unset($priceData['avgVol']);
-        if (isset($priceData['avgTx']))
+        }
+        if (isset($priceData['avgTx'])) {
             unset($priceData['avgTx']);
-        if (isset($priceData['lastHistUpdate']))
+        }
+        if (isset($priceData['lastHistUpdate'])) {
             unset($priceData['lastHistUpdate']);
-        if (isset($priceData['lastPriceUpdate']))
+        }
+        if (isset($priceData['lastPriceUpdate'])) {
             unset($priceData['lastPriceUpdate']);
+        }
 
         if (count($priceData) > 0) {
             //check if row already exists
@@ -479,7 +493,10 @@ class MarketProcessor
             } else {
                 //build insert query
                 $this->submitSql(
-                    $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.marketPrices', array_merge($priceData, $where))
+                    $sdeClass::makeUpsertQuery(
+                        Config::getIveeDbName() . '.marketPrices',
+                        array_merge($priceData, $where)
+                    )
                 );
             }
         }
@@ -490,8 +507,9 @@ class MarketProcessor
             . (int) $typeId . ", " . (int) $regionId . ", '" . date('Y-m-d H:i:s', time()) . "');"
         );
 
-        if ($this->verboseBatch)
+        if ($this->verboseBatch) {
             static::printTypeAndRegion('P', $typeId, $regionId);
+        }
 
         //TODO: Decide if we should invalidate caches or not.
     }
@@ -506,12 +524,14 @@ class MarketProcessor
     protected function submitSql($sql)
     {
         //append sql to buffer
-        if (isset($sql))
+        if (isset($sql)) {
             $this->sqlInsertBuffer .= $sql;
+        }
 
         //auto-commit after every second
-        if (time() - $this->lastCommitTs >= 1)
+        if (time() - $this->lastCommitTs >= 1) {
             $this->commitSql();
+        }
     }
 
     /**
@@ -537,10 +557,11 @@ class MarketProcessor
      */
     protected static function printTypeAndRegion($msg, $typeId, $regionId)
     {
-        if (count(static::$marketTypes) < 1)
+        if (count(static::$marketTypes) < 1) {
             static::loadNames();
+        }
 
-        echo $msg . ': ' . static::$regions[$regionId] . ' (' . $regionId . '), '. static::$marketTypes[$typeId] 
+        echo $msg . ': ' . static::$regions[$regionId] . ' (' . $regionId . '), '. static::$marketTypes[$typeId]
             . ' (' . $typeId . ")\n";
     }
 
@@ -557,15 +578,17 @@ class MarketProcessor
             FROM invTypes
             WHERE (marketGroupID IS NOT NULL OR published = 1);"
         );
-        while ($tmp = $typeRes->fetch_array(MYSQL_NUM))
+        while ($tmp = $typeRes->fetch_array(MYSQL_NUM)) {
             static::$marketTypes[(int) $tmp[0]] = $tmp[1];
+        }
 
         //load regionIDs
         $regionRes = static::$sde->query(
             "SELECT regionID, regionName
             FROM mapRegions;"
         );
-        while ($tmp = $regionRes->fetch_array(MYSQL_NUM))
+        while ($tmp = $regionRes->fetch_array(MYSQL_NUM)) {
             static::$regions[(int) $tmp[0]] = $tmp[1];
+        }
     }
 }
