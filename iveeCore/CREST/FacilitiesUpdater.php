@@ -14,8 +14,8 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
-use iveeCrest\EndpointHandler;
 use iveeCore\Station;
+use iveeCrest\Responses\Root;
 
 /**
  * IndustryFacilities specific CREST data updater
@@ -28,6 +28,34 @@ use iveeCore\Station;
  */
 class FacilitiesUpdater extends CrestDataUpdater
 {
+    /**
+     * Saves the data to the database.
+     *
+     * @return void
+     */
+    public function insertIntoDB()
+    {
+        //lookup SDE class
+        $sdeClass = Config::getIveeClassName('SDE');
+        $sdeDb = $sdeClass::instance();
+        $sql = '';
+        $count = 0;
+
+        foreach ($this->data as $system) {
+            foreach ($system as $item) {
+                $sql .= $this->processDataItemToSQL($item);
+                $count++;
+                if ($count % 100 == 0 or $count == count($this->data)) {
+                    $sdeDb->multiQuery($sql . ' COMMIT;');
+                    $sql = '';
+                }
+            }
+        }
+
+        $this->invalidateCaches();
+        $this->updatedIds = [];
+    }
+
     /**
      * Processes data for facilities (stations and player built outposts)
      *
@@ -88,13 +116,12 @@ class FacilitiesUpdater extends CrestDataUpdater
     /**
      * Fetches the data from CREST.
      *
-     * @param \iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\Responses\Root $pubRoot to be used
      *
      * @return array
      */
-    protected static function getData(EndpointHandler $eph)
+    protected static function getData(Root $pubRoot)
     {
-        //we dont set the cache flag because the data normally won't be read again
-        return $eph->getIndustryFacilities(false);
+        return $pubRoot->getIndustryFacilityCollection()->gather();
     }
 }

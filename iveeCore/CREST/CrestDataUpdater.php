@@ -14,7 +14,7 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
-use iveeCrest\EndpointHandler;
+use iveeCrest\Responses\Root;
 
 /**
  * Abstract base class for the specific CREST endpoint updaters.
@@ -97,19 +97,19 @@ abstract class CrestDataUpdater
     /**
      * Perform the complete update.
      *
-     * @param \iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\Responses\Root $pubRoot to be used
      * @param bool $verbose whether info should be printed to console
      *
      * @return void
      */
-    public static function doUpdate(EndpointHandler $eph, $verbose = true)
+    public static function doUpdate(Root $pubRoot, $verbose = true)
     {
         if ($verbose) {
             echo get_called_class() . ' getting data from CREST... ';
         }
 
         //fetch the data, check returned representation name
-        $data = static::getData($eph);
+        $data = static::getData($pubRoot);
         if ($verbose) {
             echo "Done" . PHP_EOL . 'Saving data in DB... ';
         }
@@ -125,11 +125,11 @@ abstract class CrestDataUpdater
     /**
      * Fetch the data via CREST.
      *
-     * @param \iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\Responses\Root $pubRoot to be used
      *
      * @return array
      */
-    protected static function getData(EndpointHandler $eph)
+    protected static function getData(Root $pubRoot)
     {
         return [];
     }

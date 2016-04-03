@@ -14,8 +14,9 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
-use iveeCrest\EndpointHandler;
-use iveeCrest\Response;
+use iveeCrest\Responses\MarketOrderCollection;
+use iveeCrest\Responses\MarketTypeHistoryCollection;
+use iveeCrest\Responses\Root;
 
 /**
  * MarketProcessor interfaces with the iveeCrest classes to fetch market data and handles updates of the prices DB
@@ -47,9 +48,9 @@ class MarketProcessor
     protected static $regions = [];
 
     /**
-     * @var \iveeCrest\EndpointHandler $endpointHandler instance
+     * @var \iveeCrest\Responses\Root the public root CREST enpdoint response
      */
-    protected $endpointHandler;
+    protected $pubRoot;
 
     /**
      * @var array $orderResponseBuffer used to match buy and sell order response data pairs before processing them
@@ -74,19 +75,11 @@ class MarketProcessor
     /**
      * Constructor.
      *
-     * @param \iveeCrest\EndpointHandler $endpointHandler to be used, optional.
+     * @param \iveeCrest\Responses\Root $pubRoot to be used
      */
-    public function __construct(EndpointHandler $endpointHandler = null)
+    public function __construct(Root $pubRoot)
     {
-        if (is_null($endpointHandler)) {
-            $crestClientClass = Config::getIveeClassName('Client');
-            $crestClient = new $crestClientClass;
-            $endpointHandlerClass = Config::getIveeClassName('EndpointHandler');
-            $this->endpointHandler = new $endpointHandlerClass($crestClient);
-        } else {
-            $this->endpointHandler = $endpointHandler;
-        }
-
+        $this->pubRoot = $pubRoot;
         $sdeClass = Config::getIveeClassName('SDE');
         static::$sde = $sdeClass::instance();
     }
@@ -103,10 +96,8 @@ class MarketProcessor
      */
     public function getNewestHistoryData($typeId, $regionId, $cache = true)
     {
-        $ret = $this->processHistoryData(
-            $this->endpointHandler->getMarketHistory($typeId, $regionId, $cache),
-            $typeId,
-            $regionId
+        $ret = $this->processHistoryCollection(
+            $this->pubRoot->getRegionCollection()->getRegion($regionId)->getMarketHistory($typeId, $cache)
         );
         $this->commitSql();
         return $ret;
@@ -125,68 +116,38 @@ class MarketProcessor
     public function runHistoryBatch(array $typeIds, array $regionIds, $verbose = false)
     {
         $this->verboseBatch = $verbose;
+        $regionCollection = $this->pubRoot->getRegionCollection();
         foreach (array_unique($regionIds) as $regionId) {
-            $this->endpointHandler->getMultiMarketHistory(
+            $regionCollection->getRegion($regionId)->getMultiMarketHistory(
                 $typeIds,
-                $regionId,
-                function (Response $response) {
-                    $this->processHistoryResponse($response);
+                function (MarketTypeHistoryCollection $response) {
+                    $this->processHistoryCollection($response);
                 },
-                function (Response $response) {
-                    print_r($response); //TODO
+                function (MarketTypeHistoryCollection $response) {
+                    print_r($response); //TODO: what to do with error case?
                 },
                 false
             );
-            $this->commitSql();
         }
+
+        $this->commitSql();
     }
 
     /**
-     * Processes a single market history CREST response, updating the DB and returning the history values for the latest
-     * day. It is assumed this method will only be called in batch mode.
+     * Processes market history collection, updating the DB and returning the history values for the latest day.
      *
-     * @param \iveeCrest\Response $response to be processed
-     *
-     * @return array with the latest history values
-     * @throws \iveeCore\Exceptions\UnexpectedDataException if Response with wrong representation is passed
-     */
-    protected function processHistoryResponse(Response $response)
-    {
-        //check for correct CREST response representation
-        $expectedRepresentation = 'application/' . EndpointHandler::MARKET_TYPE_HISTORY_COLLECTION_REPRESENTATION;
-        if ($response->getContentType() != $expectedRepresentation) {
-            $exceptionClass = Config::getIveeClassName('UnexpectedDataException');
-            throw new $exceptionClass('Representation of CREST Response was ' . $response->getContentType() . ', '
-                . $expectedRepresentation . ' expected');
-        }
-
-        //The responses from CREST do not tell us the region and item it belongs to and in async mode there is no
-        //guarrantee the requests will be answered in order, so we can't rely on the order of ids in the passed arrays.
-        //Instead we have to extract it from the url.
-        $pathComponents = explode('/', parse_url($response->getInfo()['url'], PHP_URL_PATH));
-        $data = [];
-
-        //rewrite array index with date timestamps as keys
-        foreach ($response->content->items as $item) {
-            $data[strtotime($item->date)] = $item;
-        }
-
-        return $this->processHistoryData($data, (int) $pathComponents[4], (int) $pathComponents[2]);
-    }
-
-    /**
-     * Processes history data, updating the DB and returning the history values for the latest day.
-     *
-     * @param array $data in the form dateTimestamp => array with values
-     * @param int $typeId of the type
-     * @param int $regionId of the region
+     * @param \iveeCrest\Responses\MarketTypeHistoryCollection $historyCollection to be processed
      *
      * @return array with the latest history values
      */
-    protected function processHistoryData(array $data, $typeId, $regionId)
+    protected function processHistoryCollection(MarketTypeHistoryCollection $historyCollection)
     {
         $sdeClass   = Config::getIveeClassName('SDE');
         $iveeDbName = Config::getIveeDbName();
+
+        $data = $historyCollection->gather();
+        $typeId = $historyCollection->getTypeId();
+        $regionId = $historyCollection->getRegionId();
 
         //if no history is available in target region, return zeros (no low, high, avg)
         if (count($data) < 1) {
@@ -286,7 +247,7 @@ class MarketProcessor
 
         //TODO: Decide if we should invalidate caches or not.
 
-        //return the newest history data
+        //return only the newest history data
         return $ret;
     }
 
@@ -330,7 +291,7 @@ class MarketProcessor
     public function getNewestPriceData($typeId, $regionId)
     {
         $ret = $this->processOrderData(
-            $this->endpointHandler->getMarketOrders($typeId, $regionId),
+            $this->pubRoot->getRegionCollection()->getRegion($regionId)->getMarketOrders($typeId),
             $typeId,
             $regionId
         );
@@ -351,19 +312,19 @@ class MarketProcessor
     public function runPriceBatch(array $typeIds, array $regionIds, $verbose = false)
     {
         $this->verboseBatch = $verbose;
-
+        $regionCollection = $this->pubRoot->getRegionCollection();
         foreach (array_unique($regionIds) as $regionId) {
-            $this->endpointHandler->getMultiMarketOrders(
+            $regionCollection->getRegion($regionId)->getMultiMarketOrders(
                 $typeIds,
-                $regionId,
-                function (Response $response) {
-                    $this->processOrderResponse($response);
+                function (MarketOrderCollection $response) {
+                    $this->processOrderCollection($response);
                 },
-                function (Response $response) {
-                    print_r($response); //TODO
+                function (MarketOrderCollection $response) {
+                    print_r($response); //TODO: what to do with error case?
                 },
                 false
             );
+
             //overwrite existing array to ensure cleanup of potentially unprocessed single responses
             $this->orderResponseBuffer = [];
         }
@@ -377,26 +338,15 @@ class MarketProcessor
      * deal with partial DB updates). Async CREST calls can return in any order, so we must pair each buy order to its
      * matching sell order or vice versa by buffering whichever response comes first before processing them atomically.
      *
-     * @param \iveeCore\Response $response to be processed
+     * @param \iveeCrest\Responses\MarketOrderCollection $orderCollection to be processed
      *
      * @return void
      * @throws \iveeCore\Exceptions\UnexpectedDataException if Response with wrong representation is passed
      */
-    protected function processOrderResponse(Response $response)
+    protected function processOrderCollection(MarketOrderCollection $orderCollection)
     {
-        //check for correct CREST response representation
-        $expectedRepresentation = 'application/' . EndpointHandler::MARKET_ORDER_COLLECTION_REPRESENTATION;
-        if ($response->getContentType() != $expectedRepresentation) {
-            $exceptionClass = Config::getIveeClassName('UnexpectedDataException');
-            throw new $exceptionClass('Representation of CREST Response was ' . $response->getContentType() . ', '
-                . $expectedRepresentation . ' expected');
-        }
-
-        //extract Ids from the URL
-        $urlComponents = parse_url($response->getInfo()['url']);
-        $pathComponents = explode('/', $urlComponents['path']);
-        $regionId = (int) $pathComponents[2];
-        $typeId = (int) explode('/', $urlComponents['query'])[4];
+        $regionId = $orderCollection->getRegionId();
+        $typeId = $orderCollection->getTypeId();
         $key = $regionId . '_' . $typeId;
 
         //Instantiate stdClass object if necessary
@@ -404,12 +354,11 @@ class MarketProcessor
             $this->orderResponseBuffer[$key] = new \stdClass;
         }
 
-        //we decide between buy and sell based on the url instead of the items in the response because potentially
-        //empty sets could be returned
-        if ($pathComponents[4] == 'buy') {
-            $this->orderResponseBuffer[$key]->buyOrders = $response->content->items;
+        //buffer the collection items as either buy or sell order
+        if ($orderCollection->isSell()) {
+            $this->orderResponseBuffer[$key]->sellOrders = $orderCollection->gather();
         } else {
-            $this->orderResponseBuffer[$key]->sellOrders = $response->content->items;
+            $this->orderResponseBuffer[$key]->buyOrders = $orderCollection->gather();
         }
 
         //if buy and sell order data has been matched, process it
@@ -493,10 +442,7 @@ class MarketProcessor
             } else {
                 //build insert query
                 $this->submitSql(
-                    $sdeClass::makeUpsertQuery(
-                        Config::getIveeDbName() . '.marketPrices',
-                        array_merge($priceData, $where)
-                    )
+                    $sdeClass::makeUpsertQuery(Config::getIveeDbName() . '.marketPrices', array_merge($priceData, $where))
                 );
             }
         }
@@ -561,7 +507,8 @@ class MarketProcessor
             static::loadNames();
         }
 
-        echo $msg . ': ' . static::$regions[$regionId] . ' (' . $regionId . '), '. static::$marketTypes[$typeId]
+        echo $msg . ': ' . static::$regions[$regionId] . ' (' . $regionId . '), '
+            . (isset(static::$marketTypes[$typeId]) ? static::$marketTypes[$typeId] : '-no name-')
             . ' (' . $typeId . ")\n";
     }
 

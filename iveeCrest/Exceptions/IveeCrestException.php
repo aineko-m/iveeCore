@@ -1,6 +1,6 @@
 <?php
 /**
- * iveeCrestException class file.
+ * IveeCrestException class file.
  *
  * PHP version 5.4
  *
@@ -8,7 +8,7 @@
  * @package  IveeCrestExceptions
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/Exceptions/iveeCrestException.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/Exceptions/IveeCrestException.php
  */
 
 namespace iveeCrest\Exceptions;
@@ -20,7 +20,7 @@ namespace iveeCrest\Exceptions;
  * @package  IveeCrestExceptions
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/Exceptions/iveeCrestException.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCrest/Exceptions/IveeCrestException.php
  */
 class IveeCrestException extends \Exception
 {

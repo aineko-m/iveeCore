@@ -124,7 +124,6 @@ abstract class SdeType extends CoreDataCommon
      */
     protected function setExpiry()
     {
-        $expiry = mktime(12, 5, 0);
-        $this->expiry = $expiry > time() ? $expiry : $expiry + 24 * 3600;
+        $this->expiry = Util::getNextTimeTS(11, 5);
     }
 }

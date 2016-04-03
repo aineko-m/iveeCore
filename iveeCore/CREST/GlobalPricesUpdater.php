@@ -14,7 +14,7 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
-use iveeCrest\EndpointHandler;
+use iveeCrest\Responses\Root;
 
 /**
  * GlobalPricesUpdater updates the data for the global average and adjusted prices from CREST (not orders or history).
@@ -77,13 +77,13 @@ class GlobalPricesUpdater extends CrestDataUpdater
     /**
      * Fetches the data from CREST.
      *
-     * @param \iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\Responses\Root $pubRoot to be used
      *
      * @return array
      */
-    protected static function getData(EndpointHandler $eph)
+    protected static function getData(Root $pubRoot)
     {
         //we dont set the cache flag because the data normally won't be read again
-        return $eph->getMarketPrices(false);
+        return $pubRoot->getMarketTypePriceCollection()->gather();
     }
 }

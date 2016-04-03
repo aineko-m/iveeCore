@@ -14,7 +14,8 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
-use iveeCrest\EndpointHandler;
+use iveeCore\SDE;
+use iveeCrest\Responses\Root;
 
 /**
  * IveeUpdater provides the necessary functionality for running CREST updates from the CLI.
@@ -28,12 +29,17 @@ use iveeCrest\EndpointHandler;
 class IveeUpdater
 {
     /**
-     * @var \iveeCrest\EndpointHandler $endpointHandler instance to be used
+     * @var \iveeCrest\Client $client instance to be used
      */
-    protected $endpointHandler;
+    protected $client;
 
     /**
-     * @var \iveeCrest\MarketPricessor $marketProcessor instance to be used
+     * @var \iveeCrest\Responses\Root $pubRoot public root CREST endpoint response
+     */
+    protected $pubRoot;
+
+    /**
+     * @var \iveeCore\CREST\MarketProcessor $marketProcessor instance to be used
      */
     protected $marketProcessor;
 
@@ -55,7 +61,7 @@ class IveeUpdater
         if (count($args) < 2) {
             echo '== ' . Config::VERSION . ' Updater ==' . PHP_EOL
                 . 'Available options:' . PHP_EOL
-                . '-test         : Test the CREST connectivity by pulling data for the character' . PHP_EOL
+                . '-testauth     : Test the authenticated CREST connectivity (configured refresh token required)' . PHP_EOL
                 . '-indices      : Update system industry indices' . PHP_EOL
                 . '-globalprices : Update global prices (average, adjusted)' . PHP_EOL
                 . '-facilities   : Update facilities (outposts)' . PHP_EOL
@@ -82,14 +88,14 @@ class IveeUpdater
             $all = false;
         }
 
-        //setup CREST Client and EndpointHandler
+        //setup iveeCrest Client
         $clientClass = Config::getIveeClassName('Client');
-        $client = new $clientClass;
-        $endpointHandlerClass = Config::getIveeClassName('EndpointHandler');
-        $this->endpointHandler = new $endpointHandlerClass($client);
+        //no parameters passed, i.e. default configured settings are used for client
+        $this->client = new $clientClass;
+        $this->pubRoot = $this->client->getPublicRootEndpoint();
 
-        if (in_array('-test', $args)) {
-            $this->testCrest();
+        if (in_array('-testauth', $args)) {
+            $this->testAuthedCrest();
         }
 
         if ($all or in_array('-indices', $args)) {
@@ -118,16 +124,15 @@ class IveeUpdater
     }
 
     /**
-     * Tests the CREST connection and prints the output of the access token verify call.
+     * Tests authenticated CREST and prints the output of the token verification response.
      *
      * @return void
      */
-    protected function testCrest()
+    protected function testAuthedCrest()
     {
         try {
-            $charData = $this->endpointHandler->verifyAccessToken();
+            print_r($this->pubRoot->getVerifyAccessToken($this->client)->getContent());
             echo "Test OK" . PHP_EOL;
-            print_r($charData);
         } catch (\Exception $ex) {
             echo "Test failed" . PHP_EOL
             . get_class($ex) . ': ' . $ex->getMessage();
@@ -162,9 +167,9 @@ class IveeUpdater
         if (time() - $lastUpdateTs > 3500) {
             //do system industry indices update
             $crestIndustryIndicesUpdaterClass = Config::getIveeClassName('CrestIndustryIndicesUpdater');
-            $crestIndustryIndicesUpdaterClass::doUpdate($this->endpointHandler, $verbose);
+            $crestIndustryIndicesUpdaterClass::doUpdate($this->pubRoot, $verbose);
             
-            $sql = \iveeCore\SDE::makeUpsertQuery(
+            $sql = SDE::makeUpsertQuery(
                 Config::getIveeDbName() . '.trackedCrestUpdates',
                 array(
                     'name' => 'industryIndices',
@@ -204,7 +209,7 @@ class IveeUpdater
         if ($res['dateTs'] + 24 * 3600 < time()) {
             //do global prices update
             $crestGlobalPricesUpdaterClass = Config::getIveeClassName('CrestGlobalPricesUpdater');
-            $crestGlobalPricesUpdaterClass::doUpdate($this->endpointHandler, $verbose);
+            $crestGlobalPricesUpdaterClass::doUpdate($this->pubRoot, $verbose);
         } elseif ($verbose) {
             echo "Global prices still up-to-date, skipping\n";
         }
@@ -235,9 +240,9 @@ class IveeUpdater
         //if roughly three hours passed, do the update
         if (time() - $lastUpdateTs > 10000) {
             $crestFacilitiesUpdaterClass = Config::getIveeClassName('CrestFacilitiesUpdater');
-            $crestFacilitiesUpdaterClass::doUpdate($this->endpointHandler, $verbose);
+            $crestFacilitiesUpdaterClass::doUpdate($this->pubRoot, $verbose);
 
-            $sql = \iveeCore\SDE::makeUpsertQuery(
+            $sql = SDE::makeUpsertQuery(
                 Config::getIveeDbName() . '.trackedCrestUpdates',
                 array(
                     'name' => 'facilities',
@@ -263,7 +268,7 @@ class IveeUpdater
     {
         if (!isset($this->marketProcessor)) {
             $crestMarketProcessorClass = Config::getIveeClassName('CrestMarketProcessor');
-            $this->marketProcessor = new $crestMarketProcessorClass($this->endpointHandler);
+            $this->marketProcessor = new $crestMarketProcessorClass($this->pubRoot);
         }
 
         if ($verbose) {
@@ -273,7 +278,7 @@ class IveeUpdater
         //history doesn't need to be updated more than once a day
         $cutoffTs = mktime(0, 0, 0);
         foreach ($regionIds as $regionId) {
-            $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastHistUpdate', $this->endpointHandler);
+            $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastHistUpdate', $this->pubRoot);
             if (count($idsToUpdate) > 0) {
                 if ($verbose) {
                     echo 'Updating history data for ' . count($idsToUpdate) . ' market types in regionId=' . $regionId
@@ -300,7 +305,7 @@ class IveeUpdater
     {
         if (!isset($this->marketProcessor)) {
             $crestMarketProcessorClass = Config::getIveeClassName('CrestMarketProcessor');
-            $this->marketProcessor = new $crestMarketProcessorClass($this->endpointHandler);
+            $this->marketProcessor = new $crestMarketProcessorClass($this->pubRoot);
         }
 
         if ($verbose) {
@@ -310,7 +315,7 @@ class IveeUpdater
         //get the cutoff timestamp for determining what price data age is too old
         $cutoffTs = time() - Config::getMaxPriceDataAge();
         foreach ($regionIds as $regionId) {
-            $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastPriceUpdate', $this->endpointHandler);
+            $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastPriceUpdate', $this->pubRoot);
             if (count($idsToUpdate) > 0) {
                 if ($verbose) {
                     echo 'Updating price data for ' . count($idsToUpdate) . ' market types in regionId=' . $regionId
@@ -329,14 +334,14 @@ class IveeUpdater
      * @param int $regionId to be checked
      * @param int $cutoffTs the unix timestamp to be used to decide if data is too old
      * @param string $dateColumn the DB column to check the timestamp on, either 'lastHistUpdate' or 'lastPriceUpdate'
-     * @param \iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\Responses\Root $pubRoot to be used
      *
      * @return array
      */
-    protected static function getTypeIdsToUpdate($regionId, $cutoffTs, $dateColumn, EndpointHandler $eph)
+    protected static function getTypeIdsToUpdate($regionId, $cutoffTs, $dateColumn, Root $pubRoot)
     {
         //get matket typeIds from CREST
-        $marketTypeIds = array_keys($eph->getMarketTypeHrefs());
+        $marketTypeIds = array_keys($pubRoot->getMarketTypeCollection()->gatherHrefs());
 
         //get the subset Ids that need updating and are not Dust-only
         $res = static::$sde->query(

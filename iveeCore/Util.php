@@ -87,4 +87,31 @@ class Util
 
         return $readable;
     }
+
+    /**
+     * Convenience function for getting the timestamp of the next occurence of a certain time.
+     *
+     * @param int $h the hour
+     * @param int $m the minute
+     *
+     * @return int the unix timestamp
+     */
+    public static function getNextTimeTS($h, $m)
+    {
+        $expiry = mktime($h, $m, 0);
+        return ($expiry > time()) ? $expiry : $expiry + 24 * 3600;
+    }
+
+    /**
+     * Convenience function for getting the seconds until the next occurence of a certain time.
+     *
+     * @param int $h the hour
+     * @param int $m the minute
+     *
+     * @return int the seconds until the specified time
+     */
+    public static function getNextTimeTtl($h, $m)
+    {
+        return self::getNextTimeTS($h, $m) - time();
+    }
 }

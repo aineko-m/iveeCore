@@ -37,7 +37,7 @@ class Config
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_aeg11';
+    protected static $sdeDbName = 'eve_sde_yc118-3';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';
@@ -56,7 +56,14 @@ class Config
     protected static $crestClientSecret        = 'myclientsecret';
     //Refresh tokens, per authentication scope. Tokens can have multiple scopes, so just repeat it if needed.
     protected static $crestClientRefreshTokens = [
-        'publicData' => 'myclientrefreshtoken'
+        'characterContactsRead'    => 'myrefreshtoken',
+        'characterContactsWrite'   => 'myrefreshtoken',
+        'characterFittingsRead'    => 'myrefreshtoken',
+        'characterFittingsWrite'   => 'myrefreshtoken',
+        'characterLocationRead'    => 'myrefreshtoken',
+        'characterNavigationWrite' => 'myrefreshtoken',
+        'characterStatsRead'       => 'myrefreshtoken',
+        'publicData'               => 'myrefreshtoken'
     ];
 
     //set the name of your application. It is used as part of the User Agent when accessing the CREST API.
@@ -188,6 +195,7 @@ class Config
         'T3Blueprint'            => '\iveeCore\T3Blueprint',
         'Type'                   => '\iveeCore\Type',
         'Util'                   => '\iveeCore\Util',
+
         'CrestDataUpdater'               => '\iveeCore\CREST\CrestDataUpdater',
         'CrestFacilitiesUpdater'         => '\iveeCore\CREST\FacilitiesUpdater',
         'CrestIndustryIndicesUpdater'    => '\iveeCore\CREST\IndustryIndicesUpdater',
@@ -195,6 +203,7 @@ class Config
         'CrestGlobalPricesUpdater'       => '\iveeCore\CREST\GlobalPricesUpdater',
         'CrestMarketProcessor'           => '\iveeCore\CREST\MarketProcessor',
         'CrestPriceEstimator'            => '\iveeCore\CREST\PriceEstimator',
+
         'ActivityIdNotFoundException'         => '\iveeCore\Exceptions\ActivityIdNotFoundException',
         'AssemblyLineTypeIdNotFoundException' => '\iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException',
         'CrestDataTooOldException'            => '\iveeCore\Exceptions\CrestDataTooOldException',
@@ -228,11 +237,75 @@ class Config
         'UnexpectedDataException'             => '\iveeCore\Exceptions\UnexpectedDataException',
         'WrongTypeException'                  => '\iveeCore\Exceptions\WrongTypeException',
 
-        'Client'                => '\iveeCrest\Client',
-        'CurlWrapper'           => '\iveeCrest\CurlWrapper',
-        'EndpointHandler'       => '\iveeCrest\EndpointHandler',
-        'Response'              => '\iveeCrest\Response',
-        'IveeCrestException'    => '\iveeCrest\Exceptions\IveeCrestException'
+        'Client'             => '\iveeCrest\Client',
+        'CurlWrapper'        => '\iveeCrest\CurlWrapper',
+
+        'AuthScopeUnavailableException' => '\iveeCrest\Exceptions\AuthScopeUnavailableException',
+        'EndpointUnavailableException'  => '\iveeCrest\Exceptions\EndpointUnavailableException',
+        'IveeCrestException'            => '\iveeCrest\Exceptions\IveeCrestException',
+        'PaginationException'           => '\iveeCrest\Exceptions\PaginationException',
+
+        'Alliance'                              => '\iveeCrest\Responses\Alliance',
+        'AllianceCollection'                    => '\iveeCrest\Responses\AllianceCollection',
+        'BaseResponse'                          => '\iveeCrest\Responses\BaseResponse',
+        'Character'                             => '\iveeCrest\Responses\Character',
+        'CharacterLocation'                     => '\iveeCrest\Responses\CharacterLocation',
+        'Constellation'                         => '\iveeCrest\Responses\Constellation',
+        'ConstellationCollection'               => '\iveeCrest\Responses\ConstellationCollection',
+        'ContactCollection'                     => '\iveeCrest\Responses\ContactCollection',
+        'ContactCollectionElement'              => '\iveeCrest\Responses\ContactCollectionElement',
+        'DogmaAttribute'                        => '\iveeCrest\Responses\DogmaAttribute',
+        'DogmaAttributeCollection'              => '\iveeCrest\Responses\DogmaAttributeCollection',
+        'DogmaEffect'                           => '\iveeCrest\Responses\DogmaEffect',
+        'DogmaEffectCollection'                 => '\iveeCrest\Responses\DogmaEffectCollection',
+        'FittingCollection'                     => '\iveeCrest\Responses\FittingCollection',
+        'FittingCollectionElement'              => '\iveeCrest\Responses\FittingCollectionElement',
+        'IncursionCollection'                   => '\iveeCrest\Responses\IncursionCollection',
+        'IndustryFacilityCollection'            => '\iveeCrest\Responses\IndustryFacilityCollection',
+        'IndustrySystemCollection'              => '\iveeCrest\Responses\IndustrySystemCollection',
+        'ItemCategory'                          => '\iveeCrest\Responses\ItemCategory',
+        'ItemCategoryCollection'                => '\iveeCrest\Responses\ItemCategoryCollection',
+        'ItemGroup'                             => '\iveeCrest\Responses\ItemGroup',
+        'ItemGroupCollection'                   => '\iveeCrest\Responses\ItemGroupCollection',
+        'ItemType'                              => '\iveeCrest\Responses\ItemType',
+        'ItemTypeCollection'                    => '\iveeCrest\Responses\ItemTypeCollection',
+        'Killmail'                              => '\iveeCrest\Responses\Killmail',
+        'MarketGroup'                           => '\iveeCrest\Responses\MarketGroup',
+        'MarketGroupCollection'                 => '\iveeCrest\Responses\MarketGroupCollection',
+        'MarketOrderCollection'                 => '\iveeCrest\Responses\MarketOrderCollection',
+        'MarketTypeCollection'                  => '\iveeCrest\Responses\MarketTypeCollection',
+        'MarketTypeHistoryCollection'           => '\iveeCrest\Responses\MarketTypeHistoryCollection',
+        'MarketTypePriceCollection'             => '\iveeCrest\Responses\MarketTypePriceCollection',
+        'Options'                               => '\iveeCrest\Responses\Options',
+        'Planet'                                => '\iveeCrest\Responses\Planet',
+        'ProtoResponse'                         => '\iveeCrest\Responses\ProtoResponse',
+        'Region'                                => '\iveeCrest\Responses\Region',
+        'RegionCollection'                      => '\iveeCrest\Responses\RegionCollection',
+        'Root'                                  => '\iveeCrest\Responses\Root',
+        'SovCampaignsCollection'                => '\iveeCrest\Responses\SovCampaignsCollection',
+        'SovStructureCollection'                => '\iveeCrest\Responses\SovStructureCollection',
+        'System'                                => '\iveeCrest\Responses\System',
+        'SystemCollection'                      => '\iveeCrest\Responses\SystemCollection',
+        'TokenDecode'                           => '\iveeCrest\Responses\TokenDecode',
+        'Tournament'                            => '\iveeCrest\Responses\Tournament',
+        'TournamentCollection'                  => '\iveeCrest\Responses\TournamentCollection',
+        'TournamentMatchCollection'             => '\iveeCrest\Responses\TournamentMatchCollection',
+        'TournamentMatch'                       => '\iveeCrest\Responses\TournamentMatch',
+        'TournamentPilotStatsCollectionElement' => '\iveeCrest\Responses\TournamentPilotStatsCollectionElement',
+        'TournamentPilotStatsCollection'        => '\iveeCrest\Responses\TournamentPilotStatsCollection',
+        'TournamentPilotTournamentStats'        => '\iveeCrest\Responses\TournamentPilotTournamentStats',
+        'TournamentRealtimeMatchFrame'          => '\iveeCrest\Responses\TournamentRealtimeMatchFrame',
+        'TournamentSeries'                      => '\iveeCrest\Responses\TournamentSeries',
+        'TournamentSeriesCollection'            => '\iveeCrest\Responses\TournamentSeriesCollection',
+        'TournamentSeriesCollectionElement'     => '\iveeCrest\Responses\TournamentSeriesCollectionElement',
+        'TournamentStaticSceneData'             => '\iveeCrest\Responses\TournamentStaticSceneData',
+        'TournamentTeam'                        => '\iveeCrest\Responses\TournamentTeam',
+        'TournamentTeamMember'                  => '\iveeCrest\Responses\TournamentTeamMember',
+        'TournamentTeamMemberCollection'        => '\iveeCrest\Responses\TournamentTeamMemberCollection',
+        'TournamentTypeBanCollection'           => '\iveeCrest\Responses\TournamentTypeBanCollection',
+        'War'                                   => '\iveeCrest\Responses\War',
+        'WarKillmails'                          => '\iveeCrest\Responses\WarKillmails',
+        'WarsCollection'                        => '\iveeCrest\Responses\WarsCollection',
     ];
 
     ////////////////////////////

@@ -15,7 +15,7 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
-use iveeCrest\EndpointHandler;
+use iveeCrest\Responses\Root;
 
 /**
  * IndustryIndicesUpdater specific CREST data updater
@@ -106,13 +106,12 @@ class IndustryIndicesUpdater extends CrestDataUpdater
     /**
      * Fetches the data from CREST.
      *
-     * @param \iveeCrest\EndpointHandler $eph to be used
+     * @param \iveeCrest\Responses\Root $pubRoot to be used
      *
      * @return array
      */
-    protected static function getData(EndpointHandler $eph)
+    protected static function getData(Root $pubRoot)
     {
-        //we dont set the cache flag because the data normally won't be read again
-        return $eph->getIndustrySystems(false);
+        return $pubRoot->getIndustrySystemCollection()->gather();
     }
 }

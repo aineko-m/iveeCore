@@ -224,10 +224,8 @@ class MarketHistory extends CoreDataCommon
             $this->throwNotOnMarketException($type);
         }
 
-        //get timestamp for today, 0h 05m
-        $ts = mktime(0, 5, 0);
         //calc expiry as the next occurance of 0h 05m
-        $this->expiry = time() < $ts ? $ts : $ts + 24 * 3600;
+        $this->expiry = Util::getNextTimeTS(0, 5);
 
         //lookup SDE class
         $sdeClass = Config::getIveeClassName('SDE');
