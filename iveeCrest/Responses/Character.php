@@ -151,6 +151,8 @@ class Character extends EndpointItem
      *
      * @return void
      * @throws \iveeCrest\Exceptions\InvalidParameterValueException when a non-existant contact ID is specified
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
+     * available
      */
     public function deleteFitting($fittingId, Client $client = null)
     {
@@ -195,6 +197,8 @@ class Character extends EndpointItem
      *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException when a non-existant systemId is passed.
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
+     * available
      */
     public function setNavigationWaypoint($systemId, $clearExisting = false, Client $client = null)
     {
@@ -235,6 +239,8 @@ class Character extends EndpointItem
      *
      * @return void
      * @throws \iveeCore\Exceptions\InvalidParameterValueException when invalid contact type is passed
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
+     * available
      */
     public function addContact($id, $type, $standing = 0, Client $client = null)
     {
@@ -274,6 +280,8 @@ class Character extends EndpointItem
      *
      * @return void
      * @throws \iveeCrest\Exceptions\InvalidParameterValueException when a non-existant contact ID is specified
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
+     * available
      */
     public function deleteContact($contactId, Client $client = null)
     {
@@ -290,5 +298,26 @@ class Character extends EndpointItem
         }
 
         $contacts[(int) $contactId]->delete($client);
+    }
+
+    /**
+     * Returns the characters aggregated yearly statistics.
+     *
+     * @return \iveeCrest\Responses\BaseResponse
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
+     * available
+     */
+    public function getAggregatedStats(Client $client = null)
+    {
+        if (is_null($client)) {
+            $client = static::getLastClient();
+        }
+
+        //There's currently no navigable way to reach the stats endpoint, so we have to construct the URL for it.
+        //The response is a BaseResponse because the server does not return a unique content type.
+        return $client->getEndpointResponse(
+            'https://characterstats.tech.ccp.is/v1/' . $this->getId() . '/',
+            'characterStatsRead'
+        );
     }
 }
