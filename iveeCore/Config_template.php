@@ -50,19 +50,16 @@ class Config
     //CREST config
     protected static $authedCrestBaseUrl       = 'https://crest-tq.eveonline.com/';
     protected static $publicCrestBaseUrl       = 'https://public-crest.eveonline.com/';
+
+    //Configure these with the information for your registered app from https://developers.eveonline.com/applications
+    //Set null if not using authenticated CREST.
     protected static $crestClientId            = 'myclientid';
     protected static $crestClientSecret        = 'myclientsecret';
-    //Refresh tokens, per authentication scope. Tokens can have multiple scopes, so just repeat it if needed.
-    protected static $crestClientRefreshTokens = [
-        'characterContactsRead'    => 'myrefreshtoken',
-        'characterContactsWrite'   => 'myrefreshtoken',
-        'characterFittingsRead'    => 'myrefreshtoken',
-        'characterFittingsWrite'   => 'myrefreshtoken',
-        'characterLocationRead'    => 'myrefreshtoken',
-        'characterNavigationWrite' => 'myrefreshtoken',
-        'characterStatsRead'       => 'myrefreshtoken',
-        'publicData'               => 'myrefreshtoken'
-    ];
+
+    //Character specific refresh token. Tokens can have multiple authentication scopes. Refresh tokens can be gotten
+    //with the webscript under www/getrefreshtoken.php
+    //Set null if not using authenticated CREST.
+    protected static $crestClientRefreshToken  = 'myrefreshtoken';
 
     //set the name of your application. It is used as part of the User Agent when accessing the CREST API.
     protected static $applicationName = 'unknown application';
@@ -616,25 +613,25 @@ class Config
     }
 
     /**
-     * Returns configured CREST user and authentication scope specific refresh tokens.
+     * Returns configured CREST character and authentication scope specific refresh token.
      *
-     * @return array
+     * @return string
      */
-    public static function getCrestClientRefreshTokens()
+    public static function getCrestClientRefreshToken()
     {
-        return static::$crestClientRefreshTokens;
+        return static::$crestClientRefreshToken;
     }
 
     /**
-     * Sets the CREST user and authentication scope specific refresh tokens.
+     * Sets the CREST character and authentication scope specific refresh token.
      *
-     * @param array $crestClientRefreshTokens to be set
+     * @param string $crestClientRefreshToken to be set
      *
      * @return void
      */
-    public static function setCrestClientRefreshTokens(array $crestClientRefreshTokens)
+    public static function setCrestClientRefreshToken($crestClientRefreshToken)
     {
-        return static::$crestClientRefreshTokens = $crestClientRefreshTokens;
+        return static::$crestClientRefreshToken = $crestClientRefreshToken;
     }
 
     /**

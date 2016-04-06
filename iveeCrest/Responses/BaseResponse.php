@@ -73,6 +73,8 @@ class BaseResponse implements ICacheable
             $this->expiry = time() + (int) $this->content->expires_in - 20;
         } elseif (isset($this->content->expires_in)) {
             $this->expiry = time() + (int) $this->content->expires_in;
+        } elseif (isset($this->content->ExpiresOn)) {
+            $this->expiry = strtotime($this->content->ExpiresOn);
         } elseif (isset($this->header['Cache-Control'])) {
             foreach (explode(',', $this->header['Cache-Control']) as $frag) {
                 if (substr(trim($frag), 0, 8) == 'max-age=') {

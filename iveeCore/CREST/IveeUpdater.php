@@ -131,7 +131,7 @@ class IveeUpdater
     protected function testAuthedCrest()
     {
         try {
-            print_r($this->pubRoot->getVerifyAccessToken($this->client)->getContent());
+            print_r($this->client->verifyAccessToken()->getContent());
             echo "Test OK" . PHP_EOL;
         } catch (\Exception $ex) {
             echo "Test failed" . PHP_EOL

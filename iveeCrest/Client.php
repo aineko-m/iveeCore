@@ -19,6 +19,7 @@ use iveeCore\Util;
 use iveeCore\Exceptions\KeyNotFoundInCacheException;
 use iveeCore\Exceptions\InvalidArgumentException;
 use iveeCrest\Responses\ICollection;
+use iveeCrest\Exceptions\AuthScopeUnavailableException;
 
 /**
  * The Client class provides the infrastructure for requesting data from CREST. Apart from handling authentication, it
@@ -71,20 +72,25 @@ class Client
     protected $clientSecret;
 
     /**
-     * @var string[] $charRefreshTokens the character and authentication scope specific and durable refresh tokens.
+     * @var string $charRefreshToken the character specific and durable refresh token.
      */
-    protected $charRefreshTokens;
+    protected $charRefreshToken;
 
     /**
-     * @var string[] $charAccessTokens the character and authentication scope specific and short lived access token,
-     * gotten by using the appropriate refresh token.
+     * @var string $charAccessToken the character and short lived access token, gotten by using the appropriate refresh
+     * token.
      */
-    protected $charAccessTokens;
+    protected $charAccessToken;
 
     /**
-     * @var int[] $charAccessTokenExpiries timestamps of when the access tokens expire (and will need to be refreshed).
+     * @var int $charAccessTokenExpiry timestamp of when the access token expires (and will need to be refreshed).
      */
-    protected $charAccessTokenExpiries;
+    protected $charAccessTokenExpiry;
+
+    /**
+     * @var string[] $tokenAuthScopes the authentication scopes the acces token has.
+     */
+    protected $tokenAuthScopes;
 
     /**
      * @var \iveeCrest\CurlWrapper $cw holds the object handling CURL.
@@ -98,40 +104,29 @@ class Client
     protected $publicRootEndpoint;
 
     /**
-     * @var \stdClass $authedRootEndpoint holds the authenticated CREST root endpoint (after having been requested at
-     * least once)
-     */
-    protected $authedRootEndpoint;
-
-    /**
      * Constructs a Client object. Note that because of the refresh tokens these are character-specific.
      *
-     * @param string $publicCrestBaseUrl the URL to the public CREST root
-     * @param string $authedCrestBaseUrl the URL to the authenticated CREST root
      * @param string $clientId the Id of the app you registered
      * @param string $clientSecret the secret for the app you registered
-     * @param string[] $charRefreshTokens the chracter-specific refresh token to be used
+     * @param string $charRefreshToken the chracter-specific refresh token to be used
      * @param string $clientUserAgent the user agent that should be used in the requests
      * @param \iveeCore\ICache $cache optional cache object. If none is given, a new one is instantiated
      */
     public function __construct(
-        $publicCrestBaseUrl = null,
-        $authedCrestBaseUrl = null,
         $clientId = null,
         $clientSecret = null,
-        array $charRefreshTokens = null,
+        $charRefreshToken = null,
         $clientUserAgent = null,
         ICache $cache = null
     ) {
-        //if configuration parameters aren't passed, look up defaults
-        $this->publicCrestBaseUrl
-            = is_null($publicCrestBaseUrl) ? Config::getPublicCrestBaseUrl() : $publicCrestBaseUrl;
-        $this->authedCrestBaseUrl
-            = is_null($authedCrestBaseUrl) ? Config::getAuthedCrestBaseUrl() : $authedCrestBaseUrl;
+        $this->publicCrestBaseUrl = Config::getPublicCrestBaseUrl();
+        $this->authedCrestBaseUrl = Config::getAuthedCrestBaseUrl();
+
+        //if configuration parameters are not passed in constructor, lookup in configuration
         $this->clientId = is_null($clientId) ? Config::getCrestClientId() : $clientId;
         $this->clientSecret = is_null($clientSecret) ? Config::getCrestClientSecret() : $clientSecret;
-        $this->charRefreshTokens
-            = is_null($charRefreshTokens) ? Config::getCrestClientRefreshTokens() : $charRefreshTokens;
+        $this->charRefreshToken
+            = is_null($charRefreshToken) ? Config::getCrestClientRefreshToken() : $charRefreshToken;
 
         if (is_null($cache)) {
             $cacheClass = Config::getIveeClassName('Cache');
@@ -151,6 +146,8 @@ class Client
 
     /**
      * Returns the last created instance of Client, instantiating a new one if necessary.
+     * This method is used extensively when accessing CREST endpoints that don't require authentication. For those that
+     * do require authentication, Client instances have to be provided explicitly.
      *
      * @return \iveeCrest\Client
      */
@@ -206,80 +203,121 @@ class Client
     /**
      * Returns a bearer authorization header, pulling a new access token if necessary.
      *
-     * @param string $authScope the CREST scope to be used
-     *
      * @return string[]
      * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when a authentication scope is requested for which
      * there is no refresh token.
      */
-    protected function getBearerAuthHeader($authScope)
+    protected function getBearerAuthHeader()
     {
-        return ['Authorization: Bearer ' . $this->getAccessToken($authScope)];
+        return ['Authorization: Bearer ' . $this->getAccessToken()];
     }
 
     /**
-     * Checks if the client has a refresh token configured for a certain auth scope.
+     * Checks if the client has an access token for a certain auth scope.
      *
-     * @param string $authScope the CREST authentication scope to be checked
+     * @param string|bool $authScope the CREST authentication scope to be checked
      *
      * @return bool
      */
     public function hasAuthScope($authScope)
     {
-        return isset($this->charRefreshTokens[$authScope]);
+        if (!is_array($this->tokenAuthScopes)) {
+            try {
+                $this->getAccessToken();
+            } catch (AuthScopeUnavailableException $ex) {
+                //if no refresh token is configured, set scopes to empty array
+                $this->tokenAuthScopes = [];
+            }
+        }
+        return isset($this->tokenAuthScopes[$authScope]);
     }
 
     /**
-     * Returns the character refresh token for a specific authentication scope.
-     *
-     * @param string $authScope the CREST authentication scope to be used
+     * Returns the character refresh token.
      *
      * @return string
-     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when a authentication scope is requested for which
-     * there is no refresh token.
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when no refresh token has been configured.
      */
-    protected function getRefreshToken($authScope)
+    protected function getRefreshToken()
     {
-        if (!$this->hasAuthScope($authScope)) {
+        if (empty($this->charRefreshToken)) {
             $exceptionClass = Config::getIveeClassName('AuthScopeUnavailableException');
             throw new $exceptionClass(
-                'No refresh token found for authentication scope ' . $authScope
+                'No refresh token configured'
             );
         }
 
-        return $this->charRefreshTokens[$authScope];
+        return $this->charRefreshToken;
     }
 
     /**
      * Returns an access token, requesting a new one if none available or expired.
-     * This method is called for every request made.
-     *
-     * @param string $authScope the CREST authentication scope to be used
+     * This method is called for every authenticated request made.
      *
      * @return string
      * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when a authentication scope is requested for which
      * there is no refresh token.
      */
-    protected function getAccessToken($authScope)
+    protected function getAccessToken()
     {
-        $refreshToken = $this->getRefreshToken($authScope);
-
         //if we don't have the required valid access token, get one
-        if (!isset($this->charAccessTokens[$authScope]) or time() >= $this->charAccessTokenExpiries[$authScope]) {
+        if (!isset($this->charAccessToken) or time() >= $this->charAccessTokenExpiry) {
             $accessTokenResponse = $this->cw->post(
                 $this->getPublicRootEndpoint()->getContent()->authEndpoint->href,
                 $this->getBasicAuthHeader(),
-                'grant_type=refresh_token&refresh_token=' . $refreshToken,
-                $refreshToken,
+                'grant_type=refresh_token&refresh_token=' . $this->getRefreshToken(),
+                $this->getRefreshToken(),
                 true
             );
-            $this->charAccessTokens[$refreshToken] = $accessTokenResponse->getContent()->access_token;
+
+            $this->charAccessToken = $accessTokenResponse->getContent()->access_token;
             //The access token response is cached for a slightly lower time then it's actual validity. Here we hold the
             //token for local expiry + 1, so the local cache is garanteed to have expired when we fetch a new one from
             //CREST before it expires on CCPs side.
-            $this->charAccessTokenExpiries[$refreshToken] = $accessTokenResponse->getCacheExpiry() + 1;
+            $this->charAccessTokenExpiry = $accessTokenResponse->getCacheExpiry() + 1;
+
+            //determine the scopes covered by the access token
+            foreach (explode(' ', $this->verifyAccessToken()->getContent()->Scopes) as $scope) {
+                $this->tokenAuthScopes[$scope] = true;
+            }
         }
-        return $this->charAccessTokens[$refreshToken];
+        return $this->charAccessToken;
+    }
+
+    /**
+     * Returns the response to verifying the access token.
+     *
+     * @return \iveeCrest\Responses\BaseResponse
+     */
+    public function verifyAccessToken()
+    {
+        if (!isset($this->charAccessToken)) {
+            $this->getAccessToken();
+        }
+
+        //we have to construct the URL as there is no navigable way to it via CREST discovery
+        $url = str_replace('token', 'verify', $this->getPublicRootEndpoint()->getContent()->authEndpoint->href);
+        return $this->cw->get(
+            str_replace($this->publicCrestBaseUrl, $this->authedCrestBaseUrl, $url), //adapt to authed CREST base URL
+            ['Authorization: Bearer ' . $this->charAccessToken], //can't use getBearerAuthHeader() due to loop
+            $this->charAccessToken, //use access token as cache key prefix so we don't mix verfies of different tokens
+            true //cache
+        );
+    }
+
+    /**
+     * "decodes" the access token, returning a TokenDecode response with a link to the character endpoint.
+     *
+     * @return \iveeCrest\Responses\TokenDecode
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
+     * available
+     */
+    public function getTokenDecode()
+    {
+        return $this->getEndpointResponse(
+            $this->getPublicRootEndpoint()->getContent()->decode->href,
+            'publicData'
+        );
     }
 
     /**
@@ -305,15 +343,22 @@ class Client
      *
      * @return \iveeCrest\Responses\BaseResponse
      * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when a authentication scope is requested for which
-     * there is no refresh token.
+     * there is no access or refresh token token.
      */
     public function getEndpointResponse($url, $authScope = false, $accept = null, $cache = true)
     {
-        if (is_string($authScope) and strlen($authScope) > 0) {
-            $header = $this->getBearerAuthHeader($authScope);
+        if (!empty($authScope)) {
+            //check auth scope
+            if (!$this->hasAuthScope($authScope)) {
+                $exceptionClass = Config::getIveeClassName('AuthScopeUnavailableException');
+                throw new $exceptionClass(
+                    'The requested authentication scope is not available with the current access token.'
+                );
+            }
+            $header = $this->getBearerAuthHeader();
 
             //we use the refresh token as cache key prefix to ensure data separation in multi-character use cases
-            $cacheNsPrefix = $this->getRefreshToken($authScope);
+            $cacheNsPrefix = $this->getRefreshToken();
 
             //since CREST doesn't reference between authed and public base URLs, we must infer it from the use of auth
             //scopes and adapt the base URL accordingly
@@ -358,12 +403,20 @@ class Client
      * @return \iveeCrest\Responses\BaseResponse
      * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200, 201 and 302
      */
-    public function post($uri, $fieldsString, $authScope = 'publicData')
+    public function post($uri, $fieldsString, $authScope = null)
     {
+        if (!empty($authScope) and !$this->hasAuthScope($authScope)) {
+            //check auth scope
+            $exceptionClass = Config::getIveeClassName('AuthScopeUnavailableException');
+            throw new $exceptionClass(
+                'The requested authentication scope is not available with the current access token.'
+            );
+        }
+
         return $this->cw->post(
             $uri,
             array_merge(
-                $this->getBearerAuthHeader($authScope),
+                $this->getBearerAuthHeader(),
                 ['Content-Type: application/json']
             ),
             $fieldsString,
@@ -383,10 +436,18 @@ class Client
      */
     public function delete($uri, $authScope)
     {
+        if (!$this->hasAuthScope($authScope)) {
+            //check auth scope
+            $exceptionClass = Config::getIveeClassName('AuthScopeUnavailableException');
+            throw new $exceptionClass(
+                'The requested authentication scope is not available with the current access token.'
+            );
+        }
+
         return $this->cw->customRequest(
             $uri,
             'DELETE',
-            $this->getBearerAuthHeader($authScope),
+            $this->getBearerAuthHeader(),
             false
         );
     }
@@ -569,14 +630,25 @@ class Client
         $accept = null,
         $cache = true
     ) {
-        $useAuthScope = is_string($authScope) and strlen($authScope) > 0;
+        if (!empty($authScope)) {
+            if (!$this->hasAuthScope($authScope)) {
+                $exceptionClass = Config::getIveeClassName('AuthScopeUnavailableException');
+                throw new $exceptionClass(
+                    'The requested authentication scope is not available with the current access token.'
+                );
+            }
+            $useAuthScope = true;
+        } else {
+            $useAuthScope = false;
+        }
+
         //run the multi GET
         $this->cw->asyncMultiGet(
             array_unique($hrefs),
             ($accept) ? ['Accept: ' . $accept] : [],
             ($useAuthScope)
-                ? function () use ($authScope) {
-                    return $this->getBearerAuthHeader($authScope); //avoids having to make the method public
+                ? function () {
+                    return $this->getBearerAuthHeader(); //avoids having to make the method public
                 }
                 : function () {
                     return [];
@@ -584,7 +656,7 @@ class Client
             $callback,
             $errCallback,
             $cache,
-            ($useAuthScope) ? $this->getRefreshToken($authScope) : ''
+            ($useAuthScope) ? $this->getRefreshToken() : ''
         );
     }
 }

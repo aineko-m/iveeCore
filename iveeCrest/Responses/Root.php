@@ -49,7 +49,7 @@ class Root extends BaseResponse
         if (is_null($client)) {
             $client = static::getLastClient();
         }
-        return $this->getTokenDecode($client)->getCharacter();
+        return $client->getTokenDecode()->getCharacter();
     }
 
     /**
@@ -213,24 +213,6 @@ class Root extends BaseResponse
     }
 
     /**
-     * "decodes" the access token, returning a TokenDecode with a link to the character endpoint.
-     *
-     * @param \iveeCrest\Client $client to be used
-     * @param string $authScope the CREST authentication scope whose access token shall be "decoded"
-     *
-     * @return \iveeCrest\Responses\TokenDecode
-     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
-     * available
-     */
-    public function getTokenDecode(Client $client, $authScope = 'publicData')
-    {
-        return $client->getEndpointResponse(
-            $this->content->decode->href,
-            $authScope
-        );
-    }
-
-    /**
      * Returns the first page of tournaments collection.
      *
      * @return \iveeCrest\Responses\TournamentCollection
@@ -238,28 +220,6 @@ class Root extends BaseResponse
     public function getTournamentCollection()
     {
         return static::getLastClient()->getEndpointResponse($this->content->tournaments->href);
-    }
-
-    /**
-     * Verifies the access token, returning data about the character linked to it.
-     *
-     * @param \iveeCrest\Client $client to be used
-     * @param string $authScope the CREST authentication scope whose access token shall be verified
-     * @param bool $cache whether the response of the verification should be cached
-     *
-     * @return \stdClass
-     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
-     * available
-     */
-    public function getVerifyAccessToken(Client $client, $authScope = 'publicData', $cache = false)
-    {
-        return $client->getEndpointResponse(
-            //no path to the verify endpoint is exposed, so we need construct it
-            str_replace('token', 'verify', $this->content->authEndpoint->href),
-            $authScope,
-            null,
-            $cache
-        );
     }
 
     /**

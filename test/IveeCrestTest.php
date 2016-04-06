@@ -125,18 +125,17 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
     public function testTokenVerify()
     {
         if ($this->client->hasAuthScope('publicData')) {
-            $verifyResponse = $this->pubRoot->getVerifyAccessToken($this->client);
+            $verifyResponse = $this->client->verifyAccessToken();
             $this->assertTrue($verifyResponse instanceof BaseResponse);
-            $this->assertTrue(isset($verifyResponse->getContent()->Scopes));
         }
     }
 
     public function testCharacterResponses()
     {
         if ($this->client->hasAuthScope('publicData')) {
-            $tokenDecode = $this->pubRoot->getTokenDecode($this->client);
+            $tokenDecode = $this->client->getTokenDecode();
             $this->assertTrue($tokenDecode instanceof TokenDecode);
-            $char = $tokenDecode->getCharacter($this->client);
+            $char = $tokenDecode->getCharacter();
             $this->assertTrue($char instanceof Character);
 
             if ($this->client->hasAuthScope('characterContactsRead')) {
