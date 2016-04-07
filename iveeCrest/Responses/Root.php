@@ -231,4 +231,14 @@ class Root extends BaseResponse
     {
         return static::getLastClient()->getEndpointResponse($this->content->wars->href);
     }
+
+    /**
+     * Returns the public CREST root endpoint.
+     *
+     * @return \iveeCrest\Responses\Root
+     */
+    public static function getPublicRootEndpoint()
+    {
+        return static::getLastClient()->getPublicRootEndpoint();
+    }
 }
