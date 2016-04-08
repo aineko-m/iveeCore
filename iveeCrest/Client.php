@@ -577,25 +577,43 @@ class Client
         callable $itemFunc = null,
         $cache = true
     ) {
+        //Construct hrefs to all pages. This doesn't follow the CREST design principle of following hrefs only, but
+        //unfortunately, CREST doesn't provide indices with hrefs to all pages of a paginated collection, so to
+        //parallelize the access, there's no other option than to extrapolate the hrefs.
+        $basePageHref = $collection->getHref();
+        $hrefs = [];
+        $hrefs[] = $basePageHref;
+        for ($p = 2; $p <= $collection->getPageCount(); $p++) {
+            $hrefs[] = $basePageHref . '?page=' . $p;
+        }
+
         $ret = [];
 
-        while (true) {
-            if (is_null($itemFunc)) {
+        //if no item extraction function is given, use a generic one
+        if (is_null($itemFunc)) {
+            $callback = function(ICollection $collection) use (&$ret) {
                 //if no items function has been given, just accumulate them into the result array
                 foreach ($collection->getElements() as $element) {
                     $ret[] = $element;
                 }
-            } else {
+            };
+        } else {
+            $callback = function(ICollection $collection) use ($itemFunc, &$ret) {
                 $itemFunc($ret, $collection);
-            }
-
-            //if there are more pages, do another iteration with next response
-            if ($collection->hasNextPage()) {
-                $collection = $collection->getNextPage($this, $authScope, $cache);
-            } else {
-                break;
-            }
+            };
         }
+
+        //run the parallel requests
+        $this->asyncGetMultiEndpointResponses(
+            $hrefs,
+            $authScope,
+            $callback,
+            null, //no dedicated error handling function so in case of a CREST error an exception will bubble up
+            null,
+            $cache
+        );
+
+        //sort result array by keys
         ksort($ret);
         return $ret;
     }

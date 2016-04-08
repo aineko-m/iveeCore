@@ -34,6 +34,13 @@ interface ICollection
     public function getHref();
 
     /**
+     * Returns the number of total pages available on the request endpoint.
+     *
+     * @return int
+     */
+    public function getPageCount();
+
+    /**
      * Checks if the response has a previous page.
      *
      * @return bool
