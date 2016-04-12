@@ -13,6 +13,8 @@
 
 namespace iveeCore;
 
+use iveeCore\Exceptions\KeyNotFoundInCacheException;
+
 /**
  * Class for representing stations.
  * Inheritance: Station -> SdeType -> CoreDataCommon
@@ -50,6 +52,11 @@ class Station extends SdeType
      * @var array holding the service names
      */
     protected static $services;
+
+    /**
+     * @var int $updateTs unix timstamp for the last update to facilities from CREST
+     */
+    protected $updateTs;
 
     /**
      * @var int $solarSystemId the ID of SolarSystem this Station is in.
@@ -258,16 +265,90 @@ class Station extends SdeType
     }
 
     /**
+     * Gets the timestamp for the last performed update of the facilities via CREST.
+     *
+     * @return int
+     */
+    public static function getLastFacilitiesUpdateTs()
+    {
+        $sdeClass = Config::getIveeClassName('SDE');
+
+        //get most recent update date
+        $res = $sdeClass::instance()->query(
+            "SELECT UNIX_TIMESTAMP(lastUpdate) as lastUpdateTs
+            FROM " . Config::getIveeDbName() . ".trackedCrestUpdates
+            WHERE name = 'facilities';"
+        );
+
+        if ($res->num_rows > 0) {
+            return (int) $res->fetch_assoc()['lastUpdateTs'];
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Main function for getting Station objects. Tries caches and instantiates new objects if necessary.
+     *
+     * @param int $stationId of the station
+     * @param int $maxDataAge the maximum acceptable CREST facilities data age.
+     *
+     * @return \iveeCore\Station
+     */
+    public static function getById($stationId, $maxDataAge = 10800)
+    {
+        //setup instance pool if needed
+        if (!isset(static::$instancePool)) {
+            static::init();
+        }
+
+        //try instance pool and cache
+        try {
+            $sta = static::$instancePool->getItem(
+                static::getClassHierarchyKeyPrefix() . (int) $stationId
+            );
+            if (!$sta->isTooOld($maxDataAge)) {
+                return $sta;
+            }
+        } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
+        }
+
+        $lastUpdateTs = static::getLastFacilitiesUpdateTs();
+
+        //if the last update is too long ago, do another
+        if ($lastUpdateTs + $maxDataAge < time()) {
+            //fetch data from CREST and update DB for all systems
+            $crestFacilitiesUpdaterClass = Config::getIveeClassName('CrestFacilitiesUpdater');
+            $crestFacilitiesUpdaterClass::doUpdate();
+
+            //since the CREST update affects all system indices, clear the instance pool
+            static::$instancePool->clearPool();
+        }
+
+        //instantiate new SystemIndustryIndices
+        $staClass = Config::getIveeClassName(static::getClassNick());
+        $sta = new $staClass($stationId, $lastUpdateTs, $maxDataAge);
+
+        //store object in instance pool and cache
+        static::$instancePool->setItem($sta);
+        return $sta;
+    }
+
+    /**
      * Constructor. Use iveeCore\Station::getById() to instantiate Station objects instead.
      *
      * @param int $id of the Station
+     * @param int $lastUpdateTs the timestamp of the last performed update from CREST
+     * @param int $maxDataAge the maximum acceptable index data age.
      *
      * @throws \iveeCore\Exceptions\StationIdNotFoundException if stationID is not found
      */
-    protected function __construct($id)
+    protected function __construct($id, $lastUpdateTs, $maxDataAge)
     {
         $this->id = (int) $id;
-        $this->setExpiry();
+        $this->updateTs = $lastUpdateTs;
+        $this->expiry = $this->updateTs + $maxDataAge;
+
         $sdeClass = Config::getIveeClassName('SDE');
         $sde = $sdeClass::instance();
 
@@ -333,6 +414,18 @@ class Station extends SdeType
         while ($row = $res->fetch_assoc()) {
             $this->assemblyLineTypeIds[$row['activityID']][] = $row['assemblyLineTypeID'];
         }
+    }
+
+    /**
+     * Gets whether the current data is too old.
+     *
+     * @param int $maxDataAge specifies the maximum CREST data age in seconds.
+     *
+     * @return bool
+     */
+    public function isTooOld($maxDataAge = 10800)
+    {
+        return $this->updateTs + $maxDataAge < time();
     }
 
     /**

@@ -69,7 +69,7 @@ abstract class CrestDataUpdater
             }
         }
 
-        $this->invalidateCaches();
+        $this->completeUpdate();
         $this->updatedIds = [];
     }
 
@@ -86,11 +86,11 @@ abstract class CrestDataUpdater
     }
 
     /**
-     * Invalidate any cache entries that were update in the DB.
+     * Hook for doing any other finalizing actions.
      *
      * @return void
      */
-    protected function invalidateCaches()
+    protected function completeUpdate()
     {
     }
 
@@ -100,12 +100,16 @@ abstract class CrestDataUpdater
      * @param \iveeCrest\Responses\Root $pubRoot to be used
      * @param bool $verbose whether info should be printed to console
      *
-     * @return void
+     * @return array
      */
-    public static function doUpdate(Root $pubRoot, $verbose = true)
+    public static function doUpdate(Root $pubRoot = null, $verbose = false)
     {
         if ($verbose) {
             echo get_called_class() . ' getting data from CREST... ';
+        }
+
+        if (is_null($pubRoot)) {
+            $pubRoot = Root::getPublicRootEndpoint();
         }
 
         //fetch the data, check returned representation name
@@ -120,6 +124,7 @@ abstract class CrestDataUpdater
         if ($verbose) {
             echo 'Done' . PHP_EOL;
         }
+        return $data;
     }
 
     /**

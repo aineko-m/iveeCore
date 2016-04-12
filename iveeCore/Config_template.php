@@ -187,6 +187,7 @@ class Config
         'SolarSystem'            => '\iveeCore\SolarSystem',
         'Starbase'               => '\iveeCore\Starbase',
         'Station'                => '\iveeCore\Station',
+        'SystemIndustryIndices'  => '\iveeCore\SystemIndustryIndices',
         'T3Blueprint'            => '\iveeCore\T3Blueprint',
         'Type'                   => '\iveeCore\Type',
         'Util'                   => '\iveeCore\Util',

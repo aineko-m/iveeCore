@@ -14,6 +14,7 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
+use iveeCore\SDE;
 use iveeCore\Station;
 use iveeCrest\Responses\Root;
 
@@ -52,7 +53,7 @@ class FacilitiesUpdater extends CrestDataUpdater
             }
         }
 
-        $this->invalidateCaches();
+        $this->completeUpdate();
         $this->updatedIds = [];
     }
 
@@ -98,12 +99,23 @@ class FacilitiesUpdater extends CrestDataUpdater
     }
 
     /**
-     * Invalidate any cache entries that were update in the DB
+     * Finalizes the update.
      *
      * @return void
      */
-    protected function invalidateCaches()
+    protected function completeUpdate()
     {
+        $sql = SDE::makeUpsertQuery(
+            Config::getIveeDbName() . '.trackedCrestUpdates',
+            [
+                'name' => 'facilities',
+                'lastUpdate' => date('Y-m-d H:i:s', time())
+            ],
+            ['lastUpdate' => date('Y-m-d H:i:s', time())]
+        );
+        SDE::instance()->multiQuery($sql . ' COMMIT;');
+
+        //invalidate cache of updated assembly lines
         $assemblyLineClass  = Config::getIveeClassName('AssemblyLine');
         $assemblyLineClass::deleteFromCache($this->updatedIds);
 

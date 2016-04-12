@@ -456,7 +456,7 @@ class IndustryModifier
         $modifiers['solarSystemId'] = $this->getSolarSystem()->getId();
         //get initial cost factor as system industry index and tax
         $modifiers['c'] = $modifiers['c']
-            * $this->getSolarSystem()->getIndustryIndexForActivity($activityId) * $this->getTaxFactor();
+            * $this->getSolarSystem()->getIndustryIndices()->getIndexForActivity($activityId) * $this->getTaxFactor();
 
         //apply skill and implant time factors
         $modifiers['t'] = $modifiers['t'] * $this->characterModifier->getIndustrySkillTimeFactor($activityId)

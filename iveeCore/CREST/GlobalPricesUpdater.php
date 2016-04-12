@@ -14,6 +14,7 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
+use iveeCore\SDE;
 use iveeCrest\Responses\Root;
 
 /**
@@ -64,12 +65,23 @@ class GlobalPricesUpdater extends CrestDataUpdater
     }
 
     /**
-     * Invalidate any cache entries that were update in the DB
+     * Finalizes the update.
      *
      * @return void
      */
-    protected function invalidateCaches()
+    protected function completeUpdate()
     {
+        $sql = SDE::makeUpsertQuery(
+            Config::getIveeDbName() . '.trackedCrestUpdates',
+            [
+                'name' => 'globalPrices',
+                'lastUpdate' => date('Y-m-d H:i:s', time())
+            ],
+            ['lastUpdate' => date('Y-m-d H:i:s', time())]
+        );
+        SDE::instance()->multiQuery($sql . ' COMMIT;');
+
+        //invalidate global price data cache
         $globalPriceDataClass = Config::getIveeClassName('GlobalPriceData');
         $globalPriceDataClass::deleteFromCache($this->updatedIds);
     }

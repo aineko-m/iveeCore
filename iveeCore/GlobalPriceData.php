@@ -39,6 +39,11 @@ class GlobalPriceData extends CoreDataCommon
     protected static $instancePool;
 
     /**
+     * @var int $updateTs unix timstamp for the last update to global prices from CREST
+     */
+    protected $updateTs;
+
+    /**
      * @var float $averagePrice eve-wide average, as returned by CREST
      */
     protected $averagePrice;
@@ -70,31 +75,71 @@ class GlobalPriceData extends CoreDataCommon
      * Retuns a GlobalPriceData object. Tries caches and instantiates new objects if necessary.
      *
      * @param int $typeId of requested market data typeId
-     * @param int $maxPriceDataAge maximum global price data age.
+     * @param int $maxDataAge the maximum acceptable CREST global price data age. This is in addition to a 24h minimum
+     * validity.
      *
      * @return \iveeCore\GlobalPriceData
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
      */
-    public static function getById($typeId, $maxPriceDataAge = null)
+    public static function getById($typeId, $maxDataAge = 3600)
     {
-        if (is_null($maxPriceDataAge)) {
-            $maxPriceDataAge = Config::getMaxPriceDataAge();
-        }
-
+        //setup instance pool if needed
         if (!isset(static::$instancePool)) {
             static::init();
         }
 
+        //try instance pool and cache
         try {
-            return static::$instancePool->getItem(static::getClassHierarchyKeyPrefix() . (int) $typeId);
-        } catch (KeyNotFoundInCacheException $e) {
-            //go to DB
-            $typeClass = Config::getIveeClassName(static::getClassNick());
-            $type = new $typeClass((int) $typeId, $maxPriceDataAge);
+            $gpd = static::$instancePool->getItem(
+                static::getClassHierarchyKeyPrefix() . (int) $typeId
+            );
+            if (!$gpd->isTooOld($maxDataAge)) {
+                return $gpd;
+            }
+        } catch (KeyNotFoundInCacheException $e) { //empty as we are using Exceptions for flow control here
+        }
 
-            //store object in instance pool
-            static::$instancePool->setItem($type);
-            return $type;
+        $lastUpdateTs = static::getLastUpdateTs();
+
+        //if the last update is too long ago, do another
+        if ($lastUpdateTs + $maxDataAge < time()) {
+            //fetch data from CREST and update DB for all systems
+            $crestGlobalPricesUpdaterClass = Config::getIveeClassName('CrestGlobalPricesUpdater');
+            $crestGlobalPricesUpdaterClass::doUpdate();
+
+            //since the CREST update affects all system indices, clear the instance pool
+            static::$instancePool->clearPool();
+        }
+
+        //instantiate new SystemIndustryIndices
+        $gpdClass = Config::getIveeClassName(static::getClassNick());
+        $gpd = new $gpdClass($typeId, $lastUpdateTs, $maxDataAge);
+
+        //store object in instance pool and cache
+        static::$instancePool->setItem($gpd);
+        return $gpd;
+    }
+
+    /**
+     * Gets the timestamp for the last performed update of the global prices via CREST.
+     *
+     * @return int
+     */
+    public static function getLastUpdateTs()
+    {
+        $sdeClass = Config::getIveeClassName('SDE');
+
+        //get most recent update date
+        $res = $sdeClass::instance()->query(
+            "SELECT UNIX_TIMESTAMP(lastUpdate) as lastUpdateTs
+            FROM " . Config::getIveeDbName() . ".trackedCrestUpdates
+            WHERE name = 'globalPrices';"
+        );
+
+        if ($res->num_rows > 0) {
+            return (int) $res->fetch_assoc()['lastUpdateTs'];
+        } else {
+            return 0;
         }
     }
 
@@ -102,11 +147,12 @@ class GlobalPriceData extends CoreDataCommon
      * Constructor. Use iveeCore\GlobalPriceData::getById() to instantiate GlobalPriceData objects instead.
      *
      * @param int $typeId of the market data type
-     * @param int $maxPriceDataAge maximum global price data age
+     * @param int $lastUpdateTs the timestamp of the last performed update from CREST
+     * @param int $maxDataAge maximum global price data age. This is in addition to a 24h minimum validity.
      *
      * @throws \iveeCore\Exceptions\NoPriceDataAvailableException if there is no price data available for the typeId
      */
-    protected function __construct($typeId, $maxPriceDataAge)
+    protected function __construct($typeId, $lastUpdateTs, $maxDataAge)
     {
         $this->id = (int) $typeId;
         //get data from SQL
@@ -114,8 +160,9 @@ class GlobalPriceData extends CoreDataCommon
         //set data to object attributes
         $this->setAttributes($row);
 
+        $this->updateTs = $lastUpdateTs;
         //calc expiry as the next day + max price data age
-        $this->expiry = $this->priceDate + 24 * 3600 + $maxPriceDataAge;
+        $this->expiry = $this->priceDate + 24 * 3600 + $maxDataAge;
     }
 
     /**

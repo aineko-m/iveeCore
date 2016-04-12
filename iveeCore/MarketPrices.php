@@ -15,6 +15,7 @@ namespace iveeCore;
 
 use iveeCore\Exceptions\KeyNotFoundInCacheException;
 use iveeCore\Exceptions\NoPriceDataAvailableException;
+use iveeCrest\Client;
 
 /**
  * MarketPrices holds the current market prices for a market item in a specific region. The "realistic" sell and buy
@@ -162,7 +163,8 @@ class MarketPrices extends CoreDataCommon
 
         if (is_null(static::$crestMarketProcessor)) {
             $crestMarketProcessorClass = Config::getIveeClassName('CrestMarketProcessor');
-            static::$crestMarketProcessor = new $crestMarketProcessorClass;
+            static::$crestMarketProcessor
+                = new $crestMarketProcessorClass(Client::getLastInstance()->getPublicRootEndpoint());
         }
 
         //fetch data from CREST and update DB

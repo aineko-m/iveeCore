@@ -57,16 +57,6 @@ class SolarSystem extends SdeType
     protected $factionId;
 
     /**
-     * @var int $industryIndexDate unix timstamp for the last update to industry system indices (day granularity)
-     */
-    protected $industryIndexDate;
-
-    /**
-     * @var array $industryIndices the system industry indices $activityId => float
-     */
-    protected $industryIndices = [];
-
-    /**
      * @var array $stationIds the IDs of Stations present in this SolarSystem
      */
     protected $stationIds = [];
@@ -140,35 +130,6 @@ class SolarSystem extends SdeType
         $this->name            = $row['solarSystemName'];
         $this->security        = (float) $row['security'];
         $this->factionId       = (int) $row['factionID'];
-
-        $res = $sde->query(
-            "SELECT systemID, UNIX_TIMESTAMP(date) as crestIndexDate, manufacturingIndex, teResearchIndex,
-            meResearchIndex, copyIndex, inventionIndex
-            FROM " . Config::getIveeDbName() . ".systemIndustryIndices
-            WHERE systemID = " . $this->id . "
-            ORDER BY date DESC LIMIT 1;"
-        )->fetch_assoc();
-
-        if (!empty($res)) {
-            if (isset($res['crestIndexDate'])) {
-                $this->industryIndexDate = (int) $res['crestIndexDate'];
-            }
-            if (isset($res['manufacturingIndex'])) {
-                $this->industryIndices[1] = (float) $res['manufacturingIndex'];
-            }
-            if (isset($res['teResearchIndex'])) {
-                $this->industryIndices[3] = (float) $res['teResearchIndex'];
-            }
-            if (isset($res['meResearchIndex'])) {
-                $this->industryIndices[4] = (float) $res['meResearchIndex'];
-            }
-            if (isset($res['copyIndex'])) {
-                $this->industryIndices[5] = (float) $res['copyIndex'];
-            }
-            if (isset($res['inventionIndex'])) {
-                $this->industryIndices[8] = (float) $res['inventionIndex'];
-            }
-        }
 
         $this->loadStations($sde);
     }
@@ -284,74 +245,16 @@ class SolarSystem extends SdeType
     }
 
     /**
-     * Gets unix timstamp for the last update to industry system indices (day granularity).
-     *
-     * @return int
-     */
-    public function getIndustryIndexDate()
-    {
-        if ($this->industryIndexDate > 0) {
-            return $this->industryIndexDate;
-        } else {
-            static::throwException(
-                'NoSystemDataAvailableException',
-                'No CREST system data available for SolarSystem ID=' . $this->id
-            );
-        }
-    }
-
-    /**
      * Gets industry indices of SolarSystem.
      *
      * @param int $maxIndexDataAge maximum index data age in seconds
      *
-     * @return float[] in the form activityId => float
-     * @throws \iveeCore\Exceptions\CrestDataTooOldException if given max index data age is exceeded
+     * @return \iveeCore\SystemIndustryIndices
      */
-    public function getIndustryIndices($maxIndexDataAge = 172800)
+    public function getIndustryIndices($maxIndexDataAge = 3600)
     {
-        if ($maxIndexDataAge > 0 and ($this->industryIndexDate + $maxIndexDataAge) < time()) {
-            static::throwException('CrestDataTooOldException', 'Index data for ' . $this->getName() . ' is too old');
-        }
-
-        return $this->industryIndices;
-    }
-
-    /**
-     * Gets industry indices of SolarSystem.
-     *
-     * @param int $activityId the ID of the activity to get industry index for
-     * @param int $maxIndexDataAge maximum index data age in seconds
-     *
-     * @return float
-     * @throws \iveeCore\Exceptions\ActivityIdNotFoundException if no index data is found for activityId in this system
-     */
-    public function getIndustryIndexForActivity($activityId, $maxIndexDataAge = 172800)
-    {
-        if (isset($this->industryIndices[$activityId])) {
-            if ($maxIndexDataAge > 0 and ($this->industryIndexDate + $maxIndexDataAge) < time()) {
-                static::throwException('CrestDataTooOldException', 'Index data for ' . $this->getName() . ' is too old');
-            }
-            return $this->industryIndices[$activityId];
-        } else {
-            static::throwException(
-                'ActivityIdNotFoundException',
-                'No industry index data found for activity ID=' . (int) $activityId
-            );
-        }
-    }
-
-    /**
-     * Sets industry indices. Useful for wormhole systems or what-if scenarios. If called, industryIndexDate is updated.
-     *
-     * @param float[] $indices must be in the form activityId => float
-     *
-     * @return void
-     */
-    public function setIndustryIndices(array $indices)
-    {
-        $this->industryIndexDate = time();
-        $this->industryIndices = $indices;
+        $systemIndicesClass = Config::getIveeClassName('SystemIndustryIndices');
+        return $systemIndicesClass::getById($this->id, $maxIndexDataAge);
     }
 
     /**

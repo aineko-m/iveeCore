@@ -15,6 +15,7 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
+use iveeCore\SDE;
 use iveeCrest\Responses\Root;
 
 /**
@@ -93,12 +94,23 @@ class IndustryIndicesUpdater extends CrestDataUpdater
     }
 
     /**
-     * Invalidate any cache entries that were update in the DB
+     * Finalizes the update.
      *
      * @return void
      */
-    protected function invalidateCaches()
+    protected function completeUpdate()
     {
+        $sql = SDE::makeUpsertQuery(
+            Config::getIveeDbName() . '.trackedCrestUpdates',
+            array(
+                'name' => 'industryIndices',
+                'lastUpdate' => date('Y-m-d H:i:s', time())
+            ),
+            array('lastUpdate' => date('Y-m-d H:i:s', time()))
+        );
+        SDE::instance()->multiQuery($sql . ' COMMIT;');
+
+        //invalidate solar system cache
         $assemblyLineClass  = Config::getIveeClassName('SolarSystem');
         $assemblyLineClass::deleteFromCache($this->updatedIds);
     }

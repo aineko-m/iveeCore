@@ -197,4 +197,14 @@ class InstancePool
     {
         return count($this->keyToObj);
     }
+
+    /**
+     * Clears all instances in the pool (not cache).
+     *
+     * @return void
+     */
+    public function clearPool()
+    {
+        $this->keyToObj = [];
+    }
 }

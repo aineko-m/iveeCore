@@ -243,7 +243,6 @@ class Blueprint extends Type
      *
      * @param IndustryModifier $iMod the object that holds all the information about skills, implants, system industry
      * indices, tax and assemblyLines.
-     *
      * @param int $units the number of items to produce; defaults to 1.
      * @param int $bpME level of the BP; if left null, get from IBlueprintModifier contained in IndustryModifier
      * @param int $bpTE level of the BP; if left null, get from IBlueprintModifier contained in IndustryModifier
