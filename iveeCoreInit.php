@@ -28,7 +28,8 @@ if (PHP_INT_SIZE < 8) {
 //eve runs on UTC time
 date_default_timezone_set('UTC');
 
-//include Config_template if Config doesn't exist
+//include Config_template if Config doesn't exist. You can configure iveeCore programatically at runtime with the setter
+//methods of the Config class.
 $iveeCoreClassesBasePath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'iveeCore' . DIRECTORY_SEPARATOR;
 if (!file_exists($iveeCoreClassesBasePath . 'Config.php')) {
     require_once $iveeCoreClassesBasePath . 'Config_template.php';

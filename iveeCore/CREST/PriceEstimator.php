@@ -17,8 +17,7 @@ use iveeCore\Config;
 
 /**
  * PriceEstimator provides methods for estimating realistic buy and sell order prices as well as calculating average
- * order age (a form of measuring activity and competition) and supply and demand based on data from
- * CrestMarketPricessor.
+ * order age (a form of measuring activity and competition) and supply and demand based on data from MarketProcessor.
  *
  * @category IveeCore
  * @package  IveeCoreClasses

@@ -3,6 +3,8 @@
  * Main configuration file for iveeCore.
  *
  * Copy and edit this file according to your environment. The edited file should be saved as Config.php
+ * Alternatively, you can set your own configuration at runtime programatically via the setter methods. If the file
+ * Config.php does not exist, the class loader will load Config_template.php.
  *
  * PHP version 5.4
  *
@@ -16,7 +18,7 @@
 namespace iveeCore;
 
 /**
- * The Config class holds the basic iveeCore configuration for database, cache, classnames and CREST.
+ * The Config class holds the basic iveeCore/iveeCrest configuration for database, cache, classnames and CREST.
  *
  * @category IveeCore
  * @package  IveeCoreClasses
@@ -42,8 +44,6 @@ class Config
 
     //Cache config
     protected static $cachePrefix = 'iveeCore_';
-
-    //Memcached specific settings
     protected static $cacheHost   = 'localhost';
     protected static $cachePort   = 11211; //memcached default: 11211, redis default: 6379
 
@@ -51,15 +51,18 @@ class Config
     protected static $authedCrestBaseUrl       = 'https://crest-tq.eveonline.com/';
     protected static $publicCrestBaseUrl       = 'https://public-crest.eveonline.com/';
 
-    //Configure these with the information for your registered app from https://developers.eveonline.com/applications
-    //Set null if not using authenticated CREST.
-    protected static $crestClientId            = 'myclientid';
-    protected static $crestClientSecret        = 'myclientsecret';
+    /**
+     * Configure these with the information for your registered app from https://developers.eveonline.com/applications
+     * Set null if not using authenticated CREST.
+     */
+    protected static $crestClientId            = '';
+    protected static $crestClientSecret        = '';
 
-    //Character specific refresh token. Tokens can have multiple authentication scopes. Refresh tokens can be gotten
-    //with the webscript under www/getrefreshtoken.php
-    //Set null if not using authenticated CREST.
-    protected static $crestClientRefreshToken  = 'myrefreshtoken';
+    /**
+     * Character specific refresh token. Tokens can have multiple authentication scopes. Refresh tokens can be gotten
+     * with the webscript under www/getrefreshtoken.php. Set null if not using authenticated CREST.
+     */
+    protected static $crestClientRefreshToken  = '';
 
     //set the name of your application. It is used as part of the User Agent when accessing the CREST API.
     protected static $applicationName = 'unknown application';
@@ -146,9 +149,11 @@ class Config
 //        10000069  //Black Rise
     ];
 
-    //To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
-    //up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
-    //can then be used by the autoloader. Change according to your needs.
+    /**
+     * To enable developers to extend iveeCore with their own classes (inheriting from iveeCore), it dynamically lookups
+     * up class names before instantiating them. This array maps from class "nicknames" to fully qualified names, which
+     * can then be used by the autoloader. Change according to your needs.
+     */
     protected static $classes = [
         'AssemblyLine'           => '\iveeCore\AssemblyLine',
         'Blueprint'              => '\iveeCore\Blueprint',
@@ -315,7 +320,6 @@ class Config
     const DATETIME_PATTERN = '/^(([0-9][0-9][0-9][0-9]))-((0[1-9])|(1[0-2]))-((0[1-9])|([12][0-9])|(3[01])) (([01][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9])$/';
     const DATE_PATTERN     = '/^(([0-9][0-9][0-9][0-9]))-((0[0-9])|(1[0-2]))-((0[0-9])|([12][0-9])|(3[01]))$/';
     const GENERICNUMERIC_PATTERN = '/^[0-9.]*$/';
-    const CREST_CONTENT_TYPE_REPRESENTATION_PATTERN = '/^application\/(.*)\+json; charset=utf-8$/im';
     //when using this pattern for strings in SQL queries, you MUST encase them in double quotes, as single quotes are
     //allowed!
     const SANITIZE_STRING_PATTERN = "/[^0-9a-zA-Z()_&':\s-]/";

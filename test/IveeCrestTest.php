@@ -77,11 +77,12 @@ use iveeCrest\Responses\WarsCollection;
 /**
  * PHPUnit test for iveeCrest
  *
- * The tests some parts of iveeCrest. It is mainly used to aid during the development, but can also be used to check the
- * correct working of an iveeCrest installation. Currently the tests just call methods and check for returned type.
+ * The test covers key parts of iveeCrest. It is mainly used to aid during the development, but can also be used to
+ * check the correct working of an iveeCrest installation. Currently the tests just call methods and check for returned
+ * type.
  *
- * To run this test, you'll need to have PHPUnit installed as well as created the iveeCrest/Config.php file based on the
- * provided template. Expect the test to run for about a minute starting with a cold cache.
+ * To run this test, you'll need to have PHPUnit installed. Expect the test to run for roughly a minute starting with a
+ * cold cache.
  *
  * @category IveeCore
  * @package  IveeCoreExtensions
