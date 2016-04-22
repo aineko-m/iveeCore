@@ -56,7 +56,7 @@ abstract class CoreDataCommon implements ICacheable, ICoreDataCommon
     {
         if (!isset(static::$instancePool)) {
             $ipoolClass = Config::getIveeClassName('InstancePool');
-            static::$instancePool = new $ipoolClass(get_called_class());
+            static::$instancePool = new $ipoolClass;
         }
     }
 
