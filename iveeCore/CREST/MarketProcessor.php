@@ -14,6 +14,8 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
+use iveeCrest\Exceptions\IveeCrestException;
+use iveeCrest\Responses\BaseResponse;
 use iveeCrest\Responses\MarketOrderCollection;
 use iveeCrest\Responses\MarketTypeHistoryCollection;
 use iveeCrest\Responses\Root;
@@ -118,16 +120,21 @@ class MarketProcessor
         $this->verboseBatch = $verbose;
         $regionCollection = $this->pubRoot->getRegionCollection();
         foreach (array_unique($regionIds) as $regionId) {
-            $regionCollection->getRegion($regionId)->getMultiMarketHistory(
-                $typeIds,
-                function (MarketTypeHistoryCollection $response) {
-                    $this->processHistoryCollection($response);
-                },
-                function (MarketTypeHistoryCollection $response) {
-                    print_r($response); //TODO: what to do with error case?
-                },
-                false
-            );
+            try {
+                $regionCollection->getRegion($regionId)->getMultiMarketHistory(
+                    $typeIds,
+                    function (MarketTypeHistoryCollection $response) {
+                        $this->processHistoryCollection($response);
+                    },
+                    function (BaseResponse $response) {
+                        print_r($response); //TODO: what to do with error case?
+                    },
+                    false
+                );
+            } catch (IveeCrestException $ex) {
+                //This exception can occur when there's an error during the gathering of multipage history collection
+                print_r($ex); //TODO: what to do with error case?
+            }
         }
 
         $this->commitSql();
@@ -314,16 +321,21 @@ class MarketProcessor
         $this->verboseBatch = $verbose;
         $regionCollection = $this->pubRoot->getRegionCollection();
         foreach (array_unique($regionIds) as $regionId) {
-            $regionCollection->getRegion($regionId)->getMultiMarketOrders(
-                $typeIds,
-                function (MarketOrderCollection $response) {
-                    $this->processOrderCollection($response);
-                },
-                function (MarketOrderCollection $response) {
-                    print_r($response); //TODO: what to do with error case?
-                },
-                false
-            );
+            try {
+                $regionCollection->getRegion($regionId)->getMultiMarketOrders(
+                    $typeIds,
+                    function (MarketOrderCollection $response) {
+                        $this->processOrderCollection($response);
+                    },
+                    function (BaseResponse $response) {
+                        print_r($response); //TODO: what to do with error case?
+                    },
+                    false
+                );
+            } catch (IveeCrestException $ex) {
+                //This exception can occur when there's an error during the gathering of multipage order collection
+                print_r($ex); //TODO: what to do with error case?
+            }
 
             //overwrite existing array to ensure cleanup of potentially unprocessed single responses
             $this->orderResponseBuffer = [];
