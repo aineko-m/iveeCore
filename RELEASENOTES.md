@@ -1,5 +1,28 @@
 This file lists major changes in iveeCore releases.
 
+Version 3.0.0 - April 24th, 2016
+--------------------------------
+iveeCrest has been thoroughly refactored:
+
+- Typed responses have been implemented, so depending on the response content types, dedicated classes get instantiated for them.
+- EndpointHandler has been removed. All of its functionality is now offered by the response classes.
+- Multiple authentication scopes are now supported.
+- Write access to CREST is supported.
+- Non-authenticated CREST endpoints can now be accessed without the need to set up the application in the Eve developer backend.
+- Collections are now gathered in parallel for higher performance.
+- The getrefreshtoken PHP web script now supports the selection of multiple authentication scopes.
+
+Other improvements include:
+
+- The iveeCore CREST updater has been improved, all CREST data can now be updated on-the-fly if it is too old.
+- Solar system industry indices have been moved to their own class, SytemIndustryIndices.
+- In InventionProcessData the methods available in a regular and a "success" variant have been renamed to "attempt" and regular, respectively. This avoids specialcasing for handling ProcessData object trees and is less error prone.
+- Rewritten documentation.
+- The codebase is now more PSR-2 compliant.
+- Improved PHPUnit tests.
+- Various bug fixes and removed redundancies.
+
+
 Version 2.6.2 - August 27th, 2015
 ---------------------------------
 - Recursive reaction calculation. Now industry processes that take a ReactionProduct as input can recurse into the reaction process.

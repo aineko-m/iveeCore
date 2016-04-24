@@ -54,7 +54,7 @@ The CREST portion of the engine (formerly the iveeCrest library) can be used in 
 
 
 ## Documentation
-- [Release notes](https://github.com/aineko-m/iveeCore/blob/master/RELEASENOTES)
+- [Release notes](https://github.com/aineko-m/iveeCore/blob/master/RELEASENOTES.md)
 - [Installation and configuration](https://github.com/aineko-m/iveeCore/blob/master/doc/installAndConfig.md)
 - [iveeCore user guide](https://github.com/aineko-m/iveeCore/blob/master/doc/iveeCore.md)
 - [iveeCrest user guide](https://github.com/aineko-m/iveeCore/blob/master/doc/iveeCrest.md)

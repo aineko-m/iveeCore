@@ -42,7 +42,7 @@ Once you've done this, you'll find the directory 'iveeCore' with all its files.
 ## Setting up the Static Data Export DB in MySQL
 If you intend to only use the CREST functionality through the iveeCrest classes, you may skip all the database setup steps.
 
-The SDE dump in MySQL format can be found at Steve Ronukens Fuzzwork site: [https://www.fuzzwork.co.uk/dump/mysql-latest.tar.bz2](https://www.fuzzwork.co.uk/dump/mysql-latest.tar.bz2)
+The SDE dump in MySQL format can be found at Steve Ronukens Fuzzwork site: [https://www.fuzzwork.co.uk/dump/](https://www.fuzzwork.co.uk/dump/)
 
 Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to acces and modify it. You could use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_yc118-3". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 
@@ -145,7 +145,7 @@ Whenever you want to upgrade to another SDE, the following steps are recommended
 
 
 ## Upgrading iveeCore
-When iveeCore is updated, be sure to read the [release notes](https://github.com/aineko-m/iveeCore/blob/master/RELEASENOTES) for changes that might affect your application or setup.
+When iveeCore is updated, be sure to read the [release notes](https://github.com/aineko-m/iveeCore/blob/master/RELEASENOTES.md) for changes that might affect your application or setup.
 Most of the time upgrading to newer versions of iveeCore is as simple as cd-ing into iveeCore's directory and running "git pull".
 When the iveeCore/Config_template.php is extended you'll have to recreate or adapt your own iveeCore/Config.php. This is not needed if you set your Config parameters at runtime.
 
