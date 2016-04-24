@@ -30,4 +30,4 @@ Finally, static codeanalysis is performed via [Scrutinizer](https://scrutinizer-
 - Possibly removing the stored procedures, if the same functionality can be achieved without adding more DB call round-trips.
 - Possibly moving to PDO based DB connectivity, although currently there's no pressing need for that.
 
-I'll try to keep improving iveeCores features, structuring, API and test coverage. iveeCore is under active development so I can't promise the API will be stable. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, feedback or are "just" a user, please post in this thread: [EVE Online Forum: iveeCore](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
+I'll try to keep improving iveeCores features, structuring, API and test coverage. iveeCore is under active development so I can't promise the API will be stable. I'm open to suggestions and will also consider patches for inclusion. If you find bugs, feedback or are "just" a user, please post in this thread: [EVE Online Forum: iveeCore](https://forums.eveonline.com/default.aspx?g=posts&t=478538).

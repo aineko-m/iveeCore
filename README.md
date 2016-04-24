@@ -63,7 +63,7 @@ The CREST portion of the engine (formerly the iveeCrest library) can be used in 
 - [Class diagram](https://github.com/aineko-m/iveeCore/raw/master/doc/iveeCore_class_diagram.pdf)
 
 
-If you find bugs, have feedback or are "just" a user, please post in this thread: [EVE Online Forum: iveeCore](https://forums.eveonline.com/default.aspx?g=posts&t=292458).
+If you find bugs, have feedback or are "just" a user, please post in this thread: [EVE Online Forum: iveeCore](https://forums.eveonline.com/default.aspx?g=posts&t=478538).
 
 
 ## FAQ
