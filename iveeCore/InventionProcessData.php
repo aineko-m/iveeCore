@@ -335,34 +335,4 @@ class InventionProcessData extends ProcessData
     {
         return $this->getTotalAttemptCost($iMod) / $this->probability;
     }
-
-    /**
-     * Prints data about this process.
-     *
-     * @param \iveeCore\IndustryModifier $buyContext for buying context
-     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext ist used.
-     *
-     * @return void
-     */
-    public function printData(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
-    {
-        $utilClass = Config::getIveeClassName('Util');
-
-        echo "Average total success times:" . PHP_EOL;
-        print_r($this->getTotalTimes());
-
-        echo "Average total success materials:" . PHP_EOL;
-        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount) {
-            echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
-        }
-
-        echo "Total average success material cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($buyContext)) . "ISK" . PHP_EOL;
-        echo "Total average success slot cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;
-        echo "Total average success cost: "
-        . $utilClass::quantitiesToReadable($this->getTotalCost($buyContext)) . "ISK" . PHP_EOL;
-        echo "Total profit: "
-        . $utilClass::quantitiesToReadable($this->getTotalProfit($buyContext, $sellContext)) . "ISK" . PHP_EOL;
-    }
 }

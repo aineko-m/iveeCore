@@ -215,31 +215,4 @@ class ProcessData extends ProcessDataCommon
 
         return $sum;
     }
-
-    /**
-     * Prints data about this process.
-     *
-     * @param \iveeCore\IndustryModifier $buyContext for buying context
-     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext will be
-     * used.
-     *
-     * @return void
-     */
-    public function printData(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
-    {
-        $utilClass = Config::getIveeClassName('Util');
-        echo "Total slot time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
-
-        //iterate over materials
-        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount) {
-            echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
-        }
-
-        echo "Material cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($buyContext)) . "ISK"
-            . PHP_EOL;
-        echo "Slot cost: "     . $utilClass::quantitiesToReadable($this->getTotalProcessCost()) . "ISK" . PHP_EOL;
-        echo "Total cost: "    . $utilClass::quantitiesToReadable($this->getTotalCost($buyContext)) . "ISK" . PHP_EOL;
-        echo "Total profit: "  . $utilClass::quantitiesToReadable($this->getTotalProfit($buyContext, $sellContext))
-            . "ISK" . PHP_EOL;
-    }
 }

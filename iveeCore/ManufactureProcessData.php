@@ -126,39 +126,4 @@ class ManufactureProcessData extends ProcessData
         return $marketPrices->getSellPrice($sellContext->getMaxPriceDataAge()) * $this->producesQuantity
             * $sellContext->getSellTaxFactor() - $this->getTotalCost($buyContext);
     }
-
-    /**
-     * Prints data about this process.
-     *
-     * @param \iveeCore\IndustryModifier $buyContext for buying context
-     * @param \iveeCore\IndustryModifier $sellContext for selling context, optional. If not given, $buyContext ist used.
-     *
-     * @return void
-     */
-    public function printData(IndustryModifier $buyContext, IndustryModifier $sellContext = null)
-    {
-        $utilClass = Config::getIveeClassName('Util');
-
-        echo "Total Slot Time: " .  $utilClass::secondsToReadable($this->getTotalTime()) . PHP_EOL;
-        echo "Total Materials for " . $this->producesQuantity . "x "
-            . Type::getById($this->producesTypeId)->getName() . ":" . PHP_EOL;
-
-        //iterate over materials
-        foreach ($this->getTotalMaterialMap()->getMaterials() as $typeId => $amount) {
-            echo $amount . 'x ' . Type::getById($typeId)->getName() . PHP_EOL;
-        }
-
-        echo "Total Material Cost: " . $utilClass::quantitiesToReadable($this->getTotalMaterialBuyCost($buyContext))
-            . "ISK" . PHP_EOL;
-        echo "Total Slot Cost: " . $utilClass::quantitiesToReadable($this->getTotalProcessCost())
-            . "ISK" . PHP_EOL;
-        echo "Total Cost: " . $utilClass::quantitiesToReadable($this->getTotalCost($buyContext))
-            . "ISK" . PHP_EOL;
-        try {
-            echo "Total Profit: " . $utilClass::quantitiesToReadable($this->getTotalProfit($buyContext, $sellContext))
-                . "ISK" . PHP_EOL;
-        } catch (Exceptions\NoPriceDataAvailableException $e) {
-            echo "No profit calculation possible due to missing price data for product" . PHP_EOL;
-        }
-    }
 }
