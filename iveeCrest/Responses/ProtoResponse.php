@@ -185,7 +185,7 @@ class ProtoResponse
             case 'application/vnd.ccp.eve.Options-v1+json':
                 $responseClass = Config::getIveeClassName("Options");
                 break;
-            case 'application/vnd.ccp.eve.Planet-v1+json':
+            case 'application/vnd.ccp.eve.Planet-v2+json':
                 $responseClass = Config::getIveeClassName("Planet");
                 break;
             case 'application/vnd.ccp.eve.RegionCollection-v1+json':
