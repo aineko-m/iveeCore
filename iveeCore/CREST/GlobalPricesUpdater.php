@@ -89,13 +89,13 @@ class GlobalPricesUpdater extends CrestDataUpdater
     /**
      * Fetches the data from CREST.
      *
-     * @param \iveeCrest\Responses\Root $pubRoot to be used
+     * @param \iveeCrest\Responses\Root $root to be used
      *
      * @return array
      */
-    protected static function getData(Root $pubRoot)
+    protected static function getData(Root $root)
     {
         //we dont set the cache flag because the data normally won't be read again
-        return $pubRoot->getMarketTypePriceCollection()->gather();
+        return $root->getMarketTypePriceCollection()->gather();
     }
 }

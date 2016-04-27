@@ -1553,7 +1553,7 @@ omitted</Text>
         <Member type="Method">public void insertIntoDB()</Member>
         <Member type="Method">public string processDataItemToSQL(stdClass item)</Member>
         <Member type="Method">protected void completeUpdate()</Member>
-        <Member type="Method">public static array doUpdate(Root pubRoot, bool verbose)</Member>
+        <Member type="Method">public static array doUpdate(Root root, bool verbose)</Member>
         <Modifier>Abstract</Modifier>
       </Entity>
       <Entity type="Class">
@@ -1563,7 +1563,7 @@ omitted</Text>
         <Size width="399" height="264" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected Client client</Member>
-        <Member type="Field">protected Root pubRoot</Member>
+        <Member type="Field">protected Root root</Member>
         <Member type="Field">protected MarketProcessor marketProcessor</Member>
         <Member type="Method">public void run(array args, array regionIds)</Member>
         <Member type="Method">protected void testAuthedCrest()</Member>
@@ -1572,7 +1572,7 @@ omitted</Text>
         <Member type="Method">protected void updateFacilities(bool verbose)</Member>
         <Member type="Method">protected void updateHistory(array regionIds, bool verbose)</Member>
         <Member type="Method">protected void updatePrices(array regionIds, bool verbose)</Member>
-        <Member type="Method">protected array getTypeIdsToUpdate(int regionId, int cutoffTs, string dateColumn, Root pubRoot)</Member>
+        <Member type="Method">protected array getTypeIdsToUpdate(int regionId, int cutoffTs, string dateColumn, Root root)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">
@@ -1584,7 +1584,7 @@ omitted</Text>
         <Member type="Field">protected static SDE sde</Member>
         <Member type="Field">protected static array marketTypes</Member>
         <Member type="Field">protected static array regions</Member>
-        <Member type="Field">protected Root pubRoot</Member>
+        <Member type="Field">protected Root root</Member>
         <Member type="Field">protected array orderResponseBuffer</Member>
         <Member type="Field">protected bool verboseBatch</Member>
         <Member type="Field">protected string sqlInsertBuffer</Member>
@@ -1707,8 +1707,7 @@ omitted</Text>
         <Member type="Field">protected Root publicRootEndpoint</Member>
         <Member type="Method">public Client __construct(string clientId, string clientSecret, string charRefreshToken, string clientUserAgent, ICache cache)</Member>
         <Member type="Method">public static Client getLastInstance()</Member>
-        <Member type="Method">public string getPublicCrestBaseUrl()</Member>
-        <Member type="Method">public string getAuthedCrestBaseUrl()</Member>
+        <Member type="Method">public string getCrestBaseUrl()</Member>
         <Member type="Method">public ICache getCache()</Member>
         <Member type="Method">public array getBasicAuthHeader()</Member>
         <Member type="Method">public array getBearerAuthHeader()</Member>
@@ -1717,7 +1716,7 @@ omitted</Text>
         <Member type="Method">public string getAccessToken()</Member>
         <Member type="Method">public BaseResponse verifyAccessToken()</Member>
         <Member type="Method">public TokenDecode getTokenDecode()</Member>
-        <Member type="Method">public Root getPublicRootEndpoint()</Member>
+        <Member type="Method">public Root getRootEndpoint()</Member>
         <Member type="Method">public BaseResponse getEndpointResponse(string url, bool auth, string accept, bool cache)</Member>
         <Member type="Method">public stdClass getEndpoint(string url, bool auth, string accept, bool cache)</Member>
         <Member type="Method">public BaseResponse post(string uri, string fieldString, string authScope)</Member>
@@ -1900,7 +1899,7 @@ omitted</Text>
         <Member type="Method">public SystemCollection getSystemCollection()</Member>
         <Member type="Method">public TournamentCollection getTournamentCollection()</Member>
         <Member type="Method">public WarsCollection getWarsCollection()</Member>
-        <Member type="Method">public static Root getPublicRootEndpoint()</Member>
+        <Member type="Method">public static Root getRootEndpoint()</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Class">

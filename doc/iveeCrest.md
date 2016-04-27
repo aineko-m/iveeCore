@@ -34,14 +34,14 @@ The following shows an example of how to navigate the CREST data tree:
 //Get Client instance with default configuration
 $client = new Client;
 
-//Get the public root response
-$pubRoot = $client->getPublicRootEndpoint();
+//Get the root response
+$root = $client->getRootEndpoint();
 
 //CREST root contains many hrefs to further endpoints. These are accessible through convenience methods.
-print_r($pubRoot);
+print_r($root);
 
 //Get the first page of the alliance collection
-$allianceCollection = $pubRoot->getAllianceCollection();
+$allianceCollection = $root->getAllianceCollection();
 
 //Note how the list is incomplete, but more pages are referenced
 print_r($allianceCollection);
@@ -69,7 +69,7 @@ On all methods that access endpoints requiring authentication scopes, a Client o
 
 ```php
 //Get the character endpoint for the character linked to the refresh token
-$characterResponse = $client->getPublicRootEndpoint()->getCharacter($client);
+$characterResponse = $client->getRootEndpoint()->getCharacter($client);
 print_r(characterResponse);
 
 //If the used refresh token has the required authentication scopes, you can fetch different private
@@ -90,10 +90,10 @@ As markets are segmented by region, the market data is accessed from a region re
 $client = new Client;
 
 //Get the public root response
-$pubRoot = $client->getPublicRootEndpoint();
+$root = $client->getRootEndpoint();
 
 //Get regions collection
-$regionCollection = $pubRoot->getRegionCollection();
+$regionCollection = $root->getRegionCollection();
 
 //Get "The Forge" region response
 $region = $regionCollection->getRegion(10000002);

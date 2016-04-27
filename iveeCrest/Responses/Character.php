@@ -83,7 +83,7 @@ class Character extends EndpointItem
             $client = static::getLastClient();
         }
 
-        $types = $client->getPublicRootEndpoint()->getItemTypeCollection()->gather();
+        $types = $client->getRootEndpoint()->getItemTypeCollection()->gather();
 
         //build data object to be posted as json
         $data = new \stdClass;
@@ -207,7 +207,7 @@ class Character extends EndpointItem
         }
 
         //fetch system data
-        $systems = $client->getPublicRootEndpoint()->getSystemCollection()->gather();
+        $systems = $client->getRootEndpoint()->getSystemCollection()->gather();
         if (!isset($systems[$systemId])) {
             $exceptionClass = Config::getIveeClassName('InvalidParameterValueException');
             throw new $exceptionClass('No solar system with ID = ' . (int) $systemId . ' found.');
@@ -260,7 +260,7 @@ class Character extends EndpointItem
             'id' => (int) $id,
             //theres no openly accesible character or corporation collection we could get the data from, so we must
             //construct the URL
-            'href' => Config::getPublicCrestBaseUrl() . $types[$type] . (int) $id . '/'
+            'href' => Config::getCrestBaseUrl() . $types[$type] . (int) $id . '/'
         ];
         $data->standing = (int) $standing;
 

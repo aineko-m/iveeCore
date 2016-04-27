@@ -49,16 +49,9 @@ class Client
     protected static $gatheredItems = [];
 
     /**
-     * @var string $publicCrestBaseUrl specifies the public CREST root URL from which most other endpoints can be
-     * navigated to.
+     * @var string $crestBaseUrl specifies the CREST root URL from which most other endpoints can be navigated to.
      */
-    protected $publicCrestBaseUrl;
-
-    /**
-     * @var string $authedCrestBaseUrl specifies the authenticated CREST root URL from which most other endpoints can be
-     * navigated to.
-     */
-    protected $authedCrestBaseUrl;
+    protected $crestBaseUrl;
 
     /**
      * @var string $clientId holds the client application ID as configured in CCPs developer application backend:
@@ -98,10 +91,9 @@ class Client
     protected $cw;
 
     /**
-     * @var \iveeCrest\Responses\Root $publicRootEndpoint holds the public CREST root endpoint (after having been
-     * requested at least once)
+     * @var \iveeCrest\Responses\Root $rootEndpoint holds the CREST root endpoint (after having been requested)
      */
-    protected $publicRootEndpoint;
+    protected $rootEndpoint;
 
     /**
      * Constructs a Client object. Note that because of the refresh tokens these are character-specific.
@@ -119,8 +111,7 @@ class Client
         $clientUserAgent = null,
         ICache $cache = null
     ) {
-        $this->publicCrestBaseUrl = Config::getPublicCrestBaseUrl();
-        $this->authedCrestBaseUrl = Config::getAuthedCrestBaseUrl();
+        $this->crestBaseUrl = Config::getCrestBaseUrl();
 
         //if configuration parameters are not passed in constructor, lookup in configuration
         $this->clientId = is_null($clientId) ? Config::getCrestClientId() : $clientId;
@@ -161,23 +152,13 @@ class Client
     }
 
     /**
-     * Returns the public CREST root URL.
+     * Returns the used CREST root URL.
      *
      * @return string
      */
-    public function getPublicCrestBaseUrl()
+    public function getCrestBaseUrl()
     {
-        return $this->publicCrestBaseUrl;
-    }
-
-    /**
-     * Returns the authenticated CREST root URL.
-     *
-     * @return string
-     */
-    public function getAuthedCrestBaseUrl()
-    {
-        return $this->authedCrestBaseUrl;
+        return $this->crestBaseUrl;
     }
 
     /**
@@ -263,7 +244,7 @@ class Client
         //if we don't have the required valid access token, get one
         if (!isset($this->charAccessToken) or time() >= $this->charAccessTokenExpiry) {
             $accessTokenResponse = $this->cw->post(
-                $this->getPublicRootEndpoint()->getContent()->authEndpoint->href,
+                $this->getRootEndpoint()->getContent()->authEndpoint->href,
                 $this->getBasicAuthHeader(),
                 'grant_type=refresh_token&refresh_token=' . $this->getRefreshToken(),
                 $this->getRefreshToken(),
@@ -295,10 +276,9 @@ class Client
             $this->getAccessToken();
         }
 
-        //we have to construct the URL as there is no navigable way to it via CREST discovery
-        $url = str_replace('token', 'verify', $this->getPublicRootEndpoint()->getContent()->authEndpoint->href);
         return $this->cw->get(
-            str_replace($this->publicCrestBaseUrl, $this->authedCrestBaseUrl, $url), //adapt to authed CREST base URL
+            //we have to construct the URL as there is no navigable way to it via CREST discovery
+            str_replace('token', 'verify', $this->getRootEndpoint()->getContent()->authEndpoint->href),
             ['Authorization: Bearer ' . $this->charAccessToken], //can't use getBearerAuthHeader() due to loop
             $this->charAccessToken, //use access token as cache key prefix so we don't mix verfies of different tokens
             true //cache
@@ -315,22 +295,22 @@ class Client
     public function getTokenDecode()
     {
         return $this->getEndpointResponse(
-            $this->getPublicRootEndpoint()->getContent()->decode->href,
+            $this->getRootEndpoint()->getContent()->decode->href,
             'publicData'
         );
     }
 
     /**
-     * Returns the public CREST root endpoint.
+     * Returns the CREST root endpoint.
      *
      * @return \iveeCrest\Responses\Root
      */
-    public function getPublicRootEndpoint()
+    public function getRootEndpoint()
     {
-        if (is_null($this->publicRootEndpoint)) {
-            $this->publicRootEndpoint = $this->getEndpointResponse($this->publicCrestBaseUrl);
+        if (is_null($this->rootEndpoint)) {
+            $this->rootEndpoint = $this->getEndpointResponse($this->crestBaseUrl);
         }
-        return $this->publicRootEndpoint;
+        return $this->rootEndpoint;
     }
 
     /**
@@ -359,14 +339,9 @@ class Client
 
             //we use the refresh token as cache key prefix to ensure data separation in multi-character use cases
             $cacheNsPrefix = $this->getRefreshToken();
-
-            //since CREST doesn't reference between authed and public base URLs, we must infer it from the use of auth
-            //scopes and adapt the base URL accordingly
-            $url = str_replace($this->publicCrestBaseUrl, $this->authedCrestBaseUrl, $url);
         } else {
             $header = [];
             $cacheNsPrefix = '';
-            $url = str_replace($this->authedCrestBaseUrl, $this->publicCrestBaseUrl, $url);
         }
 
         if (isset($accept)) {

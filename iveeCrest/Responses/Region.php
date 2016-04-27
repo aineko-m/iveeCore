@@ -101,7 +101,7 @@ class Region extends EndpointItem
         $client = static::getLastClient();
         return $client->getEndpointResponse(
             //Here we have to construct the URL because there's no navigable way to reach this data via CREST hrefs
-            $client->getPublicCrestBaseUrl() . 'market/' . $this->getId() . '/types/' . (int) $typeId . '/history/',
+            $client->getCrestBaseUrl() . 'market/' . $this->getId() . '/types/' . (int) $typeId . '/history/',
             false,
             null,
             $cache
@@ -131,7 +131,7 @@ class Region extends EndpointItem
         $hrefs = [];
         foreach (array_unique($typeIds) as $typeId) {
             //Here we have to construct the URL because there's no navigable way to reach this data via CREST hrefs
-            $hrefs[] = $client->getPublicCrestBaseUrl() . 'market/' . $this->getId() . '/types/' . (int) $typeId
+            $hrefs[] = $client->getCrestBaseUrl() . 'market/' . $this->getId() . '/types/' . (int) $typeId
                 . '/history/';
         }
 
@@ -181,7 +181,7 @@ class Region extends EndpointItem
      */
     public function getMarketOrders($typeId)
     {
-        $marketTypeHrefs = static::getLastClient()->getPublicRootEndpoint()->getMarketTypeCollection()->gatherHrefs();
+        $marketTypeHrefs = static::getLastClient()->getRootEndpoint()->getMarketTypeCollection()->gatherHrefs();
         if (!isset($marketTypeHrefs[$typeId])) {
             $invalidArgumentExceptionClass = Config::getIveeClassName('InvalidArgumentException');
             throw new $invalidArgumentExceptionClass('TypeID = ' . (int) $typeId . ' not found in market types');
@@ -214,7 +214,7 @@ class Region extends EndpointItem
         $cache = true
     ) {
         $client = static::getLastClient();
-        $marketTypeHrefs = $client->getPublicRootEndpoint()->getMarketTypeCollection()->gatherHrefs();
+        $marketTypeHrefs = $client->getRootEndpoint()->getMarketTypeCollection()->gatherHrefs();
         $hrefs = [];
         foreach (array_unique($typeIds) as $typeId) {
             if (!isset($marketTypeHrefs[$typeId])) {

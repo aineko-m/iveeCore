@@ -98,29 +98,29 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
     protected $client;
 
     /**
-     * @var \iveeCrest\Responses\Root $pubRoot
+     * @var \iveeCrest\Responses\Root $root
      */
-    protected $pubRoot;
+    protected $root;
 
     protected function setUp()
     {
         $cacheClass = Config::getIveeClassName('Cache');
         $cacheClass::instance()->flushCache();
         $this->client = new Client;
-        $this->pubRoot = $this->client->getPublicRootEndpoint();
+        $this->root = $this->client->getRootEndpoint();
     }
 
     public function testClient()
     {
         $this->assertTrue($this->client->getCache() instanceof ICache);
-        $or = $this->client->getOptions($this->client->getAuthedCrestBaseUrl());
+        $or = $this->client->getOptions($this->client->getCrestBaseUrl());
         $this->assertTrue($or instanceof Options);
     }
 
     public function testRootResponses()
     {
-        $pubRoot = $this->client->getPublicRootEndpoint();
-        $this->assertTrue($pubRoot instanceof Root);
+        $root = $this->client->getRootEndpoint();
+        $this->assertTrue($root instanceof Root);
     }
 
     public function testTokenVerify()
@@ -155,7 +155,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
 
     public function testInventoryResponses()
     {
-        $itemGroupCollection = $this->pubRoot->getItemGroupCollection();
+        $itemGroupCollection = $this->root->getItemGroupCollection();
         $this->assertTrue($itemGroupCollection instanceof ItemGroupCollection);
         $itemGroup = $itemGroupCollection->getItemGroup(26);
         $this->assertTrue($itemGroup instanceof ItemGroup);
@@ -163,7 +163,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($itemCategory instanceof ItemCategory);
         $this->assertTrue($itemCategory->getGroups()[358] instanceof ItemGroup);
 
-        $itemCategoryCollection = $this->pubRoot->getItemCategoryCollection();
+        $itemCategoryCollection = $this->root->getItemCategoryCollection();
         $this->assertTrue($itemCategoryCollection instanceof ItemCategoryCollection);
         $this->assertTrue($itemCategoryCollection->getItemCategory(65) instanceof ItemCategory);
         $this->assertTrue($itemCategoryCollection->getItemCategories()[23] instanceof ItemCategory);
@@ -171,7 +171,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
 
     public function testAllianceResponses()
     {
-        $allianceCollection = $this->pubRoot->getAllianceCollection();
+        $allianceCollection = $this->root->getAllianceCollection();
         $this->assertTrue($allianceCollection instanceof AllianceCollection);
         $gatheredAlliances = $allianceCollection->gather();
         $this->assertTrue(is_array($gatheredAlliances));
@@ -181,7 +181,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
 
     public function testUniverseLocationResponses()
     {
-        $regionCollection = $this->pubRoot->getRegionCollection();
+        $regionCollection = $this->root->getRegionCollection();
         $this->assertTrue($regionCollection instanceof RegionCollection);
         $region = $regionCollection->getRegion(10000006);
         $this->assertTrue($region instanceof Region);
@@ -192,44 +192,44 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
         $planet = $system->getPlanet(40034969);
         $this->assertTrue($planet instanceof Planet);
 
-        $systemCollection = $this->pubRoot->getSystemCollection();
+        $systemCollection = $this->root->getSystemCollection();
         $this->assertTrue($systemCollection instanceof SystemCollection);
         $this->assertTrue($systemCollection->getSystem(30002576) instanceof System);
-        $constellationCollection = $this->pubRoot->getConstellationCollection();
+        $constellationCollection = $this->root->getConstellationCollection();
         $this->assertTrue($constellationCollection instanceof ConstellationCollection);
         $this->assertTrue($constellationCollection->getConstellation(20000246) instanceof Constellation);
     }
 
     public function testDogmaResponses()
     {
-        $dogmaAttributeCollection = $this->pubRoot->getDogmaAttributeCollection();
+        $dogmaAttributeCollection = $this->root->getDogmaAttributeCollection();
         $this->assertTrue($dogmaAttributeCollection instanceof DogmaAttributeCollection);
         $this->assertTrue($dogmaAttributeCollection->getDogmaAttribute(4) instanceof DogmaAttribute);
-        $dogmaEffectCollection = $this->pubRoot->getDogmaEffectCollection();
+        $dogmaEffectCollection = $this->root->getDogmaEffectCollection();
         $this->assertTrue($dogmaEffectCollection instanceof DogmaEffectCollection);
         $this->assertTrue($dogmaEffectCollection->getDogmaEffect(4) instanceof DogmaEffect);
     }
 
     public function testIndustryResponses()
     {
-        $marketTypePricesCollection = $this->pubRoot->getMarketTypePriceCollection();
+        $marketTypePricesCollection = $this->root->getMarketTypePriceCollection();
         $this->assertTrue($marketTypePricesCollection instanceof MarketTypePriceCollection);
-        $industryFacilityCollection = $this->pubRoot->getIndustryFacilityCollection();
+        $industryFacilityCollection = $this->root->getIndustryFacilityCollection();
         $this->assertTrue($industryFacilityCollection instanceof IndustryFacilityCollection);
-        $industrySystemCollection = $this->pubRoot->getIndustrySystemCollection();
+        $industrySystemCollection = $this->root->getIndustrySystemCollection();
         $this->assertTrue($industrySystemCollection instanceof IndustrySystemCollection);
     }
 
     public function testMarketResponses()
     {
-        $marketGroupCollection = $this->pubRoot->getMarketGroupCollection();
+        $marketGroupCollection = $this->root->getMarketGroupCollection();
         $this->assertTrue($marketGroupCollection instanceof MarketGroupCollection);
         $marketGroup = $marketGroupCollection->getMarketGroup(4);
         $this->assertTrue($marketGroup instanceof MarketGroup);
         $marketTypesCollection = $marketGroup->getMarketTypeCollection();
         $this->assertTrue($marketTypesCollection instanceof MarketTypeCollection);
 
-        $region = $this->pubRoot->getRegionCollection()->getRegion(10000006);
+        $region = $this->root->getRegionCollection()->getRegion(10000006);
         $marketOrders = $region->getMarketOrders(34);
         $this->assertTrue(isset($marketOrders->sellOrders) and is_array($marketOrders->buyOrders));
         $history = $region->getMarketHistory(34);
@@ -256,22 +256,22 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
 
     public function testIncursionResponses()
     {
-        $incursionCollection = $this->pubRoot->getIncursionCollection();
+        $incursionCollection = $this->root->getIncursionCollection();
         $this->assertTrue($incursionCollection instanceof IncursionCollection);
         $this->assertTrue(is_array($incursionCollection->gather()));
     }
 
     public function testSovResponses()
     {
-        $sovCampaigns = $this->pubRoot->getSovereigntyCampaingCollection();
+        $sovCampaigns = $this->root->getSovereigntyCampaingCollection();
         $this->assertTrue($sovCampaigns instanceof SovCampaignsCollection);
-        $sovStructures = $this->pubRoot->getSovereigntyStructureCollection();
+        $sovStructures = $this->root->getSovereigntyStructureCollection();
         $this->assertTrue($sovStructures instanceof SovStructureCollection);
     }
 
     public function testTournamentResponses()
     {
-        $tournamentsCollection = $this->pubRoot->getTournamentCollection();
+        $tournamentsCollection = $this->root->getTournamentCollection();
         $this->assertTrue($tournamentsCollection instanceof TournamentCollection);
         $tournament = $tournamentsCollection->getTournament(6);
         $this->assertTrue($tournament instanceof Tournament);
@@ -304,7 +304,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
 
     public function testWarResponses()
     {
-        $wars = $this->pubRoot->getWarsCollection();
+        $wars = $this->root->getWarsCollection();
         $this->assertTrue($wars instanceof WarsCollection);
         $war = $wars->getWar(1);
         $this->assertTrue($war instanceof War);
@@ -312,7 +312,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($warKillmails instanceof WarKillmails);
 
         $km = $this->client->getEndpointResponse(
-            'https://public-crest.eveonline.com/killmails/30290604/787fb3714062f1700560d4a83ce32c67640b1797/'
+            'https://crest-tq.eveonline.com/killmails/30290604/787fb3714062f1700560d4a83ce32c67640b1797/'
         );
         $this->assertTrue($km instanceof Killmail);
     }

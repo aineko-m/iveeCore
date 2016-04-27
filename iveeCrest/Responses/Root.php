@@ -233,12 +233,12 @@ class Root extends BaseResponse
     }
 
     /**
-     * Returns the public CREST root endpoint.
+     * Returns the CREST root endpoint.
      *
      * @return \iveeCrest\Responses\Root
      */
-    public static function getPublicRootEndpoint()
+    public static function getRootEndpoint()
     {
-        return static::getLastClient()->getPublicRootEndpoint();
+        return static::getLastClient()->getRootEndpoint();
     }
 }

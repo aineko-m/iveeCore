@@ -97,23 +97,23 @@ abstract class CrestDataUpdater
     /**
      * Perform the complete update.
      *
-     * @param \iveeCrest\Responses\Root $pubRoot to be used
+     * @param \iveeCrest\Responses\Root $root to be used
      * @param bool $verbose whether info should be printed to console
      *
      * @return array
      */
-    public static function doUpdate(Root $pubRoot = null, $verbose = false)
+    public static function doUpdate(Root $root = null, $verbose = false)
     {
         if ($verbose) {
             echo get_called_class() . ' getting data from CREST... ';
         }
 
-        if (is_null($pubRoot)) {
-            $pubRoot = Root::getPublicRootEndpoint();
+        if (is_null($root)) {
+            $root = Root::getRootEndpoint();
         }
 
         //fetch the data, check returned representation name
-        $data = static::getData($pubRoot);
+        $data = static::getData($root);
         if ($verbose) {
             echo "Done" . PHP_EOL . 'Saving data in DB... ';
         }
@@ -130,11 +130,11 @@ abstract class CrestDataUpdater
     /**
      * Fetch the data via CREST.
      *
-     * @param \iveeCrest\Responses\Root $pubRoot to be used
+     * @param \iveeCrest\Responses\Root $root to be used
      *
      * @return array
      */
-    protected static function getData(Root $pubRoot)
+    protected static function getData(Root $root)
     {
         return [];
     }

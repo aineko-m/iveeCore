@@ -76,7 +76,7 @@ class WarsCollection extends Collection
         //we don't use the wars collection here due to it's huge size
         $client = static::getLastClient();
         return $client->getEndpointResponse(
-            $client->getPublicRootEndpoint()->getContent()->wars->href . (int) $warId . '/'
+            $client->getRootEndpoint()->getContent()->wars->href . (int) $warId . '/'
         );
     }
 }

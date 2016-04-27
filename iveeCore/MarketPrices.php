@@ -164,7 +164,7 @@ class MarketPrices extends CoreDataCommon
         if (is_null(static::$crestMarketProcessor)) {
             $crestMarketProcessorClass = Config::getIveeClassName('CrestMarketProcessor');
             static::$crestMarketProcessor
-                = new $crestMarketProcessorClass(Client::getLastInstance()->getPublicRootEndpoint());
+                = new $crestMarketProcessorClass(Client::getLastInstance()->getRootEndpoint());
         }
 
         //fetch data from CREST and update DB

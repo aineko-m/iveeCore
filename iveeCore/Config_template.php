@@ -48,8 +48,7 @@ class Config
     protected static $cachePort   = 11211; //memcached default: 11211, redis default: 6379
 
     //CREST config
-    protected static $authedCrestBaseUrl       = 'https://crest-tq.eveonline.com/';
-    protected static $publicCrestBaseUrl       = 'https://public-crest.eveonline.com/';
+    protected static $crestBaseUrl       = 'https://crest-tq.eveonline.com/';
 
     /**
      * Configure these with the information for your registered app from https://developers.eveonline.com/applications
@@ -530,47 +529,25 @@ class Config
     }
 
     /**
-     * Returns configured public CREST base URL.
+     * Returns configured CREST base URL.
      *
      * @return string
      */
-    public static function getPublicCrestBaseUrl()
+    public static function getCrestBaseUrl()
     {
-        return static::$publicCrestBaseUrl;
+        return static::$crestBaseUrl;
     }
 
     /**
-     * Configure public CREST base URL.
+     * Configure CREST base URL.
      *
-     * @param string $publicCrestBaseUrl for the CREST API
+     * @param string $crestBaseUrl for the CREST API
      *
      * @return void
      */
-    public static function setPublicCrestBaseUrl($publicCrestBaseUrl)
+    public static function setCrestBaseUrl($crestBaseUrl)
     {
-        static::$publicCrestBaseUrl = $publicCrestBaseUrl;
-    }
-
-    /**
-     * Returns configured authed CREST base URL.
-     *
-     * @return string
-     */
-    public static function getAuthedCrestBaseUrl()
-    {
-        return static::$authedCrestBaseUrl;
-    }
-
-    /**
-     * Sets the authed CREST base URL.
-     *
-     * @param string $authedCrestBaseUrl the URL
-     *
-     * @return void
-     */
-    public static function setAuthedCrestBaseUrl($authedCrestBaseUrl)
-    {
-        static::$authedCrestBaseUrl = $authedCrestBaseUrl;
+        static::$crestBaseUrl = $crestBaseUrl;
     }
 
     /**

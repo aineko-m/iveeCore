@@ -50,9 +50,9 @@ class MarketProcessor
     protected static $regions = [];
 
     /**
-     * @var \iveeCrest\Responses\Root the public root CREST enpdoint response
+     * @var \iveeCrest\Responses\Root $root the root CREST enpdoint response
      */
-    protected $pubRoot;
+    protected $root;
 
     /**
      * @var array $orderResponseBuffer used to match buy and sell order response data pairs before processing them
@@ -77,11 +77,11 @@ class MarketProcessor
     /**
      * Constructor.
      *
-     * @param \iveeCrest\Responses\Root $pubRoot to be used
+     * @param \iveeCrest\Responses\Root $root to be used
      */
-    public function __construct(Root $pubRoot)
+    public function __construct(Root $root)
     {
-        $this->pubRoot = $pubRoot;
+        $this->root = $root;
         $sdeClass = Config::getIveeClassName('SDE');
         static::$sde = $sdeClass::instance();
     }
@@ -99,7 +99,7 @@ class MarketProcessor
     public function getNewestHistoryData($typeId, $regionId, $cache = true)
     {
         $ret = $this->processHistoryCollection(
-            $this->pubRoot->getRegionCollection()->getRegion($regionId)->getMarketHistory($typeId, $cache)
+            $this->root->getRegionCollection()->getRegion($regionId)->getMarketHistory($typeId, $cache)
         );
         $this->commitSql();
         return $ret;
@@ -118,7 +118,7 @@ class MarketProcessor
     public function runHistoryBatch(array $typeIds, array $regionIds, $verbose = false)
     {
         $this->verboseBatch = $verbose;
-        $regionCollection = $this->pubRoot->getRegionCollection();
+        $regionCollection = $this->root->getRegionCollection();
         foreach (array_unique($regionIds) as $regionId) {
             try {
                 $regionCollection->getRegion($regionId)->getMultiMarketHistory(
@@ -298,7 +298,7 @@ class MarketProcessor
     public function getNewestPriceData($typeId, $regionId)
     {
         $ret = $this->processOrderData(
-            $this->pubRoot->getRegionCollection()->getRegion($regionId)->getMarketOrders($typeId),
+            $this->root->getRegionCollection()->getRegion($regionId)->getMarketOrders($typeId),
             $typeId,
             $regionId
         );
@@ -319,7 +319,7 @@ class MarketProcessor
     public function runPriceBatch(array $typeIds, array $regionIds, $verbose = false)
     {
         $this->verboseBatch = $verbose;
-        $regionCollection = $this->pubRoot->getRegionCollection();
+        $regionCollection = $this->root->getRegionCollection();
         foreach (array_unique($regionIds) as $regionId) {
             try {
                 $regionCollection->getRegion($regionId)->getMultiMarketOrders(

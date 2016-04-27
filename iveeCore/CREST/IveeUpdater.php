@@ -34,9 +34,9 @@ class IveeUpdater
     protected $client;
 
     /**
-     * @var \iveeCrest\Responses\Root $pubRoot public root CREST endpoint response
+     * @var \iveeCrest\Responses\Root $root root CREST endpoint response
      */
-    protected $pubRoot;
+    protected $root;
 
     /**
      * @var \iveeCore\CREST\MarketProcessor $marketProcessor instance to be used
@@ -84,7 +84,7 @@ class IveeUpdater
         $clientClass = Config::getIveeClassName('Client');
         //no parameters passed, i.e. default configured settings are used for client
         $this->client = new $clientClass;
-        $this->pubRoot = $this->client->getPublicRootEndpoint();
+        $this->root = $this->client->getRootEndpoint();
 
         if (in_array('-testauth', $args)) {
             $this->testAuthedCrest();
@@ -150,7 +150,7 @@ class IveeUpdater
         if (time() - $lastUpdateTs > 3500) {
             //do system industry indices update
             $crestIndustryIndicesUpdaterClass = Config::getIveeClassName('CrestIndustryIndicesUpdater');
-            $crestIndustryIndicesUpdaterClass::doUpdate($this->pubRoot, $verbose);
+            $crestIndustryIndicesUpdaterClass::doUpdate($this->root, $verbose);
         } elseif ($verbose) {
             echo "System industry indices still up-to-date, skipping.\n";
         }
@@ -175,7 +175,7 @@ class IveeUpdater
         if ($lastUpdateTs < mktime(0, 0, 0)) {
             //do global prices update
             $crestGlobalPricesUpdaterClass = Config::getIveeClassName('CrestGlobalPricesUpdater');
-            $crestGlobalPricesUpdaterClass::doUpdate($this->pubRoot, $verbose);
+            $crestGlobalPricesUpdaterClass::doUpdate($this->root, $verbose);
         } elseif ($verbose) {
             echo "Global prices still up-to-date, skipping\n";
         }
@@ -197,7 +197,7 @@ class IveeUpdater
         //if roughly three hours passed, do the update
         if (time() - $lastUpdateTs > 10000) {
             $crestFacilitiesUpdaterClass = Config::getIveeClassName('CrestFacilitiesUpdater');
-            $crestFacilitiesUpdaterClass::doUpdate($this->pubRoot, $verbose);
+            $crestFacilitiesUpdaterClass::doUpdate($this->root, $verbose);
 
             
         } elseif ($verbose) {
@@ -217,7 +217,7 @@ class IveeUpdater
     {
         if (!isset($this->marketProcessor)) {
             $crestMarketProcessorClass = Config::getIveeClassName('CrestMarketProcessor');
-            $this->marketProcessor = new $crestMarketProcessorClass($this->pubRoot);
+            $this->marketProcessor = new $crestMarketProcessorClass($this->root);
         }
 
         if ($verbose) {
@@ -227,7 +227,7 @@ class IveeUpdater
         //history doesn't need to be updated more than once a day
         $cutoffTs = mktime(0, 0, 0);
         foreach ($regionIds as $regionId) {
-            $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastHistUpdate', $this->pubRoot);
+            $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastHistUpdate', $this->root);
             if (count($idsToUpdate) > 0) {
                 if ($verbose) {
                     echo 'Updating history data for ' . count($idsToUpdate) . ' market types in regionId=' . $regionId
@@ -254,7 +254,7 @@ class IveeUpdater
     {
         if (!isset($this->marketProcessor)) {
             $crestMarketProcessorClass = Config::getIveeClassName('CrestMarketProcessor');
-            $this->marketProcessor = new $crestMarketProcessorClass($this->pubRoot);
+            $this->marketProcessor = new $crestMarketProcessorClass($this->root);
         }
 
         if ($verbose) {
@@ -264,7 +264,7 @@ class IveeUpdater
         //get the cutoff timestamp for determining what price data age is too old
         $cutoffTs = time() - Config::getMaxPriceDataAge();
         foreach ($regionIds as $regionId) {
-            $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastPriceUpdate', $this->pubRoot);
+            $idsToUpdate = static::getTypeIdsToUpdate($regionId, $cutoffTs, 'lastPriceUpdate', $this->root);
             if (count($idsToUpdate) > 0) {
                 if ($verbose) {
                     echo 'Updating price data for ' . count($idsToUpdate) . ' market types in regionId=' . $regionId
@@ -283,14 +283,14 @@ class IveeUpdater
      * @param int $regionId to be checked
      * @param int $cutoffTs the unix timestamp to be used to decide if data is too old
      * @param string $dateColumn the DB column to check the timestamp on, either 'lastHistUpdate' or 'lastPriceUpdate'
-     * @param \iveeCrest\Responses\Root $pubRoot to be used
+     * @param \iveeCrest\Responses\Root $root to be used
      *
      * @return array
      */
-    protected static function getTypeIdsToUpdate($regionId, $cutoffTs, $dateColumn, Root $pubRoot)
+    protected static function getTypeIdsToUpdate($regionId, $cutoffTs, $dateColumn, Root $root)
     {
         //get matket typeIds from CREST
-        $marketTypeIds = array_keys($pubRoot->getMarketTypeCollection()->gatherHrefs());
+        $marketTypeIds = array_keys($root->getMarketTypeCollection()->gatherHrefs());
 
         //get the subset Ids that need updating and are not Dust-only
         $sdeClass = Config::getIveeClassName('SDE');
