@@ -18,17 +18,51 @@ DEFINE('APPLICATION_MANAGEMENT_URL', 'https://developers.eveonline.com/applicati
 DEFINE('CREST_BASE_URL', 'https://login.eveonline.com');
 DEFINE('CREST_AUTH_URL', '/oauth/authorize');
 DEFINE('CREST_TOKEN_URL', '/oauth/token');
-DEFINE('USER_AGENT', 'iveeCore/3.0.0 (GetRefreshToken)');
+DEFINE('USER_AGENT', 'iveeCore/3.0.1 (GetRefreshToken)');
 
 //all scopes except publicData
 $scopes = [
+    'characterAccountRead',
+    'characterAssetsRead',
+    'characterBookmarksRead',
+    'characterCalendarRead',
+    'characterChatChannelsRead',
+    'characterClonesRead',
     'characterContactsRead',
     'characterContactsWrite',
+    'characterContractsRead',
+    'characterFactionalWarfareRead',
     'characterFittingsRead',
     'characterFittingsWrite',
+    'characterIndustryJobsRead',
+    'characterKillsRead',
     'characterLocationRead',
+    'characterLoyaltyPointsRead',
+    'characterMailRead',
+    'characterMarketOrdersRead',
+    'characterMedalsRead',
     'characterNavigationWrite',
-    'characterStatsRead'
+    'characterNotificationsRead',
+    'characterOpportunitiesRead',
+    'characterResearchRead',
+    'characterSkillsread',
+    'characterStatsRead',
+    'characterWalletRead',
+    'corporationAssetRead',
+    'corporationBookmarksRead',
+    'corporationContractsRead',
+    'corporationFactionalWarfareRead',
+    'corporationIndustryJobsRead',
+    'corporationKillsRead',
+    'corporationMarketOrdersRead',
+    'corporationMedalsRead',
+    'corporationMembersRead',
+    'corporationShareholdersRead',
+    'corporationStructuresRead',
+    'corporationWalletRead',
+    'fleetRead',
+    'fleetWrite',
+    'structureVulnUpdate'
 ];
 
 session_start();
