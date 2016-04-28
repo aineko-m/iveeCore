@@ -231,7 +231,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
 
         $region = $this->root->getRegionCollection()->getRegion(10000006);
         $marketOrders = $region->getMarketOrders(34);
-        $this->assertTrue(isset($marketOrders->sellOrders) and is_array($marketOrders->buyOrders));
+        $this->assertTrue($marketOrders instanceof MarketOrderCollection);
         $history = $region->getMarketHistory(34);
         $this->assertTrue($history instanceof MarketTypeHistoryCollection);
 
@@ -242,7 +242,7 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
                 $multiOrders[] = $response;
             }
         );
-        $this->assertTrue(count($multiOrders) == 4); //two responses per item due to buy and sell
+        $this->assertTrue(count($multiOrders) == 2); //two responses expected
 
         $multiHistory = [];
         $region->getMultiMarketHistory(

@@ -655,6 +655,8 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="5" second="15">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -667,6 +669,8 @@ omitted</Text>
         <EndMultiplicity>0..1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="5" second="6">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="False">
@@ -695,8 +699,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="14" second="16">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -726,6 +728,8 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="16" second="17">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -749,8 +753,6 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="5" second="22">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1035,6 +1037,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="9" second="8">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1305,6 +1309,8 @@ omitted</Text>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="2" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1317,6 +1323,8 @@ omitted</Text>
         <EndMultiplicity>0..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1332,6 +1340,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="0">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1343,8 +1353,6 @@ omitted</Text>
         <EndMultiplicity>1..*</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="3" second="0">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1376,6 +1384,8 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="1" second="7">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1383,6 +1393,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="6">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <BendPoint relativeToStartShape="True">
@@ -1406,8 +1418,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="2" second="12">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1579,7 +1589,7 @@ omitted</Text>
         <Name>MarketProcessor</Name>
         <Access>Public</Access>
         <Location left="88" top="402" />
-        <Size width="399" height="468" />
+        <Size width="399" height="434" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static SDE sde</Member>
         <Member type="Field">protected static array marketTypes</Member>
@@ -1597,7 +1607,6 @@ omitted</Text>
         <Member type="Method">public array getNewestPriceData(int typeId, int regionId)</Member>
         <Member type="Method">public void runPriceBatch(array typeIds, array regionIds, bool verbose)</Member>
         <Member type="Method">protected void processOrderCollection(MarketOrderCollection orderCollection)</Member>
-        <Member type="Method">protected array processOrderData(stdClass odata, int typeId, int regionId)</Member>
         <Member type="Method">protected void upsertPriceDb(array priceData, int typeId, int regionId)</Member>
         <Member type="Method">protected void submitSql(string sql)</Member>
         <Member type="Method">protected void commitSql()</Member>
@@ -1609,12 +1618,12 @@ omitted</Text>
         <Name>PriceEstimator</Name>
         <Access>Public</Access>
         <Location left="614" top="593" />
-        <Size width="321" height="216" />
+        <Size width="321" height="213" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected SDE sde</Member>
         <Member type="Field">protected MarketProcessor marketProcessor</Member>
         <Member type="Method">public PriceEstimator __construct(MarketProcessor cmp)</Member>
-        <Member type="Method">public array calcValues(stdClass odata, int typeId, int regionId)</Member>
+        <Member type="Method">public array calcValues(MarketOrderCollection orderCollection)</Member>
         <Member type="Method">protected array getWeeklyAverages(int typeId, int regionId)</Member>
         <Member type="Method">protected array processSellOrderData(array data, float avgVol)</Member>
         <Member type="Method">protected array processBuyOrderData(array data, float avgVol)</Member>
@@ -1657,8 +1666,6 @@ omitted</Text>
         </BendPoint>
       </Relationship>
       <Relationship type="Association" first="4" second="5">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1666,8 +1673,6 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="6" second="5">
-        <Label>
-        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1675,6 +1680,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="4" second="3">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1690,7 +1697,7 @@ omitted</Text>
         <Name>Client</Name>
         <Access>Public</Access>
         <Location left="33" top="29" />
-        <Size width="487" height="655" />
+        <Size width="487" height="638" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static Client lastInstance</Member>
         <Member type="Field">protected ICache cache</Member>
@@ -1731,7 +1738,7 @@ omitted</Text>
         <Name>CurlWrapper</Name>
         <Access>Public</Access>
         <Location left="591" top="29" />
-        <Size width="366" height="281" />
+        <Size width="366" height="264" />
         <Collapsed>False</Collapsed>
         <Member type="Field">protected ICache cache</Member>
         <Member type="Field">protected string userAgent</Member>
@@ -1928,6 +1935,8 @@ omitted</Text>
     </Entities>
     <Relationships>
       <Relationship type="Association" first="0" second="1">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1936,6 +1945,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="0" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Horizontal</StartOrientation>
         <EndOrientation>Horizontal</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1944,6 +1955,8 @@ omitted</Text>
         <EndMultiplicity>1</EndMultiplicity>
       </Relationship>
       <Relationship type="Association" first="1" second="2">
+        <Label>
+        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>
@@ -1960,8 +1973,6 @@ omitted</Text>
         <EndOrientation>Vertical</EndOrientation>
       </Relationship>
       <Relationship type="Association" first="2" second="3">
-        <Label>
-        </Label>
         <StartOrientation>Vertical</StartOrientation>
         <EndOrientation>Vertical</EndOrientation>
         <Direction>Unidirectional</Direction>

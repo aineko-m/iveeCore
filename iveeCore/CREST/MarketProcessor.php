@@ -297,10 +297,8 @@ class MarketProcessor
      */
     public function getNewestPriceData($typeId, $regionId)
     {
-        $ret = $this->processOrderData(
-            $this->root->getRegionCollection()->getRegion($regionId)->getMarketOrders($typeId),
-            $typeId,
-            $regionId
+        $ret = $this->processOrderCollection(
+            $this->root->getRegionCollection()->getRegion($regionId)->getMarketOrders($typeId)
         );
         $this->commitSql();
         return $ret;
@@ -344,62 +342,20 @@ class MarketProcessor
     }
 
     /**
-     * Processes CREST market order responses. It is assumed this method will only be called in batch mode.
+     * Processes market order collection, calculating realistic prices and other values and doing the DB upsert.
      *
-     * CREST splits buy and sell orders into two separate calls, but they must be processed together (we dont't want to
-     * deal with partial DB updates). Async CREST calls can return in any order, so we must pair each buy order to its
-     * matching sell order or vice versa by buffering whichever response comes first before processing them atomically.
-     *
-     * @param \iveeCrest\Responses\MarketOrderCollection $orderCollection to be processed
-     *
-     * @return void
-     * @throws \iveeCore\Exceptions\UnexpectedDataException if Response with wrong representation is passed
-     */
-    protected function processOrderCollection(MarketOrderCollection $orderCollection)
-    {
-        $regionId = $orderCollection->getRegionId();
-        $typeId = $orderCollection->getTypeId();
-        $key = $regionId . '_' . $typeId;
-
-        //Instantiate stdClass object if necessary
-        if (!isset($this->orderResponseBuffer[$key])) {
-            $this->orderResponseBuffer[$key] = new \stdClass;
-        }
-
-        //buffer the collection items as either buy or sell order
-        if ($orderCollection->isSell()) {
-            $this->orderResponseBuffer[$key]->sellOrders = $orderCollection->gather();
-        } else {
-            $this->orderResponseBuffer[$key]->buyOrders = $orderCollection->gather();
-        }
-
-        //if buy and sell order data has been matched, process it
-        if (isset($this->orderResponseBuffer[$key]->buyOrders)
-            and isset($this->orderResponseBuffer[$key]->sellOrders)
-        ) {
-            $this->processOrderData($this->orderResponseBuffer[$key], $typeId, $regionId);
-            //unset data when done to preserve memory
-            unset($this->orderResponseBuffer[$key]);
-        }
-    }
-
-    /**
-     * Processes order data, calculating realistic prices and other values and doing the DB upsert.
-     *
-     * @param \stdClass $odata with both buy and sell order items
-     * @param int $typeId of the type
-     * @param int $regionId of the region
+     * @param \iveeCrest\Responses\MarketOrderCollection $orderCollection with both buy and sell order items
      *
      * @return array with the calculated values
      */
-    protected function processOrderData(\stdClass $odata, $typeId, $regionId)
+    protected function processOrderCollection(MarketOrderCollection $orderCollection)
     {
         $priceEstimatorClass = Config::getIveeClassName('CrestPriceEstimator');
         $estimator = new $priceEstimatorClass($this);
-        $priceData = $estimator->calcValues($odata, $typeId, $regionId);
+        $priceData = $estimator->calcValues($orderCollection);
 
         //DB update or insert
-        $this->upsertPriceDb($priceData, $typeId, $regionId);
+        $this->upsertPriceDb($priceData, $orderCollection->getTypeId(), $orderCollection->getRegionId());
         return $priceData;
     }
 

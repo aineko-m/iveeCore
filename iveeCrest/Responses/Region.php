@@ -147,6 +147,19 @@ class Region extends EndpointItem
     }
 
     /**
+     * Gets orders for a type in this region.
+     *
+     * @param string $marketTypeHref the href of the market type
+     *
+     * @return \iveeCrest\Responses\MarketOrderCollection
+     */
+    public function getMarketOrdersByHref($marketTypeHref)
+    {
+        $client = static::getLastClient();
+        return $client->getEndpointResponse($this->content->marketOrders->href . '?type=' . $marketTypeHref);
+    }
+
+    /**
      * Gets sell orders for a type in this region.
      *
      * @param string $marketTypeHref the href of the market type
@@ -173,11 +186,11 @@ class Region extends EndpointItem
     }
 
     /**
-     * Gets buy and sell orders for a type in this region.
+     * Gets market orders for a type in this region.
      *
      * @param int $typeId of the market type
      *
-     * @return \stdClass
+     * @return \iveeCrest\Responses\MarketOrderCollection
      */
     public function getMarketOrders($typeId)
     {
@@ -186,10 +199,7 @@ class Region extends EndpointItem
             $invalidArgumentExceptionClass = Config::getIveeClassName('InvalidArgumentException');
             throw new $invalidArgumentExceptionClass('TypeID = ' . (int) $typeId . ' not found in market types');
         }
-        $ret = new \stdClass();
-        $ret->sellOrders = $this->getMarketSellOrdersByHref($marketTypeHrefs[$typeId])->getContent()->items;
-        $ret->buyOrders  = $this->getMarketBuyOrdersByHref($marketTypeHrefs[$typeId])->getContent()->items;
-        return $ret;
+        return $this->getMarketOrdersByHref($marketTypeHrefs[$typeId]);
         ;
     }
 
@@ -221,8 +231,7 @@ class Region extends EndpointItem
                 $invalidArgumentExceptionClass = Config::getIveeClassName('InvalidArgumentException');
                 throw new $invalidArgumentExceptionClass('TypeID=' . (int) $typeId . ' not found in market types');
             }
-            $hrefs[] = $this->content->marketSellOrders->href . '?type=' . $marketTypeHrefs[$typeId];
-            $hrefs[] = $this->content->marketBuyOrders->href  . '?type=' . $marketTypeHrefs[$typeId];
+            $hrefs[] = $this->content->marketOrders->href . '?type=' . $marketTypeHrefs[$typeId];
         }
 
         //run the async queries

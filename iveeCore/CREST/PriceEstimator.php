@@ -14,6 +14,7 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
+use iveeCrest\Responses\MarketOrderCollection;
 
 /**
  * PriceEstimator provides methods for estimating realistic buy and sell order prices as well as calculating average
@@ -54,19 +55,29 @@ class PriceEstimator
     /**
      * Calculates the pricing values based on given CREST order items.
      *
-     * @param stdClass $odata containing both sell and buy order item arrays
-     * @param int $typeId of the type
-     * @param int $regionId of the region
+     * @param iveeCrest\Responses\MarketOrderCollection $orderCollection containing both sell and buy orders
      *
      * @return array
      */
-    public function calcValues(\stdClass $odata, $typeId, $regionId)
+    public function calcValues(MarketOrderCollection $orderCollection)
     {
-        $averages = $this->getWeeklyAverages($typeId, $regionId);
+        $averages = $this->getWeeklyAverages($orderCollection->getTypeId(), $orderCollection->getRegionId());
 
+        //split buy and sell orders
+        $sellOrders = [];
+        $buyOrders = [];
+        foreach ($orderCollection->gather() as $id => $order) {
+            if ($order->buy == 1) {
+                $buyOrders[$id] = $order;
+            } else {
+                $sellOrders[$id] = $order;
+            }
+        }
+
+        //merge all data into single array and return
         return array_merge(
-            $this->processSellOrderData($odata->sellOrders, $averages['avgVol']),
-            $this->processBuyOrderData($odata->buyOrders, $averages['avgVol']),
+            $this->processSellOrderData($sellOrders, $averages['avgVol']),
+            $this->processBuyOrderData($buyOrders, $averages['avgVol']),
             $averages
         );
     }
