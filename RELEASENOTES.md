@@ -1,5 +1,15 @@
 This file lists major changes in iveeCore releases.
 
+Version 3.0.1 - April 28th, 2016
+--------------------------------
+This is a point release for adapting to the Citadel release:
+
+- Removed the distinction between public and authenticated CREST domains. Minor iveeCrest\Client API change.
+- Implemented and started using the combined buy & sell market order CREST endpoint.
+- Added all new authentication scopes to getrefreshtoken.php
+- Minor fixes.
+
+
 Version 3.0.0 - April 24th, 2016
 --------------------------------
 iveeCrest has been thoroughly refactored:

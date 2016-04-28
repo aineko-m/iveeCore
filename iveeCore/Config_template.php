@@ -37,7 +37,7 @@ class Config
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_yc118-3';
+    protected static $sdeDbName = 'eve_sde_cit';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';

@@ -22,6 +22,7 @@ Finally, static codeanalysis is performed via [Scrutinizer](https://scrutinizer-
 
 ## Future Plans
 - iveeCrest now supports most of the endpoints of CREST, but a lot more features and convenience functions can be implemented for the responses classes. At the same time, CREST is an evolving API, which will continue to produce changes and additions to the engine.
+- Support the XML API (with CREST auth scopes)
 - A class for simple CREST based "SSO" login
 - When manufacturing in citadels becomes available, some adaptations will be required for iveeCore to support them. At the moment it is unclear how the AssemblyLine data will be provided by CCP.
 - Implementing global rate limiting for iveeCrest, so parallel application runs don't hit CCPs rate limit.
