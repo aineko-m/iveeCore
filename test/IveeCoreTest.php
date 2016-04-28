@@ -355,8 +355,8 @@ Republic Fleet Gyrostabilizer
 Tracking Computer II,Tracking Speed Script
 Tracking Computer II,Optimal Range Script
 
-6x2500mm Repeating Cannon I,Arch Angel Nuclear XL x1234
-6x2500mm Repeating Cannon I,Arch Angel Nuclear XL
+Hexa 2500mm Repeating Cannon I,Arch Angel Nuclear XL x1234
+Hexa 2500mm Repeating Cannon I,Arch Angel Nuclear XL
 Siege Module II
 ";
         $pr = FitParser::parseEftFit($fit);
