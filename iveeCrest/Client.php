@@ -376,7 +376,7 @@ class Client
      * @param string $authScope to be used by the request
      *
      * @return \iveeCrest\Responses\BaseResponse
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200, 201 and 302
+     * @throws \iveeCrest\Exceptions\CrestErrorException on http return codes other than 200, 201 and 302
      */
     public function post($uri, $fieldsString, $authScope = null)
     {
@@ -407,7 +407,7 @@ class Client
      * @param string $authScope to be used by the request
      *
      * @return \iveeCrest\Responses\BaseResponse
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200, 201 and 302
+     * @throws \iveeCrest\Exceptions\CrestErrorException on http return codes other than 200, 201 and 302
      */
     public function delete($uri, $authScope)
     {
@@ -612,6 +612,7 @@ class Client
      *
      * @return void
      * @throws \iveeCrest\Exceptions\IveeCrestException on general CURL error
+     * @throws \iveeCrest\Exceptions\ServiceUnavailableException when CREST is not available
      * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when a authentication scope is requested for which
      * there is no refresh token.
      */

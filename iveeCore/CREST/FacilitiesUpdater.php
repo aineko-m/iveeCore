@@ -63,10 +63,11 @@ class FacilitiesUpdater extends CrestDataUpdater
      * @param stdClass $item to be processed
      *
      * @return string the UPSERT SQL queries
+     * @throws iveeCore\Exceptions\IveeCoreCrestException
      */
     protected function processDataItemToSQL(\stdClass $item)
     {
-        $exceptionClass = Config::getIveeClassName('CrestException');
+        $exceptionClass = Config::getIveeClassName('IveeCoreCrestException');
         $sdeClass = Config::getIveeClassName('SDE');
 
         $update = [];

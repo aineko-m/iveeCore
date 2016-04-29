@@ -92,7 +92,7 @@ class CurlWrapper
      * @param bool $cache whether the response from this POST request should be cached
      *
      * @return \iveeCrest\Responses\BaseResponse
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200, 201 and 302
+     * @throws \iveeCrest\Exceptions\CrestErrorException on http return codes other than 200, 201 and 302
      */
     public function post($uri, array $header, $fieldsString, $cacheNsPrefix = '', $cache = false)
     {
@@ -126,7 +126,7 @@ class CurlWrapper
      * disabled it here to prevent redundant caching.
      *
      * @return \iveeCrest\Responses\BaseResponse
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200, 201 and 302
+     * @throws \iveeCrest\Exceptions\CrestErrorException on http return codes other than 200, 201 and 302
      */
     public function get($uri, array $header, $cacheNsPrefix, $cache = true)
     {
@@ -156,7 +156,7 @@ class CurlWrapper
      * @param bool $cache whether the response to the request should be cached
      *
      * @return \iveeCrest\Responses\BaseResponse
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200, 201 and 302
+     * @throws \iveeCrest\Exceptions\CrestErrorException on http return codes other than 200, 201 and 302
      * @throws \iveeCore\Exceptions\InvalidParameterValueException when an unsuported request type is requested
      */
     public function customRequest($uri, $requestType, array $header = [], $cache = true)
@@ -191,7 +191,8 @@ class CurlWrapper
      * disabled it here to prevent redundant caching.
      *
      * @return \iveeCrest\Responses\BaseResponse
-     * @throws \iveeCrest\Exceptions\CrestException on http return codes other than 200, 201 and 302
+     * @throws \iveeCrest\Exceptions\CrestErrorException on http return codes other than 200, 201 and 302
+     * @throws \iveeCrest\Exceptions\ServiceUnavailableException when CREST is unavailable
      */
     protected function doRequest(array $curlOptArray, ProtoResponse $pResponse, $cache = true)
     {
@@ -204,14 +205,15 @@ class CurlWrapper
         $err     = curl_errno($this->ch);
         $errmsg  = curl_error($this->ch);
 
+        $crestErrorExceptionClass = Config::getIveeClassName('CrestErrorException');
+
         if ($err != 0) {
-            $crestExceptionClass = Config::getIveeClassName('CrestException');
-            throw new $crestExceptionClass($errmsg, $err);
-        }
-            
-        if (!in_array($info['http_code'], array(200, 201, 302))) {
-            $crestExceptionClass = Config::getIveeClassName('CrestException');
-            throw new $crestExceptionClass(
+            throw new $crestErrorExceptionClass($errmsg, $err);
+        } elseif($info['http_code'] == 503) {
+            $serviceUnavailableExceptionClass = Config::getIveeClassName('ServiceUnavailableException');
+            throw new $serviceUnavailableExceptionClass('CREST unavailable', 503);
+        } elseif (!in_array($info['http_code'], array(200, 201, 302))) {
+            throw new $crestErrorExceptionClass(
                 'HTTP response not OK: ' . (int)$info['http_code'] . '. response body: ' . $resBody,
                 $info['http_code']
             );
@@ -238,13 +240,15 @@ class CurlWrapper
      * @param callable $callback a function expecting one iveeCrest\Responses\BaseResponse object as argument, called
      * for every successful response
      * @param callable $errCallback a function expecting one iveeCrest\Responses\BaseResponse object as argument, called
-     * for every non-successful response
+     * for every non-successful response. Currently unused.
      * @param bool $cache whether the individual responses should be cached
      * @param string $cacheNsPrefix a character specific string to isolate responses in the cache in a multi-character
      * use-case.
      *
      * @return void
      * @throws \iveeCrest\Exceptions\IveeCrestException on general CURL error
+     * @throws \iveeCrest\Exceptions\ServiceUnavailableException when CREST is down
+     * @throws \iveeCrest\Exceptions\CrestErrorException when CREST has produced too many errors or timeouts
      */
     public function asyncMultiGet(
         array $hrefs,
@@ -298,7 +302,9 @@ class CurlWrapper
             );
         }
 
-        $crestExceptionClass = Config::getIveeClassName('IveeCrestException');
+        //count the numbers of errors
+        $errors = 0;
+        $maxErrors = ceil(sqrt(count($hrefs)));
 
         $running = false;
         do {
@@ -308,7 +314,8 @@ class CurlWrapper
             } while ($execrun == CURLM_CALL_MULTI_PERFORM);
 
             if ($execrun != CURLM_OK) {
-                throw new $crestExceptionClass("CURL Multi-GET error", $execrun);
+                $iveeCrestExceptionClass = Config::getIveeClassName('IveeCrestException');
+                throw new $iveeCrestExceptionClass("CURL Multi-GET error", $execrun);
             }
 
             //block until we have anything on at least one of the handles
@@ -331,10 +338,19 @@ class CurlWrapper
                         $this->cache->setItem($res);
                     }
                     $callback($res);
-                } elseif (isset($errCallback)) {
-                    $errCallback($res);
-                } else {
-                    throw new $crestExceptionClass('CREST http error ' . $info['http_code']);
+                } elseif($info['http_code'] == 503) {
+                    $serviceUnavailableExceptionClass = Config::getIveeClassName('ServiceUnavailableException');
+                    throw new $serviceUnavailableExceptionClass('CREST unavailable', 503);
+                }
+                else {
+                    $errors++;
+                    if ($errors > $maxErrors) {
+                        $crestErrorExceptionClass = Config::getIveeClassName('CrestErrorException');
+                        throw new $crestErrorExceptionClass('Too many CREST errors.');
+                    }
+                    //add the request to the list again for retry
+                    $hrefsToQuery[] = $res->getHref();
+                    $keysToQuery[]  = $res->getKey();
                 }
                 
                 //remove the reference to response to conserve memory on large batches

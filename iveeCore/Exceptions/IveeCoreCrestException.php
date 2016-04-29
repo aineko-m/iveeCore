@@ -1,6 +1,6 @@
 <?php
 /**
- * CrestException class file.
+ * IveeCoreCrestException class file.
  *
  * PHP version 5.4
  *
@@ -8,22 +8,22 @@
  * @package  IveeCoreExceptions
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Exceptions/CrestException.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Exceptions/IveeCoreCrestException.php
  *
  */
 
 namespace iveeCore\Exceptions;
 
 /**
- * CrestException, thrown when an error during CREST interaction occurs
+ * IveeCoreCrestException, thrown when an error in iveeCore's CREST classes occurs.
  *
  * @category IveeCore
  * @package  IveeCoreExceptions
  * @author   Aineko Macx <ai@sknop.net>
  * @license  https://github.com/aineko-m/iveeCore/blob/master/LICENSE GNU Lesser General Public License
- * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Exceptions/CrestException.php
+ * @link     https://github.com/aineko-m/iveeCore/blob/master/iveeCore/Exceptions/IveeCoreCrestException.php
  *
  */
-class CrestException extends IveeCoreException
+class IveeCoreCrestException extends IveeCoreException
 {
 }

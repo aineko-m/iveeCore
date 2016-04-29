@@ -68,8 +68,8 @@ class TournamentRealtimeMatchFrame extends EndpointItem
     public function getNextFrame()
     {
         if (!$this->hasNextFrame()) {
-            $iveeCrestExceptionClass = Config::getIveeClassName('IveeCrestException');
-            throw new $iveeCrestExceptionClass('No next frame href present in response body');
+            $paginationExceptionClass = Config::getIveeClassName('PaginationException');
+            throw new $paginationExceptionClass('No next frame href present in response body');
         }
         return static::getLastClient()->getEndpointResponse($this->content->nextFrame->href);
     }
@@ -92,8 +92,8 @@ class TournamentRealtimeMatchFrame extends EndpointItem
     public function getPreviousFrame()
     {
         if (!$this->hasPreviousFrame()) {
-            $iveeCrestExceptionClass = Config::getIveeClassName('IveeCrestException');
-            throw new $iveeCrestExceptionClass('No previous frame href present in response body');
+            $paginationExceptionClass = Config::getIveeClassName('PaginationException');
+            throw new $paginationExceptionClass('No previous frame href present in response body');
         }
         return static::getLastClient()->getEndpointResponse($this->content->prevFrame->href);
     }

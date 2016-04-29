@@ -34,10 +34,11 @@ class GlobalPricesUpdater extends CrestDataUpdater
      * @param stdClass $item to be processed
      *
      * @return string the SQL queries
+     * @throws iveeCore\Exceptions\IveeCoreCrestException
      */
     protected function processDataItemToSQL(\stdClass $item)
     {
-        $exceptionClass = Config::getIveeClassName('CrestException');
+        $exceptionClass = Config::getIveeClassName('IveeCoreCrestException');
 
         if (!isset($item->type->id)) {
             throw new $exceptionClass('typeID missing in Market Prices CREST data');

@@ -14,8 +14,7 @@
 namespace iveeCore\CREST;
 
 use iveeCore\Config;
-use iveeCrest\Exceptions\IveeCrestException;
-use iveeCrest\Responses\BaseResponse;
+use iveeCrest\Exceptions\CrestErrorException;
 use iveeCrest\Responses\MarketOrderCollection;
 use iveeCrest\Responses\MarketTypeHistoryCollection;
 use iveeCrest\Responses\Root;
@@ -126,14 +125,13 @@ class MarketProcessor
                     function (MarketTypeHistoryCollection $response) {
                         $this->processHistoryCollection($response);
                     },
-                    function (BaseResponse $response) {
-                        print_r($response); //TODO: what to do with error case?
-                    },
+                    null,
                     false
                 );
-            } catch (IveeCrestException $ex) {
-                //This exception can occur when there's an error during the gathering of multipage history collection
-                print_r($ex); //TODO: what to do with error case?
+            } catch (CrestErrorException $ex) {
+                if ($verbose) {
+                    echo "Skipping region due to too many CREST errors.\n";
+                }
             }
         }
 
@@ -325,14 +323,13 @@ class MarketProcessor
                     function (MarketOrderCollection $response) {
                         $this->processOrderCollection($response);
                     },
-                    function (BaseResponse $response) {
-                        print_r($response); //TODO: what to do with error case?
-                    },
+                    null,
                     false
                 );
-            } catch (IveeCrestException $ex) {
-                //This exception can occur when there's an error during the gathering of multipage order collection
-                print_r($ex); //TODO: what to do with error case?
+            } catch (CrestErrorException $ex) {
+                if ($verbose) {
+                    echo "Skipping region due to too many CREST errors.\n";
+                }
             }
 
             //overwrite existing array to ensure cleanup of potentially unprocessed single responses

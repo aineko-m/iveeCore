@@ -207,10 +207,10 @@ class Config
         'ActivityIdNotFoundException'         => '\iveeCore\Exceptions\ActivityIdNotFoundException',
         'AssemblyLineTypeIdNotFoundException' => '\iveeCore\Exceptions\AssemblyLineTypeIdNotFoundException',
         'CrestDataTooOldException'            => '\iveeCore\Exceptions\CrestDataTooOldException',
-        'CrestException'                      => '\iveeCore\Exceptions\CrestException',
         'CurlException'                       => '\iveeCore\Exceptions\CurlException',
         'InvalidArgumentException'            => '\iveeCore\Exceptions\InvalidArgumentException',
         'InvalidParameterValueException'      => '\iveeCore\Exceptions\InvalidParameterValueException',
+        'IveeCoreCrestException'              => '\iveeCore\Exceptions\IveeCoreCrestException',
         'IveeCoreException'                   => '\iveeCore\Exceptions\IveeCoreException',
         'KeyNotFoundInCacheException'         => '\iveeCore\Exceptions\KeyNotFoundInCacheException',
         'NoMaterialRequirementsException'     => '\iveeCore\Exceptions\NoMaterialRequirementsException',
@@ -241,9 +241,11 @@ class Config
         'CurlWrapper'        => '\iveeCrest\CurlWrapper',
 
         'AuthScopeUnavailableException' => '\iveeCrest\Exceptions\AuthScopeUnavailableException',
+        'CrestErrorException'           => '\iveeCrest\Exceptions\CrestErrorException',
         'EndpointUnavailableException'  => '\iveeCrest\Exceptions\EndpointUnavailableException',
         'IveeCrestException'            => '\iveeCrest\Exceptions\IveeCrestException',
         'PaginationException'           => '\iveeCrest\Exceptions\PaginationException',
+        'ServiceUnavailableException'   => '\iveeCrest\Exceptions\ServiceUnavailableException',
 
         'Alliance'                              => '\iveeCrest\Responses\Alliance',
         'AllianceCollection'                    => '\iveeCrest\Responses\AllianceCollection',

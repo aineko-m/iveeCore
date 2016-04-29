@@ -36,10 +36,11 @@ class IndustryIndicesUpdater extends CrestDataUpdater
      * @param stdClass $item to be processed
      *
      * @return string the SQL queries
+     * @throws iveeCore\Exceptions\IveeCoreCrestException
      */
     protected function processDataItemToSQL(\stdClass $item)
     {
-        $exceptionClass = Config::getIveeClassName('CrestException');
+        $exceptionClass = Config::getIveeClassName('IveeCoreCrestException');
 
         if (!isset($item->solarSystem->id)) {
             throw new $exceptionClass('systemID missing in Industry Systems CREST data');
