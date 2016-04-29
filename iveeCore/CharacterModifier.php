@@ -157,18 +157,18 @@ class CharacterModifier implements ICharacterModifier
      */
     public function getBrokerTax($factionId, $corpId)
     {
-        return (1 - 0.05 * $this->getSkillLevel(3446)) //Broker Relations skill
-            / pow(2, (0.14 * $this->getFactionStanding($factionId) + 0.06 * $this->getCorporationStanding($corpId)));
+        return 3 - 0.1 * $this->getSkillLevel(3446) //Broker Relations skill
+            - 0.03 * $this->getFactionStanding($factionId) - 0.02 * $this->getCorporationStanding($corpId);
     }
 
     /**
      * Gets the skills dependant transaction tax as percent.
      *
-     * @return float as percent, 1.35 for 1.35% tax
+     * @return float as percent, 1.2 for 1.2% tax
      */
     public function getTransactionTax()
     {
-        return 1.5 - 0.15 * $this->getSkillLevel(16622); //Accounting skill
+        return 2 - 0.2 * $this->getSkillLevel(16622); //Accounting skill
     }
 
     /**
