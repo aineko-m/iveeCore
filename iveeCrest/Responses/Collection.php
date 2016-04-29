@@ -172,7 +172,7 @@ abstract class Collection extends BaseResponse implements ICollection
     public function gather(Client $client = null)
     {
         //this is a single page collection endpoint theres no need to to a real gather
-        if ($this->getPageCount() == 1) {
+        if ($this->getPageCount() <= 1) {
             return $this->getElements();
         }
 
