@@ -25,7 +25,7 @@ namespace iveeCore;
  */
 class SDE
 {
-    const IVEECORE_VERSION = '3.0.1';
+    const IVEECORE_VERSION = '3.0.2';
 
     /**
      * @var \iveeCore\SDE $instance holds the singleton SDE object.

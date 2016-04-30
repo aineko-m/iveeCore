@@ -1,5 +1,15 @@
 This file lists major changes in iveeCore releases.
 
+Version 3.0.2 - April 30th, 2016
+--------------------------------
+Release with bugfixes and minor improvements. The initial CREST issues post-Citadel release have been fixed by CCP. The current SDE is still missing industry data for some of the new items.
+
+- Use new broker fee and transaction tax formulas.
+- When no global price data is available for calculating product base cost (for instance new item) in Blueprint activities, use Jita buy price as approximation.
+- Auto retry logic in CurlWrapper::asyncMultiget(), with abort on too many errors; also stop using the error callback. Some exception handling improvements.
+- Fix multipage gathering for Collections where pageCount=0.
+- Don't forget to mention DoctrineCacheWrapper in documentation.
+
 Version 3.0.1 - April 28th, 2016
 --------------------------------
 This is a point release for adapting to the Citadel release:
