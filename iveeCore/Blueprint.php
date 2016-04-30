@@ -13,6 +13,8 @@
 
 namespace iveeCore;
 
+use iveeCore\Exceptions\NoPriceDataAvailableException;
+
 /**
  * Blueprint base class.
  * Where applicable, attribute names are the same as SDE database column names.
@@ -231,8 +233,14 @@ class Blueprint extends Type
 
         $this->productBaseCost = 0.0;
         foreach ($this->getMaterialsForActivity(ProcessData::ACTIVITY_MANUFACTURING) as $matId => $rawAmount) {
-            $this->productBaseCost += Type::getById($matId)->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge)
-                * $rawAmount;
+            $mat = Type::getById($matId);
+            try {
+                $adjustedPrice = $mat->getGlobalPriceData()->getAdjustedPrice($maxPriceDataAge);
+            } catch (NoPriceDataAvailableException $ex) {
+                //If no global price data is available (new items, for instance) use jita buy, for lack of better value
+                $adjustedPrice = $mat->getMarketPrices(10000002)->getBuyPrice();
+            }
+            $this->productBaseCost += $adjustedPrice * $rawAmount;
         }
 
         return $this->productBaseCost;
