@@ -61,7 +61,7 @@ Using the configuration file is simpler, but it is more of a hassle to adapt the
 
 The following parts of the configuration are of particular interest:
 - The DB connection, with its host, name, username and password.
-- The cache connection. The default configuration is set up for using a local Memcached instance for caching. If you want to use Redis instead, you'll have to change the static variable Config::$cachePort (Redis default: 6379, Memcached: 11211) and the caching wrapper class with nickname 'Cache' in Config:$classes from \iveeCore\MemcachedWrapper to \iveeCore\RedisWrapper.
+- The cache connection. The default configuration is set up for using a local Memcached instance for caching. If you want to use Redis instead, you'll have to change the static variable Config::$cachePort (Redis default: 6379, Memcached: 11211) and the caching wrapper class with nickname 'Cache' in Config:$classes from \iveeCore\MemcachedWrapper to \iveeCore\RedisWrapper. A DoctrineCacheWrapper class is also available if you are using Doctrine.
 - The authenticated CREST parameters like client ID, client secret and refresh token.
 
 iveeCore comes with a lot of variables pre-set to reasonable (but not universal) default values, so eventually adjustments will be needed. Apart from the parameters in Config, two classes that developers will surely want to customize are CharacterModifier and BlueprintModifier, so that skills, standings and BP research levels match their setup or scenario. See info [about IndustryModifier](https://github.com/aineko-m/iveeCore/blob/master/doc/iveeCore.md#industrymodifier) and about [extending iveeCore](https://github.com/aineko-m/iveeCore/blob/master/doc/extending.md#extending-iveecore).

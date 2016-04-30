@@ -159,6 +159,7 @@ class Config
         'BlueprintModifier'      => '\iveeCore\BlueprintModifier',
         'Cache'                  => '\iveeCore\MemcachedWrapper', //don't forget the also change the port
         //'Cache'                  => '\iveeCore\RedisWrapper', //don't forget the also change the port
+        //'Cache'                  => '\iveeCore\DoctrineCacheWrapper',
         'CacheableArray'         => '\iveeCore\CacheableArray',
         'CharacterModifier'      => '\iveeCore\CharacterModifier',
         'CoreDataCommon'         => '\iveeCore\CoreDataCommon',
