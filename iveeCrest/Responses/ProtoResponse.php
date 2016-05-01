@@ -74,7 +74,8 @@ class ProtoResponse
      */
     public function makeResponseObj($content, array $info)
     {
-        $decodedContent = json_decode($content);
+        //delete redundant attributes from json string, then decode and assign
+        $decodedContent = json_decode(static::deleteRedundantJsonAttributes($content));
 
         //for some reason curl sometimes fails to decompress gzipped responses, so we must do it manually
         if (empty($decodedContent)) {
@@ -82,15 +83,12 @@ class ProtoResponse
                 and isset($this->header['Content-Encoding'])
                 and $this->header['Content-Encoding'] == 'gzip'
             ) {
-                $decodedContent = json_decode(gzdecode($content));
+                $decodedContent = json_decode(static::deleteRedundantJsonAttributes(gzdecode($content)));
             } else {
                 //Sometimes the response is just (correctly) empty. To avoid special casing, create emtpy stdClass obj.
                 $decodedContent = new \stdClass;
             }
         }
-
-        //delete redundant attributes from the data object
-        static::deleteRedundantJsonStrings($decodedContent);
 
         //here the response object subtype is decided based on the content type returned by CREST
         switch ($this->getContentType()) {
@@ -281,24 +279,14 @@ class ProtoResponse
     }
 
     /**
-     * Deletes all attributes ending in '_str' from a stdClass object and its children.
+     * Deletes all attributes ending in '_str' from json encoded string
      *
-     * @param \stdClass $data to be cleaned
+     * @param string $data to be cleaned
      *
-     * @return void
+     * @return string
      */
-    protected static function deleteRedundantJsonStrings(\stdClass $data)
+    protected static function deleteRedundantJsonAttributes($data)
     {
-        foreach ($data as $attribute => &$value) {
-            if (substr($attribute, -4) == '_str') {
-                    unset($data->$attribute);
-            } elseif ($value instanceof \stdClass) {
-                static::deleteRedundantJsonStrings($value);
-            } elseif (is_array($value)) {
-                foreach ($value as &$item) {
-                    static::deleteRedundantJsonStrings($item);
-                }
-            }
-        }
+        return preg_replace(['("[\w]+_str": "[\d]+", )', '(, "[\w]+_str": "[\d]+"})'], ['', '}'], $data);
     }
 }

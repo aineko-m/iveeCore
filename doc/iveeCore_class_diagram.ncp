@@ -1834,7 +1834,7 @@ omitted</Text>
         <Member type="Method">public int handleCurlHeaderLine(curl_handle curl, string headerLine)</Member>
         <Member type="Method">public BaseResponse makeResponseObj(string content, array info)</Member>
         <Member type="Method">protected string getContentType()</Member>
-        <Member type="Method">protected static void deleteRedundantJsonStrings(stdClass data)</Member>
+        <Member type="Method">protected static string deleteRedundantJsonAttributes(string data)</Member>
         <Modifier>None</Modifier>
       </Entity>
       <Entity type="Interface">
