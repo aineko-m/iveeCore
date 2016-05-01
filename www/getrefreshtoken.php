@@ -15,7 +15,7 @@
  */
 
 DEFINE('APPLICATION_MANAGEMENT_URL', 'https://developers.eveonline.com/applications');
-DEFINE('CREST_BASE_URL', 'https://login.eveonline.com');
+DEFINE('CREST_BASE_URL', 'https://login-tq.eveonline.com');
 DEFINE('CREST_AUTH_URL', '/oauth/authorize');
 DEFINE('CREST_TOKEN_URL', '/oauth/token');
 DEFINE('USER_AGENT', 'iveeCore/3.0.2 (GetRefreshToken)');
@@ -45,7 +45,7 @@ $scopes = [
     'characterNotificationsRead',
     'characterOpportunitiesRead',
     'characterResearchRead',
-    'characterSkillsread',
+    'characterSkillsRead',
     'characterStatsRead',
     'characterWalletRead',
     'corporationAssetRead',
@@ -132,8 +132,8 @@ function handlePost(array $scopes)
             'Location:' . CREST_BASE_URL . CREST_AUTH_URL
             . '?response_type=code&redirect_uri=' . $_SESSION['callbackurl']
             . '&client_id=' . $_SESSION['clientid']
-            . '&scope=' . implode('%20', $selectedScopes)
             . '&state=' . $_SESSION['auth_state']
+            . '&scope=' . implode('%20', $selectedScopes)
         );
     } else {
         $_SESSION['step'] = 0;
@@ -258,7 +258,8 @@ function content(array $scopes)
             register if necessary, then create a new application, selecting "CREST Access", the publicData scope and any
             other scopes you need. Set the appropriate callback URL (the address of this script). Then fill the form
             below with the given client ID and secret as well as the identical callback URL. Also select the
-            authentication scopes you want to request.</p>
+            authentication scopes you want to request. <b>Note that selecting more than about 30 scopes will currently
+            result in an error because of a request size limit on CCPs side.</b></p>
             <p>When you click the login button you\'ll be redirected to the Eve CREST authentication page where 
             you can authorize the application. Once you\'ve done this you\'ll be redirected to this script.</p><br />
             <div class="panel panel-default"><div class="panel-body">
@@ -289,7 +290,9 @@ function content(array $scopes)
                 <div class="col-sm-9">
                     <input type="checkbox" name="publicData" checked disabled> publicData<br />';
                     foreach ($scopes as $scope) {
-                        echo '<input type="checkbox" name="' . $scope . '" checked> ' . $scope . "<br />\n";
+                        echo '<input type="checkbox" name="' . $scope . '"'
+                            . ((strpos($scope, 'corporation') === false) ? ' checked' : '') . '> '
+                            . $scope . "<br />\n";
                     }
                     echo '</div>
             </div><br />
