@@ -113,6 +113,16 @@ class Root extends BaseResponse
     }
 
     /**
+     * Returns the first page of insurance prices collection.
+     *
+     * @return \iveeCrest\Responses\InsurancePricesCollection
+     */
+    public function getInsurancePricesCollection()
+    {
+        return static::getLastClient()->getEndpointResponse($this->content->insurancePrices->href);
+    }
+
+    /**
      * Returns the first page of item category collection.
      *
      * @return \iveeCrest\Responses\ItemCategoryCollection
@@ -170,6 +180,16 @@ class Root extends BaseResponse
     public function getMarketTypePriceCollection()
     {
         return static::getLastClient()->getEndpointResponse($this->content->marketPrices->href);
+    }
+
+    /**
+     * Returns the first page of NPC corporations collection.
+     *
+     * @return \iveeCrest\Responses\NPCCorporationsCollection
+     */
+    public function getNPCCorporationsCollection()
+    {
+        return static::getLastClient()->getEndpointResponse($this->content->npcCorporations->href);
     }
 
     /**

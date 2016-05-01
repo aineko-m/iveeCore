@@ -140,6 +140,9 @@ class ProtoResponse
             case 'application/vnd.ccp.eve.IndustryFacilityCollection-v1+json':
                 $responseClass = Config::getIveeClassName("IndustryFacilityCollection");
                 break;
+            case 'application/vnd.ccp.eve.InsurancePricesCollection-v1+json':
+                $responseClass = Config::getIveeClassName("InsurancePricesCollection");
+                break;
             case 'application/vnd.ccp.eve.ItemCategoryCollection-v1+json':
                 $responseClass = Config::getIveeClassName("ItemCategoryCollection");
                 break;
@@ -162,6 +165,12 @@ class ProtoResponse
             case 'application/vnd.ccp.eve.Killmail-v1+json':
                 $responseClass = Config::getIveeClassName("Killmail");
                 break;
+            case 'application/vnd.ccp.eve.LoyaltyPointsCollection-v1+json':
+                $responseClass = Config::getIveeClassName("LoyaltyPointsCollection");
+                break;
+            case 'application/vnd.ccp.eve.LoyaltyStoreOffersCollection-v1+json':
+                $responseClass = Config::getIveeClassName("LoyaltyStoreOffersCollection");
+                break;
             case 'application/vnd.ccp.eve.MarketGroupCollection-v1+json':
                 $responseClass = Config::getIveeClassName("MarketGroupCollection");
                 break;
@@ -179,6 +188,9 @@ class ProtoResponse
                 break;
             case 'application/vnd.ccp.eve.MarketTypePriceCollection-v1+json':
                 $responseClass = Config::getIveeClassName("MarketTypePriceCollection");
+                break;
+            case 'application/vnd.ccp.eve.NPCCorporationsCollection-v1+json':
+                $responseClass = Config::getIveeClassName("NPCCorporationsCollection");
                 break;
             case 'application/vnd.ccp.eve.Options-v1+json':
                 $responseClass = Config::getIveeClassName("Options");

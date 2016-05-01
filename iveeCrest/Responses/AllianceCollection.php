@@ -35,6 +35,7 @@ class AllianceCollection extends Collection
      * @param int $allianceId of the alliance
      *
      * @return \iveeCrest\Responses\Alliance
+     * @throws \iveeCore\Exceptions\InvalidArgumentException if a non-existant alliance ID is passed
      */
     public function getAlliance($allianceId)
     {

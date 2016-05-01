@@ -301,7 +301,26 @@ class Character extends EndpointItem
     }
 
     /**
+     * Gets the loyaltypoints endpoint for the character.
+     *
+     * @param \iveeCrest\Client $client to be used. If none is passed, the last one used is fetched.
+     *
+     * @return \iveeCrest\Responses\
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
+     * available
+     */
+    public function getLoyaltyPoints(Client $client = null)
+    {
+        if (is_null($client)) {
+            $client = static::getLastClient();
+        }
+        return $client->getEndpointResponse($this->content->loyaltyPoints->href, 'characterLoyaltyPointsRead');
+    }
+
+    /**
      * Returns the characters aggregated yearly statistics.
+     *
+     * @param \iveeCrest\Client $client to be used. If none is passed, the last one used is fetched.
      *
      * @return \iveeCrest\Responses\BaseResponse
      * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not

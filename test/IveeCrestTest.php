@@ -42,12 +42,15 @@ use iveeCrest\Responses\ItemGroupCollection;
 use iveeCrest\Responses\ItemCategory;
 use iveeCrest\Responses\ItemCategoryCollection;
 use iveeCrest\Responses\Killmail;
+use iveeCrest\Responses\LoyaltyPointsCollection;
+use iveeCrest\Responses\LoyaltyStoreOffersCollection;
 use iveeCrest\Responses\MarketOrderCollection;
 use iveeCrest\Responses\MarketTypeHistoryCollection;
 use iveeCrest\Responses\MarketTypePriceCollection;
 use iveeCrest\Responses\MarketGroupCollection;
 use iveeCrest\Responses\MarketGroup;
 use iveeCrest\Responses\MarketTypeCollection;
+use iveeCrest\Responses\NPCCorporationsCollection;
 use iveeCrest\Responses\Options;
 use iveeCrest\Responses\Planet;
 use iveeCrest\Responses\RegionCollection;
@@ -150,6 +153,10 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
             if ($this->client->hasAuthScope('characterLocationRead')) {
                 $this->assertTrue($char->getLocation() instanceof CharacterLocation);
             }
+
+            if ($this->client->hasAuthScope('characterLoyaltyPointsRead')) {
+                $this->assertTrue($char->getLoyaltyPoints() instanceof LoyaltyPointsCollection);
+            }
         }
     }
 
@@ -218,6 +225,14 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($industryFacilityCollection instanceof IndustryFacilityCollection);
         $industrySystemCollection = $this->root->getIndustrySystemCollection();
         $this->assertTrue($industrySystemCollection instanceof IndustrySystemCollection);
+    }
+
+    public function testLoyaltyPointResponses()
+    {
+        $npcCorporationsCollection = $this->root->getNPCCorporationsCollection();
+        $this->assertTrue($npcCorporationsCollection instanceof NPCCorporationsCollection);
+        $loyaltyPointStoreOffersColleciont = $npcCorporationsCollection->getCorporationLoyaltyStore(1000035);
+        $this->assertTrue($loyaltyPointStoreOffersColleciont instanceof LoyaltyStoreOffersCollection);
     }
 
     public function testMarketResponses()
