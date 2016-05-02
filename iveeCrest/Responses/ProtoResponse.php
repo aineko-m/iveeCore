@@ -28,6 +28,71 @@ use iveeCore\Config;
 class ProtoResponse
 {
     /**
+     * @var array $representationsToClassNicks maps from CREST representations (Content-Types) to class nicknames.
+     */
+    protected static $representationsToClassNicks = [
+        'application/vnd.ccp.eve.AllianceCollection-v2+json'             => 'AllianceCollection',
+        'application/vnd.ccp.eve.Alliance-v1+json'                       => 'Alliance',
+        'application/vnd.ccp.eve.Api-v3+json'                            => 'Root',
+        'application/vnd.ccp.eve.CharacterLocation-v1+json'              => 'CharacterLocation',
+        'application/vnd.ccp.eve.Character-v3+json'                      => 'Character',
+        'application/vnd.ccp.eve.ConstellationCollection-v1+json'        => 'ConstellationCollection',
+        'application/vnd.ccp.eve.Constellation-v1+json'                  => 'Constellation',
+        'application/vnd.ccp.eve.ContactCollection-v2+json'              => 'ContactCollection',
+        'application/vnd.ccp.eve.DogmaAttributeCollection-v1+json'       => 'DogmaAttributeCollection',
+        'application/vnd.ccp.eve.DogmaAttribute-v1+json'                 => 'DogmaAttribute',
+        'application/vnd.ccp.eve.DogmaEffectCollection-v1+json'          => 'DogmaEffectCollection',
+        'application/vnd.ccp.eve.DogmaEffect-v1+json'                    => 'DogmaEffect',
+        'application/vnd.ccp.eve.FittingCollection-v1+json'              => 'FittingCollection',
+        'application/vnd.ccp.eve.IncursionCollection-v1+json'            => 'IncursionCollection',
+        'application/vnd.ccp.eve.IndustrySystemCollection-v1+json'       => 'IndustrySystemCollection',
+        'application/vnd.ccp.eve.IndustryFacilityCollection-v1+json'     => 'IndustryFacilityCollection',
+        'application/vnd.ccp.eve.InsurancePricesCollection-v1+json'      => 'InsurancePricesCollection',
+        'application/vnd.ccp.eve.ItemCategoryCollection-v1+json'         => 'ItemCategoryCollection',
+        'application/vnd.ccp.eve.ItemCategory-v1+json'                   => 'ItemCategory',
+        'application/vnd.ccp.eve.ItemGroupCollection-v1+json'            => 'ItemGroupCollection',
+        'application/vnd.ccp.eve.ItemGroup-v1+json'                      => 'ItemGroup',
+        'application/vnd.ccp.eve.ItemTypeCollection-v1+json'             => 'ItemTypeCollection',
+        'application/vnd.ccp.eve.ItemType-v3+json'                       => 'ItemType',
+        'application/vnd.ccp.eve.Killmail-v1+json'                       => 'Killmail',
+        'application/vnd.ccp.eve.LoyaltyPointsCollection-v1+json'        => 'LoyaltyPointsCollection',
+        'application/vnd.ccp.eve.LoyaltyStoreOffersCollection-v1+json'   => 'LoyaltyStoreOffersCollection',
+        'application/vnd.ccp.eve.MarketGroupCollection-v1+json'          => 'MarketGroupCollection',
+        'application/vnd.ccp.eve.MarketGroup-v1+json'                    => 'MarketGroup',
+        'application/vnd.ccp.eve.MarketOrderCollection-v1+json'          => 'MarketOrderCollection',
+        'application/vnd.ccp.eve.MarketTypeCollection-v1+json'           => 'MarketTypeCollection',
+        'application/vnd.ccp.eve.MarketTypeHistoryCollection-v1+json'    => 'MarketTypeHistoryCollection',
+        'application/vnd.ccp.eve.MarketTypePriceCollection-v1+json'      => 'MarketTypePriceCollection',
+        'application/vnd.ccp.eve.NPCCorporationsCollection-v1+json'      => 'NPCCorporationsCollection',
+        'application/vnd.ccp.eve.Options-v1+json'                        => 'Options',
+        'application/vnd.ccp.eve.Planet-v2+json'                         => 'Planet',
+        'application/vnd.ccp.eve.RegionCollection-v1+json'               => 'RegionCollection',
+        'application/vnd.ccp.eve.Region-v1+json'                         => 'Region',
+        'application/vnd.ccp.eve.SovCampaignsCollection-v1+json'         => 'SovCampaignsCollection',
+        'application/vnd.ccp.eve.SovStructureCollection-v1+json'         => 'SovStructureCollection',
+        'application/vnd.ccp.eve.SystemCollection-v1+json'               => 'SystemCollection',
+        'application/vnd.ccp.eve.System-v1+json'                         => 'System',
+        'application/vnd.ccp.eve.TokenDecode-v1+json'                    => 'TokenDecode',
+        'application/vnd.ccp.eve.TournamentCollection-v1+json'           => 'TournamentCollection',
+        'application/vnd.ccp.eve.Tournament-v1+json'                     => 'Tournament',
+        'application/vnd.ccp.eve.TournamentMatchCollection-v1+json'      => 'TournamentMatchCollection',
+        'application/vnd.ccp.eve.TournamentMatch-v1+json'                => 'TournamentMatch',
+        'application/vnd.ccp.eve.TournamentPilotStatsCollection-v1+json' => 'TournamentPilotStatsCollection',
+        'application/vnd.ccp.eve.TournamentPilotTournamentStats-v1+json' => 'TournamentPilotTournamentStats',
+        'application/vnd.ccp.eve.TournamentRealtimeMatchFrame-v2+json'   => 'TournamentRealtimeMatchFrame',
+        'application/vnd.ccp.eve.TournamentSeriesCollection-v1+json'     => 'TournamentSeriesCollection',
+        'application/vnd.ccp.eve.TournamentSeries-v1+json'               => 'TournamentSeries',
+        'application/vnd.ccp.eve.TournamentStaticSceneData-v1+json'      => 'TournamentStaticSceneData',
+        'application/vnd.ccp.eve.TournamentTeamMember-v1+json'           => 'TournamentTeamMember',
+        'application/vnd.ccp.eve.TournamentTeamMemberCollection-v1+json' => 'TournamentTeamMemberCollection',
+        'application/vnd.ccp.eve.TournamentTeam-v1+json'                 => 'TournamentTeam',
+        'application/vnd.ccp.eve.TournamentTypeBanCollection-v1+json'    => 'TournamentTypeBanCollection',
+        'application/vnd.ccp.eve.WarsCollection-v1+json'                 => 'WarsCollection',
+        'application/vnd.ccp.eve.War-v1+json'                            => 'War',
+        'application/vnd.ccp.eve.WarKillmails-v1+json'                   => 'WarKillmails'
+    ];
+
+    /**
      * @var string $key under which this response is cached
      */
     protected $key;
@@ -91,187 +156,11 @@ class ProtoResponse
         }
 
         //here the response object subtype is decided based on the content type returned by CREST
-        switch ($this->getContentType()) {
-            case 'application/vnd.ccp.eve.AllianceCollection-v2+json':
-                $responseClass = Config::getIveeClassName("AllianceCollection");
-                break;
-            case 'application/vnd.ccp.eve.Alliance-v1+json':
-                $responseClass = Config::getIveeClassName("Alliance");
-                break;
-            case 'application/vnd.ccp.eve.Api-v3+json':
-                $responseClass = Config::getIveeClassName("Root");
-                break;
-            case 'application/vnd.ccp.eve.CharacterLocation-v1+json':
-                $responseClass = Config::getIveeClassName("CharacterLocation");
-                break;
-            case 'application/vnd.ccp.eve.Character-v3+json':
-                $responseClass = Config::getIveeClassName("Character");
-                break;
-            case 'application/vnd.ccp.eve.ConstellationCollection-v1+json':
-                $responseClass = Config::getIveeClassName("ConstellationCollection");
-                break;
-            case 'application/vnd.ccp.eve.Constellation-v1+json':
-                $responseClass = Config::getIveeClassName("Constellation");
-                break;
-            case 'application/vnd.ccp.eve.ContactCollection-v2+json':
-                $responseClass = Config::getIveeClassName("ContactCollection");
-                break;
-            case 'application/vnd.ccp.eve.DogmaAttributeCollection-v1+json':
-                $responseClass = Config::getIveeClassName("DogmaAttributeCollection");
-                break;
-            case 'application/vnd.ccp.eve.DogmaAttribute-v1+json':
-                $responseClass = Config::getIveeClassName("DogmaAttribute");
-                break;
-            case 'application/vnd.ccp.eve.DogmaEffectCollection-v1+json':
-                $responseClass = Config::getIveeClassName("DogmaEffectCollection");
-                break;
-            case 'application/vnd.ccp.eve.DogmaEffect-v1+json':
-                $responseClass = Config::getIveeClassName("DogmaEffect");
-                break;
-            case 'application/vnd.ccp.eve.FittingCollection-v1+json':
-                $responseClass = Config::getIveeClassName("FittingCollection");
-                break;
-            case 'application/vnd.ccp.eve.IncursionCollection-v1+json':
-                $responseClass = Config::getIveeClassName("IncursionCollection");
-                break;
-            case 'application/vnd.ccp.eve.IndustrySystemCollection-v1+json':
-                $responseClass = Config::getIveeClassName("IndustrySystemCollection");
-                break;
-            case 'application/vnd.ccp.eve.IndustryFacilityCollection-v1+json':
-                $responseClass = Config::getIveeClassName("IndustryFacilityCollection");
-                break;
-            case 'application/vnd.ccp.eve.InsurancePricesCollection-v1+json':
-                $responseClass = Config::getIveeClassName("InsurancePricesCollection");
-                break;
-            case 'application/vnd.ccp.eve.ItemCategoryCollection-v1+json':
-                $responseClass = Config::getIveeClassName("ItemCategoryCollection");
-                break;
-            case 'application/vnd.ccp.eve.ItemCategory-v1+json':
-                $responseClass = Config::getIveeClassName("ItemCategory");
-                break;
-            case 'application/vnd.ccp.eve.ItemGroupCollection-v1+json':
-                $responseClass = Config::getIveeClassName("ItemGroupCollection");
-                break;
-            case 'application/vnd.ccp.eve.ItemGroup-v1+json':
-                $responseClass = Config::getIveeClassName("ItemGroup");
-                break;
-            case 'application/vnd.ccp.eve.ItemTypeCollection-v1+json':
-                $responseClass = Config::getIveeClassName("ItemTypeCollection");
-                break;
-            case 'application/vnd.ccp.eve.ItemType-v2+json':
-            case 'application/vnd.ccp.eve.ItemType-v3+json':
-                $responseClass = Config::getIveeClassName("ItemType");
-                break;
-            case 'application/vnd.ccp.eve.Killmail-v1+json':
-                $responseClass = Config::getIveeClassName("Killmail");
-                break;
-            case 'application/vnd.ccp.eve.LoyaltyPointsCollection-v1+json':
-                $responseClass = Config::getIveeClassName("LoyaltyPointsCollection");
-                break;
-            case 'application/vnd.ccp.eve.LoyaltyStoreOffersCollection-v1+json':
-                $responseClass = Config::getIveeClassName("LoyaltyStoreOffersCollection");
-                break;
-            case 'application/vnd.ccp.eve.MarketGroupCollection-v1+json':
-                $responseClass = Config::getIveeClassName("MarketGroupCollection");
-                break;
-            case 'application/vnd.ccp.eve.MarketGroup-v1+json':
-                $responseClass = Config::getIveeClassName("MarketGroup");
-                break;
-            case 'application/vnd.ccp.eve.MarketOrderCollection-v1+json':
-                $responseClass = Config::getIveeClassName("MarketOrderCollection");
-                break;
-            case 'application/vnd.ccp.eve.MarketTypeCollection-v1+json':
-                $responseClass = Config::getIveeClassName("MarketTypeCollection");
-                break;
-            case 'application/vnd.ccp.eve.MarketTypeHistoryCollection-v1+json':
-                $responseClass = Config::getIveeClassName("MarketTypeHistoryCollection");
-                break;
-            case 'application/vnd.ccp.eve.MarketTypePriceCollection-v1+json':
-                $responseClass = Config::getIveeClassName("MarketTypePriceCollection");
-                break;
-            case 'application/vnd.ccp.eve.NPCCorporationsCollection-v1+json':
-                $responseClass = Config::getIveeClassName("NPCCorporationsCollection");
-                break;
-            case 'application/vnd.ccp.eve.Options-v1+json':
-                $responseClass = Config::getIveeClassName("Options");
-                break;
-            case 'application/vnd.ccp.eve.Planet-v2+json':
-                $responseClass = Config::getIveeClassName("Planet");
-                break;
-            case 'application/vnd.ccp.eve.RegionCollection-v1+json':
-                $responseClass = Config::getIveeClassName("RegionCollection");
-                break;
-            case 'application/vnd.ccp.eve.Region-v1+json':
-                $responseClass = Config::getIveeClassName("Region");
-                break;
-            case 'application/vnd.ccp.eve.SovCampaignsCollection-v1+json':
-                $responseClass = Config::getIveeClassName("SovCampaignsCollection");
-                break;
-            case 'application/vnd.ccp.eve.SovStructureCollection-v1+json':
-                $responseClass = Config::getIveeClassName("SovStructureCollection");
-                break;
-            case 'application/vnd.ccp.eve.SystemCollection-v1+json':
-                $responseClass = Config::getIveeClassName("SystemCollection");
-                break;
-            case 'application/vnd.ccp.eve.System-v1+json':
-                $responseClass = Config::getIveeClassName("System");
-                break;
-            case 'application/vnd.ccp.eve.TokenDecode-v1+json':
-                $responseClass = Config::getIveeClassName("TokenDecode");
-                break;
-            case 'application/vnd.ccp.eve.TournamentCollection-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentCollection");
-                break;
-            case 'application/vnd.ccp.eve.Tournament-v1+json':
-                $responseClass = Config::getIveeClassName("Tournament");
-                break;
-            case 'application/vnd.ccp.eve.TournamentMatchCollection-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentMatchCollection");
-                break;
-            case 'application/vnd.ccp.eve.TournamentMatch-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentMatch");
-                break;
-            case 'application/vnd.ccp.eve.TournamentPilotStatsCollection-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentPilotStatsCollection");
-                break;
-            case 'application/vnd.ccp.eve.TournamentPilotTournamentStats-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentPilotTournamentStats");
-                break;
-            case 'application/vnd.ccp.eve.TournamentRealtimeMatchFrame-v2+json':
-                $responseClass = Config::getIveeClassName("TournamentRealtimeMatchFrame");
-                break;
-            case 'application/vnd.ccp.eve.TournamentSeriesCollection-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentSeriesCollection");
-                break;
-            case 'application/vnd.ccp.eve.TournamentSeries-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentSeries");
-                break;
-            case 'application/vnd.ccp.eve.TournamentStaticSceneData-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentStaticSceneData");
-                break;
-            case 'application/vnd.ccp.eve.TournamentTeamMember-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentTeamMember");
-                break;
-            case 'application/vnd.ccp.eve.TournamentTeamMemberCollection-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentTeamMemberCollection");
-                break;
-            case 'application/vnd.ccp.eve.TournamentTeam-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentTeam");
-                break;
-            case 'application/vnd.ccp.eve.TournamentTypeBanCollection-v1+json':
-                $responseClass = Config::getIveeClassName("TournamentTypeBanCollection");
-                break;
-            case 'application/vnd.ccp.eve.WarsCollection-v1+json':
-                $responseClass = Config::getIveeClassName("WarsCollection");
-                break;
-            case 'application/vnd.ccp.eve.War-v1+json':
-                $responseClass = Config::getIveeClassName("War");
-                break;
-            case 'application/vnd.ccp.eve.WarKillmails-v1+json':
-                $responseClass = Config::getIveeClassName("WarKillmails");
-                break;
-            default:
-                $responseClass = Config::getIveeClassName("BaseResponse");
+        $contentType = $this->getContentType();
+        if (isset(static::$representationsToClassNicks[$contentType])) {
+            $responseClass = Config::getIveeClassName(static::$representationsToClassNicks[$contentType]);
+        } else {
+            $responseClass = Config::getIveeClassName("BaseResponse");
         }
 
         return new $responseClass($this->key, $decodedContent, $this->header, $info);
