@@ -26,6 +26,7 @@ use iveeCrest\Responses\Alliance;
 use iveeCrest\Responses\BaseResponse;
 use iveeCrest\Responses\Character;
 use iveeCrest\Responses\CharacterLocation;
+use iveeCrest\Responses\CharacterOpportunitiesCollection;
 use iveeCrest\Responses\ConstellationCollection;
 use iveeCrest\Responses\Constellation;
 use iveeCrest\Responses\ContactCollection;
@@ -37,6 +38,7 @@ use iveeCrest\Responses\FittingCollection;
 use iveeCrest\Responses\IncursionCollection;
 use iveeCrest\Responses\IndustryFacilityCollection;
 use iveeCrest\Responses\IndustrySystemCollection;
+use iveeCrest\Responses\InsurancePricesCollection;
 use iveeCrest\Responses\ItemGroup;
 use iveeCrest\Responses\ItemGroupCollection;
 use iveeCrest\Responses\ItemCategory;
@@ -51,6 +53,9 @@ use iveeCrest\Responses\MarketGroupCollection;
 use iveeCrest\Responses\MarketGroup;
 use iveeCrest\Responses\MarketTypeCollection;
 use iveeCrest\Responses\NPCCorporationsCollection;
+use iveeCrest\Responses\OpportunityGroup;
+use iveeCrest\Responses\OpportunityGroupsCollection;
+use iveeCrest\Responses\OpportunityTasksCollection;
 use iveeCrest\Responses\Options;
 use iveeCrest\Responses\Planet;
 use iveeCrest\Responses\RegionCollection;
@@ -157,6 +162,10 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
             if ($this->client->hasAuthScope('characterLoyaltyPointsRead')) {
                 $this->assertTrue($char->getLoyaltyPoints() instanceof LoyaltyPointsCollection);
             }
+
+            if ($this->client->hasAuthScope('characterOpportunitiesRead')) {
+                $this->assertTrue($char->getOpportunities() instanceof CharacterOpportunitiesCollection);
+            }
         }
     }
 
@@ -227,6 +236,12 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($industrySystemCollection instanceof IndustrySystemCollection);
     }
 
+    public function testInsuranceResponses()
+    {
+        $insurancePricesCollection = $this->root->getInsurancePricesCollection();
+        $this->assertTrue($insurancePricesCollection instanceof InsurancePricesCollection);
+    }
+
     public function testLoyaltyPointResponses()
     {
         $npcCorporationsCollection = $this->root->getNPCCorporationsCollection();
@@ -267,6 +282,17 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
             }
         );
         $this->assertTrue(count($multiHistory) == 2);
+    }
+
+    public function testOpportunityResponses()
+    {
+        $opportunityTasksCollection = $this->root->getOpportunityTasksCollection();
+        $this->assertTrue($opportunityTasksCollection instanceof OpportunityTasksCollection);
+        $opportunityGroupsCollection = $this->root->getOpportunityGroupsCollection();
+        $this->assertTrue($opportunityGroupsCollection instanceof OpportunityGroupsCollection);
+        $items = $opportunityGroupsCollection->gather();
+        $opportunityGroup = $this->client->getEndpointResponse($items[key($items)]->achievementTasks[0]->href);
+        $this->assertTrue($opportunityGroup instanceof OpportunityGroup);
     }
 
     public function testIncursionResponses()

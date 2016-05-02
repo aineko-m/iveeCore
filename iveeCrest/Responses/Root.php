@@ -183,6 +183,26 @@ class Root extends BaseResponse
     }
 
     /**
+     * Returns the first page of opportunity groups collection.
+     *
+     * @return \iveeCrest\Responses\OpportunityGroupsCollection
+     */
+    public function getOpportunityGroupsCollection()
+    {
+        return static::getLastClient()->getEndpointResponse($this->content->opportunities->groups->href);
+    }
+
+    /**
+     * Returns the first page of opportunity tasks collection.
+     *
+     * @return \iveeCrest\Responses\OpportunityTasksCollection
+     */
+    public function getOpportunityTasksCollection()
+    {
+        return static::getLastClient()->getEndpointResponse($this->content->opportunities->tasks->href);
+    }
+
+    /**
      * Returns the first page of NPC corporations collection.
      *
      * @return \iveeCrest\Responses\NPCCorporationsCollection

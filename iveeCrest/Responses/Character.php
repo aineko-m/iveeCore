@@ -305,7 +305,7 @@ class Character extends EndpointItem
      *
      * @param \iveeCrest\Client $client to be used. If none is passed, the last one used is fetched.
      *
-     * @return \iveeCrest\Responses\
+     * @return \iveeCrest\Responses\LoyaltyPointsCollection
      * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
      * available
      */
@@ -315,6 +315,23 @@ class Character extends EndpointItem
             $client = static::getLastClient();
         }
         return $client->getEndpointResponse($this->content->loyaltyPoints->href, 'characterLoyaltyPointsRead');
+    }
+
+    /**
+     * Gets the opportunities endpoint for the character.
+     *
+     * @param \iveeCrest\Client $client to be used. If none is passed, the last one used is fetched.
+     *
+     * @return \iveeCrest\Responses\CharacterOpportunitiesCollection
+     * @throws \iveeCrest\Exceptions\AuthScopeUnavailableException when the required authentication scope token is not
+     * available
+     */
+    public function getOpportunities(Client $client = null)
+    {
+        if (is_null($client)) {
+            $client = static::getLastClient();
+        }
+        return $client->getEndpointResponse($this->content->opportunities->href, 'characterOpportunitiesRead');
     }
 
     /**
