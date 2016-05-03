@@ -232,7 +232,7 @@ class Root extends BaseResponse
         return static::getLastClient()->getEndpointResponse($this->content->sovereignty->campaigns->href);
     }
 
-        /**
+    /**
      * Returns the first page of sovereignty strcutures collection.
      *
      * @return \iveeCrest\Responses\SovereigntyStructureCollection
@@ -240,6 +240,19 @@ class Root extends BaseResponse
     public function getSovereigntyStructureCollection()
     {
         return static::getLastClient()->getEndpointResponse($this->content->sovereignty->structures->href);
+    }
+
+    /**
+     * Returns the response for a specific Station.
+     * This method exists because there is currently no navigable way to the stations.
+     *
+     * @return \iveeCrest\Responses\Station
+     * @throws \iveeCrest\Exceptions\CrestErrorException when a non-existant station ID is requested
+     */
+    public function getStation($stationId)
+    {
+        $client = static::getLastClient();
+        return $client->getEndpointResponse($client->getCrestBaseUrl() . 'stations/' . (int) $stationId . '/');
     }
 
     /**
