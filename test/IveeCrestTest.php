@@ -47,6 +47,7 @@ use iveeCrest\Responses\Killmail;
 use iveeCrest\Responses\LoyaltyPointsCollection;
 use iveeCrest\Responses\LoyaltyStoreOffersCollection;
 use iveeCrest\Responses\MarketOrderCollection;
+use iveeCrest\Responses\MarketOrderCollectionSlim;
 use iveeCrest\Responses\MarketTypeHistoryCollection;
 use iveeCrest\Responses\MarketTypePriceCollection;
 use iveeCrest\Responses\MarketGroupCollection;
@@ -294,6 +295,9 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
             }
         );
         $this->assertTrue(count($multiHistory) == 2);
+        //get just the first page of the collection to avoid memory problems
+        $marketOrdersSlim = $region->getAllMarketOrdersCollection();
+        $this->assertTrue($marketOrdersSlim instanceof MarketOrderCollectionSlim);
     }
 
     public function testOpportunityResponses()

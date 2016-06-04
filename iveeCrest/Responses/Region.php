@@ -244,4 +244,15 @@ class Region extends EndpointItem
             $cache
         );
     }
+
+    /**
+     * Returns the first page of collection containing all market orders in region.
+     *
+     * @return \iveeCrest\Responses\MarketOrderCollectionSlim
+     */
+    public function getAllMarketOrdersCollection()
+    {
+        $client = static::getLastClient();
+        return $client->getEndpointResponse($this->content->marketOrdersAll->href);
+    }
 }

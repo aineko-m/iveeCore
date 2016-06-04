@@ -280,6 +280,7 @@ class Config
         'MarketGroup'                           => '\iveeCrest\Responses\MarketGroup',
         'MarketGroupCollection'                 => '\iveeCrest\Responses\MarketGroupCollection',
         'MarketOrderCollection'                 => '\iveeCrest\Responses\MarketOrderCollection',
+        'MarketOrderCollectionSlim'             => '\iveeCrest\Responses\MarketOrderCollectionSlim',
         'MarketTypeCollection'                  => '\iveeCrest\Responses\MarketTypeCollection',
         'MarketTypeHistoryCollection'           => '\iveeCrest\Responses\MarketTypeHistoryCollection',
         'MarketTypePriceCollection'             => '\iveeCrest\Responses\MarketTypePriceCollection',

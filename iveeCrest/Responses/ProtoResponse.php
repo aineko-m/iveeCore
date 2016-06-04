@@ -61,6 +61,7 @@ class ProtoResponse
         'application/vnd.ccp.eve.MarketGroupCollection-v1+json'          => 'MarketGroupCollection',
         'application/vnd.ccp.eve.MarketGroup-v1+json'                    => 'MarketGroup',
         'application/vnd.ccp.eve.MarketOrderCollection-v1+json'          => 'MarketOrderCollection',
+        'application/vnd.ccp.eve.MarketOrderCollectionSlim-v1+json'      => 'MarketOrderCollectionSlim',
         'application/vnd.ccp.eve.MarketTypeCollection-v1+json'           => 'MarketTypeCollection',
         'application/vnd.ccp.eve.MarketTypeHistoryCollection-v1+json'    => 'MarketTypeHistoryCollection',
         'application/vnd.ccp.eve.MarketTypePriceCollection-v1+json'      => 'MarketTypePriceCollection',
