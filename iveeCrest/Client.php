@@ -44,11 +44,6 @@ class Client
     protected $cache;
 
     /**
-     * @var \iveeCore\CacheableArray[] $gatheredItems used as runtime cache for gathered objects
-     */
-    protected static $gatheredItems = [];
-
-    /**
      * @var string $crestBaseUrl specifies the CREST root URL from which most other endpoints can be navigated to.
      */
     protected $crestBaseUrl;
@@ -494,17 +489,6 @@ class Client
         //compute a key under which the data will be stored under in the caches
         $dataKey = 'gathered:' . $collection->getHref() . (isset($subCommandKey) ? ',' . $subCommandKey : '');
 
-        //firt we try the runtime cache
-        if (isset(static::$gatheredItems[$dataKey])) {
-            //data was found, check expiry
-            if (static::$gatheredItems[$dataKey]->getCacheExpiry() > time()) {
-                return static::$gatheredItems[$dataKey]->data;
-            } else {
-                //remove expired data and continue
-                unset(static::$gatheredItems[$dataKey]);
-            }
-        }
-
         //try the external cache
         try {
             $dataObj = $this->cache->getItem($dataKey);
@@ -529,7 +513,6 @@ class Client
                 $this->cache->setItem($dataObj);
             }
         }
-        static::$gatheredItems[$dataKey] = $dataObj;
         return $dataObj->data;
     }
 

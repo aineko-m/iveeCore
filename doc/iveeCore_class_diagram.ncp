@@ -1701,7 +1701,6 @@ omitted</Text>
         <Collapsed>False</Collapsed>
         <Member type="Field">protected static Client lastInstance</Member>
         <Member type="Field">protected ICache cache</Member>
-        <Member type="Field">protected static array gatheredItems</Member>
         <Member type="Field">protected string publicCrestBaseUrl</Member>
         <Member type="Field">protected string authedCrestBaseUrl</Member>
         <Member type="Field">protected string clientId</Member>
