@@ -114,4 +114,24 @@ class Util
     {
         return self::getNextTimeTS($h, $m) - time();
     }
+
+    /**
+     * Returns the maximum memory PHP is allowed to use in bytes. Returns -1 when not limited.
+     *
+     * @return int
+     */
+    public static function getMemoryLimit()
+    {
+        $val = trim(ini_get('memory_limit'));
+        $last = strtolower($val[strlen($val)-1]);
+        switch($last) {
+            case 'g':
+                $val *= (1024 * 1024 * 1024);
+            case 'm':
+                $val *= (1024 * 1024);
+            case 'k':
+                $val *= 1024;
+        }
+        return $val;
+    }
 }

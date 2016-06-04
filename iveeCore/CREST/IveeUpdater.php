@@ -111,7 +111,7 @@ class IveeUpdater
         }
 
         if ($verbose) {
-            echo 'Peak memory usage: ' . ceil(memory_get_peak_usage(true) / 1024) . 'KiB' . PHP_EOL;
+            echo 'Peak memory usage: ' . ceil(memory_get_peak_usage(true) / 1048576) . 'MiB' . PHP_EOL;
         }
     }
 
