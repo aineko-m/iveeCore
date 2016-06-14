@@ -29,6 +29,11 @@ use iveeCrest\Client;
 class MarketOrderCollectionSlim extends Collection
 {
     /**
+     * @var int $regionId region type ID for which this order collection is for
+     */
+    protected $regionId;
+
+    /**
      * Sets content to object, re-indexing orders by type ID and order ID.
      *
      * @param \stdClass $content to be set
@@ -45,6 +50,28 @@ class MarketOrderCollectionSlim extends Collection
         }
         $this->content = $content;
         $this->content->items = $indexedItems;
+    }
+
+    /**
+     * Do some more initialization.
+     *
+     * @return void
+     */
+    protected function init()
+    {
+        //we have to extract the region and type ID from the URL
+        $parsed = parse_url($this->info['url']);
+        $this->regionId = (int) explode('/', $parsed['path'])[2];
+    }
+
+    /**
+     * Returns the region ID for which this order collection is for.
+     *
+     * @return int
+     */
+    public function getRegionId()
+    {
+        return $this->regionId;
     }
 
     /**

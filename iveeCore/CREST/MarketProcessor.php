@@ -16,6 +16,7 @@ namespace iveeCore\CREST;
 use iveeCore\Config;
 use iveeCrest\Exceptions\CrestErrorException;
 use iveeCrest\Responses\MarketOrderCollection;
+use iveeCrest\Responses\MarketOrderCollectionSlim;
 use iveeCrest\Responses\MarketTypeHistoryCollection;
 use iveeCrest\Responses\Root;
 
@@ -52,11 +53,6 @@ class MarketProcessor
      * @var \iveeCrest\Responses\Root $root the root CREST enpdoint response
      */
     protected $root;
-
-    /**
-     * @var array $orderResponseBuffer used to match buy and sell order response data pairs before processing them
-     */
-    protected $orderResponseBuffer = [];
 
     /**
      * @var bool $verboseBatch controls whether the batch update function should print info to the console
@@ -317,23 +313,27 @@ class MarketProcessor
         $this->verboseBatch = $verbose;
         $regionCollection = $this->root->getRegionCollection();
         foreach (array_unique($regionIds) as $regionId) {
-            try {
-                $regionCollection->getRegion($regionId)->getMultiMarketOrders(
-                    $typeIds,
-                    function (MarketOrderCollection $response) {
-                        $this->processOrderCollection($response);
-                    },
-                    null,
-                    false
+            if (Config::getHugePriceUpdateBatches()) {
+                $this->processSlimOrderCollection(
+                    $regionCollection->getRegion($regionId)->getAllMarketOrdersCollection(),
+                    $typeIds
                 );
-            } catch (CrestErrorException $ex) {
-                if ($verbose) {
-                    echo "Skipping region due to too many CREST errors.\n";
+            } else {
+                try {
+                    $regionCollection->getRegion($regionId)->getMultiMarketOrders(
+                        $typeIds,
+                        function (MarketOrderCollection $response) {
+                            $this->processOrderCollection($response);
+                        },
+                        null,
+                        false
+                    );
+                } catch (CrestErrorException $ex) {
+                    if ($verbose) {
+                        echo "Skipping region due to too many CREST errors.\n";
+                    }
                 }
             }
-
-            //overwrite existing array to ensure cleanup of potentially unprocessed single responses
-            $this->orderResponseBuffer = [];
         }
         $this->commitSql();
     }
@@ -347,13 +347,39 @@ class MarketProcessor
      */
     protected function processOrderCollection(MarketOrderCollection $orderCollection)
     {
+        $typeId = $orderCollection->getTypeId();
+        $regionId = $orderCollection->getRegionId();
         $priceEstimatorClass = Config::getIveeClassName('CrestPriceEstimator');
         $estimator = new $priceEstimatorClass($this);
-        $priceData = $estimator->calcValues($orderCollection);
+        $priceData = $estimator->calcValues($orderCollection->gather(), $typeId, $regionId);
 
         //DB update or insert
-        $this->upsertPriceDb($priceData, $orderCollection->getTypeId(), $orderCollection->getRegionId());
+        $this->upsertPriceDb($priceData, $typeId, $regionId);
         return $priceData;
+    }
+
+    /**
+     * Processes "slim" market order collection with all region wide orders, calculating realistic prices and other
+     * values and doing the DB upsert.
+     *
+     * @param \iveeCrest\Responses\MarketOrderCollectionSlim $orderCollectionSlim with all region orders
+     * @param array $typeIds with all IDs that should be updated
+     *
+     * @return void
+     */
+    protected function processSlimOrderCollection(MarketOrderCollectionSlim $orderCollectionSlim, array $typeIds)
+    {
+        $regionId = $orderCollectionSlim->getRegionId();
+        $priceEstimatorClass = Config::getIveeClassName('CrestPriceEstimator');
+        $estimator = new $priceEstimatorClass($this);
+        $indexedIds = array_flip($typeIds);
+        foreach ($orderCollectionSlim->gather() as $typeId => $orders) {
+            if (!isset($indexedIds[$typeId])) {
+                continue;
+            }
+            $priceData = $estimator->calcValues($orders, $typeId, $regionId);
+            $this->upsertPriceDb($priceData, $typeId, $regionId);
+        }
     }
 
     /**

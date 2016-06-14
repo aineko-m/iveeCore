@@ -77,6 +77,14 @@ class Config
      */
     protected static $maxPriceDataAge = 21600;
 
+    /**
+     * Defines if CREST batch price updates should use the region-wide order collections. These require substantial
+     * memory amounts to be processed, but are much faster overall. Before using this setting in production, you should
+     * test the effects, for instance running the batch for "The Forge". Note that using HHVM instead of PHP will
+     * gretly reduce the amount of memory used.
+     */
+    protected static $hugePriceUpdateBatches = false;
+
     //Defines the regions that will have their market data collected via CREST by the batch updater
     protected static $trackedMarketRegionIds = [
 //        10000001, //Derelik
@@ -698,6 +706,31 @@ class Config
     public static function setMaxPriceDataAge($maxPriceDataAge)
     {
         static::$maxPriceDataAge = $maxPriceDataAge;
+    }
+
+    /**
+     * Defines if CREST batch price updates should use the region-wide order collections. These require substantial
+     * memory amounts to be processed, but are much faster overall. Before using this setting in production, you should
+     * test the effects, for instance running the batch for "The Forge". Note that using HHVM instead of PHP will
+     * gretly reduce the amount of memory used.
+     *
+     * @param bool $use the parameter
+     *
+     * @return void
+     */
+    public static function setHugePriceUpdateBatches($use)
+    {
+        static::$hugePriceUpdateBatches = (bool) $use;
+    }
+
+    /**
+     * Returns if CREST batch price updates should use the region-wide order collections.
+     *
+     * @return bool
+     */
+    public static function getHugePriceUpdateBatches()
+    {
+        return static::$hugePriceUpdateBatches;
     }
 
     /**
