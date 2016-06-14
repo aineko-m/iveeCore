@@ -90,22 +90,41 @@ class Region extends EndpointItem
     /**
      * Gets market history for a type in this region.
      *
-     * @param int $typeId of the item type
+     * @param string $marketTypeHref of the item type
      * @param bool $cache whether the result of this call should be cached. If another caching layer is present, caching
      * in this call should be disabled
      *
      * @return \iveeCrest\Responses\MarketTypeHistoryCollection
      */
-    public function getMarketHistory($typeId, $cache = true)
+    public function getMarketHistoryByHref($marketTypeHref, $cache = true)
     {
         $client = static::getLastClient();
         return $client->getEndpointResponse(
-            //Here we have to construct the URL because there's no navigable way to reach this data via CREST hrefs
-            $client->getCrestBaseUrl() . 'market/' . $this->getId() . '/types/' . (int) $typeId . '/history/',
+            $this->content->marketHistory->href . '?type=' . $marketTypeHref,
             false,
             null,
             $cache
         );
+    }
+
+    /**
+     * Gets market history for a type in this region.
+     *
+     * @param int $typeId of the item type
+     * @param bool $cache whether the result of this call should be cached. If another caching layer is present, caching
+     * in this call should be disabled
+     *
+     * @return \iveeCrest\Responses\MarketTypeHistoryCollection
+     * @return \iveeCore\Exceptions\InvalidArgumentException when invalid typeId is passed
+     */
+    public function getMarketHistory($typeId, $cache = true)
+    {
+        $marketTypeHrefs = static::getLastClient()->getRootEndpoint()->getMarketTypeCollection()->gatherHrefs();
+        if (!isset($marketTypeHrefs[$typeId])) {
+            $invalidArgumentExceptionClass = Config::getIveeClassName('InvalidArgumentException');
+            throw new $invalidArgumentExceptionClass('TypeID = ' . (int) $typeId . ' not found in market types');
+        }
+        return $this->getMarketHistoryByHref($marketTypeHrefs[$typeId], $cache);
     }
 
     /**
@@ -128,11 +147,14 @@ class Region extends EndpointItem
         $cache = true
     ) {
         $client = static::getLastClient();
+        $marketTypeHrefs = $client->getRootEndpoint()->getMarketTypeCollection()->gatherHrefs();
         $hrefs = [];
         foreach (array_unique($typeIds) as $typeId) {
-            //Here we have to construct the URL because there's no navigable way to reach this data via CREST hrefs
-            $hrefs[] = $client->getCrestBaseUrl() . 'market/' . $this->getId() . '/types/' . (int) $typeId
-                . '/history/';
+            if (!isset($marketTypeHrefs[$typeId])) {
+                $invalidArgumentExceptionClass = Config::getIveeClassName('InvalidArgumentException');
+                throw new $invalidArgumentExceptionClass('TypeID=' . (int) $typeId . ' not found in market types');
+            }
+            $hrefs[] = $this->content->marketHistory->href . '?type=' . $marketTypeHrefs[$typeId];
         }
 
         //run the async queries

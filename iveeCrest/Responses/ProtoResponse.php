@@ -33,9 +33,9 @@ class ProtoResponse
     protected static $representationsToClassNicks = [
         'application/vnd.ccp.eve.AllianceCollection-v2+json'             => 'AllianceCollection',
         'application/vnd.ccp.eve.Alliance-v1+json'                       => 'Alliance',
-        'application/vnd.ccp.eve.Api-v3+json'                            => 'Root',
+        'application/vnd.ccp.eve.Api-v5+json'                            => 'Root',
         'application/vnd.ccp.eve.CharacterLocation-v1+json'              => 'CharacterLocation',
-        'application/vnd.ccp.eve.Character-v3+json'                      => 'Character',
+        'application/vnd.ccp.eve.Character-v4+json'                      => 'Character',
         'application/vnd.ccp.eve.CharacterOpportunitiesCollection-v1+json' => 'CharacterOpportunitiesCollection',
         'application/vnd.ccp.eve.ConstellationCollection-v1+json'        => 'ConstellationCollection',
         'application/vnd.ccp.eve.Constellation-v1+json'                  => 'Constellation',

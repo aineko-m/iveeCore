@@ -60,9 +60,10 @@ class MarketTypeHistoryCollection extends Collection
      */
     protected function init()
     {
-        $pathCmpts = explode('/', parse_url($this->info['url'], PHP_URL_PATH));
-        $this->typeId = (int) $pathCmpts[4];
-        $this->regionId = (int) $pathCmpts[2];
+        //we have to extract the region and type ID from the URL
+        $parsed = parse_url($this->info['url']);
+        $this->typeId = (int) explode('/', $parsed['query'])[5];
+        $this->regionId = (int) explode('/', $parsed['path'])[2];
     }
 
     /**

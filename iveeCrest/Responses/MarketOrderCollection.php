@@ -51,7 +51,7 @@ class MarketOrderCollection extends Collection
     protected function init()
     {
         $urlCmpts = parse_url($this->info['url']);
-        $this->typeId   = (int) explode('/', $urlCmpts['query'])[4];
+        $this->typeId   = (int) explode('/', $urlCmpts['query'])[5];
         $pathCmpts = explode('/', $urlCmpts['path']);
         $this->regionId = (int) $pathCmpts[2];
         if ($pathCmpts[4] == 'sell') {
