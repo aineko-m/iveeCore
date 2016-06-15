@@ -1,5 +1,18 @@
 This file lists major changes in iveeCore releases.
 
+Version 3.0.3 - June 15th, 2016
+-------------------------------
+This release adds support for new CREST endpoints and fixes issues that cropped up.
+
+- Fixes for the June 14th CREST update.
+- Added MarketOrderCollectionSlim for the new combined region-wide market order collection endpoint.
+- The batch price update can use MarketOrderCollectionSlim, but since it is a memory intensive feature, it must manually be enabled in Config.
+- Added classes for Stargate, Moon, Station, InsurancePrices, LoyaltyPoints, LoyaltyStoreOffers, NPCCorporations as well as Opportunity endpoints.
+- Remove redundant CREST attributes from JSON ("_str") via regex before decode, which is much faster.
+- Adapt getrefreshtoken to new login domain, warn about requesting too many auth scopes.
+- A number of small fixes, improvements and removal of obsolete stuff.
+
+
 Version 3.0.2 - April 30th, 2016
 --------------------------------
 Release with bugfixes and minor improvements. The initial CREST issues post-Citadel release have been fixed by CCP. The current SDE is still missing industry data for some of the new items.
@@ -9,6 +22,7 @@ Release with bugfixes and minor improvements. The initial CREST issues post-Cita
 - Auto retry logic in CurlWrapper::asyncMultiget(), with abort on too many errors; also stop using the error callback. Some exception handling improvements.
 - Fix multipage gathering for Collections where pageCount=0.
 - Don't forget to mention DoctrineCacheWrapper in documentation.
+
 
 Version 3.0.1 - April 28th, 2016
 --------------------------------
