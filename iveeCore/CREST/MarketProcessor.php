@@ -313,13 +313,14 @@ class MarketProcessor
         $this->verboseBatch = $verbose;
         $regionCollection = $this->root->getRegionCollection();
         foreach (array_unique($regionIds) as $regionId) {
-            if (Config::getHugePriceUpdateBatches()) {
-                $this->processSlimOrderCollection(
-                    $regionCollection->getRegion($regionId)->getAllMarketOrdersCollection(),
-                    $typeIds
-                );
-            } else {
-                try {
+            try {
+                //only do "huge" update if configured and if a decent amount of types were requested
+                if (Config::getHugePriceUpdateBatches() and count($typeIds) > 200) {
+                    $this->processSlimOrderCollection(
+                        $regionCollection->getRegion($regionId)->getAllMarketOrdersCollection(),
+                        $typeIds
+                    );
+                } else {
                     $regionCollection->getRegion($regionId)->getMultiMarketOrders(
                         $typeIds,
                         function (MarketOrderCollection $response) {
@@ -328,10 +329,10 @@ class MarketProcessor
                         null,
                         false
                     );
-                } catch (CrestErrorException $ex) {
-                    if ($verbose) {
-                        echo "Skipping region due to too many CREST errors.\n";
-                    }
+                }
+            } catch (CrestErrorException $ex) {
+                if ($verbose) {
+                    echo "Skipping region due to too many CREST errors.\n";
                 }
             }
         }
@@ -372,12 +373,13 @@ class MarketProcessor
         $regionId = $orderCollectionSlim->getRegionId();
         $priceEstimatorClass = Config::getIveeClassName('CrestPriceEstimator');
         $estimator = new $priceEstimatorClass($this);
-        $indexedIds = array_flip($typeIds);
-        foreach ($orderCollectionSlim->gather() as $typeId => $orders) {
-            if (!isset($indexedIds[$typeId])) {
-                continue;
+        $allOrders = $orderCollectionSlim->gather();
+        foreach ($typeIds as $typeId) {
+            if (isset($allOrders[$typeId])) {
+                $priceData = $estimator->calcValues($allOrders[$typeId], $typeId, $regionId);
+            } else {
+                $priceData = $estimator->calcValues([], $typeId, $regionId);
             }
-            $priceData = $estimator->calcValues($orders, $typeId, $regionId);
             $this->upsertPriceDb($priceData, $typeId, $regionId);
         }
     }
