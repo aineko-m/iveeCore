@@ -18,7 +18,7 @@
         <Member type="Method">public static SDE instance(mysqli db)</Member>
         <Member type="Method">protected SDE __construct(mysqli db)</Member>
         <Member type="Method">protected mysqli connectDb()</Member>
-        <Member type="Method">public mysql_result query(string sql)</Member>
+        <Member type="Method">public mysqli_result query(string sql)</Member>
         <Member type="Method">public bool multiQuery(string sql)</Member>
         <Member type="Method">public void flushDbResults()</Member>
         <Member type="Method">public bool commit()</Member>

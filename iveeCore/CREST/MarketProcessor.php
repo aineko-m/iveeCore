@@ -274,7 +274,7 @@ class MarketProcessor
             AND date <= '" . date('Y-m-d', $latestDate) . "'
             AND date >= '" . date('Y-m-d', $oldestDate) . "';"
         );
-        while ($tmp = $res->fetch_array(MYSQL_NUM)) {
+        while ($tmp = $res->fetch_array(MYSQLI_NUM)) {
             $existingDates[(int) $tmp[0]] = 1;
         }
 
@@ -518,7 +518,7 @@ class MarketProcessor
             FROM invTypes
             WHERE (marketGroupID IS NOT NULL OR published = 1);"
         );
-        while ($tmp = $typeRes->fetch_array(MYSQL_NUM)) {
+        while ($tmp = $typeRes->fetch_array(MYSQLI_NUM)) {
             static::$marketTypes[(int) $tmp[0]] = $tmp[1];
         }
 
@@ -527,7 +527,7 @@ class MarketProcessor
             "SELECT regionID, regionName
             FROM mapRegions;"
         );
-        while ($tmp = $regionRes->fetch_array(MYSQL_NUM)) {
+        while ($tmp = $regionRes->fetch_array(MYSQLI_NUM)) {
             static::$regions[(int) $tmp[0]] = $tmp[1];
         }
     }

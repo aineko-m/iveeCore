@@ -308,7 +308,7 @@ class IveeUpdater
             ORDER BY typeID ASC;"
         );
         $ret = [];
-        while ($tmp = $res->fetch_array(MYSQL_NUM)) {
+        while ($tmp = $res->fetch_array(MYSQLI_NUM)) {
             $ret[] = (int) $tmp[0];
         }
         return $ret;

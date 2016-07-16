@@ -107,7 +107,7 @@ class SDE
      *
      * @param string $sql the query to be sent to the DB
      *
-     * @return \mysql_result
+     * @return \mysqli_result
      * @throws \iveeCore\Exceptions\SQLErrorException when the query execution errors out
      */
     public function query($sql)
