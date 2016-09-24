@@ -50,6 +50,7 @@ $scopes = [
     'characterWalletRead',
     'corporationAssetRead',
     'corporationBookmarksRead',
+    'corporationContactsRead',
     'corporationContractsRead',
     'corporationFactionalWarfareRead',
     'corporationIndustryJobsRead',
@@ -62,6 +63,7 @@ $scopes = [
     'corporationWalletRead',
     'fleetRead',
     'fleetWrite',
+    'remoteClientUI',
     'structureVulnUpdate'
 ];
 
