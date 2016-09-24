@@ -40,6 +40,8 @@ class ProtoResponse
         'application/vnd.ccp.eve.ConstellationCollection-v1+json'        => 'ConstellationCollection',
         'application/vnd.ccp.eve.Constellation-v1+json'                  => 'Constellation',
         'application/vnd.ccp.eve.ContactCollection-v2+json'              => 'ContactCollection',
+        'application/vnd.ccp.eve.Corporation-v1+json'                    => 'Corporation',
+        'application/vnd.ccp.eve.CorporationStructuresCollection-v1+json' => 'CorporationStructuresCollection',
         'application/vnd.ccp.eve.DogmaAttributeCollection-v1+json'       => 'DogmaAttributeCollection',
         'application/vnd.ccp.eve.DogmaAttribute-v1+json'                 => 'DogmaAttribute',
         'application/vnd.ccp.eve.DogmaEffectCollection-v1+json'          => 'DogmaEffectCollection',

@@ -30,6 +30,8 @@ use iveeCrest\Responses\CharacterOpportunitiesCollection;
 use iveeCrest\Responses\ConstellationCollection;
 use iveeCrest\Responses\Constellation;
 use iveeCrest\Responses\ContactCollection;
+use iveeCrest\Responses\Corporation;
+use iveeCrest\Responses\CorporationStructuresCollection;
 use iveeCrest\Responses\DogmaAttributeCollection;
 use iveeCrest\Responses\DogmaAttribute;
 use iveeCrest\Responses\DogmaEffectCollection;
@@ -171,6 +173,13 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
                 $this->assertTrue($char->getOpportunities() instanceof CharacterOpportunitiesCollection);
             }
         }
+    }
+
+    public function testCorporationResponses()
+    {
+        $corp = $this->root->getCharacter()->getCorporation();
+        $this->assertTrue($corp instanceof Corporation);
+        //we currently don't check corporation structures, as that only works for non-NPC corps
     }
 
     public function testInventoryResponses()

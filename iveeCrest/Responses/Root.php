@@ -63,6 +63,20 @@ class Root extends BaseResponse
     }
 
     /**
+     * Returns a corporation. Currently there is no publicly accessible corporation collection, so access needs to be
+     * done via ID (URL construction), or by reference from other endpoints.
+     *
+     * @param int $corpId of the corporation
+     *
+     * @return \iveeCrest\Responses\Corporation
+     * @throws \iveeCrest\Exceptions\CrestErrorException when non-existant ID is passed
+     */
+    public function getCorporationById($corpId)
+    {
+        return static::getLastClient()->getEndpointResponse($this->content->corporations->href . (int) $corpId . '/');
+    }
+
+    /**
      * Returns the first page of dogma attribute collection.
      *
      * @return \iveeCrest\Responses\DogmaAttributeCollection

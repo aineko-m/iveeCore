@@ -30,6 +30,16 @@ use iveeCrest\Client;
 class Character extends EndpointItem
 {
     /**
+     * Returns the corporation.
+     *
+     * @return \iveeCrest\Responses\Corporation
+     */
+    public function getCorporation()
+    {
+        return static::getLastClient()->getEndpointResponse($this->content->corporation->href);
+    }
+
+    /**
      * Returns the characters contacts.
      *
      * @param \iveeCrest\Client $client to be used. If none is passed, the last one used is fetched.

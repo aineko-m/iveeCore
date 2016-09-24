@@ -37,7 +37,7 @@ class Config
     protected static $sdeDbPort = 3306;
     protected static $sdeDbUser = 'eve_sde';
     protected static $sdeDbPw   = 'eve_sde_pw';
-    protected static $sdeDbName = 'eve_sde_cit';
+    protected static $sdeDbName = 'eve_sde_yc118_8';
 
     //iveeCore DB config
     protected static $iveeDbName = 'iveeCore';
@@ -266,6 +266,8 @@ class Config
         'ConstellationCollection'               => '\iveeCrest\Responses\ConstellationCollection',
         'ContactCollection'                     => '\iveeCrest\Responses\ContactCollection',
         'ContactCollectionElement'              => '\iveeCrest\Responses\ContactCollectionElement',
+        'Corporation'                           => '\iveeCrest\Responses\Corporation',
+        'CorporationStructuresCollection'       => '\iveeCrest\Responses\CorporationStructuresCollection',
         'DogmaAttribute'                        => '\iveeCrest\Responses\DogmaAttribute',
         'DogmaAttributeCollection'              => '\iveeCrest\Responses\DogmaAttributeCollection',
         'DogmaEffect'                           => '\iveeCrest\Responses\DogmaEffect',
