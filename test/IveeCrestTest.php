@@ -353,11 +353,10 @@ class IveeCrestTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($pilotStatsCollection instanceof TournamentPilotStatsCollection);
         $pilotTournamentStats = reset($pilotStatsCollection->getContent()->items)->getPilotTournamentStats();
         $this->assertTrue($pilotTournamentStats instanceof TournamentPilotTournamentStats);
-        //static scene data is apparently broken on CCPs side atm
-//        $staticSceneData = $match->getStaticSceneData();
-//        $this->assertTrue($staticSceneData instanceof TournamentStaticSceneData);
-//        $firstReplayFrame = $match->getFirstReplayFrame();
-//        $this->assertTrue($firstReplayFrame instanceof TournamentRealtimeMatchFrame);
+        $staticSceneData = $match->getStaticSceneData();
+        $this->assertTrue($staticSceneData instanceof TournamentStaticSceneData);
+        $firstReplayFrame = $match->getFirstReplayFrame();
+        $this->assertTrue($firstReplayFrame instanceof TournamentRealtimeMatchFrame);
     }
 
     public function testWarResponses()

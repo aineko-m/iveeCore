@@ -90,7 +90,7 @@ class ProtoResponse
         'application/vnd.ccp.eve.TournamentRealtimeMatchFrame-v2+json'   => 'TournamentRealtimeMatchFrame',
         'application/vnd.ccp.eve.TournamentSeriesCollection-v1+json'     => 'TournamentSeriesCollection',
         'application/vnd.ccp.eve.TournamentSeries-v1+json'               => 'TournamentSeries',
-        'application/vnd.ccp.eve.TournamentStaticSceneData-v1+json'      => 'TournamentStaticSceneData',
+        'application/vnd.ccp.eve.TournamentStaticSceneData-v2+json'      => 'TournamentStaticSceneData',
         'application/vnd.ccp.eve.TournamentTeamMember-v1+json'           => 'TournamentTeamMember',
         'application/vnd.ccp.eve.TournamentTeamMemberCollection-v1+json' => 'TournamentTeamMemberCollection',
         'application/vnd.ccp.eve.TournamentTeam-v1+json'                 => 'TournamentTeam',
