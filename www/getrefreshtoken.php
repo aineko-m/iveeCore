@@ -18,7 +18,7 @@ DEFINE('APPLICATION_MANAGEMENT_URL', 'https://developers.eveonline.com/applicati
 DEFINE('CREST_BASE_URL', 'https://login-tq.eveonline.com');
 DEFINE('CREST_AUTH_URL', '/oauth/authorize');
 DEFINE('CREST_TOKEN_URL', '/oauth/token');
-DEFINE('USER_AGENT', 'iveeCore/3.0.3 (GetRefreshToken)');
+DEFINE('USER_AGENT', 'iveeCore/3.0.4 (GetRefreshToken)');
 
 //all scopes except publicData
 $scopes = [

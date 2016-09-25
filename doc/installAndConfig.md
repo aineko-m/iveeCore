@@ -44,7 +44,7 @@ If you intend to only use the CREST functionality through the iveeCrest classes,
 
 The SDE dump in MySQL format can be found at Steve Ronukens Fuzzwork site: [https://www.fuzzwork.co.uk/dump/](https://www.fuzzwork.co.uk/dump/)
 
-Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to acces and modify it. You could use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_yc118-3". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
+Using your favorite MySQL administration tool, set up a database for the SDE and give a user full privileges to acces and modify it. You could use a naming scheme to reflect the current EvE expansion and version, for instance "eve_sde_yc118_8". Then import the SDE SQL file into this newly created database. FYI, phpmyadmin will probably choke on the size of the file, so I recommend the CLI mysql client or something like [HeidiSQL](http://www.heidisql.com/).
 
 Then create a second database, name it "iveeCore" and give the same user as before full privileges.
 

@@ -1,5 +1,14 @@
 This file lists major changes in iveeCore releases.
 
+Version 3.0.4 - September 25th, 2016
+------------------------------------
+- Added Corporation and CorporationStructuresCollection response classes.
+- Minor changes that make iveeCore compatible with PHP 7.
+- Reenable tournament scene data tests as CCP fixed the endpoints.
+- Added new authentication scopes to getrefreshtoken script.
+- Improved the logic behind the "huge" batch price update.
+
+
 Version 3.0.3 - June 15th, 2016
 -------------------------------
 This release adds support for new CREST endpoints and fixes issues that cropped up.
