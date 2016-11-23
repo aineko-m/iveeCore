@@ -16,6 +16,7 @@ namespace iveeCore\CREST;
 use iveeCore\Config;
 use iveeCore\SDE;
 use iveeCrest\Responses\Root;
+use iveeCrest\Exceptions\CrestErrorException;
 
 /**
  * IveeUpdater provides the necessary functionality for running CREST updates from the CLI.
@@ -99,7 +100,11 @@ class IveeUpdater
         }
 
         if ($all or in_array('-facilities', $args)) {
-            $this->updateFacilities($verbose);
+            try {
+                $this->updateFacilities($verbose);
+            } catch (CrestErrorException $ex) {
+                echo "\nError updating facilities:\n" . $ex->getMessage() . "\n";
+            }
         }
 
         if ($all or in_array('-history', $args)) {

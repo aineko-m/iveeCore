@@ -316,7 +316,9 @@ class Station extends SdeType
         $lastUpdateTs = static::getLastFacilitiesUpdateTs();
 
         //if the last update is too long ago, do another
-        if ($lastUpdateTs + $maxDataAge < time()) {
+        //currently broken in CREST, so must skip for now
+        //if ($lastUpdateTs + $maxDataAge < time()) {
+        if (false) {
             //fetch data from CREST and update DB for all systems
             $crestFacilitiesUpdaterClass = Config::getIveeClassName('CrestFacilitiesUpdater');
             $crestFacilitiesUpdaterClass::doUpdate();
